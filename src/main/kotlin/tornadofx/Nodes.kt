@@ -18,19 +18,27 @@ fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
 fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) removeClass(className) else addClass(className)
 
+infix fun Node.addTo(pane: Pane) = pane.children.add(this)
+
 fun Pane.replaceChildren(vararg uiComponents: UIComponent) =
-    this.replaceChildren(*(uiComponents.map { it.root }.toTypedArray()))
+        this.replaceChildren(*(uiComponents.map { it.root }.toTypedArray()))
 
 fun Pane.replaceChildren(vararg node: Node) {
     children.clear()
     children.addAll(node)
 }
 
-fun ToolBar.add(uiComponent: UIComponent) = items.add(uiComponent.root)
-inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>) = add(find(type))
+operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
+    items.add(uiComponent.root)
+}
 
-fun Pane.add(node: Node) = children.add(node)
-inline fun <reified T : View> Pane.add(type: KClass<T>) = add(find(type).root)
+inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>):Unit = plusAssign(find(type))
+
+operator fun Pane.plusAssign(node: Node) {
+    children.add(node)
+}
+
+inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).root)
 
 fun GridPane.row(op: Pane.() -> Unit) {
     userData = if (userData is Int) userData as Int + 1 else 1
@@ -88,11 +96,9 @@ inline fun <T> ListView<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) ->
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
 
- * @param node The node to attach the event to
- * *
  * @param clickCount The number of mouse clicks to trigger the action
  * *
- * @param action The runnable to execute on select
+ * @param action The action to execute on select
  */
 fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     val isSelected = { event: InputEvent ->
@@ -127,8 +133,6 @@ fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
 
- * @param node The node to attach the event to
- * *
  * @param clickCount The number of mouse clicks to trigger the action
  * *
  * @param action The runnable to execute on select

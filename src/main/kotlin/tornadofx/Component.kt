@@ -69,6 +69,7 @@ abstract class Controller : Component()
 
 abstract class UIComponent : Component() {
     abstract val root: Node
+    private val lock = Any()
 
     val titleProperty = SimpleStringProperty()
     var title: String
@@ -83,10 +84,9 @@ abstract class UIComponent : Component() {
 
     class FXMLWrapper<T : Node> : ReadOnlyProperty<UIComponent, T> {
         var value: T? = null
-        val lock = Any()
 
         fun load(uiComponent: UIComponent): T {
-            synchronized(lock) {
+            synchronized(uiComponent.lock) {
                 val componentType = uiComponent.javaClass
 
                 val fxml = componentType.getResource(componentType.simpleName.concat(".fxml")) ?:
