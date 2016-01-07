@@ -17,11 +17,13 @@ See the [Wiki](https://github.com/edvin/tornadofx/wiki) for documentation.
 
 ### Add Tornado FX to your project
 
-    <dependency>
-        <groupId>no.tornado</groupId>
-        <artifactId>fx</artifactId>
-        <version>1.2</version>
-    </dependency>
+```xml
+<dependency>
+	<groupId>no.tornado</groupId>
+	<artifactId>fx</artifactId>
+	<version>1.2</version>
+</dependency>
+```
 
 ### Some code snippets to get you started
 
@@ -40,7 +42,7 @@ You can also load the root node from `HelloWorld.fxml` and implement `Initializa
 class HelloWorld : View(), Initializable {
 	override val root: HBox by fxml()
 	
-	@FXML Label myLabel;
+	@FXML lateinit var myLabel: Label
 	
 	fun initialize(location: URL, resources: ResourceBundle) {
 		myLabel.text = "Hello world"
@@ -75,7 +77,6 @@ class Customer : JsonModel {
 	fun toJSON(json: JsonObjectBuilder) = json
 		.add("id", id.value)
 		.add("name", name.value)		
-
 }
 ```
     
@@ -89,6 +90,12 @@ class HelloWorldController : Controller() {
 		api.get("customers").list().toModel() 
 }
 ```
+Notice that the `Rest` API was injected. You can inject your own Views, Fragments and Controllers
+in the same way:
+
+```kotlin
+val controller : CustomerController by inject()
+```
 
 The JSON payload from the above example would look like this:
 	
@@ -101,12 +108,6 @@ Configure the REST API with a base URI and Basic Authentication:
 ```kotlin
 api.baseURI = "http://contoso.com/api"
 api.setBasicAuth("user", "secret")
-```
-	
-Inject the controller in your View:
-
-```kotlin
-val controller : HelloWorldController by inject()
 ```
 	
 Load customers in the background and update a TableView on the UI thread:
@@ -147,7 +148,9 @@ with (config) {
 }
 ```
 	
-Create a `Fragment`
+Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
+get a new instance every time you use the `find()` method, or if you choose to Inject a `Fragment` you 
+will actually get a new instance every time you access it.
  	
 ```kotlin
 class MyFragment : Fragment() {
