@@ -150,9 +150,15 @@ fun <T : HttpEntityEnclosingRequestBase> T.data(value: JsonValue): T {
     return this
 }
 
+fun HttpResponse.consume() = EntityUtils.consume(entity)
+
+fun HttpResponse.toByteArray() = EntityUtils.toByteArray(entity)
+
+fun HttpResponse.inputStream() = entity.content
+
 fun HttpResponse.one(): JsonObject {
     try {
-        val content = EntityUtils.toString(entity, StandardCharsets.UTF_8)
+        val content = text()
 
         if (content == null || content.isEmpty())
             return Json.createObjectBuilder().build()
@@ -186,9 +192,11 @@ inline fun <reified T : JsonModel> JsonArray.toModel(): ObservableList<T> {
 
 fun HttpResponse.ok() = statusLine.statusCode == 200
 
+fun HttpResponse.text() = EntityUtils.toString(entity, StandardCharsets.UTF_8)
+
 fun HttpResponse.list(): JsonArray {
     try {
-        val content = EntityUtils.toString(entity, StandardCharsets.UTF_8)
+        val content = text()
 
         if (content == null || content.isEmpty())
             return Json.createArrayBuilder().build()

@@ -1,11 +1,17 @@
 package tests.views
 
+import javafx.fxml.FXML
+import javafx.fxml.Initializable
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import tests.controllers.MyController
 import tests.fragments.MyFragment
 import tornadofx.*
+import java.net.URL
+import java.util.*
 
 class TestView : View() {
     override val root = HBox(Label("Hello from the other side"))
@@ -38,6 +44,51 @@ class TestView : View() {
             }
         }
 
+    }
+
+}
+
+class LoginController : Controller() {
+    fun tryLogin(username: String, password: String): Boolean {
+        // perform actual login attempt here
+        return true
+    }
+}
+
+class LoginScreen : View(), Initializable {
+    override val root: BorderPane by fxml()
+    val loginController: LoginController by inject()
+
+    @FXML lateinit var usernameField: Label
+    @FXML lateinit var passwordField: Label
+    @FXML lateinit var loginButton: Button
+
+    override fun initialize(location: URL, resources: ResourceBundle) {
+        usernameField.text = config.string("username")
+        passwordField.text = config.string("password")
+
+        loginButton.setOnAction {
+            background {
+                loginController.tryLogin(usernameField.text, passwordField.text)
+            } ui { success ->
+                if (success) {
+
+                    with(config) {
+                        set("username" to usernameField.text)
+                        set("password" to passwordField.text)
+                        save()
+                    }
+
+                    showMainScreen()
+                }
+            }
+        }
+
+        root.layoutX
+    }
+
+    fun showMainScreen() {
+        // hide LoginScreen and show the main UI of the application
     }
 
 }
