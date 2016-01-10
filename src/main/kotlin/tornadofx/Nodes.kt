@@ -1,6 +1,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
+import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -11,6 +12,8 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.util.Callback
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
@@ -32,7 +35,7 @@ operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
     items.add(uiComponent.root)
 }
 
-inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>):Unit = plusAssign(find(type))
+inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
@@ -75,6 +78,36 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell
         }
     }
 }
+
+inline fun <S, T> TableView<S>.addTypedColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> = TableColumn<S, T>(title).apply {
+    cellValueFactory = Callback<TableColumn.CellDataFeatures<S, T>, ObservableValue<T>> { column ->
+        valueProvider(column)
+    }
+}
+
+@JvmName(name = "addIntColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, Int>) -> ObservableValue<Int>) =
+        addTypedColumn(title, valueProvider)
+
+@JvmName(name = "addStringColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, String>) -> ObservableValue<String>) =
+        addTypedColumn(title, valueProvider)
+
+@JvmName(name = "addLocalDateColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, LocalDate>) -> ObservableValue<LocalDate>) =
+        addTypedColumn(title, valueProvider)
+
+@JvmName(name = "addLocalDateTimeColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, LocalDateTime>) -> ObservableValue<LocalDateTime>) =
+        addTypedColumn(title, valueProvider)
+
+@JvmName(name = "addDoubleColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, Double>) -> ObservableValue<Double>) =
+        addTypedColumn(title, valueProvider)
+
+@JvmName(name = "addLongColumn")
+inline fun <S> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, Long>) -> ObservableValue<Long>) =
+        addTypedColumn(title, valueProvider)
 
 inline fun <T> ListView<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) -> Unit)) {
     cellFactory = Callback {

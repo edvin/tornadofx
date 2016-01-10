@@ -145,11 +145,6 @@ class Rest : Controller() {
 
 }
 
-fun <T : HttpEntityEnclosingRequestBase> T.data(value: JsonValue): T {
-    entity = StringEntity(value.toString(), StandardCharsets.UTF_8)
-    return this
-}
-
 fun HttpResponse.consume() = EntityUtils.consume(entity)
 
 fun HttpResponse.toByteArray() = EntityUtils.toByteArray(entity)
@@ -190,7 +185,11 @@ inline fun <reified T : JsonModel> JsonArray.toModel(): ObservableList<T> {
     return FXCollections.observableArrayList(map { (it as JsonObject).toModel<T>() })
 }
 
-fun HttpResponse.ok() = statusLine.statusCode == 200
+fun HttpResponse.ok() = statusCode == 200
+
+val HttpResponse.statusCode: Int get() = statusLine.statusCode
+
+val HttpResponse.reason: String get() = statusLine.reasonPhrase
 
 fun HttpResponse.text() = EntityUtils.toString(entity, StandardCharsets.UTF_8)
 
