@@ -1,12 +1,12 @@
 package tornadofx
 
+import javafx.beans.value.ObservableValue
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
-import javax.json.Json
-import javax.json.JsonObject
-import javax.json.JsonObjectBuilder
+import javax.json.*
 
 interface JsonModel {
     /**
@@ -21,8 +21,17 @@ interface JsonModel {
      * Build a JSON representation of the model properties
      * @param json A builder that should be filled with the model properties
      */
-    fun toJSON(json: JsonObjectBuilder) {
+    fun toJSON(json: JsonBuilder) {
 
+    }
+
+    /**
+     * Build a JSON representation of the model directly to JsonObject
+     */
+    fun toJSON(): JsonObject {
+        val builder = JsonBuilder()
+        toJSON(builder)
+        return builder.build()
     }
 
     /**
@@ -30,7 +39,7 @@ interface JsonModel {
      * @param target The target object to update with the properties of this model
      */
     fun copy(target: JsonModel) {
-        val builder = Json.createObjectBuilder()
+        val builder = JsonBuilder()
         toJSON(builder)
         target.updateModel(builder.build())
     }
@@ -40,7 +49,7 @@ interface JsonModel {
      * @param source The source object to extract properties from
      */
     fun update(source: JsonModel) {
-        val builder = Json.createObjectBuilder()
+        val builder = JsonBuilder()
         source.toJSON(builder)
         updateModel(builder.build())
     }
@@ -56,7 +65,7 @@ interface JsonModel {
     fun <T : JsonModel> copy(): T {
         try {
             val clone = javaClass.newInstance() as T
-            val builder = Json.createObjectBuilder()
+            val builder = JsonBuilder()
             toJSON(builder)
             clone.updateModel(builder.build())
             return clone
@@ -90,3 +99,129 @@ fun JsonObject.int(key: String) = if (containsKey(key)) getInt(key) else null
 fun JsonObject.jsonObject(key: String) = if (containsKey(key)) getJsonObject(key) else null
 
 fun JsonObject.jsonArray(key: String) = if (containsKey(key)) getJsonArray(key) else null
+
+class JsonBuilder {
+    private val delegate : JsonObjectBuilder = Json.createObjectBuilder()
+
+    fun <S, T: ObservableValue<S>>add(key: String, observable: T) {
+        observable.value?.apply {
+            when (this) {
+                is Int -> add(key, this)
+                is Double -> add(key, this)
+                is Boolean -> add(key, this)
+                is UUID -> add(key, this)
+                is Long -> add(key, this)
+                is BigDecimal -> add(key, this)
+                is LocalDate -> add(key, this)
+                is LocalDateTime -> add(key, this)
+                is String -> add(key, this)
+            }
+        }
+    }
+
+    fun add(key: String, value: Double?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: Int?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: Boolean?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: UUID?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.toString())
+
+        return this
+    }
+
+    fun add(key: String, value: Long?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: BigDecimal?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: LocalDate?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.toString())
+
+        return this
+    }
+
+    fun add(key: String, value: LocalDateTime?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.toEpochSecond(ZoneOffset.UTC))
+
+        return this
+    }
+
+    fun add(key: String, value: String?): JsonBuilder {
+        if (value != null && value.isNotBlank())
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: JsonBuilder?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.build())
+
+        return this
+    }
+
+    fun add(key: String, value: JsonObjectBuilder?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.build())
+
+        return this
+    }
+
+    fun add(key: String, value: JsonObject?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: JsonArrayBuilder?): JsonBuilder {
+        if (value != null) {
+            val built = value.build()
+            if (built.isNotEmpty())
+                delegate.add(key, built)
+        }
+
+        return this
+    }
+
+    fun add(key: String, value: JsonArray?): JsonBuilder {
+        if (value != null && value.isNotEmpty())
+            delegate.add(key, value)
+
+        return this
+    }
+
+    fun build(): JsonObject {
+        return delegate.build()
+    }
+
+}

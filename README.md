@@ -74,7 +74,7 @@ class Customer : JsonModel {
 		name.value = string("name")
 	}
 
-	fun toJSON(json: JsonObjectBuilder) = json
+	fun toJSON(json: JsonBuilder) = json
 		.add("id", id.value)
 		.add("name", name.value)		
 }

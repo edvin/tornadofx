@@ -15,6 +15,8 @@ fun Pane.titledPane(title: String? = null, op: (TitledPane.() -> Unit)? = null):
 
 fun Pane.textfield(op: (TextField.() -> Unit)? = null) = opcr(this, TextField(), op)
 
+fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
+
 fun Pane.textarea(op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea(), op)
 
 fun Pane.progressIndicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)

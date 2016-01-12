@@ -96,13 +96,13 @@ class Rest : Controller() {
     fun get(path: String) = execute(HttpGet(getURI(path)))
 
     fun put(path: String, data: JsonValue? = null) = execute(HttpPut(getURI(path)), data)
-    fun put(path: String, data: JsonModel) = put(path, Json.createObjectBuilder().apply { data.toJSON(this) }.build())
+    fun put(path: String, data: JsonModel) = put(path, JsonBuilder().apply { data.toJSON(this) }.build())
 
     fun post(path: String, data: JsonValue? = null) = execute(HttpPost(getURI(path)), data)
-    fun post(path: String, data: JsonModel) = post(path, Json.createObjectBuilder().apply { data.toJSON(this) }.build())
+    fun post(path: String, data: JsonModel) = post(path, JsonBuilder().apply { data.toJSON(this) }.build())
 
     fun delete(path: String, data: JsonValue? = null) = execute(HttpDelete(getURI(path)), data)
-    fun delete(path: String, data: JsonModel) = delete(path, Json.createObjectBuilder().apply { data.toJSON(this) }.build())
+    fun delete(path: String, data: JsonModel) = delete(path, JsonBuilder().apply { data.toJSON(this) }.build())
 
     fun getURI(path: String): URI {
         try {
