@@ -41,6 +41,12 @@ operator fun Pane.plusAssign(node: Node) {
 
 inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).root)
 
+operator fun <T : View> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
+
+operator fun Pane.plusAssign(view: UIComponent): Unit {
+    plusAssign(view.root)
+}
+
 fun GridPane.row(op: Pane.() -> Unit) {
     userData = if (userData is Int) userData as Int + 1 else 1
 
