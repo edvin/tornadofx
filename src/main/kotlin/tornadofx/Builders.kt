@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.image.ImageView
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -24,6 +25,8 @@ fun Pane.progressIndicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(th
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
+
+fun Pane.imageview(text: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (text == null) ImageView() else ImageView(text), op)
 
 fun Pane.hbox(spacing: Double? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()

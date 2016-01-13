@@ -60,6 +60,9 @@ fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
 val <T> ListView<T>.selectedItem: T
     get() = selectionModel.selectedItem
 
+fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
+    selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
+
 inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {
