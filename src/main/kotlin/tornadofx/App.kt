@@ -11,8 +11,7 @@ abstract class App : Application() {
     abstract val primaryView: KClass<out View>
 
     override fun start(stage: Stage) {
-        if (Thread.getDefaultUncaughtExceptionHandler() == null)
-            Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
+        installErrorHandler()
 
         FX.primaryStage = stage
         FX.application = this
@@ -20,11 +19,8 @@ abstract class App : Application() {
         try {
             val view = find(primaryView)
 
-            if (view.root !is Parent)
-                throw IllegalArgumentException("Primary VIew root must be a Parent")
-
             stage.apply {
-                scene = Scene(view.root as Parent)
+                scene = Scene(view.root)
                 scene.stylesheets.addAll(FX.stylesheets)
                 titleProperty().bind(view.titleProperty)
                 show()
@@ -32,5 +28,10 @@ abstract class App : Application() {
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
+    }
+
+    private fun installErrorHandler() {
+        if (Thread.getDefaultUncaughtExceptionHandler() == null)
+            Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
     }
 }

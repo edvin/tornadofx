@@ -68,7 +68,7 @@ abstract class Component {
 abstract class Controller : Component()
 
 abstract class UIComponent : Component() {
-    abstract val root: Node
+    abstract val root: Parent
     private val lock = Any()
 
     val titleProperty = SimpleStringProperty()
