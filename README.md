@@ -7,7 +7,7 @@ Lightweight JavaFX Framework for Kotlin
 - Dependency injection
 - Type safe builders
 - Async task execution
-- Clean and easy View / Controller
+- MVC
 - Extremely light weight
 - Small, easy to grasp API
 - REST client with support for model objects
@@ -35,20 +35,21 @@ class HelloWorld : View() {
 }
 ```
     
-You can also load the root node from `HelloWorld.fxml` and implement `Initializable` to perform
-  some configuration steps after loading the fxml:
+You can also load the root node from `HelloWorld.fxml` and to perform
+  some configuration steps after the FXML is loaded.
   
 ```kotlin
-class HelloWorld : View(), Initializable {
+class HelloWorld : View() {
 	override val root: HBox by fxml()
 	
 	@FXML lateinit var myLabel: Label
 	
-	fun initialize(location: URL, resources: ResourceBundle) {
+	init {
 		myLabel.text = "Hello world"
 	}
 }
 ```
+> No need to implement `Initializable` to perform post processing
 
 Start your application and show the primary `View` by extending the `App` class
     
