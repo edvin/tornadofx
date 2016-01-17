@@ -117,7 +117,7 @@ abstract class Fragment : UIComponent() {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
 
-                    Scene(root as Parent).apply {
+                    Scene(root).apply {
                         if (escapeClosesWindow) {
                             addEventFilter(KeyEvent.KEY_PRESSED) {
                                 if (it.code == KeyCode.ESCAPE)

@@ -65,9 +65,16 @@
         <url>git@github.com:edvin/tornadofx.git</url>
     </scm>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <finalName>fx</finalName>
-        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
 
         <pluginManagement>
             <plugins>
@@ -89,20 +96,13 @@
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <version>${kotlin.version}</version>
+
                 <executions>
                     <execution>
                         <id>compile</id>
                         <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
-                        <id>test-compile</id>
-                        <phase>process-test-sources</phase>
-                        <goals>
-                            <goal>test-compile</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -117,15 +117,14 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>${dokka.version}</version>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <phase>pre-site</phase>
                         <goals>
-                            <goal>javadoc</goal>
-                            <goal>jar</goal>
+                            <goal>dokka</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -139,6 +138,20 @@
                         <phase>compile</phase>
                         <goals>
                             <goal>aggregate</goal>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>javadoc</goal>
                             <goal>jar</goal>
                         </goals>
                     </execution>
@@ -163,6 +176,7 @@
 
     <properties>
         <kotlin.version>1.0.0-beta-4584</kotlin.version>
+        <dokka.version>0.9.4</dokka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
