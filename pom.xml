@@ -7,6 +7,10 @@
     <groupId>no.tornado</groupId>
     <artifactId>fx</artifactId>
     <version>1.2</version>
+    <packaging>jar</packaging>
+    <name>Tornado FX</name>
+    <description>Lightweight JavaFX Framework for Kotlin</description>
+    <url>https://github.com/edvin/tornadofx</url>
 
     <dependencies>
         <dependency>
@@ -26,9 +30,59 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <organization>
+        <name>SYSE</name>
+        <url>https://www.syse.no/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Edvin Syse</name>
+            <email>es@syse.no</email>
+            <organization>SYSE AS</organization>
+            <organizationUrl>https://www.syse.no</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:edvin/tornadofx.git</connection>
+        <developerConnection>scm:git:git@github.com:edvin/tornadofx.git</developerConnection>
+        <url>git@github.com:edvin/tornadofx.git</url>
+    </scm>
+
     <build>
         <finalName>fx</finalName>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.1</version>
+                    <configuration>
+                        <mavenExecutorId>forked-path</mavenExecutorId>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <arguments>-Psonatype-oss-release</arguments>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 
         <plugins>
             <plugin>
@@ -64,33 +118,43 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.6</version>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
                 <executions>
                     <execution>
-                        <id>create-lib</id>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <goals>
+                            <goal>javadoc</goal>
                             <goal>jar</goal>
                         </goals>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
                     <execution>
-                        <id>create-launcher</id>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <goals>
+                            <goal>aggregate</goal>
                             <goal>jar</goal>
                         </goals>
-                        <configuration>
-                            <classifier>launcher</classifier>
-                            <includes>
-                                <include>**/launcher/*</include>
-                            </includes>
-                            <archive>
-                                <manifest>
-                                    <mainClass>tornadofx.launcher.Launcher</mainClass>
-                                </manifest>
-                            </archive>
-                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

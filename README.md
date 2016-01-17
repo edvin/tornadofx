@@ -11,7 +11,7 @@ Lightweight JavaFX Framework for Kotlin
 - Extremely light weight
 - Small, easy to grasp API
 - REST client with support for model objects
-- Elegant syntax
+- Zero config, no XML, no annotations
 
 See the [Wiki](https://github.com/edvin/tornadofx/wiki) for documentation.
 
@@ -97,12 +97,6 @@ in the same way:
 ```kotlin
 val controller : CustomerController by inject()
 ```
-
-The JSON payload from the above example would look like this:
-	
-```json
-[{"id": 1, "name": "John Doe"},{"id": 2, "name": "Jane Doe"}]
-```
 	
 Configure the REST API with a base URI and Basic Authentication:
 	
@@ -165,10 +159,10 @@ Open it in a Modal Window:
 find(MyFragment::class).openModal()
 ``` 
 	 	
-Embed a `Fragment` or `View` inside another `Pane`
+Lookup and embed a `Fragment` or `View` inside another `Pane` in one go
   	 	
 ```kotlin
-root += find(MyFragment::class)
+root += MyFragment::class
 ```
 
 Inject a `Fragment` or `View` and embed inside another `Pane`
