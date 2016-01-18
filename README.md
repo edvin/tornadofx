@@ -17,7 +17,7 @@ Lightweight JavaFX Framework for Kotlin
 
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
-- [Example Code](https://github.com/edvin/tornadofx-samples) 
+- [Example Application](https://github.com/edvin/tornadofx-samples) 
 
 ### Add Tornado FX to your project
 
@@ -29,7 +29,7 @@ Lightweight JavaFX Framework for Kotlin
 </dependency>
 ```
 
-### Some code snippets to get you started
+### What does it look like? (Code snippets)
 
 Create a View:
 
