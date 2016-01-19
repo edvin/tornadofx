@@ -31,7 +31,7 @@ Lightweight JavaFX Framework for Kotlin
 
 ### What does it look like? (Code snippets)
 
-Create a View:
+Create a View
 
 ```kotlin
 class HelloWorld : View() {
@@ -39,8 +39,7 @@ class HelloWorld : View() {
 }
 ```
     
-You can also load the root node from `HelloWorld.fxml` and to perform
-  some configuration steps after the FXML is loaded.
+Load the root node from `HelloWorld.fxml` and post process after the FXML is loaded
   
 ```kotlin
 class HelloWorld : View() {
