@@ -1,6 +1,4 @@
-<div style="float: left">
 ![Tornado FX Logo](graphics/tornado-fx-logo.png?raw=true "Tornado FX")
-</div>
 # Tornado FX
 
 Lightweight JavaFX Framework for Kotlin
