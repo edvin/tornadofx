@@ -1,3 +1,4 @@
+![Tornado FX Logo](graphics/tornado-fx-logo.png?raw=true "Tornado FX")
 # Tornado FX
 
 Lightweight JavaFX Framework for Kotlin
