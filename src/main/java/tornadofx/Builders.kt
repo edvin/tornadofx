@@ -3,10 +3,7 @@ package tornadofx
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
+import javafx.scene.layout.*
 
 fun Pane.titledPane(title: String? = null, op: (TitledPane.() -> Unit)? = null): TitledPane {
     val pane = TitledPane()
@@ -26,7 +23,10 @@ fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this,
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
 
-fun Pane.imageview(text: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (text == null) ImageView() else ImageView(text), op)
+fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
+
+fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
+fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
 fun Pane.hbox(spacing: Double? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
