@@ -4,6 +4,7 @@ import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.scene.Node
+import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
@@ -18,6 +19,18 @@ fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
 fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) removeClass(className) else addClass(className)
+
+fun Scene.reloadStylesheets() {
+    val styles = stylesheets.toArrayList()
+    stylesheets.clear()
+    stylesheets.addAll(styles)
+}
+
+fun Pane.reloadStylesheets() {
+    val styles = stylesheets.toArrayList()
+    stylesheets.clear()
+    stylesheets.addAll(styles)
+}
 
 infix fun Node.addTo(pane: Pane) = pane.children.add(this)
 
@@ -61,7 +74,12 @@ fun GridPane.row(op: Pane.() -> Unit) {
 val <T> TableView<T>.selectedItem: T
     get() = this.selectionModel.selectedItem
 
+val <T> TreeView<T>.selectedValue: T
+    get() = this.selectionModel.selectedItem.value
+
 fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
+
+fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 val <T> ListView<T>.selectedItem: T
     get() = selectionModel.selectedItem
@@ -133,6 +151,20 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
+fun <T> TreeView<T>.onUserSelect(clickCount: Int = 1, action: (T) -> Unit) {
+    val isSelected = { event: InputEvent -> !selectionModel.isEmpty }
+
+    addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+        if (event.clickCount == clickCount && isSelected(event))
+            action(selectedValue)
+    }
+
+    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+        if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
+            action(selectedValue)
+    }
+}
+
 fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
@@ -144,6 +176,13 @@ fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem)
+    })
+}
+
+fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
+    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
+        if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
+            action(selectedValue)
     })
 }
 
