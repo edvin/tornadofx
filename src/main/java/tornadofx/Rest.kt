@@ -30,7 +30,7 @@ import javax.json.JsonArray
 import javax.json.JsonObject
 import javax.json.JsonValue
 
-class Rest : Controller() {
+open class Rest : Controller() {
     private val atomicseq = AtomicLong()
     internal var ongoingRequests = FXCollections.observableArrayList<HttpRequestBase>()
 
