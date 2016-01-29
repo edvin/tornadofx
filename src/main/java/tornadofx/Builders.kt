@@ -17,6 +17,8 @@ fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker
 
 fun Pane.textarea(op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea(), op)
 
+fun Pane.checkbox(text: String? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text), op)
+
 fun Pane.progressIndicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
 
 fun Pane.progressBar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)

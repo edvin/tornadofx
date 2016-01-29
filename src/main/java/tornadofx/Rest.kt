@@ -32,7 +32,7 @@ import javax.json.JsonValue
 
 open class Rest : Controller() {
     private val atomicseq = AtomicLong()
-    internal var ongoingRequests = FXCollections.observableArrayList<HttpRequestBase>()
+    val ongoingRequests = FXCollections.observableArrayList<HttpRequestBase>()
 
     var baseURI: String? = null
         set(value) {
@@ -137,12 +137,13 @@ open class Rest : Controller() {
                 request.entity = StringEntity(data.toString(), StandardCharsets.UTF_8)
             }
 
-            ongoingRequests.add(request)
+            Platform.runLater { ongoingRequests.add(request) }
+
             val response = client.execute(host, request, clientContext)
             response.addHeader("X-Seq", seq.toString())
             return response
         } finally {
-            ongoingRequests.remove(request)
+            Platform.runLater { ongoingRequests.remove(request) }
         }
     }
 
