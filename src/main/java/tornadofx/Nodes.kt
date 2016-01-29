@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
-fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) removeClass(className) else addClass(className)
+fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) addClass(className) else removeClass(className)
 
 fun Scene.reloadStylesheets() {
     val styles = stylesheets.toArrayList()
