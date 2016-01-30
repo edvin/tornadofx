@@ -12,6 +12,7 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
+import javafx.stage.Stage
 import javafx.util.Callback
 import kotlin.reflect.KClass
 
@@ -24,6 +25,13 @@ fun Scene.reloadStylesheets() {
     val styles = stylesheets.toArrayList()
     stylesheets.clear()
     stylesheets.addAll(styles)
+}
+
+fun Stage.reloadStylesheetsOnFocus() {
+    focusedProperty().addListener { obs, old, new ->
+        if (new)
+            scene.reloadStylesheets()
+    }
 }
 
 fun Pane.reloadStylesheets() {
@@ -151,17 +159,10 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
-fun <T> TreeView<T>.onUserSelect(clickCount: Int = 1, action: (T) -> Unit) {
-    val isSelected = { event: InputEvent -> !selectionModel.isEmpty }
-
-    addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-        if (event.clickCount == clickCount && isSelected(event))
-            action(selectedValue)
-    }
-
-    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
-        if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
-            action(selectedValue)
+fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
+    selectionModel.selectedItemProperty().addListener { obs, old, new ->
+        if (new != null && new.value != null)
+            action(new.value)
     }
 }
 
