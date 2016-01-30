@@ -11,11 +11,11 @@ fun Pane.titledPane(title: String? = null, op: (TitledPane.() -> Unit)? = null):
     return opcr(this, pane, op)
 }
 
-fun Pane.textfield(op: (TextField.() -> Unit)? = null) = opcr(this, TextField(), op)
+fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 
 fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
 
-fun Pane.textarea(op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea(), op)
+fun Pane.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
 
 fun Pane.checkbox(text: String? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text), op)
 
@@ -32,14 +32,18 @@ fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = op
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
-fun Pane.hbox(spacing: Double? = null, op: (HBox.() -> Unit)? = null): HBox {
+fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
+    if (children != null)
+        hbox.children.addAll(children)
     if (spacing != null) hbox.spacing = spacing
     return opcr(this, hbox, op)
 }
 
-fun Pane.vbox(spacing: Double? = null, op: (VBox.() -> Unit)? = null): VBox {
+fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
     val vbox = VBox()
+    if (children != null)
+        vbox.children.addAll(children)
     if (spacing != null) vbox.spacing = spacing
     return opcr(this, vbox, op)
 }
