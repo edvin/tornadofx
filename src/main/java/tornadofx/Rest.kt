@@ -149,6 +149,8 @@ open class Rest : Controller() {
 
 }
 
+fun HttpResponse.seq(): Long? = getFirstHeader("X-Seq").value?.toLong()
+
 fun HttpResponse.consume() = EntityUtils.consume(entity)
 
 fun HttpResponse.toByteArray() = EntityUtils.toByteArray(entity)
