@@ -218,7 +218,7 @@ fun HttpResponse.list(): JsonArray {
     }
 }
 
-class RestProgressBar : View() {
+class RestProgressBar : Fragment() {
     override val root = ProgressBar().apply {
         prefWidth = 100.0
         isVisible = false
