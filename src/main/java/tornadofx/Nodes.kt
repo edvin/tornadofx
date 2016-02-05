@@ -54,6 +54,10 @@ operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
     items.add(uiComponent.root)
 }
 
+operator fun ToolBar.plusAssign(node: Node): Unit {
+    items.add(node)
+}
+
 inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
 
 operator fun Pane.plusAssign(node: Node) {
