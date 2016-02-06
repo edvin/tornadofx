@@ -32,6 +32,14 @@ fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = op
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
+fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar {
+    var toolbar = ToolBar()
+    if (nodes.isNotEmpty())
+        toolbar.items.addAll(nodes)
+    opcr(this, toolbar, op)
+    return toolbar
+}
+
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
     if (children != null)
