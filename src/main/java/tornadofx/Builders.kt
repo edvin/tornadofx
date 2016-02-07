@@ -5,10 +5,9 @@ import javafx.scene.control.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 
-fun Pane.titledPane(title: String? = null, op: (TitledPane.() -> Unit)? = null): TitledPane {
-    val pane = TitledPane()
-    if (title != null) pane.text = title
-    return opcr(this, pane, op)
+fun Pane.titledPane(title: String, node: Node): TitledPane {
+    val pane = TitledPane(title, node)
+    return opcr(this, pane)
 }
 
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
