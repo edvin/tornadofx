@@ -22,7 +22,7 @@ fun Node.removeClass(className: String) = styleClass.remove(className)
 fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) addClass(className) else removeClass(className)
 
 fun Scene.reloadStylesheets() {
-    val styles = stylesheets.toArrayList()
+    val styles = stylesheets.toMutableList()
     stylesheets.clear()
     stylesheets.addAll(styles)
 }
@@ -35,7 +35,7 @@ fun Stage.reloadStylesheetsOnFocus() {
 }
 
 fun Pane.reloadStylesheets() {
-    val styles = stylesheets.toArrayList()
+    val styles = stylesheets.toMutableList()
     stylesheets.clear()
     stylesheets.addAll(styles)
 }

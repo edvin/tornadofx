@@ -39,7 +39,7 @@ abstract class Component {
         val conf = Paths.get("conf")
         if (!Files.exists(conf))
             Files.createDirectories(conf)
-        conf.resolve(javaClass.name.concat(".properties"))
+        conf.resolve(javaClass.name + ".properties")
     }
 
     inline fun <reified T : Component> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
@@ -89,7 +89,7 @@ abstract class UIComponent : Component() {
             synchronized(uiComponent.lock) {
                 val componentType = uiComponent.javaClass
 
-                val fxml = componentType.getResource(componentType.simpleName.concat(".fxml")) ?:
+                val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
                         throw IllegalArgumentException("FXML not found for $componentType")
 
                 val loader = FXMLLoader(fxml)
