@@ -23,6 +23,21 @@ fun TabPane.tab(text: String? = null, content: Node? = null, op: (Tab.() -> Unit
     return tab
 }
 
+
+fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
+    userData = if (userData is Int) userData as Int + 1 else 1
+
+    // Allow the caller to add children to a fake pane
+    val fake = Pane()
+    if (title != null)
+        fake.children.add(Label(title))
+
+    op(fake)
+
+    // Create a new row in the GridPane and add the children added to the fake pane
+    addRow(userData as Int, *fake.children.toTypedArray())
+}
+
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 
 fun <T> Pane.combobox(values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply { if (values != null) items = values }, op)

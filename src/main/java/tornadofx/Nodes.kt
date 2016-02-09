@@ -76,17 +76,6 @@ operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)
 }
 
-fun GridPane.row(op: Pane.() -> Unit) {
-    userData = if (userData is Int) userData as Int + 1 else 1
-
-    // Allow the caller to add children to a fake pane
-    val fake = Pane()
-    op(fake)
-
-    // Create a new row in the GridPane and add the children added to the fake pane
-    addRow(userData as Int, *fake.children.toTypedArray())
-}
-
 val <T> TableView<T>.selectedItem: T
     get() = this.selectionModel.selectedItem
 
