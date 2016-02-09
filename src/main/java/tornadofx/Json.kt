@@ -83,6 +83,8 @@ fun JsonObject.string(key: String) = if (containsKey(key)) getString(key) else n
 
 fun JsonObject.double(key: String) = if (containsKey(key)) getJsonNumber(key).doubleValue() else null
 
+fun JsonObject.bigdecimal(key: String) = if (containsKey(key)) getJsonNumber(key).bigDecimalValue() else null
+
 fun JsonObject.long(key: String) = if (containsKey(key)) getJsonNumber(key).longValue() else null
 
 fun JsonObject.bool(key: String): Boolean? = if (containsKey(key)) getBoolean(key) else null
