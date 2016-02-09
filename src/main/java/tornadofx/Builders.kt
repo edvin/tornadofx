@@ -12,6 +12,17 @@ fun Pane.titledPane(title: String, node: Node): TitledPane {
     return opcr(this, pane)
 }
 
+fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
+
+fun TabPane.tab(text: String? = null, content: Node? = null, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab()
+    if (text != null) tab.text = text
+    if (content != null) tab.content = content
+    tabs.add(tab)
+    if (op != null) op(tab)
+    return tab
+}
+
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 
 fun <T> Pane.combobox(values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply { if (values != null) items = values }, op)
