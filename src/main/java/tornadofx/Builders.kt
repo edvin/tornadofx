@@ -1,14 +1,20 @@
 package tornadofx
 
+import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
+import javafx.scene.text.Text
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
     return opcr(this, pane)
 }
+
+fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
+
+fun <T> Pane.combobox(values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply { if (values != null) items = values }, op)
 
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 
