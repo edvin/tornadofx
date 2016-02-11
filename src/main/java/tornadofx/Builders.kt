@@ -1,11 +1,14 @@
 package tornadofx
 
+import javafx.beans.property.Property
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
+import javafx.util.StringConverter
+import java.time.LocalDate
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
@@ -39,24 +42,53 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
 }
 
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
+fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text(op = op).apply {
+    textProperty().bindBidirectional(property)
+}
 
-fun <T> Pane.combobox(values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply { if (values != null) items = values }, op)
+fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
+    if (values != null) items = values
+    if (property != null) valueProperty().bindBidirectional(property)
+}, op)
 
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
+fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
+    textProperty().bindBidirectional(property)
+}
+fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
+    textProperty().bindBidirectional(property, converter)
+}
 
 fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
+fun Pane.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> Unit)? = null) = datepicker(op = op).apply {
+    valueProperty().bindBidirectional(property)
+}
 
 fun Pane.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
+fun Pane.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
+    textProperty().bindBidirectional(property)
+}
+fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
+    textProperty().bindBidirectional(property, converter)
+}
 
-fun Pane.checkbox(text: String? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text), op)
+fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text).apply {
+    if (property != null) selectedProperty().bindBidirectional(property)
+}, op)
 
 fun Pane.progressIndicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
 
 fun Pane.progressBar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
+fun Pane.progressBar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressBar(op = op).apply {
+    progressProperty().bind(property)
+}
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
+fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label(op = op).apply {
+    textProperty().bind(property)
+}
 
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
 
