@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleObjectProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-fun <T> property(fxProperty: Property<T>) = PropertyDelegate(fxProperty)
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
+fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
 
 class PropertyDelegate<T>(private val fxProperty: Property<T>) : ReadWriteProperty<Any?, T> {
 

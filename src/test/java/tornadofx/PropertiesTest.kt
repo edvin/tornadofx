@@ -32,15 +32,22 @@ class PropertiesTest {
     }
 
     @Test
-    fun `property() in combination with lazy()`() {
+    fun should_be_able_to_use_property_and_lazy() {
+        // given:
+        var wasLazyCalled = false
         val fixture = object {
             private val stringProperty by lazy {
-                println("in lazy lambda expr")
-                SimpleObjectProperty<String>()
+                wasLazyCalled = true
+                SimpleObjectProperty<String>("foo")
             }
 
-            val string by property(stringProperty)
+            val string by property { stringProperty }
         }
+
+        // expect:
+        assertEquals(wasLazyCalled, false)
+        assertEquals(fixture.string, "foo")
+        assertEquals(wasLazyCalled, true)
     }
 
 }
