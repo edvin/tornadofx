@@ -15,9 +15,11 @@ import org.apache.http.client.CredentialsProvider
 import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.*
 import org.apache.http.client.protocol.HttpClientContext
+import org.apache.http.conn.HttpClientConnectionManager
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.*
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.message.BasicHeader
 import org.apache.http.util.EntityUtils
 import java.io.StringReader
@@ -68,10 +70,19 @@ open class Rest : Controller() {
     }
 
     private val clientBuilder: HttpClientBuilder
-        get() = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).setDefaultCredentialsProvider(credentialsProvider)
+        get() = HttpClients.custom()
+                .setConnectionManager(defaultConnManager)
+                .setDefaultRequestConfig(defaultRequestConfig)
+                .setDefaultCredentialsProvider(credentialsProvider)
 
     private val defaultRequestConfig: RequestConfig
         get() = RequestConfig.custom().build()
+
+    private val defaultConnManager: HttpClientConnectionManager
+        get() = PoolingHttpClientConnectionManager().apply {
+            defaultMaxPerRoute = 50
+            maxTotal = 100
+        }
 
     fun resetClientContext() {
         clientContext = HttpClientContext.create()
@@ -125,7 +136,7 @@ open class Rest : Controller() {
 
     }
 
-    private fun execute(request: HttpRequestBase, data: JsonValue? = null, processor: ((HttpRequestBase) -> Unit)? = null): HttpResponse {
+    fun execute(request: HttpRequestBase, data: JsonValue? = null, processor: ((HttpRequestBase) -> Unit)? = null): HttpResponse {
         val seq = atomicseq.addAndGet(1)
 
         if (processor != null)
@@ -152,7 +163,8 @@ open class Rest : Controller() {
 fun HttpResponse.seq(): Long? = getFirstHeader("X-Seq").value?.toLong()
 
 fun HttpResponse.consume(): HttpResponse {
-    EntityUtils.consume(entity)
+    EntityUtils.consumeQuietly(entity)
+    if (this is CloseableHttpResponse) close()
     return this
 }
 
