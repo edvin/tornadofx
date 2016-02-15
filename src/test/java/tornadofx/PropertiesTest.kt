@@ -1,53 +1,46 @@
 package tornadofx
 
-import javafx.beans.property.SimpleObjectProperty
 import org.junit.Test
 import kotlin.test.assertEquals
 
 class PropertiesTest {
 
     @Test
-    fun `should get string property`() {
+    fun property_get_should_read_value() {
         // given:
         val fixture = object {
             val string by property<String>()
+            val integer: Int? by property()
+            val stringDefault by property("foo")
+            val integerDefault by property(42)
         }
 
         // expect:
-        assertEquals(fixture.string, null)
+        assertEquals(null, fixture.string)
+        assertEquals(null, fixture.integer)
+        assertEquals("foo", fixture.stringDefault)
+        assertEquals(42, fixture.integerDefault)
     }
 
     @Test
-    fun `should set string property`() {
+    fun property_set_should_write_value() {
         // given:
         val fixture = object {
             var string by property<String>()
+            var integer: Int? by property()
+            var stringDefault by property("foo")
+            var integerDefault by property(42)
         }
 
         // when:
         fixture.string = "foo"
+        fixture.integer = 42
 
         // then:
-        assertEquals(fixture.string, "foo")
-    }
-
-    @Test
-    fun should_be_able_to_use_property_and_lazy() {
-        // given:
-        var wasLazyCalled = false
-        val fixture = object {
-            private val stringProperty by lazy {
-                wasLazyCalled = true
-                SimpleObjectProperty<String>("foo")
-            }
-
-            val string by property { stringProperty }
-        }
-
-        // expect:
-        assertEquals(wasLazyCalled, false)
-        assertEquals(fixture.string, "foo")
-        assertEquals(wasLazyCalled, true)
+        assertEquals("foo", fixture.string)
+        assertEquals("foo", fixture.stringDefault)
+        assertEquals(42, fixture.integer)
+        assertEquals(42, fixture.integerDefault)
     }
 
 }
