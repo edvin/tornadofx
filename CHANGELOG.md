@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Recompiled for Kotlin 1.0
+
 ## [1.2.3] - 2016-02-15
 
 ### Added
