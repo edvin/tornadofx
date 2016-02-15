@@ -74,8 +74,6 @@
     </pluginRepositories>
 
     <build>
-        <finalName>tornadofx-${version}</finalName>
-
         <pluginManagement>
             <plugins>
                 <plugin>
