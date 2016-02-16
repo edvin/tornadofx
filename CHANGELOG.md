@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Delegate for JavaFX Properties [Issue #3](https://github.com/edvin/tornadofx/issues/3)
+
 ### Changed
+- Changed Maven coordinates to `no.tornado:tornadofx`
 - Recompiled for Kotlin 1.0
 
 ## [1.2.3] - 2016-02-15
