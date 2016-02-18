@@ -22,7 +22,7 @@ class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any?,
 
 }
 
-fun <T> Any.fxProp(prop: KMutableProperty1<*, T>): ObjectProperty<T?> {
+fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T?> {
     // avoid kotlin-reflect dependency
     val field = this.javaClass.getDeclaredField("${prop.name}\$delegate")
     field.isAccessible = true
