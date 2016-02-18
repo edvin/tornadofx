@@ -10,7 +10,6 @@ import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -87,6 +86,9 @@ fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
 fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 val <T> ListView<T>.selectedItem: T
+    get() = selectionModel.selectedItem
+
+val <T> ComboBox<T>.selectedItem: T
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
