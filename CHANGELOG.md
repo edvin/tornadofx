@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.3.0] - 2016-02-19
 
 ### Added
 - Delegate for JavaFX Properties [TORNADOFX-3](https://github.com/edvin/tornadofx/issues/3)

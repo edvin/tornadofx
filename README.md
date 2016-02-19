@@ -27,7 +27,7 @@ Lightweight JavaFX Framework for Kotlin
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>fx</artifactId>
-	<version>1.2.3</version>
+	<version>1.3.0</version>
 </dependency>
 ```
 
