@@ -3,6 +3,8 @@
 
 Lightweight JavaFX Framework for Kotlin
 
+![Travis CI](https://travis-ci.org/edvin/tornadofx.svg?branch=master "Build status")
+
 ## Features
 
 - Dependency injection
