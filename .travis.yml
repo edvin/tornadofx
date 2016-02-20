@@ -1,0 +1,24 @@
+# use java support.
+language: java
+jdk:
+  - oraclejdk8
+
+# run in container.
+sudo: false
+
+# install the newest jdk8.
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+# use operating systems.
+os:
+  - linux
+
+# skip install stage.
+install: true
+
+# run maven build.
+script:
+  - mvn test
