@@ -1,10 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Builder for Tab now require the content pane as input parameter to avoid confusion (https://github.com/edvin/tornadofx/issues/8)
+
 ## [1.3.0] - 2016-02-19
 
 ### Added
-- Delegate for JavaFX Properties [TORNADOFX-3](https://github.com/edvin/tornadofx/issues/3)
+- Delegates for JavaFX Properties [(#3)](https://github.com/edvin/tornadofx/issues/3)
 
 ### Changed
 - Changed Maven coordinates to `no.tornado:tornadofx`

@@ -17,15 +17,12 @@ fun Pane.titledPane(title: String, node: Node): TitledPane {
 
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
 
-fun TabPane.tab(text: String? = null, content: Node? = null, op: (Tab.() -> Unit)? = null): Tab {
-    val tab = Tab()
-    if (text != null) tab.text = text
-    if (content != null) tab.content = content
+fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null): Tab {
+    val tab = Tab(text, content)
     tabs.add(tab)
-    if (op != null) op(tab)
+    if (op != null) op(content)
     return tab
 }
-
 
 fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
     userData = if (userData is Int) userData as Int + 1 else 1
