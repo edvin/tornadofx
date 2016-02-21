@@ -271,7 +271,7 @@ class GridPaneConstraint(
             field = value
         }
 
-    fun columnRowIndex(columIndex: Int, rowIndex: Int) {
+    fun columnRowIndex(columnIndex: Int, rowIndex: Int) {
         this.columnIndex = columnIndex
         this.rowIndex = rowIndex
     }

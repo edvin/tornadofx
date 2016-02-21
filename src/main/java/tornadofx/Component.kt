@@ -131,8 +131,6 @@ abstract class Fragment : UIComponent() {
 
                     show()
                 }
-
-                Platform.runLater { root.requestFocus() }
             }
         }
     }

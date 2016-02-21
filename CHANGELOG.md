@@ -3,13 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
+
+
 ### Changed
 - Builder for Tab now require the content pane as input parameter to avoid confusion (https://github.com/edvin/tornadofx/issues/8)
+- UIComponent#openModal() no longer requests focus for root component - caller can decide instead
 
 ## [1.3.0] - 2016-02-19
 
 ### Added
-- Delegates for JavaFX Properties [(#3)](https://github.com/edvin/tornadofx/issues/3)
+- Delegates for JavaFX Properties (https://github.com/edvin/tornadofx/issues/3)
 
 ### Changed
 - Changed Maven coordinates to `no.tornado:tornadofx`
