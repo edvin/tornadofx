@@ -3,6 +3,9 @@ package tornadofx
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
+import javafx.geometry.HPos
+import javafx.geometry.Insets
+import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
@@ -10,7 +13,9 @@ import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
 import javafx.stage.Stage
 import javafx.util.Callback
 import kotlin.reflect.KClass
@@ -228,4 +233,63 @@ fun EventTarget.isInsideTableRow(): Boolean {
         return this.parent.isInsideTableRow()
 
     return false
+}
+
+
+/**
+ * Access GridPane constraints to manipulate and apply on this control
+ */
+fun <T: Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
+    val gpc = GridPaneConstraint()
+    gpc.op()
+    return gpc.applyToNode(this)
+}
+
+class GridPaneConstraint(
+        var columnIndex: Int? = null,
+        var rowIndex: Int? = null,
+        var hGrow: Priority? = null,
+        var vGrow: Priority? = null,
+        var margin: Insets? = null,
+        var fillHeight: Boolean? = null,
+        var fillWidth: Boolean? = null,
+        var hAlignment: HPos? = null,
+        var vAlignment: VPos? = null
+)
+{
+    var vhGrow: Priority? = null
+        set(value) {
+            vGrow = value
+            hGrow = value
+            field = value
+        }
+
+    var fillHeightWidth: Boolean? = null
+        set(value) {
+            fillHeight = value
+            fillWidth = value
+            field = value
+        }
+
+    fun columnRowIndex(columIndex: Int, rowIndex: Int) {
+        this.columnIndex = columnIndex
+        this.rowIndex = rowIndex
+    }
+    fun fillHeightWidth(fill: Boolean) {
+        fillHeight = fill
+        fillWidth = fill
+    }
+
+    fun <T: Node> applyToNode(node: T): T {
+        columnIndex?.let { GridPane.setColumnIndex(node,it) }
+        rowIndex?.let { GridPane.setRowIndex(node,it) }
+        hGrow?.let { GridPane.setHgrow(node,it) }
+        vGrow?.let { GridPane.setVgrow(node,it) }
+        margin?.let { GridPane.setMargin(node,it) }
+        fillHeight?.let { GridPane.setFillHeight(node,it) }
+        fillWidth?.let { GridPane.setFillWidth(node,it) }
+        hAlignment?.let { GridPane.setHalignment(node,it) }
+        vAlignment?.let { GridPane.setValignment(node,it) }
+        return node
+    }
 }
