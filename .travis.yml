@@ -3,18 +3,23 @@ language: java
 jdk:
   - oraclejdk8
 
-# run in container.
-sudo: false
-
-# install the newest jdk8.
+# install the newest java.
 addons:
   apt:
     packages:
       - oracle-java8-installer
 
-# use operating systems.
+# run in container.
+sudo: false
+
+# use linux as operating system.
 os:
   - linux
+
+# configure xvfb screen.
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
 
 # skip install stage.
 install: true
@@ -22,3 +27,4 @@ install: true
 # run maven build.
 script:
   - mvn test
+
