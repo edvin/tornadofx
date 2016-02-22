@@ -52,6 +52,13 @@ fun Pane.replaceChildren(vararg node: Node) {
     children.addAll(node)
 }
 
+fun ToolBar.children(op: Pane.() -> Unit): ToolBar {
+    val fake = Pane()
+    op(fake)
+    items.addAll(fake.children)
+    return this
+}
+
 operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
     items.add(uiComponent.root)
 }
