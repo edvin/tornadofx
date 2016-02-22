@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
-
+- CheckBox.selectedItem extension value
 
 ### Changed
 - Builder for Tab now require the content pane as input parameter to avoid confusion (https://github.com/edvin/tornadofx/issues/8)
