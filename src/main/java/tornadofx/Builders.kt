@@ -137,9 +137,10 @@ private fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T 
     return node
 }
 
-inline fun <S> Node.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
+inline fun <S> Pane.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
     val tableview = FXTableView<S>()
     op(tableview)
+    children.add(tableview)
     return tableview
 }
 
