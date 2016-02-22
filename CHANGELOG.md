@@ -4,10 +4,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
-- Node.vboxConstraints extension function
-- Node.hboxConstraints extension function
-- TableView builder (https://github.com/edvin/tornadofx/issues/11)
+- `Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
+- `Node.vboxConstraints` extension function
+- `Node.hboxConstraints` extension function
+- `TableView` builder (https://github.com/edvin/tornadofx/issues/11)
+- Async loading of items for datadriven components (https://github.com/edvin/tornadofx/issues/14)
+- `task`/`ui` to run async jobs outside of `Component`
 
 ### Changed
 - Builder for Tab now require the content pane as input parameter to avoid confusion (https://github.com/edvin/tornadofx/issues/8)

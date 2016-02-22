@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.concurrent.Task
 import javafx.fxml.FXMLLoader
@@ -48,21 +47,8 @@ abstract class Component {
 
     val primaryStage: Stage get() = FX.primaryStage
 
-    fun <T> background(func: () -> T) = object : Task<T>() {
-        override fun call(): T {
-            return func()
-        }
-    }.apply {
-        setOnFailed({ Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception) })
-        Thread(this).start()
-    }
-
-    infix fun <T> Task<T>.ui(func: (T) -> Unit): Task<T> {
-        Platform.runLater {
-            setOnSucceeded { func(value) }
-        }
-        return this
-    }
+    fun <T> background(func: () -> T) = task(func)
+    infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
 
 abstract class Controller : Component()
