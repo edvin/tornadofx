@@ -1,12 +1,14 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
+import javafx.util.Callback
 import javafx.util.StringConverter
 import java.time.LocalDate
 
@@ -52,6 +54,7 @@ fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = 
 fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
     textProperty().bindBidirectional(property)
 }
+
 fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
     textProperty().bindBidirectional(property, converter)
 }
@@ -65,6 +68,7 @@ fun Pane.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = op
 fun Pane.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
     textProperty().bindBidirectional(property)
 }
+
 fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
     textProperty().bindBidirectional(property, converter)
 }
@@ -81,6 +85,11 @@ fun Pane.progressBar(property: Property<Double>, op: (ProgressBar.() -> Unit)? =
 }
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
+fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null) {
+    val button = Button(text)
+    items.add(button)
+    op?.invoke(button)
+}
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
 fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label(op = op).apply {
@@ -126,4 +135,19 @@ private fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T 
     pane.children.add(node)
     op?.invoke(node)
     return node
+}
+
+inline fun <S> Node.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
+    val tableview = FXTableView<S>()
+    op(tableview)
+    return tableview
+}
+
+class FXTableView<S> : TableView<S>() {
+    fun <T> column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
+        val column = TableColumn<S, T>(title)
+        column.cellValueFactory = Callback { valueProvider(it) }
+        columns.add(column)
+        return column
+    }
 }
