@@ -176,13 +176,13 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
 }
 
 fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { items = it }
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> ListView<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { items = it }
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> ComboBox<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { items = it }
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     selectionModel.selectedItemProperty().addListener { obs, old, new ->
