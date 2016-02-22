@@ -13,9 +13,7 @@ import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import kotlin.reflect.KClass
@@ -290,6 +288,42 @@ class GridPaneConstraint(
         fillWidth?.let { GridPane.setFillWidth(node,it) }
         hAlignment?.let { GridPane.setHalignment(node,it) }
         vAlignment?.let { GridPane.setValignment(node,it) }
+        return node
+    }
+}
+
+fun <T: Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
+    val c = VBoxConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class VBoxConstraint(
+        var margin: Insets? = null,
+        var vGrow: Priority? = null
+)
+{
+    fun <T: Node> applyToNode(node: T): T {
+        margin?.let { VBox.setMargin(node,it) }
+        vGrow?.let { VBox.setVgrow(node,it) }
+        return node
+    }
+}
+
+fun <T: Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
+    val c = HBoxConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class HBoxConstraint(
+        var margin: Insets? = null,
+        var hGrow: Priority? = null
+        )
+{
+    fun <T: Node> applyToNode(node: T): T {
+        margin?.let { HBox.setMargin(node,it) }
+        hGrow?.let { HBox.setHgrow(node,it) }
         return node
     }
 }

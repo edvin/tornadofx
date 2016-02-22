@@ -5,11 +5,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
-
+- Node.vboxConstraints extension function
+- Node.hboxConstraints extension function
+- TableView builder (https://github.com/edvin/tornadofx/issues/11)
 
 ### Changed
 - Builder for Tab now require the content pane as input parameter to avoid confusion (https://github.com/edvin/tornadofx/issues/8)
 - UIComponent#openModal() no longer requests focus for root component - caller can decide instead
+- Property delegate not produces non-nullable property types
 
 ## [1.3.0] - 2016-02-19
 
