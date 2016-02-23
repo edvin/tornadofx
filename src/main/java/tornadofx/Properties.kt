@@ -26,6 +26,17 @@ fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
     val field = this.javaClass.getDeclaredField("${prop.name}\$delegate")
     field.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
     val delegate = field.get(this) as PropertyDelegate<T>
     return delegate.fxProperty as ObjectProperty<T>
+}
+
+/**
+ * Convert an owner instance and a corresponding property reference into an observable
+ */
+fun <S, T> observable(owner: S, prop: KMutableProperty1<S, T>): ObjectProperty<T> {
+    return object : SimpleObjectProperty<T>(owner, prop.name) {
+        override fun get() = prop.get(owner)
+        override fun set(v: T) = prop.set(owner, v)
+    }
 }

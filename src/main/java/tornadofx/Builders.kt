@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -11,6 +12,8 @@ import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
 import java.time.LocalDate
+import kotlin.reflect.KFunction
+import kotlin.reflect.KMutableProperty1
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
@@ -145,9 +148,34 @@ inline fun <S> Pane.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
 }
 
 class FXTableView<S> : TableView<S>() {
+    /**
+     * Create a column with a value factory that extracts the value from the given callback.
+     */
     fun <T> column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
         val column = TableColumn<S, T>(title)
         column.cellValueFactory = Callback { valueProvider(it) }
+        columns.add(column)
+        return column
+    }
+
+    /**
+     * Create a column with a value factory that extracts the value from the given property and
+     * converts the property to an observable value.
+     */
+    fun <T> column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+        val column = TableColumn<S, T>(title)
+        column.cellValueFactory = Callback { observable(it.value, prop) }
+        columns.add(column)
+        return column
+    }
+
+    /**
+     * Create a column with a value factory that extracts the observable value from the given function reference.
+     * This method requires that you have kotlin-reflect on your classpath.
+     */
+    inline fun <reified T> column(title: String, observableFn: KFunction<ObjectProperty<T>>): TableColumn<S, T> {
+        val column = TableColumn<S, T>(title)
+        column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
         columns.add(column)
         return column
     }
