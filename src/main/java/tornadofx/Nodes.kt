@@ -2,6 +2,7 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.HPos
 import javafx.geometry.Insets
@@ -13,9 +14,7 @@ import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.Pane
-import javafx.scene.layout.Priority
+import javafx.scene.layout.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import kotlin.reflect.KClass
@@ -52,6 +51,13 @@ fun Pane.replaceChildren(vararg uiComponents: UIComponent) =
 fun Pane.replaceChildren(vararg node: Node) {
     children.clear()
     children.addAll(node)
+}
+
+fun ToolBar.children(op: Pane.() -> Unit): ToolBar {
+    val fake = Pane()
+    op(fake)
+    items.addAll(fake.children)
+    return this
 }
 
 operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
@@ -97,7 +103,7 @@ val <T> ComboBox<T>.selectedItem: T
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
-    selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
+        selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     minWidth = width
@@ -169,6 +175,15 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
+fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
+
+fun <T> ListView<T>.asyncItems(func: () -> ObservableList<T>) =
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
+
+fun <T> ComboBox<T>.asyncItems(func: () -> ObservableList<T>) =
+    task { func() } success { if (items == null) items = it else items.setAll(it) }
+
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     selectionModel.selectedItemProperty().addListener { obs, old, new ->
         if (new != null && new.value != null)
@@ -239,7 +254,7 @@ fun EventTarget.isInsideTableRow(): Boolean {
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
-fun <T: Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
+fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
     val gpc = GridPaneConstraint()
     gpc.op()
     return gpc.applyToNode(this)
@@ -255,8 +270,7 @@ class GridPaneConstraint(
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
         var vAlignment: VPos? = null
-)
-{
+) {
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -275,21 +289,56 @@ class GridPaneConstraint(
         this.columnIndex = columnIndex
         this.rowIndex = rowIndex
     }
+
     fun fillHeightWidth(fill: Boolean) {
         fillHeight = fill
         fillWidth = fill
     }
 
-    fun <T: Node> applyToNode(node: T): T {
-        columnIndex?.let { GridPane.setColumnIndex(node,it) }
-        rowIndex?.let { GridPane.setRowIndex(node,it) }
-        hGrow?.let { GridPane.setHgrow(node,it) }
-        vGrow?.let { GridPane.setVgrow(node,it) }
-        margin?.let { GridPane.setMargin(node,it) }
-        fillHeight?.let { GridPane.setFillHeight(node,it) }
-        fillWidth?.let { GridPane.setFillWidth(node,it) }
-        hAlignment?.let { GridPane.setHalignment(node,it) }
-        vAlignment?.let { GridPane.setValignment(node,it) }
+    fun <T : Node> applyToNode(node: T): T {
+        columnIndex?.let { GridPane.setColumnIndex(node, it) }
+        rowIndex?.let { GridPane.setRowIndex(node, it) }
+        hGrow?.let { GridPane.setHgrow(node, it) }
+        vGrow?.let { GridPane.setVgrow(node, it) }
+        margin?.let { GridPane.setMargin(node, it) }
+        fillHeight?.let { GridPane.setFillHeight(node, it) }
+        fillWidth?.let { GridPane.setFillWidth(node, it) }
+        hAlignment?.let { GridPane.setHalignment(node, it) }
+        vAlignment?.let { GridPane.setValignment(node, it) }
+        return node
+    }
+}
+
+fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
+    val c = VBoxConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class VBoxConstraint(
+        var margin: Insets? = null,
+        var vGrow: Priority? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        margin?.let { VBox.setMargin(node, it) }
+        vGrow?.let { VBox.setVgrow(node, it) }
+        return node
+    }
+}
+
+fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
+    val c = HBoxConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class HBoxConstraint(
+        var margin: Insets? = null,
+        var hGrow: Priority? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        margin?.let { HBox.setMargin(node, it) }
+        hGrow?.let { HBox.setHgrow(node, it) }
         return node
     }
 }
