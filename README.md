@@ -6,10 +6,6 @@ Lightweight JavaFX Framework for Kotlin
 [![Travis CI](https://travis-ci.org/edvin/tornadofx.svg)](https://travis-ci.org/edvin/tornadofx)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
 
-
-![Travis CI](https://travis-ci.org/edvin/tornadofx.svg?branch=master "Build status")
-![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg "Maven Central")
-
 ## Features
 
 - Dependency injection
