@@ -44,6 +44,7 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
     addRow(userData as Int, *fake.children.toTypedArray())
 }
 
+
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text(op = op).apply {
     textProperty().bindBidirectional(property)
@@ -131,6 +132,22 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
+fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this,BorderPane(),op)
+
+//unsure what to do here
+fun BorderPane.top(title: String? = null, op: Pane.() -> Unit) {
+
+}
+
+fun BorderPane.bottom(title: String? = null, op: Pane.() -> Unit) {
+
+}
+fun BorderPane.left(title: String? = null, op: Pane.() -> Unit) {
+
+}
+fun BorderPane.right(title: String? = null, op: Pane.() -> Unit) {
+
+}
 
 /**
  * Add the given node to the pane, invoke the node operation and return the node

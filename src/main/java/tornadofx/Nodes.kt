@@ -6,6 +6,7 @@ import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.HPos
 import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
@@ -250,6 +251,25 @@ fun EventTarget.isInsideTableRow(): Boolean {
     return false
 }
 
+/**
+ * Access BorderPane constraints to manipulate and apply on this control
+ */
+fun <T : Node> T.borderpaneConstraints(op:(BorderPaneConstraint.() -> Unit)): T {
+    val bpc = BorderPaneConstraint()
+    bpc.op()
+    return bpc.applyToNode(this)
+}
+
+class BorderPaneConstraint(
+    var margin: Insets? = null,
+    var alignment: Pos? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        margin?.let { BorderPane.setMargin(node,it) }
+        alignment?.let { BorderPane.setAlignment(node,it) }
+        return node
+    }
+}
 
 /**
  * Access GridPane constraints to manipulate and apply on this control
