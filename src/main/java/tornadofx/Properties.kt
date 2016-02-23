@@ -2,10 +2,12 @@ package tornadofx
 
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
+import javafx.beans.property.ReadOnlyProperty
 import javafx.beans.property.SimpleObjectProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
@@ -38,5 +40,14 @@ fun <S, T> observable(owner: S, prop: KMutableProperty1<S, T>): ObjectProperty<T
     return object : SimpleObjectProperty<T>(owner, prop.name) {
         override fun get() = prop.get(owner)
         override fun set(v: T) = prop.set(owner, v)
+    }
+}
+
+/**
+ * Convert an owner instance and a corresponding property reference into an observable
+ */
+fun <S, T> observable(owner: S, prop: KProperty1<S, T>): ReadOnlyProperty<T> {
+    return object : SimpleObjectProperty<T>(owner, prop.name) {
+        override fun get() = prop.get(owner)
     }
 }

@@ -14,6 +14,7 @@ import javafx.util.StringConverter
 import java.time.LocalDate
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty1
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
@@ -159,10 +160,21 @@ class FXTableView<S> : TableView<S>() {
     }
 
     /**
+     * Create a column with a value factory that extracts the value from the given mutable
+     * property and converts the property to an observable value.
+     */
+    fun <T> column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+        val column = TableColumn<S, T>(title)
+        column.cellValueFactory = Callback { observable(it.value, prop) }
+        columns.add(column)
+        return column
+    }
+
+    /**
      * Create a column with a value factory that extracts the value from the given property and
      * converts the property to an observable value.
      */
-    fun <T> column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+    fun <T> column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
         val column = TableColumn<S, T>(title)
         column.cellValueFactory = Callback { observable(it.value, prop) }
         columns.add(column)
