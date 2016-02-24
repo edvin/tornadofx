@@ -134,19 +134,25 @@ fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() ->
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this,BorderPane(),op)
 
-//unsure what to do here
-fun BorderPane.top(title: String? = null, op: Pane.() -> Unit) {
-
+fun BorderPane.top(op: Pane.() -> Unit) {
+    val pane: Pane = Pane()
+    op(pane)
+    this.top = pane.children[0]
 }
-
-fun BorderPane.bottom(title: String? = null, op: Pane.() -> Unit) {
-
+fun BorderPane.bottom(op: Pane.() -> Unit) {
+    val pane: Pane = Pane()
+    op(pane)
+    this.bottom = pane.children[0]
 }
-fun BorderPane.left(title: String? = null, op: Pane.() -> Unit) {
-
+fun BorderPane.left(op: Pane.() -> Unit) {
+    val pane: Pane = Pane()
+    op(pane)
+    this.left = pane.children[0]
 }
-fun BorderPane.right(title: String? = null, op: Pane.() -> Unit) {
-
+fun BorderPane.right(op: Pane.() -> Unit) {
+    val pane: Pane = Pane()
+    op(pane)
+    this.right = pane.children[0]
 }
 
 /**
