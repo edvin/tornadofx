@@ -137,22 +137,42 @@ fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this,BorderPane(
 fun BorderPane.top(op: Pane.() -> Unit) {
     val pane: Pane = Pane()
     op(pane)
-    this.top = pane.children[0]
+    val childCount = pane.children.size
+
+    when(childCount) {
+        1 -> top = pane.children[0]
+        in 1..1000 -> top = HBox().apply{ this.children.setAll(*pane.children.toTypedArray()) }
+    }
 }
 fun BorderPane.bottom(op: Pane.() -> Unit) {
     val pane: Pane = Pane()
     op(pane)
-    this.bottom = pane.children[0]
+    val childCount = pane.children.size
+
+    when(childCount) {
+        1 -> bottom = pane.children[0]
+        in 1..1000 -> bottom = HBox().apply{ this.children.setAll(*pane.children.toTypedArray()) }
+    }
 }
 fun BorderPane.left(op: Pane.() -> Unit) {
     val pane: Pane = Pane()
     op(pane)
-    this.left = pane.children[0]
+    val childCount = pane.children.size
+
+    when(childCount) {
+        1 -> left = pane.children[0]
+        in 1..1000 -> left = VBox().apply{ this.children.setAll(*pane.children.toTypedArray()) }
+    }
 }
 fun BorderPane.right(op: Pane.() -> Unit) {
     val pane: Pane = Pane()
     op(pane)
-    this.right = pane.children[0]
+    val childCount = pane.children.size
+
+    when(childCount) {
+        1 -> right = pane.children[0]
+        in 1..1000 -> right = VBox().apply{ this.children.setAll(*pane.children.toTypedArray()) }
+    }
 }
 
 /**
