@@ -6,8 +6,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `singleAssign()` property delegates (https://github.com/edvin/tornadofx/issues/17)
 - Tests for `singleAssign()`
-
-### Added
 - BorderPane builder (https://github.com/edvin/tornadofx/pull/16)
 - `Node.gridpaneConstraints` extension function (https://github.com/edvin/tornadofx/issues/12)
 - `Node.vboxConstraints` extension function

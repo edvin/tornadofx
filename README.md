@@ -1,5 +1,5 @@
-![Tornado FX Logo](graphics/tornado-fx-logo.png?raw=true "Tornado FX")
-# Tornado FX
+![TornadoFX Logo](graphics/tornado-fx-logo.png?raw=true "TornadoFX")
+# TornadoFX
 
 Lightweight JavaFX Framework for Kotlin
 
@@ -24,7 +24,7 @@ Lightweight JavaFX Framework for Kotlin
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
 - [Example Application](https://github.com/edvin/tornadofx-samples) 
 
-### Add Tornado FX to your project
+### Add TornadoFX to your project
 
 ```xml
 <dependency>
