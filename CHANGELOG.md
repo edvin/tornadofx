@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- `Node.gridpaneConstraints extension function (https://github.com/edvin/tornadofx/issues/12)
+- BorderPane builder (https://github.com/edvin/tornadofx/pull/16)
+- `Node.gridpaneConstraints` extension function (https://github.com/edvin/tornadofx/issues/12)
 - `Node.vboxConstraints` extension function
 - `Node.hboxConstraints` extension function
 - `TableView` builder (https://github.com/edvin/tornadofx/issues/11)
