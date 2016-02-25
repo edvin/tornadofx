@@ -3,7 +3,8 @@
 
 Lightweight JavaFX Framework for Kotlin
 
-![Travis CI](https://travis-ci.org/edvin/tornadofx.svg?branch=master "Build status")
+[![Travis CI](https://travis-ci.org/edvin/tornadofx.svg)](https://travis-ci.org/edvin/tornadofx)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
 
 ## Features
 
@@ -28,7 +29,7 @@ Lightweight JavaFX Framework for Kotlin
 ```xml
 <dependency>
 	<groupId>no.tornado</groupId>
-	<artifactId>fx</artifactId>
+	<artifactId>tornadofx</artifactId>
 	<version>1.3.0</version>
 </dependency>
 ```
