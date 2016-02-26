@@ -1,6 +1,8 @@
 package tornadofx
 
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -21,6 +23,9 @@ abstract class Component {
     val config: Properties
         get() = _config.value
 
+    val properties: ObservableMap<Any, Any>
+        get() = _properties.value
+
     fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
@@ -32,6 +37,10 @@ abstract class Component {
             if (Files.exists(configPath.value))
                 Files.newInputStream(configPath.value).use { load(it) }
         }
+    }
+
+    private val _properties = lazy {
+        FXCollections.observableHashMap<Any, Any>()
     }
 
     private val configPath = lazy {
