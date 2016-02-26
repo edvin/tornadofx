@@ -154,7 +154,11 @@ fun BorderPane.right(op: Pane.() -> Unit) {
     op(vbox)
     right = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
-
+fun BorderPane.center(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    center = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
