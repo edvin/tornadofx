@@ -30,8 +30,10 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
+val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
+
 fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
-    userData = if (userData is Int) userData as Int + 1 else 1
+    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()
@@ -41,7 +43,7 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
     op(fake)
 
     // Create a new row in the GridPane and add the children added to the fake pane
-    addRow(userData as Int, *fake.children.toTypedArray())
+    addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
 }
 
 
@@ -154,7 +156,11 @@ fun BorderPane.right(op: Pane.() -> Unit) {
     op(vbox)
     right = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
-
+fun BorderPane.center(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    center = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
