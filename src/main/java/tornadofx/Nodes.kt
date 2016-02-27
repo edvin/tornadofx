@@ -87,6 +87,31 @@ operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)
 }
 
+var Region.useMaxWidth: Boolean
+    get() = maxWidth == Double.MAX_VALUE
+    set(value) = if (value) maxWidth = Double.MAX_VALUE else Unit
+
+var Region.useMaxHeight: Boolean
+    get() = maxHeight == Double.MAX_VALUE
+    set(value) = if (value) maxHeight = Double.MAX_VALUE else Unit
+
+var Region.useMaxSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) { useMaxWidth = true; useMaxHeight = true } else Unit
+
+var Region.usePrefWidth: Boolean
+    get() = width == prefWidth
+    set(value) = if (value) setMinWidth(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefHeight: Boolean
+    get() = height == prefHeight
+    set(value) = if (value) setMinHeight(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE)else Unit
+
+
 val <T> TableView<T>.selectedItem: T
     get() = this.selectionModel.selectedItem
 
