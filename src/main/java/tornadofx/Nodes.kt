@@ -176,6 +176,8 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
+val <S,T> TableCell<S,T>.rowItem:S get() = tableView.items[index]
+
 fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
     task { func() } success { if (items == null) items = it else items.setAll(it) }
 
