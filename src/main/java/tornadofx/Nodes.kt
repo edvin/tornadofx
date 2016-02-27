@@ -289,7 +289,9 @@ class GridPaneConstraint(
         var fillHeight: Boolean? = null,
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
-        var vAlignment: VPos? = null
+        var vAlignment: VPos? = null,
+        var columnSpan: Int? = null,
+        var rowSpan: Int? = null
 ) {
     var vhGrow: Priority? = null
         set(value) {
@@ -325,6 +327,8 @@ class GridPaneConstraint(
         fillWidth?.let { GridPane.setFillWidth(node, it) }
         hAlignment?.let { GridPane.setHalignment(node, it) }
         vAlignment?.let { GridPane.setValignment(node, it) }
+        columnSpan?.let { GridPane.setColumnSpan(node, it) }
+        rowSpan?.let { GridPane.setRowSpan(node,it) }
         return node
     }
 }
