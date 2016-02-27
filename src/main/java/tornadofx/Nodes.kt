@@ -87,6 +87,31 @@ operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)
 }
 
+var Region.useMaxWidth: Boolean
+    get() = maxWidth == Double.MAX_VALUE
+    set(value) = if (value) maxWidth = Double.MAX_VALUE else Unit
+
+var Region.useMaxHeight: Boolean
+    get() = maxHeight == Double.MAX_VALUE
+    set(value) = if (value) maxHeight = Double.MAX_VALUE else Unit
+
+var Region.useMaxSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) { useMaxWidth = true; useMaxHeight = true } else Unit
+
+var Region.usePrefWidth: Boolean
+    get() = width == prefWidth
+    set(value) = if (value) setMinWidth(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefHeight: Boolean
+    get() = height == prefHeight
+    set(value) = if (value) setMinHeight(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE)else Unit
+
+
 val <T> TableView<T>.selectedItem: T
     get() = this.selectionModel.selectedItem
 
@@ -292,9 +317,17 @@ class GridPaneConstraint(
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
         var vAlignment: VPos? = null,
+        var useMaxWidth: Boolean? = null,
+        var useMaxHeight: Boolean? = null,
         var columnSpan: Int? = null,
         var rowSpan: Int? = null
 ) {
+    var useMaxHeightWidth: Boolean? = null
+        set(value) {
+            useMaxWidth = value
+            useMaxHeight = value
+            field = value
+        }
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -343,11 +376,21 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
 
 class VBoxConstraint(
         var margin: Insets? = null,
-        var vGrow: Priority? = null
+        var vGrow: Priority? = null,
+        var useMaxWidth: Boolean? = null,
+        var useMaxHeight: Boolean? = null
 ) {
+    var useMaxHeightWidth: Boolean? = null
+        set(value) {
+            useMaxWidth = value
+            useMaxHeight = value
+            field = value
+        }
     fun <T : Node> applyToNode(node: T): T {
         margin?.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
+        useMaxWidth?.let { if (node is Region && it) node.maxWidth = Double.MAX_VALUE }
+        useMaxHeight?.let { if (node is Region && it) node.maxHeight = Double.MAX_VALUE }
         return node
     }
 }
@@ -360,11 +403,21 @@ fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
 
 class HBoxConstraint(
         var margin: Insets? = null,
-        var hGrow: Priority? = null
+        var hGrow: Priority? = null,
+        var useMaxWidth: Boolean? = null,
+        var useMaxHeight: Boolean? = null
 ) {
+    var useMaxHeightWidth: Boolean? = null
+        set(value) {
+            useMaxWidth = value
+            useMaxHeight = value
+            field = value
+        }
     fun <T : Node> applyToNode(node: T): T {
         margin?.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
+        useMaxWidth?.let { if (node is Region && it) node.maxWidth = Double.MAX_VALUE }
+        useMaxHeight?.let { if (node is Region && it) node.maxHeight = Double.MAX_VALUE }
         return node
     }
 }
