@@ -320,12 +320,6 @@ class GridPaneConstraint(
         var columnSpan: Int? = null,
         var rowSpan: Int? = null
 ) {
-    var useMaxHeightWidth: Boolean? = null
-        set(value) {
-            useMaxWidth = value
-            useMaxHeight = value
-            field = value
-        }
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
