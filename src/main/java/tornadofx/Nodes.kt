@@ -316,7 +316,9 @@ class GridPaneConstraint(
         var hAlignment: HPos? = null,
         var vAlignment: VPos? = null,
         var useMaxWidth: Boolean? = null,
-        var useMaxHeight: Boolean? = null
+        var useMaxHeight: Boolean? = null,
+        var columnSpan: Int? = null,
+        var rowSpan: Int? = null
 ) {
     var useMaxHeightWidth: Boolean? = null
         set(value) {
@@ -358,8 +360,8 @@ class GridPaneConstraint(
         fillWidth?.let { GridPane.setFillWidth(node, it) }
         hAlignment?.let { GridPane.setHalignment(node, it) }
         vAlignment?.let { GridPane.setValignment(node, it) }
-        useMaxWidth?.let { if (node is Region && it) node.maxWidth = Double.MAX_VALUE }
-        useMaxHeight?.let { if (node is Region && it) node.maxHeight = Double.MAX_VALUE }
+        columnSpan?.let { GridPane.setColumnSpan(node, it) }
+        rowSpan?.let { GridPane.setRowSpan(node,it) }
         return node
     }
 }
