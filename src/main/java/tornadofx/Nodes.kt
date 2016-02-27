@@ -317,17 +317,9 @@ class GridPaneConstraint(
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
         var vAlignment: VPos? = null,
-        var useMaxWidth: Boolean? = null,
-        var useMaxHeight: Boolean? = null,
         var columnSpan: Int? = null,
         var rowSpan: Int? = null
 ) {
-    var useMaxHeightWidth: Boolean? = null
-        set(value) {
-            useMaxWidth = value
-            useMaxHeight = value
-            field = value
-        }
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -376,21 +368,12 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
 
 class VBoxConstraint(
         var margin: Insets? = null,
-        var vGrow: Priority? = null,
-        var useMaxWidth: Boolean? = null,
-        var useMaxHeight: Boolean? = null
+        var vGrow: Priority? = null
 ) {
-    var useMaxHeightWidth: Boolean? = null
-        set(value) {
-            useMaxWidth = value
-            useMaxHeight = value
-            field = value
-        }
+
     fun <T : Node> applyToNode(node: T): T {
         margin?.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
-        useMaxWidth?.let { if (node is Region && it) node.maxWidth = Double.MAX_VALUE }
-        useMaxHeight?.let { if (node is Region && it) node.maxHeight = Double.MAX_VALUE }
         return node
     }
 }
@@ -403,21 +386,11 @@ fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
 
 class HBoxConstraint(
         var margin: Insets? = null,
-        var hGrow: Priority? = null,
-        var useMaxWidth: Boolean? = null,
-        var useMaxHeight: Boolean? = null
+        var hGrow: Priority? = null
 ) {
-    var useMaxHeightWidth: Boolean? = null
-        set(value) {
-            useMaxWidth = value
-            useMaxHeight = value
-            field = value
-        }
     fun <T : Node> applyToNode(node: T): T {
         margin?.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
-        useMaxWidth?.let { if (node is Region && it) node.maxWidth = Double.MAX_VALUE }
-        useMaxHeight?.let { if (node is Region && it) node.maxHeight = Double.MAX_VALUE }
         return node
     }
 }
