@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.3.1] - 2016-02-28
 
 ### Added
 - Arbitrary properties per `Component` (https://github.com/edvin/tornadofx/issues/23)
