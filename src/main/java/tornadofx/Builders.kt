@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -211,10 +210,22 @@ class FXTableView<S> : TableView<S>() {
     }
 
     /**
+     * Create a column with a value factory that extracts the value from the given property and
+     * converts the property to an observable value.
+     */
+    @JvmName(name = "columnForObservable")
+    fun <T> column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
+        val column = TableColumn<S, T>(title)
+        column.cellValueFactory = Callback { prop.get(it.value) }
+        columns.add(column)
+        return column
+    }
+
+    /**
      * Create a column with a value factory that extracts the observable value from the given function reference.
      * This method requires that you have kotlin-reflect on your classpath.
      */
-    inline fun <reified T> column(title: String, observableFn: KFunction<ObjectProperty<T>>): TableColumn<S, T> {
+    inline fun <reified T> column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
         val column = TableColumn<S, T>(title)
         column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
         columns.add(column)
