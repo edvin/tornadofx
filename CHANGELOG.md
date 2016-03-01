@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `TableView.column()` support for `ObservableValue` member fields
+
+### Changed
+
+- `Fragment` should not be injectable (https://github.com/edvin/tornadofx/issues/31)
+
 ## [1.3.1] - 2016-02-28
 
 ### Added

@@ -19,6 +19,8 @@ import java.util.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
+interface Injectable
+
 abstract class Component {
     val config: Properties
         get() = _config.value
@@ -50,7 +52,7 @@ abstract class Component {
         conf.resolve(javaClass.name + ".properties")
     }
 
-    inline fun <reified T : Component> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
 
@@ -60,7 +62,7 @@ abstract class Component {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
 
-abstract class Controller : Component()
+abstract class Controller : Component(), Injectable
 
 abstract class UIComponent : Component() {
     abstract val root: Parent
@@ -137,4 +139,4 @@ abstract class Fragment : UIComponent() {
 
 }
 
-abstract class View : UIComponent()
+abstract class View : UIComponent(), Injectable

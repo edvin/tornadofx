@@ -76,6 +76,7 @@ private class SynchronizedSingleAssign<T>: SingleAssign<T> {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         if (!initialized)
             throw Exception("Value has not been assigned yet!")
+        @Suppress("UNCHECKED_CAST")
         return _value as T
     }
 
@@ -84,7 +85,7 @@ private class SynchronizedSingleAssign<T>: SingleAssign<T> {
             if (initialized) {
                 throw Exception("Value has already been assigned!")
             }
-            _value = value as T
+            _value = value
             initialized = true
         }
     }
@@ -99,6 +100,7 @@ private class UnsynchronizedSingleAssign<T>: SingleAssign<T> {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         if (!initialized)
             throw Exception("Value has not been assigned yet!")
+        @Suppress("UNCHECKED_CAST")
         return _value as T
     }
 
@@ -106,7 +108,7 @@ private class UnsynchronizedSingleAssign<T>: SingleAssign<T> {
         if (initialized) {
             throw Exception("Value has already been assigned!")
         }
-        _value = value as T
+        _value = value
         initialized = true
     }
     override fun isInitialized() = initialized

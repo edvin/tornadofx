@@ -71,7 +71,7 @@ operator fun ToolBar.plusAssign(node: Node): Unit {
 
 fun ToolBar.add(node: Node) = plusAssign(node)
 
-inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
+inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
@@ -81,7 +81,7 @@ inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).
 
 fun Pane.add(node: Node) = plusAssign(node)
 
-operator fun <T : UIComponent> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
+operator fun <T : View> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
 
 operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)

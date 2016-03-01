@@ -210,10 +210,9 @@ class FXTableView<S> : TableView<S>() {
     }
 
     /**
-     * Create a column with a value factory that extracts the value from the given property and
-     * converts the property to an observable value.
+     * Create a column with a value factory that extracts the value from the given ObservableValue property
      */
-    @JvmName(name = "columnForObservable")
+    @JvmName(name = "columnForObservableProperty")
     fun <T> column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
         val column = TableColumn<S, T>(title)
         column.cellValueFactory = Callback { prop.get(it.value) }
