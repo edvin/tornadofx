@@ -227,3 +227,61 @@ class JsonBuilder {
     }
 
 }
+
+
+abstract class JsonModelAuto : JsonModel {
+    override fun updateModel(json: JsonObject) {
+        val props = this.javaClass.kotlin.memberProperties
+        props.forEach {
+            val pr = it.get(this)
+            when (pr) {
+                is BooleanProperty -> pr.value = json.bool(it.name)
+                is LongProperty -> pr.value = json.long(it.name)
+                is IntegerProperty -> pr.value = json.int(it.name)
+                is DoubleProperty -> pr.value = json.double(it.name)
+                is FloatProperty -> pr.value = json.double(it.name)?.toFloat()
+                is StringProperty -> pr.value = json.string(it.name)
+                is ObservableList<*> -> {
+                    val vv = it.javaField?.genericType as ParameterizedType
+                    val clazz = vv.actualTypeArguments[0] as Class<*>
+
+                    val Array = pr as ObservableList<Any>
+
+                    val arrayObject = json.getJsonArray(it.name)
+                    arrayObject.forEach {
+                        val New: JsonModelAuto = clazz.newInstance() as JsonModelAuto
+                        Array.add(New.apply { updateModel(it as JsonObject) })
+                    }
+                }
+            }
+        }
+    }
+
+    override fun toJSON(json: JsonBuilder) {
+        with (json) {
+            val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
+            props.forEach {
+                val pr = it.get(this@JsonModelAuto)
+                when (pr) {
+                    is BooleanProperty -> add(it.name, pr.value)
+                    is LongProperty -> add(it.name, pr.value)
+                    is IntegerProperty -> add(it.name, pr.value)
+                    is DoubleProperty -> add(it.name, pr.value)
+                    is FloatProperty -> add(it.name, pr.value.toDouble())
+                    is StringProperty -> add(it.name, pr.value)
+                    is Int -> add(it.name, pr)
+                    is Long -> add(it.name, pr)
+                    is Double -> add(it.name, pr)
+                    is Float -> add(it.name, pr.toDouble())
+                    is Boolean -> add(it.name, pr)
+                    is ObservableList<*> -> {
+                        val Array = pr as ObservableList<JsonModel>
+                        val jsonArray = Json.createArrayBuilder();
+                        Array.forEach { jsonArray.add(it.toJSON()) }
+                        add(it.name, jsonArray.build())
+                    }
+                }
+            }
+        }
+    }
+}
