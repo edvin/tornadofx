@@ -5,14 +5,19 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
+import javafx.util.converter.BooleanStringConverter
+import javafx.util.converter.DefaultStringConverter
+import javafx.util.converter.NumberStringConverter
 import java.time.LocalDate
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
@@ -215,7 +220,7 @@ class FXTableView<S> : TableView<S>() {
     @JvmName(name = "columnForObservableProperty")
     fun <T> column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
         val column = TableColumn<S, T>(title)
-        column.cellValueFactory = Callback { prop.get(it.value) }
+        column.cellValueFactory = Callback { prop.call(it.value) }
         columns.add(column)
         return column
     }
