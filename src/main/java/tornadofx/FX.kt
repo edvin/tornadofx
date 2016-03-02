@@ -1,16 +1,47 @@
 package tornadofx
 
+import javafx.beans.property.SimpleObjectProperty
+import javafx.collections.FXCollections
 import javafx.stage.Stage
 import java.util.*
+import java.util.logging.Logger
 import kotlin.reflect.KClass
 
 class FX {
     companion object {
+        val log = Logger.getLogger("FX")
+
         lateinit var primaryStage: Stage
         lateinit var application: App
-        val stylesheets = ArrayList<String>()
+        val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
+
+        private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
+            override fun invalidated() = loadMessages()
+        }
+        var locale: Locale get() = _locale.get(); set(value) = _locale.set(value)
+        fun localeProperty() = _locale
+
+        private val _messages: SimpleObjectProperty<ResourceBundle> = SimpleObjectProperty()
+        var messages: ResourceBundle get() = _messages.get(); set(value) = _messages.set(value)
+        fun messagesProperty() = _messages
+
+        /**
+         * Load global resource bundle for the current locale. Triggered when the locale changes.
+         */
+        private fun loadMessages() {
+            try {
+                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl.INSTANCE)
+            } catch (ex: Exception) {
+                log.fine({ "No global Messages found in locale $locale, using empty bundle" })
+                messages = EmptyResourceBundle.INSTANCE
+            }
+        }
+
+        init {
+            locale = Locale.getDefault()
+        }
     }
 }
 

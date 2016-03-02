@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
@@ -16,6 +17,7 @@ import javafx.stage.StageStyle
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import java.util.logging.Logger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -52,6 +54,27 @@ abstract class Component {
         conf.resolve(javaClass.name + ".properties")
     }
 
+    private val _messages: SimpleObjectProperty<ResourceBundle> = object : SimpleObjectProperty<ResourceBundle>() {
+        override fun get(): ResourceBundle? {
+            if (super.get() == null) {
+                try {
+                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl.INSTANCE)
+                    if (bundle is FXPropertyResourceBundle)
+                        bundle.inheritFromGlobal()
+                    set(bundle)
+                } catch (ex: Exception) {
+                    FX.log.fine({ "No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle" })
+                    set(FX.messages)
+                }
+            }
+            return super.get()
+        }
+    }
+
+    var messages: ResourceBundle
+        get() = _messages.get()
+        set(value) = _messages.set(value)
+
     inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
@@ -60,6 +83,10 @@ abstract class Component {
 
     fun <T> background(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
+    companion object {
+        val log = Logger.getLogger("Component")
+    }
 }
 
 abstract class Controller : Component(), Injectable
@@ -90,6 +117,7 @@ abstract class UIComponent : Component() {
                         throw IllegalArgumentException("FXML not found for $componentType")
 
                 val loader = FXMLLoader(fxml)
+                loader.resources = uiComponent.messages
                 loader.setController(uiComponent)
                 value = loader.load()
                 return value as T
