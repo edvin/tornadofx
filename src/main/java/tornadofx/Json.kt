@@ -7,6 +7,15 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
+import javafx.beans.property.*
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import java.lang.reflect.ParameterizedType
+import kotlin.properties.ObservableProperty
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.memberProperties
 
 interface JsonModel {
     /**
