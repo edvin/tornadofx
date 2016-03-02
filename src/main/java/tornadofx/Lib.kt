@@ -21,3 +21,27 @@ infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> {
     }
     return this
 }
+
+fun runFXSync(action: () -> Unit) {
+    // run synchronously on JavaFX thread
+    if (Platform.isFxApplicationThread()) {
+        action()
+        return
+    }
+
+    // queue on JavaFX thread and wait for completion
+    val doneLatch = CountDownLatch(1)
+    Platform.runLater {
+        try {
+            action()
+        } finally {
+            doneLatch.countDown()
+        }
+    }
+
+    try {
+        doneLatch.await()
+    } catch (e: InterruptedException) {
+        // ignore exception
+    }
+}
