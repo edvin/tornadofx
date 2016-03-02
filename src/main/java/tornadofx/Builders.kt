@@ -231,3 +231,12 @@ class FXTableView<S> : TableView<S>() {
         return column
     }
 }
+
+inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
+    isEditable=true
+    when (S::class) {
+        Number::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
+        String::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
+        Boolean::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(BooleanStringConverter() as StringConverter<S>));
+    }
+}
