@@ -138,33 +138,38 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
-fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this,BorderPane(),op)
+fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 fun BorderPane.top(op: Pane.() -> Unit) {
     val vbox = VBox()
     op(vbox)
     top = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
+
 fun BorderPane.bottom(op: Pane.() -> Unit) {
     val vbox = VBox()
     op(vbox)
     bottom = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
+
 fun BorderPane.left(op: Pane.() -> Unit) {
     val vbox = VBox()
     op(vbox)
     left = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
+
 fun BorderPane.right(op: Pane.() -> Unit) {
     val vbox = VBox()
     op(vbox)
     right = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
+
 fun BorderPane.center(op: Pane.() -> Unit) {
     val vbox = VBox()
     op(vbox)
     center = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
+
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
@@ -181,67 +186,76 @@ inline fun <S> Pane.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
     return tableview
 }
 
+/**
+ * Old class, left for capabilities
+ * Not recommended for future use
+ */
 class FXTableView<S> : TableView<S>() {
-    /**
-     * Create a column with a value factory that extracts the value from the given callback.
-     */
-    fun <T> column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
-        val column = TableColumn<S, T>(title)
-        column.cellValueFactory = Callback { valueProvider(it) }
-        columns.add(column)
-        return column
-    }
-
-    /**
-     * Create a column with a value factory that extracts the value from the given mutable
-     * property and converts the property to an observable value.
-     */
-    fun <T> column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
-        val column = TableColumn<S, T>(title)
-        column.cellValueFactory = Callback { observable(it.value, prop) }
-        columns.add(column)
-        return column
-    }
-
-    /**
-     * Create a column with a value factory that extracts the value from the given property and
-     * converts the property to an observable value.
-     */
-    fun <T> column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
-        val column = TableColumn<S, T>(title)
-        column.cellValueFactory = Callback { observable(it.value, prop) }
-        columns.add(column)
-        return column
-    }
-
-    /**
-     * Create a column with a value factory that extracts the value from the given ObservableValue property
-     */
-    @JvmName(name = "columnForObservableProperty")
-    fun <T> column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
-        val column = TableColumn<S, T>(title)
-        column.cellValueFactory = Callback { prop.call(it.value) }
-        columns.add(column)
-        return column
-    }
-
-    /**
-     * Create a column with a value factory that extracts the observable value from the given function reference.
-     * This method requires that you have kotlin-reflect on your classpath.
-     */
-    inline fun <reified T> column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
-        val column = TableColumn<S, T>(title)
-        column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
-        columns.add(column)
-        return column
-    }
 }
 
+/**
+ * Create a column with a value factory that extracts the value from the given callback.
+ */
+fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { valueProvider(it) }
+    columns.add(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the value from the given mutable
+ * property and converts the property to an observable value.
+ */
+fun <S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { observable(it.value, prop) }
+    columns.add(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the value from the given property and
+ * converts the property to an observable value.
+ */
+fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { observable(it.value, prop) }
+    columns.add(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the value from the given ObservableValue property
+ */
+@JvmName(name = "columnForObservableProperty")
+fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { prop.call(it.value) }
+    columns.add(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the observable value from the given function reference.
+ * This method requires that you have kotlin-reflect on your classpath.
+ */
+inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
+    columns.add(column)
+    return column
+}
+
+/**
+ * Make column editable. using match converter for column data type
+ */
+
 inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
-    isEditable=true
+    isEditable = true
     when (S::class) {
-        Number::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
-        String::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
-        Boolean::class->setCellFactory(TextFieldTableCell.forTableColumn<T, S>(BooleanStringConverter() as StringConverter<S>));
+        Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
+        String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
+        Boolean::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(BooleanStringConverter() as StringConverter<S>));
     }
 }
