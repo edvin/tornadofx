@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- @FXML delegate (https://github.com/edvin/tornadofx/issues/34)
 - i18n Support (https://github.com/edvin/tornadofx/issues/29)
 - `TableView.column()` support for `ObservableValue` member fields
 

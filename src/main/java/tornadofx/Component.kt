@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
 import javafx.concurrent.Task
+import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -93,39 +94,39 @@ abstract class Controller : Component(), Injectable
 
 abstract class UIComponent : Component() {
     abstract val root: Parent
-    private val lock = Any()
+    var fxmlLoader: FXMLLoader? = null
 
     val titleProperty = SimpleStringProperty()
     var title: String
         get() = titleProperty.get()
         set(value) = titleProperty.set(value)
 
-    inline fun <reified T : Node> fxml(): FXMLWrapper<T> {
-        val wrapper = FXMLWrapper<T>()
-        wrapper.load(this)
-        return wrapper
-    }
+    fun <T : Node> fxml(): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+        val value: T
 
-    class FXMLWrapper<T : Node> : ReadOnlyProperty<UIComponent, T> {
-        var value: T? = null
+        init {
+            val componentType = this@UIComponent.javaClass
+            val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
+                    throw IllegalArgumentException("FXML not found for $componentType")
 
-        fun load(uiComponent: UIComponent): T {
-            synchronized(uiComponent.lock) {
-                val componentType = uiComponent.javaClass
-
-                val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
-                        throw IllegalArgumentException("FXML not found for $componentType")
-
-                val loader = FXMLLoader(fxml)
-                loader.resources = uiComponent.messages
-                loader.setController(uiComponent)
-                value = loader.load()
-                return value as T
+            fxmlLoader = FXMLLoader(fxml).apply {
+                resources = this@UIComponent.messages
+                setController(this@UIComponent)
             }
+
+            value = fxmlLoader!!.load()
         }
 
-        override fun getValue(thisRef: UIComponent, property: KProperty<*>) =
-                value ?: load(thisRef)
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
+    }
+
+
+    inline fun <reified T : EventTarget> fxid() = object : ReadOnlyProperty<UIComponent, T> {
+        var value: T? = null
+
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
+            return value ?: thisRef.fxmlLoader!!.namespace[property.name] as T
+        }
     }
 
 }
