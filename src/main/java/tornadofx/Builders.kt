@@ -253,25 +253,24 @@ inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunc
  * if (S::class == kotlin.Boolean::class) return false; why?
  * Thats why makeEditable is a little more complicated
  *
- * Bugs: localtimeconverter throws exception when wrong value entered
+ * Bugs: localtimeconverter throws an exception when wrong value entered
  */
 inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
     isEditable = true
-    var found = true;
     when (S::class) {
         Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
         String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
         LocalDate::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>));
         LocalTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>));
         LocalDateTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>));
-        else -> found = false
-    }
-    if (found) return
-    when (S::class.qualifiedName) {
-        Boolean::class.qualifiedName -> {
-            this as TableColumn<T, Boolean>
-            setCellFactory(CheckBoxTableCell.forTableColumn(this))
-        };
-        else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName);
+        else -> {
+            when (S::class.qualifiedName) {
+                Boolean::class.qualifiedName -> {
+                    this as TableColumn<T, Boolean>
+                    setCellFactory(CheckBoxTableCell.forTableColumn(this))
+                };
+                else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName);
+            }
+        }
     }
 }
