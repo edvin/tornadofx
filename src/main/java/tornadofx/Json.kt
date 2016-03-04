@@ -239,7 +239,7 @@ private fun <T> KProperty<T>.generic() : Class<*> =
         (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
 
-abstract class JsonModelAuto : JsonModel {
+interface JsonModelAuto : JsonModel {
     override fun updateModel(json: JsonObject) {
         val props = this.javaClass.kotlin.memberProperties
         props.forEach {
