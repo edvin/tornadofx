@@ -5,19 +5,19 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.cell.CheckBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import javafx.util.converter.BooleanStringConverter
-import javafx.util.converter.DefaultStringConverter
-import javafx.util.converter.NumberStringConverter
+import javafx.util.converter.*
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 fun Pane.titledPane(title: String, node: Node): TitledPane {
@@ -248,14 +248,30 @@ inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunc
 }
 
 /**
- * Make column editable. using match converter for column data type
+ * Maybe kotlin's bug I do not know. Kotlin v1.0.0 GA
+ * println(S::class) prints kotlin.Boolean
+ * if (S::class == kotlin.Boolean::class) return false; why?
+ * Thats why makeEditable is a little more complicated
+ *
+ * Bugs: localtimeconverter throws exception when wrong value entered
  */
-
 inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
     isEditable = true
+    var found = true;
     when (S::class) {
         Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
         String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
-        Boolean::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(BooleanStringConverter() as StringConverter<S>));
+        LocalDate::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>));
+        LocalTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>));
+        LocalDateTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>));
+        else -> found = false
+    }
+    if (found) return
+    when (S::class.qualifiedName) {
+        Boolean::class.qualifiedName -> {
+            this as TableColumn<T, Boolean>
+            setCellFactory(CheckBoxTableCell.forTableColumn(this))
+        };
+        else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName);
     }
 }

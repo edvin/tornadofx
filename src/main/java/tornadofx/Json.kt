@@ -1,18 +1,15 @@
 package tornadofx
 
+import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
+import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
-import javafx.beans.property.*
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
-import java.lang.reflect.ParameterizedType
-import kotlin.properties.ObservableProperty
-import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.memberProperties
@@ -238,6 +235,10 @@ class JsonBuilder {
 }
 
 
+private fun <T> KProperty<T>.generic() : Class<*> =
+        (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
+
+
 abstract class JsonModelAuto : JsonModel {
     override fun updateModel(json: JsonObject) {
         val props = this.javaClass.kotlin.memberProperties
@@ -245,21 +246,23 @@ abstract class JsonModelAuto : JsonModel {
             val pr = it.get(this)
             when (pr) {
                 is BooleanProperty -> pr.value = json.bool(it.name)
+                is ObjectProperty<*> -> {
+                    when (it.generic()) {
+                        LocalDate::class.java -> (pr as ObjectProperty<LocalDate>).value = json.date(it.name)
+                    }
+                }
                 is LongProperty -> pr.value = json.long(it.name)
                 is IntegerProperty -> pr.value = json.int(it.name)
                 is DoubleProperty -> pr.value = json.double(it.name)
                 is FloatProperty -> pr.value = json.double(it.name)?.toFloat()
                 is StringProperty -> pr.value = json.string(it.name)
                 is ObservableList<*> -> {
-                    val vv = it.javaField?.genericType as ParameterizedType
-                    val clazz = vv.actualTypeArguments[0] as Class<*>
-
                     val Array = pr as ObservableList<Any>
 
                     val arrayObject = json.getJsonArray(it.name)
-                    arrayObject.forEach {
-                        val New: JsonModelAuto = clazz.newInstance() as JsonModelAuto
-                        Array.add(New.apply { updateModel(it as JsonObject) })
+                    arrayObject.forEach {jsonObj ->
+                        val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
+                        Array.add(New.apply { updateModel(jsonObj as JsonObject) })
                     }
                 }
             }
@@ -278,6 +281,11 @@ abstract class JsonModelAuto : JsonModel {
                     is DoubleProperty -> add(it.name, pr.value)
                     is FloatProperty -> add(it.name, pr.value.toDouble())
                     is StringProperty -> add(it.name, pr.value)
+                    is ObjectProperty<*> -> {
+                        when (it.generic()) {
+                            LocalDate::class.java -> add(it.name, (pr as ObjectProperty<LocalDate>).value)
+                        }
+                    }
                     is Int -> add(it.name, pr)
                     is Long -> add(it.name, pr)
                     is Double -> add(it.name, pr)
