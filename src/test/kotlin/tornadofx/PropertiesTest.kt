@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class PropertiesTest {
-
     @Test
     fun property_get_should_read_value() {
         // given:

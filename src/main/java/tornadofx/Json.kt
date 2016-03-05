@@ -1,12 +1,18 @@
 package tornadofx
 
+import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
+import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
+import kotlin.reflect.KProperty
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.memberProperties
 
 interface JsonModel {
     /**
@@ -226,4 +232,73 @@ class JsonBuilder {
         return delegate.build()
     }
 
+}
+
+
+private fun <T> KProperty<T>.generic() : Class<*> =
+        (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
+
+
+interface JsonModelAuto : JsonModel {
+    override fun updateModel(json: JsonObject) {
+        val props = this.javaClass.kotlin.memberProperties
+        props.forEach {
+            val pr = it.get(this)
+            when (pr) {
+                is BooleanProperty -> pr.value = json.bool(it.name)
+                is ObjectProperty<*> -> {
+                    when (it.generic()) {
+                        LocalDate::class.java -> (pr as ObjectProperty<LocalDate>).value = json.date(it.name)
+                    }
+                }
+                is LongProperty -> pr.value = json.long(it.name)
+                is IntegerProperty -> pr.value = json.int(it.name)
+                is DoubleProperty -> pr.value = json.double(it.name)
+                is FloatProperty -> pr.value = json.double(it.name)?.toFloat()
+                is StringProperty -> pr.value = json.string(it.name)
+                is ObservableList<*> -> {
+                    val Array = pr as ObservableList<Any>
+
+                    val arrayObject = json.getJsonArray(it.name)
+                    arrayObject.forEach {jsonObj ->
+                        val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
+                        Array.add(New.apply { updateModel(jsonObj as JsonObject) })
+                    }
+                }
+            }
+        }
+    }
+
+    override fun toJSON(json: JsonBuilder) {
+        with (json) {
+            val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
+            props.forEach {
+                val pr = it.get(this@JsonModelAuto)
+                when (pr) {
+                    is BooleanProperty -> add(it.name, pr.value)
+                    is LongProperty -> add(it.name, pr.value)
+                    is IntegerProperty -> add(it.name, pr.value)
+                    is DoubleProperty -> add(it.name, pr.value)
+                    is FloatProperty -> add(it.name, pr.value.toDouble())
+                    is StringProperty -> add(it.name, pr.value)
+                    is ObjectProperty<*> -> {
+                        when (it.generic()) {
+                            LocalDate::class.java -> add(it.name, (pr as ObjectProperty<LocalDate>).value)
+                        }
+                    }
+                    is Int -> add(it.name, pr)
+                    is Long -> add(it.name, pr)
+                    is Double -> add(it.name, pr)
+                    is Float -> add(it.name, pr.toDouble())
+                    is Boolean -> add(it.name, pr)
+                    is ObservableList<*> -> {
+                        val Array = pr as ObservableList<JsonModel>
+                        val jsonArray = Json.createArrayBuilder();
+                        Array.forEach { jsonArray.add(it.toJSON()) }
+                        add(it.name, jsonArray.build())
+                    }
+                }
+            }
+        }
+    }
 }
