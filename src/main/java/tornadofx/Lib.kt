@@ -23,7 +23,7 @@ infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> {
     return this
 }
 
-fun runFXSync(action: () -> Unit) {
+fun FX.runAndWait(action: () -> Unit) {
     // run synchronously on JavaFX thread
     if (Platform.isFxApplicationThread()) {
         action()
