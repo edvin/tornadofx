@@ -81,6 +81,12 @@
             <organization>SYSE AS</organization>
             <organizationUrl>https://www.syse.no</organizationUrl>
         </developer>
+		<developer>
+			<name>Thomas Nield</name>
+			<email>thomasnield@live.com</email>
+			<organization>Southwest Airlines</organization>
+			<organizationUrl>https://www.southwest.com/</organizationUrl>
+	</developer>
     </developers>
 
     <scm>
