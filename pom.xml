@@ -100,14 +100,6 @@
         <url>git@github.com:edvin/tornadofx.git</url>
     </scm>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jcenter</id>
-            <name>JCenter</name>
-            <url>https://jcenter.bintray.com/</url>
-        </pluginRepository>
-    </pluginRepositories>
-
     <build>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
 

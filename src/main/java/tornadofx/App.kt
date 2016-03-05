@@ -34,4 +34,5 @@ abstract class App : Application() {
         if (Thread.getDefaultUncaughtExceptionHandler() == null)
             Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
     }
+
 }

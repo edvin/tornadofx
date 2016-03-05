@@ -11,6 +11,8 @@ import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.control.cell.CheckBoxTableCell
+import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -18,6 +20,11 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.stage.Stage
 import javafx.util.Callback
+import javafx.util.StringConverter
+import javafx.util.converter.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.reflect.KClass
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
@@ -392,5 +399,27 @@ class HBoxConstraint(
         margin?.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
         return node
+    }
+}
+
+
+/**
+ * Bugs: localtimeconverter throws an exception when wrong value entered
+ */
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
+inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
+    isEditable = true
+    when (S::class) {
+        Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>))
+        String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>))
+        LocalDate::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>))
+        LocalTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>))
+        LocalDateTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>))
+        // Primitive types must be compared against the actual runtime types
+        java.lang.Boolean::class -> {
+            this as TableColumn<T, Boolean>
+            setCellFactory(CheckBoxTableCell.forTableColumn(this))
+        }
+        else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
 }

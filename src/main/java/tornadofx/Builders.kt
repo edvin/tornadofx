@@ -50,7 +50,6 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
     addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
 }
 
-
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text(op = op).apply {
     textProperty().bindBidirectional(property)
@@ -179,18 +178,11 @@ private fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T 
     return node
 }
 
-inline fun <S> Pane.tableview(op: (FXTableView<S>.() -> Unit)): FXTableView<S> {
-    val tableview = FXTableView<S>()
+inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
+    val tableview = TableView<S>()
     op(tableview)
     children.add(tableview)
     return tableview
-}
-
-/**
- * Old class, left for capabilities
- * Not recommended for future use
- */
-class FXTableView<S> : TableView<S>() {
 }
 
 /**
@@ -245,32 +237,4 @@ inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunc
     column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
     columns.add(column)
     return column
-}
-
-/**
- * Maybe kotlin's bug I do not know. Kotlin v1.0.0 GA
- * println(S::class) prints kotlin.Boolean
- * if (S::class == kotlin.Boolean::class) return false; why?
- * Thats why makeEditable is a little more complicated
- *
- * Bugs: localtimeconverter throws an exception when wrong value entered
- */
-inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
-    isEditable = true
-    when (S::class) {
-        Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>));
-        String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>));
-        LocalDate::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>));
-        LocalTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>));
-        LocalDateTime::class -> setCellFactory (TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>));
-        else -> {
-            when (S::class.qualifiedName) {
-                Boolean::class.qualifiedName -> {
-                    this as TableColumn<T, Boolean>
-                    setCellFactory(CheckBoxTableCell.forTableColumn(this))
-                };
-                else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName);
-            }
-        }
-    }
 }

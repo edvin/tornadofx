@@ -8,10 +8,14 @@ All notable changes to this project will be documented in this file.
 - @FXML delegate (https://github.com/edvin/tornadofx/issues/34)
 - i18n Support (https://github.com/edvin/tornadofx/issues/29)
 - `TableView.column()` support for `ObservableValue` member fields
+- `FX.runAndWait` sync execution helper
+- `TableColumn.makeEditable` extension
+- `JsonModelAuto` automatically converts from JavaFX Properties to JSON
 
 ### Changed
 
 - `Fragment` should not be injectable (https://github.com/edvin/tornadofx/issues/31)
+- `FXTableView` removed, `column` functions are now extensions on `TableView`
 
 ## [1.3.1] - 2016-02-28
 

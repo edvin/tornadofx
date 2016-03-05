@@ -6,8 +6,8 @@ import javafx.stage.Stage
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
-import org.testfx.api.FxToolkit
 import org.testfx.api.FxAssert.verifyThat
+import org.testfx.api.FxToolkit
 import org.testfx.matcher.base.NodeMatchers
 
 class BuildersTest {

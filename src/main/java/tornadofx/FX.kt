@@ -1,9 +1,11 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.stage.Stage
 import java.util.*
+import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
@@ -42,6 +44,31 @@ class FX {
         init {
             locale = Locale.getDefault()
         }
+
+        fun runAndWait(action: () -> Unit) {
+            // run synchronously on JavaFX thread
+            if (Platform.isFxApplicationThread()) {
+                action()
+                return
+            }
+
+            // queue on JavaFX thread and wait for completion
+            val doneLatch = CountDownLatch(1)
+            Platform.runLater {
+                try {
+                    action()
+                } finally {
+                    doneLatch.countDown()
+                }
+            }
+
+            try {
+                doneLatch.await()
+            } catch (e: InterruptedException) {
+                // ignore exception
+            }
+        }
+
     }
 }
 
