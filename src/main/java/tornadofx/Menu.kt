@@ -2,9 +2,7 @@ package tornadofx
 
 import javafx.event.ActionEvent
 import javafx.scene.Node
-import javafx.scene.control.Menu
-import javafx.scene.control.MenuBar
-import javafx.scene.control.MenuItem
+import javafx.scene.control.*
 
 
 operator fun <T: MenuItem> Menu.plusAssign(menuItem: T): Unit {
@@ -31,4 +29,21 @@ fun Menu.menuItem(name: String, graphic: Node? = null, onAction: ((ActionEvent) 
     menuItem.setOnAction { onAction.invoke(it) }
     this += menuItem
     return menuItem
+}
+
+fun Menu.separator() {
+    this += SeparatorMenuItem()
+}
+
+fun Menu.radioMenuItem(name: String? = null, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)): RadioMenuItem {
+    val radioMenuItem = RadioMenuItem(name,graphic)
+    radioMenuItem.op()
+    this += radioMenuItem
+    return radioMenuItem
+}
+fun Menu.checkMenuItem(name: String? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)): CheckMenuItem {
+    val checkMenuItem = CheckMenuItem(name,graphic)
+    checkMenuItem.op()
+    this+= checkMenuItem
+    return checkMenuItem
 }
