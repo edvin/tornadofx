@@ -103,6 +103,13 @@ fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = lab
 
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
 
+fun <T: Node> Pane.scrollpane(content: T, op: (ScrollPane.() -> Unit)? = null) {
+    val scrollPane = ScrollPane()
+    scrollPane.content = content
+    op?.apply { invoke(scrollPane) }
+    this += scrollPane
+}
+
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
