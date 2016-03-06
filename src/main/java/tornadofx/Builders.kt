@@ -107,10 +107,12 @@ fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = lab
 
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
 
-fun <T: Node> Pane.scrollpane(content: T, op: (ScrollPane.() -> Unit)? = null) {
+
+fun Pane.scrollpane(op: (Pane.() -> Unit)) {
+    val vbox = VBox()
+    op(vbox)
     val scrollPane = ScrollPane()
-    scrollPane.content = content
-    op?.apply { invoke(scrollPane) }
+    scrollPane.content = if (vbox.children.size == 1) vbox.children[0] else vbox
     this += scrollPane
 }
 
