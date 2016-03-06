@@ -235,10 +235,16 @@ class JsonBuilder {
 }
 
 
+/**
+ * Requires kotlin-reflect on classpath
+ */
 private fun <T> KProperty<T>.generic() : Class<*> =
         (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
-
+/**
+ * Requires kotlin-reflect on classpath
+ */
+@Suppress("UNCHECKED_CAST")
 interface JsonModelAuto : JsonModel {
     override fun updateModel(json: JsonObject) {
         val props = this.javaClass.kotlin.memberProperties
