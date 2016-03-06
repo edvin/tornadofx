@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 - `FX.runAndWait` sync execution helper
 - `TableColumn.makeEditable` extension
 - `JsonModelAuto` automatically converts from JavaFX Properties to JSON
+- Menu builder
+- More layout builders
 
 ### Changed
 

@@ -404,7 +404,7 @@ class HBoxConstraint(
 
 
 /**
- * Bugs: localtimeconverter throws an exception when wrong value entered
+ * Notice: localtimeconverter throws an exception when wrong value entered
  */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
 inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
@@ -415,8 +415,7 @@ inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
         LocalDate::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>))
         LocalTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>))
         LocalDateTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>))
-        // Primitive types must be compared against the actual runtime types
-        java.lang.Boolean::class -> {
+        Boolean::class.javaPrimitiveType -> {
             this as TableColumn<T, Boolean>
             setCellFactory(CheckBoxTableCell.forTableColumn(this))
         }

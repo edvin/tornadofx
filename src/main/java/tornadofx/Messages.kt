@@ -76,9 +76,9 @@ class FXResourceBundleControl private constructor(): ResourceBundle.Control() {
 }
 
 /**
- * Convenience function to support lookup via messages["key]
+ * Convenience function to support lookup via messages["key"]
  */
-fun ResourceBundle.get(key: String) = getString(key)
+operator fun ResourceBundle.get(key: String) = getString(key)
 
 class FXPropertyResourceBundle(input: InputStream): PropertyResourceBundle(input) {
     fun inheritFromGlobal() {
