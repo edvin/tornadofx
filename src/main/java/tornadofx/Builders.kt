@@ -5,17 +5,12 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
-import javafx.scene.control.cell.CheckBoxTableCell
-import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import javafx.util.converter.*
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -153,6 +148,8 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
+fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this,FlowPane(),op)
+fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this,TilePane(),op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 fun BorderPane.top(op: Pane.() -> Unit) {
