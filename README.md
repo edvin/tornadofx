@@ -14,15 +14,16 @@ Lightweight JavaFX Framework for Kotlin
 - MVC
 - Extremely light weight
 - Small, easy to grasp API
-- REST client with support for model objects
+- REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
 ## Getting started
 
-- [Changelog](CHANGELOG.md)
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
+- [Ask a Question](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Example Application](https://github.com/edvin/tornadofx-samples) 
+- [Changelog](CHANGELOG.md)
 
 ### Add TornadoFX to your project
 
@@ -30,7 +31,7 @@ Lightweight JavaFX Framework for Kotlin
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.3.0</version>
+	<version>1.3.1</version>
 </dependency>
 ```
 

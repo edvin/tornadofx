@@ -1,7 +1,11 @@
 package tornadofx
 
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.concurrent.Task
+import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -14,12 +18,18 @@ import javafx.stage.StageStyle
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import java.util.logging.Logger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
+
+interface Injectable
 
 abstract class Component {
     val config: Properties
         get() = _config.value
+
+    val properties: ObservableMap<Any, Any>
+        get() = _properties.value
 
     fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
@@ -34,6 +44,10 @@ abstract class Component {
         }
     }
 
+    private val _properties = lazy {
+        FXCollections.observableHashMap<Any, Any>()
+    }
+
     private val configPath = lazy {
         val conf = Paths.get("conf")
         if (!Files.exists(conf))
@@ -41,7 +55,28 @@ abstract class Component {
         conf.resolve(javaClass.name + ".properties")
     }
 
-    inline fun <reified T : Component> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    private val _messages: SimpleObjectProperty<ResourceBundle> = object : SimpleObjectProperty<ResourceBundle>() {
+        override fun get(): ResourceBundle? {
+            if (super.get() == null) {
+                try {
+                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl.INSTANCE)
+                    if (bundle is FXPropertyResourceBundle)
+                        bundle.inheritFromGlobal()
+                    set(bundle)
+                } catch (ex: Exception) {
+                    FX.log.fine({ "No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle" })
+                    set(FX.messages)
+                }
+            }
+            return super.get()
+        }
+    }
+
+    var messages: ResourceBundle
+        get() = _messages.get()
+        set(value) = _messages.set(value)
+
+    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
 
@@ -49,44 +84,49 @@ abstract class Component {
 
     fun <T> background(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
+    companion object {
+        val log = Logger.getLogger("Component")
+    }
 }
 
-abstract class Controller : Component()
+abstract class Controller : Component(), Injectable
 
 abstract class UIComponent : Component() {
     abstract val root: Parent
-    private val lock = Any()
+    var fxmlLoader: FXMLLoader? = null
 
     val titleProperty = SimpleStringProperty()
     var title: String
         get() = titleProperty.get()
         set(value) = titleProperty.set(value)
 
-    inline fun <reified T : Node> fxml(): FXMLWrapper<T> {
-        val wrapper = FXMLWrapper<T>()
-        wrapper.load(this)
-        return wrapper
-    }
+    fun <T : Node> fxml(): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+        val value: T
 
-    class FXMLWrapper<T : Node> : ReadOnlyProperty<UIComponent, T> {
-        var value: T? = null
+        init {
+            val componentType = this@UIComponent.javaClass
+            val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
+                    throw IllegalArgumentException("FXML not found for $componentType")
 
-        fun load(uiComponent: UIComponent): T {
-            synchronized(uiComponent.lock) {
-                val componentType = uiComponent.javaClass
-
-                val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
-                        throw IllegalArgumentException("FXML not found for $componentType")
-
-                val loader = FXMLLoader(fxml)
-                loader.setController(uiComponent)
-                value = loader.load()
-                return value as T
+            fxmlLoader = FXMLLoader(fxml).apply {
+                resources = this@UIComponent.messages
+                setController(this@UIComponent)
             }
+
+            value = fxmlLoader!!.load()
         }
 
-        override fun getValue(thisRef: UIComponent, property: KProperty<*>) =
-                value ?: load(thisRef)
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
+    }
+
+
+    inline fun <reified T : EventTarget> fxid() = object : ReadOnlyProperty<UIComponent, T> {
+        var value: T? = null
+
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
+            return value ?: thisRef.fxmlLoader!!.namespace[property.name] as T
+        }
     }
 
 }
@@ -128,4 +168,4 @@ abstract class Fragment : UIComponent() {
 
 }
 
-abstract class View : UIComponent()
+abstract class View : UIComponent(), Injectable

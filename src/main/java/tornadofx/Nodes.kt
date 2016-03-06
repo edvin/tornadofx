@@ -11,6 +11,8 @@ import javafx.geometry.VPos
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.control.cell.CheckBoxTableCell
+import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -18,6 +20,11 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.stage.Stage
 import javafx.util.Callback
+import javafx.util.StringConverter
+import javafx.util.converter.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.reflect.KClass
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
@@ -71,7 +78,7 @@ operator fun ToolBar.plusAssign(node: Node): Unit {
 
 fun ToolBar.add(node: Node) = plusAssign(node)
 
-inline fun <reified T : UIComponent> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
+inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
@@ -81,11 +88,36 @@ inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).
 
 fun Pane.add(node: Node) = plusAssign(node)
 
-operator fun <T : UIComponent> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
+operator fun <T : View> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
 
 operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)
 }
+
+var Region.useMaxWidth: Boolean
+    get() = maxWidth == Double.MAX_VALUE
+    set(value) = if (value) maxWidth = Double.MAX_VALUE else Unit
+
+var Region.useMaxHeight: Boolean
+    get() = maxHeight == Double.MAX_VALUE
+    set(value) = if (value) maxHeight = Double.MAX_VALUE else Unit
+
+var Region.useMaxSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) { useMaxWidth = true; useMaxHeight = true } else Unit
+
+var Region.usePrefWidth: Boolean
+    get() = width == prefWidth
+    set(value) = if (value) setMinWidth(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefHeight: Boolean
+    get() = height == prefHeight
+    set(value) = if (value) setMinHeight(Button.USE_PREF_SIZE) else Unit
+
+var Region.usePrefSize: Boolean
+    get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
+    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE)else Unit
+
 
 val <T> TableView<T>.selectedItem: T
     get() = this.selectionModel.selectedItem
@@ -175,6 +207,8 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
             action(selectedItem)
     }
 }
+
+val <S,T> TableCell<S,T>.rowItem:S get() = tableView.items[index]
 
 fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
     task { func() } success { if (items == null) items = it else items.setAll(it) }
@@ -289,9 +323,11 @@ class GridPaneConstraint (
         var fillHeight: Boolean? = null,
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
-        var vAlignment: VPos? = null
-): MarginableConstraints() {
+        var vAlignment: VPos? = null,
+        var columnSpan: Int? = null,
+        var rowSpan: Int? = null
 
+): MarginableConstraints() {
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -326,6 +362,8 @@ class GridPaneConstraint (
         fillWidth?.let { GridPane.setFillWidth(node, it) }
         hAlignment?.let { GridPane.setHalignment(node, it) }
         vAlignment?.let { GridPane.setValignment(node, it) }
+        columnSpan?.let { GridPane.setColumnSpan(node, it) }
+        rowSpan?.let { GridPane.setRowSpan(node,it) }
         return node
     }
 }
@@ -339,8 +377,8 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
 class VBoxConstraint(
         override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
         var vGrow: Priority? = null
-): MarginableConstraints() {
 
+): MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
         margin.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
@@ -370,26 +408,55 @@ abstract class MarginableConstraints {
     abstract var margin: Insets
     var marginTop: Double
         get() = margin.top
-        set(value) { margin = margin.let { Insets(value,it.right,it.bottom,it.left) } }
+        set(value) {
+            margin = margin.let { Insets(value, it.right, it.bottom, it.left) }
+        }
 
     var marginRight: Double
         get() = margin.right
-        set(value) { margin = margin.let { Insets(it.top,value,it.bottom,it.left) } }
+        set(value) {
+            margin = margin.let { Insets(it.top, value, it.bottom, it.left) }
+        }
 
     var marginBottom: Double
         get() = margin.bottom
-        set(value) { margin = margin.let { Insets(it.top,it.right,value,it.left) } }
+        set(value) {
+            margin = margin.let { Insets(it.top, it.right, value, it.left) }
+        }
 
     var marginLeft: Double
         get() = margin.left
-        set(value) { margin = margin.let { Insets(it.top,it.right,it.bottom,value) } }
+        set(value) {
+            margin = margin.let { Insets(it.top, it.right, it.bottom, value) }
+        }
 
     fun marginTopBottom(value: Double) {
         marginTop = value
         marginBottom = value
     }
+
     fun marginLeftRight(value: Double) {
         marginLeft = value
         marginRight = value
+    }
+}
+/**
+ * Bugs: localtimeconverter throws an exception when wrong value entered
+ */
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
+inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
+    isEditable = true
+    when (S::class) {
+        Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>))
+        String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>))
+        LocalDate::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>))
+        LocalTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>))
+        LocalDateTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>))
+        // Primitive types must be compared against the actual runtime types
+        java.lang.Boolean::class -> {
+            this as TableColumn<T, Boolean>
+            setCellFactory(CheckBoxTableCell.forTableColumn(this))
+        }
+        else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
 }

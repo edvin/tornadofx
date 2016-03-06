@@ -3,6 +3,7 @@ package tornadofx
 import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
+import java.util.concurrent.CountDownLatch
 
 fun <T> List<T>.observable() = FXCollections.observableList(this)
 

@@ -1,6 +1,5 @@
 package tornadofx;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -11,10 +10,10 @@ import java.lang.reflect.Method;
 
 public class ReflectionHelper {
 	public static class CellValueFunctionRefCallback<S, T> implements Callback<TableColumn.CellDataFeatures<S, T>, ObservableValue<T>> {
-		private final KFunction<ObjectProperty<T>> observableFn;
+		private final KFunction<ObservableValue<T>> observableFn;
 		private Method method;
 
-		public CellValueFunctionRefCallback(KFunction<ObjectProperty<T>> observableFn) {
+		public CellValueFunctionRefCallback(KFunction<ObservableValue<T>> observableFn) {
 			this.observableFn = observableFn;
 		}
 
