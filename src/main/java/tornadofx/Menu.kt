@@ -51,6 +51,8 @@ fun Menu.radiomenuitem(name: String, keyCombination: KeyCombination?, graphic: N
 }
 fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name,graphic)
+    keyCombination?.let { checkMenuItem.accelerator = it }
+    graphic?.let { checkMenuItem.graphic = graphic }
     checkMenuItem.op()
     this+= checkMenuItem
     return checkMenuItem
