@@ -60,6 +60,10 @@ fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? 
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
+fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this,ListView<T>().apply {
+    values?.let { items = it }
+}, op)
+
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
     textProperty().bindBidirectional(property)
@@ -107,6 +111,15 @@ fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = lab
 }
 
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
+
+
+fun Pane.scrollpane(op: (Pane.() -> Unit)) {
+    val vbox = VBox()
+    op(vbox)
+    val scrollPane = ScrollPane()
+    scrollPane.content = if (vbox.children.size == 1) vbox.children[0] else vbox
+    this += scrollPane
+}
 
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
