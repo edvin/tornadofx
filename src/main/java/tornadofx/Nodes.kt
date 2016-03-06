@@ -261,11 +261,11 @@ fun <T : Node> T.borderpaneConstraints(op:(BorderPaneConstraint.() -> Unit)): T 
 }
 
 class BorderPaneConstraint(
-    var margin: Insets? = null,
+    override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
     var alignment: Pos? = null
-) {
+): MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
-        margin?.let { BorderPane.setMargin(node,it) }
+        margin.let { BorderPane.setMargin(node,it) }
         alignment?.let { BorderPane.setAlignment(node,it) }
         return node
     }
@@ -280,17 +280,18 @@ fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
     return gpc.applyToNode(this)
 }
 
-class GridPaneConstraint(
+class GridPaneConstraint (
         var columnIndex: Int? = null,
         var rowIndex: Int? = null,
         var hGrow: Priority? = null,
         var vGrow: Priority? = null,
-        var margin: Insets? = null,
+        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
         var fillHeight: Boolean? = null,
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
         var vAlignment: VPos? = null
-) {
+): MarginableConstraints() {
+
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -320,7 +321,7 @@ class GridPaneConstraint(
         rowIndex?.let { GridPane.setRowIndex(node, it) }
         hGrow?.let { GridPane.setHgrow(node, it) }
         vGrow?.let { GridPane.setVgrow(node, it) }
-        margin?.let { GridPane.setMargin(node, it) }
+        margin.let { GridPane.setMargin(node, it) }
         fillHeight?.let { GridPane.setFillHeight(node, it) }
         fillWidth?.let { GridPane.setFillWidth(node, it) }
         hAlignment?.let { GridPane.setHalignment(node, it) }
@@ -336,11 +337,12 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
 }
 
 class VBoxConstraint(
-        var margin: Insets? = null,
+        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
         var vGrow: Priority? = null
-) {
+): MarginableConstraints() {
+
     fun <T : Node> applyToNode(node: T): T {
-        margin?.let { VBox.setMargin(node, it) }
+        margin.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
         return node
     }
@@ -352,13 +354,42 @@ fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
     return c.applyToNode(this)
 }
 
-class HBoxConstraint(
-        var margin: Insets? = null,
+class HBoxConstraint (
+        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
         var hGrow: Priority? = null
-) {
+): MarginableConstraints() {
+
     fun <T : Node> applyToNode(node: T): T {
-        margin?.let { HBox.setMargin(node, it) }
+        margin.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
         return node
+    }
+}
+
+abstract class MarginableConstraints {
+    abstract var margin: Insets
+    var marginTop: Double
+        get() = margin.top
+        set(value) { margin = margin.let { Insets(value,it.right,it.bottom,it.left) } }
+
+    var marginRight: Double
+        get() = margin.right
+        set(value) { margin = margin.let { Insets(it.top,value,it.bottom,it.left) } }
+
+    var marginBottom: Double
+        get() = margin.bottom
+        set(value) { margin = margin.let { Insets(it.top,it.right,value,it.left) } }
+
+    var marginLeft: Double
+        get() = margin.left
+        set(value) { margin = margin.let { Insets(it.top,it.right,it.bottom,value) } }
+
+    fun marginTopBottom(value: Double) {
+        marginTop = value
+        marginBottom = value
+    }
+    fun marginLeftRight(value: Double) {
+        marginLeft = value
+        marginRight = value
     }
 }
