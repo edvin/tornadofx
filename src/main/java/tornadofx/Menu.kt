@@ -3,6 +3,7 @@ package tornadofx
 import javafx.event.ActionEvent
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.input.KeyCombination
 
 
 operator fun <T: MenuItem> Menu.plusAssign(menuItem: T): Unit {
@@ -23,9 +24,14 @@ fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
     this += menu
     return menu
 }
+fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)): MenuItem {
+    return this.menuitem(name, KeyCombination.valueOf(keyCombination),graphic,onAction)
+}
 
-fun Menu.menuItem(name: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)): MenuItem {
+fun Menu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)): MenuItem {
     val menuItem = MenuItem(name,graphic);
+    keyCombination?.let { menuItem.accelerator = it }
+    graphic?.let { menuItem.graphic = graphic }
     menuItem.setOnAction { onAction.invoke(it) }
     this += menuItem
     return menuItem
