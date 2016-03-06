@@ -41,13 +41,15 @@ fun Menu.separator() {
     this += SeparatorMenuItem()
 }
 
-fun Menu.radioMenuItem(name: String? = null, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)): RadioMenuItem {
+fun Menu.radiomenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)): RadioMenuItem {
     val radioMenuItem = RadioMenuItem(name,graphic)
+    keyCombination?.let { radioMenuItem.accelerator = it }
+    graphic?.let { radioMenuItem.graphic = graphic }
     radioMenuItem.op()
     this += radioMenuItem
     return radioMenuItem
 }
-fun Menu.checkMenuItem(name: String? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)): CheckMenuItem {
+fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name,graphic)
     checkMenuItem.op()
     this+= checkMenuItem
