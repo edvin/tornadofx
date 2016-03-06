@@ -110,6 +110,8 @@ fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = lab
     textProperty().bind(property)
 }
 
+fun Pane.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar(), op)
+
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
 
 
@@ -131,6 +133,7 @@ fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar 
     opcr(this, toolbar, op)
     return toolbar
 }
+
 
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
