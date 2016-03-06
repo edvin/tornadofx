@@ -55,6 +55,10 @@ fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? 
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
+fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this,ListView<T>().apply {
+    values?.let { items = it }
+}, op)
+
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
     textProperty().bindBidirectional(property)
