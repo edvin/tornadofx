@@ -133,6 +133,9 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this,BorderPane(),op)
+fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this,FlowPane(),op)
+fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this,TilePane(),op)
+
 
 fun BorderPane.top(op: Pane.() -> Unit) {
     val vbox = VBox()
