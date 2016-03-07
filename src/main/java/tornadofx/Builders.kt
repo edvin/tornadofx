@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
@@ -201,9 +202,9 @@ inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
 /**
  * Create a column with a value factory that extracts the value from the given callback.
  */
-fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
+fun <S, T> TableView<S>.column(title: String, valueProvider : (TableColumn.CellDataFeatures<S?, T?>) -> ObservableValue<T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
-    column.cellValueFactory = Callback { valueProvider(it) }
+    column.cellValueFactory = Callback { valueProvider(it)}
     columns.add(column)
     return column
 }
