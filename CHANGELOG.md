@@ -10,9 +10,12 @@ All notable changes to this project will be documented in this file.
 - `TableView.column()` support for `ObservableValue` member fields
 - `FX.runAndWait` sync execution helper
 - `TableColumn.makeEditable` extension
-- `JsonModelAuto` automatically converts from JavaFX Properties to JSON
-- Menu builder
+- `JsonModelAuto` automatically converts from JavaFX Properties to JSON (requires kotlin-reflect)
+- Menu/MenuItem builders
 - More layout builders
+- More constraints for builders
+- `ListView` builder
+- `ScrollPane` builder
 
 ### Changed
 

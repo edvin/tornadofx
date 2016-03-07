@@ -23,15 +23,24 @@ Lightweight JavaFX Framework for Kotlin
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
 - [Ask a Question](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Example Application](https://github.com/edvin/tornadofx-samples) 
+- [Maven QuickStart Archetype](https://github.com/edvin/tornadofx-quickstart-archetype) 
 - [Changelog](CHANGELOG.md)
 
-### Add TornadoFX to your project
+### Generate a quickstart application with Maven
+
+```bash
+mvn archetype:generate -DarchetypeGroupId=no.tornado \
+  -DarchetypeArtifactId=tornadofx-quickstart-archetype \
+  -DarchetypeVersion=1.0.1
+```
+
+### Add TornadoFX to an existing project
 
 ```xml
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.3.1</version>
+	<version>1.3.2</version>
 </dependency>
 ```
 
