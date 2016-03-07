@@ -192,19 +192,19 @@ inline fun <T> ListView<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) ->
  * *
  * @param action The action to execute on select
  */
-fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T?) -> Unit) {
+fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     val isSelected = { event: InputEvent ->
         event.target.isInsideTableRow() && !selectionModel.isEmpty
     }
 
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
         if (event.clickCount == clickCount && isSelected(event))
-            action(selectedItem)
+            action(selectedItem!!)
     }
 
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
         if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
-            action(selectedItem)
+            action(selectedItem!!)
     }
 }
 
@@ -254,15 +254,15 @@ fun <T> TreeView<T>.onUserDelete(action: (T?) -> Unit) {
  * *
  * @param action The runnable to execute on select
  */
-fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T?) -> Unit) {
+fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
         if (event.clickCount == clickCount && selectedItem != null)
-            action(selectedItem)
+            action(selectedItem!!)
     }
 
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
         if (event.code == KeyCode.ENTER && !event.isMetaDown && selectedItem != null)
-            action(selectedItem)
+            action(selectedItem!!)
     }
 }
 

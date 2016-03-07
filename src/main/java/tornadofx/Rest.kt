@@ -104,7 +104,8 @@ open class Rest : Controller() {
         configure()
     }
 
-    fun get(path: String, processor: ((HttpRequestBase) -> Unit)? = null) = execute(HttpGet(getURI(path)), processor = processor)
+    fun get(path: String, data: JsonValue? = null, processor: ((HttpRequestBase) -> Unit)? = null) = execute(HttpGet(getURI(path)), data, processor)
+    fun get(path: String, data: JsonModel, processor: ((HttpRequestBase) -> Unit)? = null) = get(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
 
     fun put(path: String, data: JsonValue? = null, processor: ((HttpRequestBase) -> Unit)? = null) = execute(HttpPut(getURI(path)), data, processor)
     fun put(path: String, data: JsonModel, processor: ((HttpRequestBase) -> Unit)? = null) = put(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)

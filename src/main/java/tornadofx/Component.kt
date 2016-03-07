@@ -44,9 +44,9 @@ abstract class Component {
         }
     }
 
-    private val _properties = lazy {
-        FXCollections.observableHashMap<Any, Any>()
-    }
+    private val _properties = lazy { FXCollections.observableHashMap<Any, Any>() }
+    private val _log = lazy { Logger.getLogger(this@Component.javaClass.name) }
+    val log: Logger get() = _log.value
 
     private val configPath = lazy {
         val conf = Paths.get("conf")
@@ -84,10 +84,6 @@ abstract class Component {
 
     fun <T> background(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
-
-    companion object {
-        val log = Logger.getLogger("Component")
-    }
 }
 
 abstract class Controller : Component(), Injectable
