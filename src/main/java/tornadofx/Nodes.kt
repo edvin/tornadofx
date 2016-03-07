@@ -119,20 +119,20 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE)else Unit
 
 
-val <T> TableView<T>.selectedItem: T
+val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
 
-val <T> TreeView<T>.selectedValue: T
-    get() = this.selectionModel.selectedItem.value
+val <T> TreeView<T>.selectedValue: T?
+    get() = this.selectionModel.selectedItem?.value
 
 fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
-val <T> ListView<T>.selectedItem: T
+val <T> ListView<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
-val <T> ComboBox<T>.selectedItem: T
+val <T> ComboBox<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
@@ -192,7 +192,7 @@ inline fun <T> ListView<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) ->
  * *
  * @param action The action to execute on select
  */
-fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
+fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T?) -> Unit) {
     val isSelected = { event: InputEvent ->
         event.target.isInsideTableRow() && !selectionModel.isEmpty
     }
@@ -226,21 +226,21 @@ fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     }
 }
 
-fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
+fun <T> TableView<T>.onUserDelete(action: (T?) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem)
     })
 }
 
-fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
+fun <T> ListView<T>.onUserDelete(action: (T?) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem)
     })
 }
 
-fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
+fun <T> TreeView<T>.onUserDelete(action: (T?) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
             action(selectedValue)
@@ -254,7 +254,7 @@ fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
  * *
  * @param action The runnable to execute on select
  */
-fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
+fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T?) -> Unit) {
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
         if (event.clickCount == clickCount && selectedItem != null)
             action(selectedItem)
