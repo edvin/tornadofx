@@ -161,13 +161,6 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell
     }
 }
 
-inline fun <S, T> TableView<S>.addColumn(title: String, crossinline valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
-    val column = TableColumn<S, T>(title)
-    column.cellValueFactory = Callback { valueProvider(it) }
-    columns.add(column)
-    return column
-}
-
 inline fun <T> ListView<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) -> Unit)) {
     cellFactory = Callback {
         object : ListCell<T>() {

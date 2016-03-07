@@ -17,7 +17,11 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `Fragment` should not be injectable (https://github.com/edvin/tornadofx/issues/31)
+
+### Removed
+
 - `FXTableView` removed, `column` functions are now extensions on `TableView`
+- `TableView.addColumn` removed, replaced by the new `column` functions
 
 ## [1.3.1] - 2016-02-28
 
