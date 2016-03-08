@@ -219,24 +219,24 @@ fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     }
 }
 
-fun <T> TableView<T>.onUserDelete(action: (T?) -> Unit) {
+fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
-            action(selectedItem)
+            action(selectedItem!!)
     })
 }
 
-fun <T> ListView<T>.onUserDelete(action: (T?) -> Unit) {
+fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
-            action(selectedItem)
+            action(selectedItem!!)
     })
 }
 
-fun <T> TreeView<T>.onUserDelete(action: (T?) -> Unit) {
+fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
-            action(selectedValue)
+            action(selectedValue!!)
     })
 }
 
