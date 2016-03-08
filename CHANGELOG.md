@@ -1,5 +1,12 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+
+- Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
 
 ## [1.3.2] - 2016-03-07
 

@@ -15,6 +15,7 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
@@ -75,6 +76,10 @@ abstract class Component {
     var messages: ResourceBundle
         get() = _messages.get()
         set(value) = _messages.set(value)
+
+    val resources: ResourceLookup by lazy {
+        ResourceLookup(this)
+    }
 
     inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
@@ -165,3 +170,8 @@ abstract class Fragment : UIComponent() {
 }
 
 abstract class View : UIComponent(), Injectable
+
+class ResourceLookup(val component: Component) {
+    operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
+    fun url(resource: String): URL? = component.javaClass.getResource(resource)
+}
