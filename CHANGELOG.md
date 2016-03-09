@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
+- Alternative view location for `fxml()` delegate
 
 ## [1.3.2] - 2016-03-07
 

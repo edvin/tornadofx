@@ -102,12 +102,13 @@ abstract class UIComponent : Component() {
         get() = titleProperty.get()
         set(value) = titleProperty.set(value)
 
-    fun <T : Node> fxml(): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+    fun <T : Node> fxml(location: String? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
         val value: T
 
         init {
             val componentType = this@UIComponent.javaClass
-            val fxml = componentType.getResource(componentType.simpleName + ".fxml") ?:
+            val targetLocation = location ?: componentType.simpleName + ".fxml"
+            val fxml = componentType.getResource(targetLocation) ?:
                     throw IllegalArgumentException("FXML not found for $componentType")
 
             fxmlLoader = FXMLLoader(fxml).apply {
