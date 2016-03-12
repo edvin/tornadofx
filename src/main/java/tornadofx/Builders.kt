@@ -251,3 +251,32 @@ inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunc
     columns.add(column)
     return column
 }
+
+inline fun <T,R> Pane.treeview(values: ObservableList<T>, op: (BackedTreeView<T,R>.() -> Unit)): BackedTreeView<T,R> {
+    val treeview = BackedTreeView<T,R>(values)
+    op(treeview)
+    children.add(treeview)
+    return treeview
+}
+
+fun <T,R> BackedTreeView<T,R>.rootitem(value: R, op: (BackedTreeItem<T,R>.() -> Unit)): BackedTreeItem<T,R> {
+    val treeItem = BackedTreeItem(data,value)
+    treeItem.op()
+    this.root = treeItem
+    return treeItem
+}
+
+fun <T,R> BackedTreeItem<T,R>.groupedtreeitem(groupMapping: (T) -> R, op: (BackedTreeItem<T,R>.() -> Unit)) {
+    data.asSequence().map { GroupByItem(it,groupMapping.invoke(it)) }
+            .groupBy { it.mapping }
+            .forEach {
+                children.add(BackedTreeItem(it.value.map { it.item },it.key).apply { this.op() })
+            }
+}
+fun <T,R> BackedTreeItem<T,R>.treeitem(mapping: (T) -> R, op: (BackedTreeItem<T,R>.() -> Unit)) {
+    data.forEach { children.add(TreeItem(mapping.invoke(it))) }
+}
+class BackedTreeView<T,R>(val data: List<T>): TreeView<R>()
+class BackedTreeItem<T,R>(val data: List<T>, item: R): TreeItem<R>(item)
+
+private class GroupByItem<T,R>(val item: T, val mapping: R)
