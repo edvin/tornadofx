@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
 - Alternative view location for `fxml()` delegate
 
+### Changed
+
+- Upgrade to Kotlin 1.0.1
+
 ## [1.3.2] - 2016-03-07
 
 ### Added
