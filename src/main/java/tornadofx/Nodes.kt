@@ -436,10 +436,10 @@ abstract class MarginableConstraints {
 /**
  * Notice: localtimeconverter throws an exception when wrong value entered
  */
-@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "CAST_NEVER_SUCCEEDS")
-inline fun <T, reified S> TableColumn<T, S>.makeEditable() {
+@Suppress("CAST_NEVER_SUCCEEDS")
+inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     isEditable = true
-    when (S::class) {
+    when (S::class.javaPrimitiveType ?: S::class) {
         Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>))
         String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>))
         LocalDate::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>))
