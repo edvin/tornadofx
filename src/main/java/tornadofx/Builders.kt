@@ -219,6 +219,13 @@ fun <S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): Ta
     return column
 }
 
+fun <S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TreeTableColumn<S, T> {
+    val column = TreeTableColumn<S, T>(title)
+    column.cellValueFactory = Callback { observable(it.value.value, prop) }
+    columns.add(column)
+    return column
+}
+
 /**
  * Create a column with a value factory that extracts the value from the given property and
  * converts the property to an observable value.
@@ -226,6 +233,13 @@ fun <S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): Ta
 fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
+    columns.add(column)
+    return column
+}
+
+fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeTableColumn<S, T> {
+    val column = TreeTableColumn<S, T>(title)
+    column.cellValueFactory = Callback { observable(it.value.value, prop) }
     columns.add(column)
     return column
 }
@@ -241,13 +255,28 @@ fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValu
     return column
 }
 
+@JvmName(name = "columnForObservableProperty")
+fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TreeTableColumn<S, T> {
+    val column = TreeTableColumn<S, T>(title)
+    column.cellValueFactory = Callback { prop.call(it.value.value) }
+    columns.add(column)
+    return column
+}
+
 /**
  * Create a column with a value factory that extracts the observable value from the given function reference.
  * This method requires that you have kotlin-reflect on your classpath.
  */
 inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
-    column.cellValueFactory = ReflectionHelper.CellValueFunctionRefCallback(observableFn)
+    column.cellValueFactory = ReflectionHelper.TableCellValueFunctionRefCallback(observableFn)
+    columns.add(column)
+    return column
+}
+
+inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TreeTableColumn<S, T> {
+    val column = TreeTableColumn<S, T>(title)
+    column.cellValueFactory = ReflectionHelper.TreeTableCellValueFunctionRefCallback(observableFn)
     columns.add(column)
     return column
 }

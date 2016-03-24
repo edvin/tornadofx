@@ -122,12 +122,17 @@ var Region.usePrefSize: Boolean
 val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
 
+val <T> TreeTableView<T>.selectedItem: T?
+    get() = this.selectionModel.selectedItem?.value
+
 val <T> TreeView<T>.selectedValue: T?
     get() = this.selectionModel.selectedItem?.value
 
 fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
+
+fun <T> TreeTableView<T>.selectFirst() = selectionModel.selectFirst()
 
 val <T> ListView<T>.selectedItem: T?
     get() = selectionModel.selectedItem
@@ -147,6 +152,23 @@ fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
 inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {
+            override fun updateItem(item: T, empty: Boolean) {
+                super.updateItem(item, empty)
+
+                if (item == null || empty) {
+                    text = null
+                    graphic = null
+                } else {
+                    formatter(this, item)
+                }
+            }
+        }
+    }
+}
+
+inline fun <S, T> TreeTableColumn<S, T>.cellFormat(crossinline formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
+    cellFactory = Callback { column: TreeTableColumn<S, T> ->
+        object : TreeTableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
@@ -433,9 +455,7 @@ abstract class MarginableConstraints {
         marginRight = value
     }
 }
-/**
- * Notice: localtimeconverter throws an exception when wrong value entered
- */
+
 @Suppress("CAST_NEVER_SUCCEEDS")
 inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     isEditable = true
@@ -450,5 +470,13 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
             setCellFactory(CheckBoxTableCell.forTableColumn(this))
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
+    }
+}
+
+class TreeRoot<T>(val childFactory: (T) -> List<T>) : TreeItem<T>() {
+    var itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }
+
+    init {
+
     }
 }
