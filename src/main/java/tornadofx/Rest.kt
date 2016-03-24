@@ -38,7 +38,7 @@ open class Rest : Controller() {
         val atomicseq = AtomicLong()
 
         fun useApacheHttpClient() {
-            engineProvider = { HttpClientEngine(it) }
+            engineProvider = { rest -> HttpClientEngine(rest) }
         }
     }
 
@@ -167,10 +167,9 @@ open class Rest : Controller() {
 
 class HttpURLEngine(val rest: Rest) : Rest.Engine() {
     override fun setBasicAuth(username: String, password: String) {
-        authInterceptor = {
+        authInterceptor = { engine ->
             val b64 = Base64.getEncoder().encodeToString("$username:$password".toByteArray(UTF_8))
-            val httpUrlRequest = it as HttpURLRequest
-            httpUrlRequest.connection.addRequestProperty("Authorization", "Basic $b64")
+            engine.addHeader("Authorization", "Basic $b64")
         }
     }
 
@@ -192,6 +191,9 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
     override fun execute(): Rest.Response {
         engine.authInterceptor?.invoke(this)
+
+        for (header in headers)
+            connection.addRequestProperty(header.key, header.value)
 
         if (entity != null) {
             if (headers["Content-Type"] == null)
