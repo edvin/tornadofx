@@ -1,7 +1,6 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
-import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.HPos
@@ -104,7 +103,9 @@ var Region.useMaxHeight: Boolean
 
 var Region.useMaxSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
-    set(value) = if (value) { useMaxWidth = true; useMaxHeight = true } else Unit
+    set(value) = if (value) {
+        useMaxWidth = true; useMaxHeight = true
+    } else Unit
 
 var Region.usePrefWidth: Boolean
     get() = width == prefWidth
@@ -116,7 +117,7 @@ var Region.usePrefHeight: Boolean
 
 var Region.usePrefSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
-    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE)else Unit
+    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
 val <T> TableView<T>.selectedItem: T?
@@ -223,16 +224,16 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
-val <S,T> TableCell<S,T>.rowItem:S get() = tableView.items[index]
+val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 
 fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { if (items == null) items = it else items.setAll(it) }
+        task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> ListView<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { if (items == null) items = it else items.setAll(it) }
+        task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> ComboBox<T>.asyncItems(func: () -> ObservableList<T>) =
-    task { func() } success { if (items == null) items = it else items.setAll(it) }
+        task { func() } success { if (items == null) items = it else items.setAll(it) }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     selectionModel.selectedItemProperty().addListener { obs, old, new ->
@@ -303,19 +304,19 @@ fun EventTarget.isInsideTableRow(): Boolean {
 /**
  * Access BorderPane constraints to manipulate and apply on this control
  */
-fun <T : Node> T.borderpaneConstraints(op:(BorderPaneConstraint.() -> Unit)): T {
+fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
     val bpc = BorderPaneConstraint()
     bpc.op()
     return bpc.applyToNode(this)
 }
 
 class BorderPaneConstraint(
-    override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
-    var alignment: Pos? = null
-): MarginableConstraints() {
+        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
+        var alignment: Pos? = null
+) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
-        margin.let { BorderPane.setMargin(node,it) }
-        alignment?.let { BorderPane.setAlignment(node,it) }
+        margin.let { BorderPane.setMargin(node, it) }
+        alignment?.let { BorderPane.setAlignment(node, it) }
         return node
     }
 }
@@ -329,12 +330,12 @@ fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
     return gpc.applyToNode(this)
 }
 
-class GridPaneConstraint (
+class GridPaneConstraint(
         var columnIndex: Int? = null,
         var rowIndex: Int? = null,
         var hGrow: Priority? = null,
         var vGrow: Priority? = null,
-        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
+        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
         var fillHeight: Boolean? = null,
         var fillWidth: Boolean? = null,
         var hAlignment: HPos? = null,
@@ -342,7 +343,7 @@ class GridPaneConstraint (
         var columnSpan: Int? = null,
         var rowSpan: Int? = null
 
-): MarginableConstraints() {
+) : MarginableConstraints() {
     var vhGrow: Priority? = null
         set(value) {
             vGrow = value
@@ -378,7 +379,7 @@ class GridPaneConstraint (
         hAlignment?.let { GridPane.setHalignment(node, it) }
         vAlignment?.let { GridPane.setValignment(node, it) }
         columnSpan?.let { GridPane.setColumnSpan(node, it) }
-        rowSpan?.let { GridPane.setRowSpan(node,it) }
+        rowSpan?.let { GridPane.setRowSpan(node, it) }
         return node
     }
 }
@@ -390,10 +391,10 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
 }
 
 class VBoxConstraint(
-        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
+        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
         var vGrow: Priority? = null
 
-): MarginableConstraints() {
+) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
         margin.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
@@ -407,10 +408,10 @@ fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
     return c.applyToNode(this)
 }
 
-class HBoxConstraint (
-        override var margin: Insets = Insets(0.0,0.0,0.0,0.0),
+class HBoxConstraint(
+        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
         var hGrow: Priority? = null
-): MarginableConstraints() {
+) : MarginableConstraints() {
 
     fun <T : Node> applyToNode(node: T): T {
         margin.let { HBox.setMargin(node, it) }
@@ -473,10 +474,19 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     }
 }
 
-class TreeRoot<T>(val childFactory: (T) -> List<T>) : TreeItem<T>() {
-    var itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }
+fun <T> TreeTableView<T>.createChildren(
+    itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
+    childFactory: (TreeItem<T>) -> List<T>?) {
 
-    init {
-
+    fun createChildrenInternal(item: TreeItem<T>) {
+        val children = childFactory.invoke(item)
+        if (children != null && !children.isEmpty()) {
+            val childItems = children.map { itemFactory.invoke(it) }
+            item.children.addAll(childItems)
+            childItems.forEach { createChildrenInternal(it) }
+        }
     }
+
+    createChildrenInternal(root)
 }
+
