@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `TableView.resizeColumnsToFitContent` function
+- `TreeTableView` and `TreeView` builder (https://github.com/edvin/tornadofx/issues/47)
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
 - Alternative view location for `fxml()` delegate
-- Apache HttpClient is now an optional dependency. Rest API uses HttpURLConnection by default (https://github.com/edvin/tornadofx/issues/40)
-	- This change is not binary compatible, but source compatible unless you are using HttpClient directly. Perform a clean build of your project! 
+- `Apache HttpClient` is now an optional dependency. Rest API uses `HttpURLConnection` by default (https://github.com/edvin/tornadofx/issues/40)
+	- This change is not binary compatible, but source compatible unless you are using `HttpClient` directly. Perform a clean build of your project! 
 	
 ### Changed
 

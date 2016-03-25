@@ -120,6 +120,12 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
+fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 20) {
+    val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+    resizer.isAccessible = true
+    resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+}
+
 val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
 
