@@ -82,6 +82,38 @@ class HelloWorldApp : App {
 }
 ```
 
+Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Builders) to quickly create complex user interfaces
+
+```kotlin
+class MyView : View() {
+
+    override val root = VBox()
+
+    private val persons = FXCollections.observableArrayList<Person>(
+            Person(1,"Samantha Stuart",LocalDate.of(1981,12,4)),
+            Person(2,"Tom Marks",LocalDate.of(2001,1,23)),
+            Person(3,"Stuart Gills",LocalDate.of(1989,5,23)),
+            Person(3,"Nicole Williams",LocalDate.of(1998,8,11))
+    )
+
+    init {
+        with(root) {
+            tableview<Person> {
+                items = persons
+                column("ID",Person::id)
+                column("Name", Person::name)
+                column("Birthday", Person::birthday)
+                column("Age",Person::age)
+            }
+        }
+    }
+}
+```
+
+**RENDERED UI**
+
+![](https://i.imgur.com/AGMCP8S.png)
+
 Create a Customer model object that can be converted to and from JSON:
     
 ```kotlin
