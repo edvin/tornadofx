@@ -130,6 +130,15 @@ fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
+fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<T, *>> = columns, maxRows: Int = 20) {
+    val doResize = {
+        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
+        resizer.isAccessible = true
+        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+    }
+    if (skin == null) Platform.runLater { doResize() } else doResize()
+}
+
 val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
 
