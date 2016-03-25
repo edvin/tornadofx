@@ -198,6 +198,22 @@ inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
     return tableview
 }
 
+inline fun <S> Pane.treeview(root: TreeItem<S>? = null, op: (TreeView<S>.() -> Unit)): TreeView<S> {
+    val treeview = TreeView<S>()
+    if (root != null) treeview.root = root
+    op(treeview)
+    children.add(treeview)
+    return treeview
+}
+
+inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -> Unit)): TreeTableView<S> {
+    val treetableview = TreeTableView<S>()
+    if (root != null) treetableview.root = root
+    op(treetableview)
+    children.add(treetableview)
+    return treetableview
+}
+
 /**
  * Create a column with a value factory that extracts the value from the given callback.
  */
