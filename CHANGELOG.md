@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- `TableView.resizeColumnsToFitContent` function
+- `TableView.resizeColumnsToFitContent` function (https://github.com/edvin/tornadofx/issues/48)
 - `TreeTableView` and `TreeView` builder (https://github.com/edvin/tornadofx/issues/47)
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
 - Alternative view location for `fxml()` delegate

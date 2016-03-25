@@ -1,6 +1,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
+import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.HPos
@@ -121,9 +122,12 @@ var Region.usePrefSize: Boolean
 
 
 fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 20) {
-    val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
-    resizer.isAccessible = true
-    resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+    val doResize = {
+        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+        resizer.isAccessible = true
+        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+    }
+    if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
 val <T> TableView<T>.selectedItem: T?
