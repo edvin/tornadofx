@@ -166,6 +166,12 @@ background {
 }
 ```
 
+Load customers and apply to table declaratively:
+
+```kotlin
+customerTable.asyncItems { controller.loadCustomers() }
+```
+
 Create an HBox with a Label and a TextField with type safe builders:
 
 ```kotlin
