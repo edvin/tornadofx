@@ -9,6 +9,7 @@ import kotlin.reflect.KFunction;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+//noinspection unchecked
 public class ReflectionHelper {
 	public static class TableCellValueFunctionRefCallback<S, T> implements Callback<TableColumn.CellDataFeatures<S, T>, ObservableValue<T>> {
 		private final KFunction<ObservableValue<T>> observableFn;
@@ -59,7 +60,6 @@ public class ReflectionHelper {
 				}
 			}
 			try {
-				//noinspection unchecked
 				return (ObservableValue<T>) method.invoke(item);
 			} catch (IllegalAccessException | InvocationTargetException e) {
 				throw new RuntimeException("Unable to extract observable value");

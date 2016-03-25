@@ -167,6 +167,23 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell
     }
 }
 
+inline fun <S> TreeView<S>.cellFormat(crossinline formatter: (TreeCell<S>.(S) -> Unit)) {
+    cellFactory = Callback {
+        object : TreeCell<S>() {
+            override fun updateItem(item: S?, empty: Boolean) {
+                super.updateItem(item, empty)
+
+                if (item == null || empty) {
+                    text = null
+                    graphic = null
+                } else {
+                    formatter(this, item)
+                }
+            }
+        }
+    }
+}
+
 inline fun <S, T> TreeTableColumn<S, T>.cellFormat(crossinline formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
@@ -474,19 +491,24 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     }
 }
 
-fun <T> TreeTableView<T>.createChildren(
-    itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
-    childFactory: (TreeItem<T>) -> List<T>?) {
+fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> List<T>?) =
+        populateTree(root, itemFactory, childFactory)
 
-    fun createChildrenInternal(item: TreeItem<T>) {
-        val children = childFactory.invoke(item)
-        if (children != null && !children.isEmpty()) {
-            val childItems = children.map { itemFactory.invoke(it) }
-            item.children.addAll(childItems)
-            childItems.forEach { createChildrenInternal(it) }
-        }
+fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> List<T>?) =
+        populateTree(root, itemFactory, childFactory)
+
+/**
+ * Add children to the given item by invoking the supplied childFactory function, which converts
+ * a TreeItem&lt;T> to a List&lt;T>?.
+ *
+ * If the childFactory returns a non-empty list, each entry in the list is converted to a TreeItem&lt;T>
+ * via the supplied itemFactory function. The default itemFactory from TreeTableView.populate and TreeTable.populate
+ * simply wraps the given T in a TreeItem, but you can override it to add icons etc. Lastly, the populateTree
+ * function is called for each of the generated child items.
+ */
+fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFactory: (TreeItem<T>) -> List<T>?) {
+    childFactory.invoke(item)?.map { itemFactory.invoke(it) }?.apply {
+        item.children.setAll(this)
+        forEach { populateTree(it, itemFactory, childFactory) }
     }
-
-    createChildrenInternal(root)
 }
-
