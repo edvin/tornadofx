@@ -2,21 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.4.0] - 2016-03-26
 
+This version is binary incompatible if you used the REST Client, perform a clean build
+ when upgrading.
+
+As `Apache HttpClient` is no longer required, most of the `HttpResponse` extension functions
+ has been removed and reimplemented in the `Rest.Response` interface. If you accessed `HttpClient`
+ classes directly, you will need to adjust some code. See the [REST Client documentation](https://github.com/edvin/tornadofx/wiki/REST-Client)
+ for updated information.
+ 	
 ### Added
 
 - Injection support in the `App` class (https://github.com/edvin/tornadofx/issues/54)
 - `TableView/TreeTableView.resizeColumnsToFitContent` function (https://github.com/edvin/tornadofx/issues/48)
-- `TreeTableView` and `TreeView` builder (https://github.com/edvin/tornadofx/issues/47)
+- `TreeTableView` and `TreeView` builders (https://github.com/edvin/tornadofx/issues/47)
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)
-- Alternative view location for `fxml()` delegate
-- `Apache HttpClient` is now an optional dependency. Rest API uses `HttpURLConnection` by default (https://github.com/edvin/tornadofx/issues/40)
-	- This change is not binary compatible, but source compatible unless you are using `HttpClient` directly. Perform a clean build of your project! 
-	
+- Alternative view location for [`fxml()` delegate](https://github.com/edvin/tornadofx/wiki/Components#ui-built-with-fxml)
+
 ### Changed
 
 - Upgrade to Kotlin 1.0.1
+- `Apache HttpClient` is now an optional dependency. Rest API uses `HttpURLConnection` by default (https://github.com/edvin/tornadofx/issues/40)
 
 ## [1.3.2] - 2016-03-07
 
