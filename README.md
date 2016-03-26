@@ -32,7 +32,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.0.1
+  -DarchetypeVersion=1.0.2
 ```
 
 ### Add TornadoFX to an existing project
