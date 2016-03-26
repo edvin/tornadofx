@@ -55,20 +55,19 @@ class HelloWorld : View() {
 }
 ```
     
-Load the root node from `HelloWorld.fxml` and post process after the FXML is loaded
+Load the root node from `HelloWorld.fxml` and inject controls by `fx:id`
   
 ```kotlin
 class HelloWorld : View() {
 	override val root: HBox by fxml()
 	
-	@FXML lateinit var myLabel: Label
+	val myLabel: Label by fxid()
 	
 	init {
 		myLabel.text = "Hello world"
 	}
 }
 ```
-> No need to implement `Initializable` to perform post processing
 
 Start your application and show the primary `View` by extending the `App` class
     
@@ -81,6 +80,7 @@ class HelloWorldApp : App {
 	}
 }
 ```
+> Start app and load a stylesheet
 
 Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Builders) to quickly create complex user interfaces
 
@@ -100,10 +100,10 @@ class MyView : View() {
         with(root) {
             tableview<Person> {
                 items = persons
-                column("ID",Person::id)
+                column("ID", Person::id)
                 column("Name", Person::name)
                 column("Birthday", Person::birthday)
-                column("Age",Person::age)
+                column("Age", Person::age)
             }
         }
     }
@@ -114,7 +114,7 @@ class MyView : View() {
 
 ![](https://i.imgur.com/AGMCP8S.png)
 
-Create a Customer model object that can be converted to and from JSON:
+Create a Customer model object that can be converted to and from JSON and complies with JavaFX Property guidelines:
     
 ```kotlin
 class Customer : JsonModel {
@@ -149,12 +149,6 @@ class HelloWorldController : Controller() {
 	fun loadCustomers(): ObservableList<Customer> = 
 		api.get("customers").list().toModel() 
 }
-```
-Notice that the `Rest` API was injected. You can inject your own Views, Fragments and Controllers
-in the same way:
-
-```kotlin
-val controller : CustomerController by inject()
 ```
 	
 Configure the REST API with a base URI and Basic Authentication:
@@ -211,7 +205,7 @@ with (config) {
 ```
 	
 Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
-create a new instance via the constructor.
+create a new instance via the constructor and you can reuse the Fragment in multiple ui locations simultaneously.
  	
 ```kotlin
 class MyFragment : Fragment() {
