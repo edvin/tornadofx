@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Injection support in the `App` class (https://github.com/edvin/tornadofx/issues/54)
 - `TableView/TreeTableView.resizeColumnsToFitContent` function (https://github.com/edvin/tornadofx/issues/48)
 - `TreeTableView` and `TreeView` builder (https://github.com/edvin/tornadofx/issues/47)
 - Easy access to application resources (https://github.com/edvin/tornadofx/issues/44)

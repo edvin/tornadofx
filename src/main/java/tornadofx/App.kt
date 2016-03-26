@@ -5,7 +5,9 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 abstract class App : Application() {
     abstract val primaryView: KClass<out View>
@@ -33,6 +35,10 @@ abstract class App : Application() {
     private fun installErrorHandler() {
         if (Thread.getDefaultUncaughtExceptionHandler() == null)
             Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
+    }
+
+    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<App, T> = object : ReadOnlyProperty<App, T> {
+        override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class)
     }
 
 }
