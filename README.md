@@ -118,17 +118,25 @@ Create a Customer model object that can be converted to and from JSON:
     
 ```kotlin
 class Customer : JsonModel {
-	val id = SimpleIntegerProperty()
-	val name = SimpleStringProperty()
-	
-	fun updateModel(json: JsonObject) = json.apply {
-		id.value = int("id")
-		name.value = string("name")
-	}
+    var id by property<Int>()
+    fun idProperty() = getProperty(Customer::id)
 
-	fun toJSON(json: JsonBuilder) = json
-		.add("id", id.value)
-		.add("name", name.value)		
+    var name by property<String>()
+    fun nameProperty() = getProperty(Customer::name)
+
+    override fun updateModel(json: JsonObject) {
+        with(json) {
+            id = int("id")
+            name = string("name")
+        }
+    }
+
+    override fun toJSON(json: JsonBuilder) {
+        with(json) {
+            add("id", id)
+            add("name", name)
+        }
+    }
 }
 ```
     
@@ -152,8 +160,10 @@ val controller : CustomerController by inject()
 Configure the REST API with a base URI and Basic Authentication:
 	
 ```kotlin
-api.baseURI = "http://contoso.com/api"
-api.setBasicAuth("user", "secret")
+with (api) {
+    baseURI = "http://contoso.com/api"
+    setBasicAuth("user", "secret")
+}
 ```
 	
 Load customers in the background and update a TableView on the UI thread:
@@ -201,8 +211,7 @@ with (config) {
 ```
 	
 Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
-get a new instance every time you use the `find()` method, or if you choose to Inject a `Fragment` you 
-will actually get a new instance every time you access it.
+create a new instance via the constructor.
  	
 ```kotlin
 class MyFragment : Fragment() {
@@ -213,19 +222,19 @@ class MyFragment : Fragment() {
 Open it in a Modal Window:
  		 	 	
 ```kotlin
-find(MyFragment::class).openModal()
+MyFragment().openModal()
 ``` 
 	 	
-Lookup and embed a `Fragment` or `View` inside another `Pane` in one go
+Lookup and embed a `View` inside another `Pane` in one go
   	 	
 ```kotlin
 root += MyFragment::class
 ```
 
-Inject a `Fragment` or `View` and embed inside another `Pane`
+Inject a `View` and embed inside another `Pane`
   	 
 ```kotlin
-val myFragment: MyFragment by inject()
+val myView: MyView by inject()
  
 init {
 	root += myFragment
