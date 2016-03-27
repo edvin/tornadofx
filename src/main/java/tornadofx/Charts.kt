@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.chart.*
 import javafx.scene.layout.Pane
