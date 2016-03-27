@@ -2,10 +2,7 @@ package tornadofx
 
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-import javafx.scene.chart.Axis
-import javafx.scene.chart.LineChart
-import javafx.scene.chart.PieChart
-import javafx.scene.chart.XYChart
+import javafx.scene.chart.*
 import javafx.scene.layout.Pane
 
 /**
@@ -39,6 +36,15 @@ fun PieChart.data(value: Map<String, Double>) = value.forEach { data(it.key, it.
  */
 fun <X, Y> Pane.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (LineChart<X, Y>.() -> Unit)? = null): LineChart<X, Y> {
     val chart = LineChart(x, y)
+    chart.title = title
+    return opcr(this, chart, op)
+}
+
+/**
+ * Create an AreaChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
+ */
+fun <X, Y> Pane.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (AreaChart<X, Y>.() -> Unit)? = null): AreaChart<X, Y> {
+    val chart = AreaChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
 }
@@ -79,12 +85,13 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
 }
 
 /**
- * Add multiple series XYChart.Series in one go. Specify a list of names for the series and then add values in the op.
- * Example:
+ * Add multiple series XYChart.Series wihh data in one go. Specify a list of names for the series
+ * and then add values in the op. Example:
  * <pre>
  * multiseries("Portfolio 1", "Portfolio 2") {
  *   data(1, 23, 10)
  *   data(2, 14, 5)
+ *   data(3, 15, 8)
  *   ...
  * }
  * </pre>
