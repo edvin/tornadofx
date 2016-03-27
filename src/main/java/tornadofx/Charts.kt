@@ -50,6 +50,17 @@ fun <X, Y> Pane.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (Ar
 }
 
 /**
+ * Create a BubbleChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
+ */
+fun <X, Y> Pane.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BubbleChart<X, Y>.() -> Unit)? = null): BubbleChart<X, Y> {
+    val chart = BubbleChart(x, y)
+    chart.title = title
+    return opcr(this, chart, op)
+}
+
+
+
+/**
  * Add a new XYChart.Series with the given name to the given Chart. Optionally specify a list data for the new series or
  * add data with the optional op that will be performed on the created series object.
  */
