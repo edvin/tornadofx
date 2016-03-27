@@ -58,7 +58,14 @@ fun <X, Y> Pane.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (
     return opcr(this, chart, op)
 }
 
-
+/**
+ * Create a ScatterChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
+ */
+fun <X, Y> Pane.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (ScatterChart<X, Y>.() -> Unit)? = null): ScatterChart<X, Y> {
+    val chart = ScatterChart(x, y)
+    chart.title = title
+    return opcr(this, chart, op)
+}
 
 /**
  * Add a new XYChart.Series with the given name to the given Chart. Optionally specify a list data for the new series or
