@@ -68,6 +68,15 @@ fun <X, Y> Pane.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: 
 }
 
 /**
+ * Create a BarChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
+ */
+fun <X, Y> Pane.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BarChart<X, Y>.() -> Unit)? = null): BarChart<X, Y> {
+    val chart = BarChart(x, y)
+    chart.title = title
+    return opcr(this, chart, op)
+}
+
+/**
  * Add a new XYChart.Series with the given name to the given Chart. Optionally specify a list data for the new series or
  * add data with the optional op that will be performed on the created series object.
  */
