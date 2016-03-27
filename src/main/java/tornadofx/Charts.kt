@@ -131,10 +131,10 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
  * }
  * </pre>
  */
-fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: (MultiSeries<X, Y>).() -> Unit): List<XYChart.Series<X, Y>> {
+fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: (MultiSeries<X, Y>).() -> Unit): MultiSeries<X, Y> {
     val series = names.map { XYChart.Series<X, Y>().apply { name = it } }
     val multiseries = MultiSeries(series, this)
     op(multiseries)
     data.addAll(series)
-    return series
+    return multiseries
 }
