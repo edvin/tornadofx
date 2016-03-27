@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.chart.Axis
 import javafx.scene.chart.LineChart
@@ -65,4 +66,33 @@ fun <X, Y> XYChart.Series<X, Y>.data(x: X, y: Y, extra: Any? = null, op: ((XYCha
     if (extra != null) extraValue = extra
     data.add(this)
     if (op != null) op(this)
+}
+
+/**
+ * Helper class for the multiseries support
+ */
+class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYChart<X, Y>) {
+    fun data(x: X, vararg y: Y) {
+        for ((index, value) in y.withIndex())
+            series[index].data(x, value)
+    }
+}
+
+/**
+ * Add multiple series XYChart.Series in one go. Specify a list of names for the series and then add values in the op.
+ * Example:
+ * <pre>
+ * multiseries("Portfolio 1", "Portfolio 2") {
+ *   data(1, 23, 10)
+ *   data(2, 14, 5)
+ *   ...
+ * }
+ * </pre>
+ */
+fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: (MultiSeries<X, Y>).() -> Unit): List<XYChart.Series<X, Y>> {
+    val series = names.map { XYChart.Series<X, Y>().apply { name = it } }
+    val multiseries = MultiSeries(series, this)
+    op(multiseries)
+    data.addAll(series)
+    return series
 }
