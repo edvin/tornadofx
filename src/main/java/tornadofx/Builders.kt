@@ -185,7 +185,7 @@ fun BorderPane.center(op: Pane.() -> Unit) {
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-private fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
+internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
     pane.children.add(node)
     op?.invoke(node)
     return node

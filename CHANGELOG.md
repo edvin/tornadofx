@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Chart builders (https://github.com/edvin/tornadofx/issues/55)
+
 ## [1.4.0] - 2016-03-26
 
 This version is binary incompatible if you used the REST Client, perform a clean build
