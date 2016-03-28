@@ -32,6 +32,13 @@ fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
 fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) addClass(className) else removeClass(className)
 
+fun Control.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null) {
+    val newToolTip = Tooltip(text)
+    graphic?.apply { newToolTip.graphic = this }
+    if (op != null) newToolTip.op()
+    tooltip = newToolTip
+}
+
 fun Scene.reloadStylesheets() {
     val styles = stylesheets.toMutableList()
     stylesheets.clear()

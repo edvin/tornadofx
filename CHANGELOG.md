@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Chart builders (https://github.com/edvin/tornadofx/issues/55)
+- Tooltip builders (https://github.com/edvin/tornadofx/issues/58)
 
 ## [1.4.0] - 2016-03-26
 
