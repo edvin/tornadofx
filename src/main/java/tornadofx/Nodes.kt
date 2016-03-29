@@ -30,7 +30,13 @@ import kotlin.reflect.KClass
 fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
-fun Node.toggleClass(className: String, predicate: Boolean) = if (predicate) addClass(className) else removeClass(className)
+fun Node.toggleClass(className: String, predicate: Boolean) {
+    if (predicate) {
+        if (!hasClass(className)) addClass(className)
+    } else {
+        removeClass(className)
+    }
+}
 
 fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null) {
     val newToolTip = Tooltip(text)

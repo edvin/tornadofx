@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- `Node.toggleClass` could potentially add duplicates
+
 ## [1.4.1] - 2016-03-28
 
 ### Added
