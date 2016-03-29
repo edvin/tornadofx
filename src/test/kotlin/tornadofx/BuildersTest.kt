@@ -1,5 +1,6 @@
 package tornadofx
 
+import java.nio.file.Paths
 import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.layout.StackPane
@@ -13,7 +14,7 @@ import org.testfx.api.FxAssert.verifyThat
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
 import org.testfx.matcher.base.NodeMatchers
-import java.nio.file.Paths
+import org.testfx.service.support.impl.PixelMatcherRgb
 
 class BuildersTest {
 
@@ -67,12 +68,22 @@ class BuildersTest {
         FxToolkit.setupFixture {
             val root = Example1().root
             primaryStage.scene = Scene(root)
+            primaryStage.scene.root.requestFocus()
             primaryStage.show()
         }
 
         val robot = FxRobot()
-        robot.robotContext().captureSupport.saveImage(
-            robot.capture(primaryStage.scene.root), Paths.get("example-1.png"))
+        val captureSupport = robot.robotContext().captureSupport
+
+        val actualImagePath = Paths.get("example-1-actual.png")
+        val expectedImagePath = Paths.get(javaClass.getResource("res/example-1-expected.png").toURI())
+
+        val expectedImage = captureSupport.loadImage(expectedImagePath)
+        val actualImage = robot.capture(primaryStage.scene.root)
+        captureSupport.saveImage(actualImage, actualImagePath)
+
+        val matchResult = captureSupport.matchImages(actualImage, expectedImage, PixelMatcherRgb())
+        captureSupport.saveImage(matchResult.matchImage, Paths.get("example-1-difference.png"))
     }
 
 }
