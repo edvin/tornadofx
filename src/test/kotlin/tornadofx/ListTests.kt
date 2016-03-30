@@ -17,7 +17,7 @@ class ListTests {
     fun filterTest() {
         val data = SortedFilteredList(persons)
         data.predicate = { it.name.contains("Stu")}
-        Assert.assertEquals(2, data.filteredItems.size)
+        Assert.assertEquals(2, data.size)
     }
 
 }

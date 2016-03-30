@@ -25,15 +25,19 @@ import java.util.function.Predicate
  * val data = SortedFilteredList(persons).bindTo(table)
  * ```
  *
- * Items can be updated by calling `data.setAll` or `data.addAll` at a later time.
+ * Items can be updated by calling `data.items.setAll` or `data.items.addAll` at a later time.
  */
 @Suppress("UNCHECKED_CAST")
-class SortedFilteredList<T>(val items: ObservableList<T> = FXCollections.observableArrayList(), initialPredicate: (T) -> Boolean = { true }) : ObservableList<T> by items {
-    var predicate: (T) -> Boolean = initialPredicate
-        set(value) { filteredItems.predicate = Predicate { value(it) } }
+class SortedFilteredList<T>(
+        val items: ObservableList<T> = FXCollections.observableArrayList(),
+        initialPredicate: (T) -> Boolean = { true },
+        final val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
+        final val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
 
-    val filteredItems = FilteredList(items, predicate)
-    val sortedItems = SortedList(filteredItems)
+    var predicate: (T) -> Boolean = initialPredicate
+        set(value) {
+            filteredItems.predicate = Predicate { value(it) }
+        }
 
     /**
      * Bind this data object to the given TableView.
