@@ -68,7 +68,7 @@ class SortedFilteredList<T>(val items: ObservableList<T> = FXCollections.observa
      * <pre>
      * textfield {
      *     promptText = "Filtrering"
-     *     data.filterWhen(textProperty(), { query, item -> item.matches(query.toLowerCase()) } )
+     *     data.filterWhen(textProperty(), { query, item -> item.matches(query) } )
      * }
      * </pre>
      */
