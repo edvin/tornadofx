@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `Node.toggleClass` could potentially add duplicates
+- `TableView/TreeTableView.resizeColumnsToFitContent` scans 50 rows by default
 
 ## [1.4.1] - 2016-03-28
 
