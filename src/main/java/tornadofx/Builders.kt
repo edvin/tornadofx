@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
@@ -197,6 +198,15 @@ inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
     op(tableview)
     children.add(tableview)
     return tableview
+}
+
+fun <S> TableView<S>.makeIndexColumn(startNumber:Int = 1): TableColumn<S, Number> {
+    return TableColumn<S, Number>("#").apply {
+        isSortable = false
+        this@makeIndexColumn.columns += this
+        setCellValueFactory { ReadOnlyObjectWrapper<Number>(getItems().indexOf(it.getValue()) + startNumber) };
+        prefWidth = 30.0
+    }
 }
 
 /**
