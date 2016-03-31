@@ -57,7 +57,7 @@ fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? 
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
-fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this,ListView<T>().apply {
+fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     values?.let { items = it }
 }, op)
 
@@ -150,8 +150,8 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
-fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this,FlowPane(),op)
-fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this,TilePane(),op)
+fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
+fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 fun BorderPane.top(op: Pane.() -> Unit) {
@@ -193,14 +193,14 @@ private fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T 
     return node
 }
 
-inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
-    val tableview = TableView<S>()
+inline fun <S> Pane.tableview(Items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
+    val tableview = TableView(Items)
     op(tableview)
     children.add(tableview)
     return tableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(name: String = "#", width: Double = 30.0, startNumber:Int = 1): TableColumn<S, Number> {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", width: Double = 30.0, startNumber: Int = 1): TableColumn<S, Number> {
     return TableColumn<S, Number>(name).apply {
         isSortable = false
         prefWidth = width
@@ -212,9 +212,9 @@ fun <S> TableView<S>.makeIndexColumn(name: String = "#", width: Double = 30.0, s
 /**
  * Create a column with a value factory that extracts the value from the given callback.
  */
-fun <S, T> TableView<S>.column(title: String, valueProvider : (TableColumn.CellDataFeatures<S?, T?>) -> ObservableValue<T>): TableColumn<S, T> {
+fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S?, T?>) -> ObservableValue<T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
-    column.cellValueFactory = Callback { valueProvider(it)}
+    column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)
     return column
 }
