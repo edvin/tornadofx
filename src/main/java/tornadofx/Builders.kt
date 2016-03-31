@@ -200,12 +200,12 @@ inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
     return tableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(startNumber:Int = 1): TableColumn<S, Number> {
-    return TableColumn<S, Number>("#").apply {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", width: Double = 30.0, startNumber:Int = 1): TableColumn<S, Number> {
+    return TableColumn<S, Number>(name).apply {
         isSortable = false
+        prefWidth = width
         this@makeIndexColumn.columns += this
-        setCellValueFactory { ReadOnlyObjectWrapper<Number>(getItems().indexOf(it.getValue()) + startNumber) };
-        prefWidth = 30.0
+        setCellValueFactory { ReadOnlyObjectWrapper(getItems().indexOf(it.getValue()) + startNumber) };
     }
 }
 
