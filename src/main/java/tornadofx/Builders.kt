@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
@@ -191,8 +192,8 @@ internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T
     return node
 }
 
-inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
-    val tableview = TableView<S>()
+inline fun <S> Pane.tableview(Items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
+    val tableview = TableView(Items)
     op(tableview)
     children.add(tableview)
     return tableview
@@ -212,6 +213,15 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     op(treetableview)
     children.add(treetableview)
     return treetableview
+}
+
+fun <S> TableView<S>.makeIndexColumn(startNumber:Int = 1): TableColumn<S, Number> {
+    return TableColumn<S, Number>("#").apply {
+        isSortable = false
+        prefWidth = width
+        this@makeIndexColumn.columns += this
+        setCellValueFactory { ReadOnlyObjectWrapper(getItems().indexOf(it.getValue()) + startNumber) };
+    }
 }
 
 /**
