@@ -216,12 +216,12 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     return treetableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(startNumber:Int = 1): TableColumn<S, Number> {
-    return TableColumn<S, Number>("#").apply {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): TableColumn<S, Number> {
+    return TableColumn<S, Number>(name).apply {
         isSortable = false
         prefWidth = width
         this@makeIndexColumn.columns += this
-        setCellValueFactory { ReadOnlyObjectWrapper(getItems().indexOf(it.getValue()) + startNumber) };
+        setCellValueFactory { ReadOnlyObjectWrapper(items.indexOf(it.value) + startNumber) };
     }
 }
 
