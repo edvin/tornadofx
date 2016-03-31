@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
+- `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
+- `tableview` builder accepts optional item list
 
 ### Changed
 

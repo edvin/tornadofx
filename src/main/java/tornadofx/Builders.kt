@@ -192,8 +192,9 @@ internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T
     return node
 }
 
-inline fun <S> Pane.tableview(Items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
-    val tableview = TableView(Items)
+inline fun <S> Pane.tableview(items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
+    val tableview = TableView<S>()
+    if (items != null) tableview.items = items
     op(tableview)
     children.add(tableview)
     return tableview
