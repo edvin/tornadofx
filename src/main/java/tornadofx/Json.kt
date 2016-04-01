@@ -266,7 +266,7 @@ interface JsonModelAuto : JsonModel {
                     val Array = pr as ObservableList<Any>
 
                     val arrayObject = json.getJsonArray(it.name)
-                    arrayObject.forEach {jsonObj ->
+                    arrayObject?.forEach {jsonObj ->
                         val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
                         Array.add(New.apply { updateModel(jsonObj as JsonObject) })
                     }
