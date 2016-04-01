@@ -227,17 +227,19 @@ fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): T
     }
 }
 
-fun <S, T> TableColumn<S, T>.enableTextWrap() {
+fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
     setCellFactory {
         TableCell<S, T>().apply {
             val text = Text();
-            setGraphic(text); setPrefHeight(Control.USE_COMPUTED_SIZE);
-            text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())));
+            graphic = text
+            prefHeight = Control.USE_COMPUTED_SIZE
+            text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())))
             text.textProperty().bind(Bindings.createStringBinding(Callable {
                 itemProperty().get()?.toString() ?: ""
             }, itemProperty()))
         }
     }
+    return this
 }
 
 /**
