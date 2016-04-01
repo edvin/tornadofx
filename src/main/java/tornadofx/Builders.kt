@@ -231,7 +231,7 @@ fun <S, T> TableColumn<S, T>.enableTextWrap() {
         TableCell<S, T>().apply {
             val text = Text();
             setGraphic(text); setPrefHeight(Control.USE_COMPUTED_SIZE);
-            text.wrappingWidthProperty().bind(widthProperty().subtract(8));
+            text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())));
             text.textProperty().bind(Bindings.createStringBinding(Callable {
                 itemProperty().get()?.toString() ?: ""
             }, itemProperty()))
