@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.binding.Bindings
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
@@ -12,6 +13,7 @@ import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
 import java.time.LocalDate
+import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -221,6 +223,19 @@ fun <S> TableView<S>.makeIndexColumn(startNumber:Int = 1): TableColumn<S, Number
         prefWidth = width
         this@makeIndexColumn.columns += this
         setCellValueFactory { ReadOnlyObjectWrapper(getItems().indexOf(it.getValue()) + startNumber) };
+    }
+}
+
+fun <S, T> TableColumn<S, T>.enableTextWrap() {
+    setCellFactory {
+        TableCell<S, T>().apply {
+            val text = Text();
+            setGraphic(text); setPrefHeight(Control.USE_COMPUTED_SIZE);
+            text.wrappingWidthProperty().bind(widthProperty().subtract(8));
+            text.textProperty().bind(Bindings.createStringBinding(Callable {
+                itemProperty().get()?.toString() ?: ""
+            }, itemProperty()))
+        }
     }
 }
 
