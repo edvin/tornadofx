@@ -50,7 +50,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.+'
+compile 'no.tornado:tornadofx:1.4.1'
 ```
 
 ### What does it look like? (Code snippets)
@@ -68,7 +68,6 @@ Load the root node from `HelloWorld.fxml` and inject controls by `fx:id`
 ```kotlin
 class HelloWorld : View() {
 	override val root: HBox by fxml()
-	
 	val myLabel: Label by fxid()
 	
 	init {

@@ -1,6 +1,8 @@
 package tornadofx
 
+import javafx.beans.binding.Bindings
 import javafx.beans.property.Property
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
@@ -11,6 +13,7 @@ import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
 import java.time.LocalDate
+import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -191,8 +194,9 @@ internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T
     return node
 }
 
-inline fun <S> Pane.tableview(op: (TableView<S>.() -> Unit)): TableView<S> {
+inline fun <S> Pane.tableview(items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
     val tableview = TableView<S>()
+    if (items != null) tableview.items = items
     op(tableview)
     children.add(tableview)
     return tableview
@@ -212,6 +216,28 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     op(treetableview)
     children.add(treetableview)
     return treetableview
+}
+
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): TableColumn<S, Number> {
+    return TableColumn<S, Number>(name).apply {
+        isSortable = false
+        prefWidth = width
+        this@makeIndexColumn.columns += this
+        setCellValueFactory { ReadOnlyObjectWrapper(items.indexOf(it.value) + startNumber) };
+    }
+}
+
+fun <S, T> TableColumn<S, T>.enableTextWrap() {
+    setCellFactory {
+        TableCell<S, T>().apply {
+            val text = Text();
+            setGraphic(text); setPrefHeight(Control.USE_COMPUTED_SIZE);
+            text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())));
+            text.textProperty().bind(Bindings.createStringBinding(Callable {
+                itemProperty().get()?.toString() ?: ""
+            }, itemProperty()))
+        }
+    }
 }
 
 /**
