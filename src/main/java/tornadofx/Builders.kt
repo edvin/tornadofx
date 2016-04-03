@@ -1,11 +1,13 @@
 package tornadofx
 
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.cell.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
@@ -56,7 +58,7 @@ fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? 
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
-fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this,ListView<T>().apply {
+fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     values?.let { items = it }
 }, op)
 
@@ -149,8 +151,8 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
-fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this,FlowPane(),op)
-fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this,TilePane(),op)
+fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
+fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 fun BorderPane.top(op: Pane.() -> Unit) {
@@ -216,7 +218,7 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     return treetableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): TableColumn<S, Number> {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
     return TableColumn<S, Number>(name).apply {
         isSortable = false
         prefWidth = width
@@ -233,6 +235,63 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
     column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)
     return column
+}
+
+fun <S, T> TableColumn<S, T?>.makeComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+    cellFactory = ComboBoxTableCell.forTableColumn(items)
+    setOnEditCommit {
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        property.value = it.newValue
+        afterCommit?.invoke(it)
+    }
+    return this
+}
+
+inline fun <S, reified T> TableColumn<S, T?>.makeTextField(converter: StringConverter<T>? = null, noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+    when (T::class) {
+        String::class -> {
+            @Suppress("CAST_NEVER_SUCCEEDS")
+            val stringColumn = this as TableColumn<S, String?>
+            stringColumn.cellFactory = TextFieldTableCell.forTableColumn()
+        }
+        else -> {
+            if (converter == null)
+                throw IllegalArgumentException("You must supply a converter for non String columns")
+            cellFactory = TextFieldTableCell.forTableColumn(converter)
+        }
+    }
+
+    setOnEditCommit {
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        property.value = it.newValue
+        afterCommit?.invoke(it)
+    }
+    return this
+}
+
+fun <S, T> TableColumn<S, T?>.makeChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+    cellFactory = ChoiceBoxTableCell.forTableColumn(items)
+    setOnEditCommit {
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        property.value = it.newValue
+        afterCommit?.invoke(it)
+    }
+    return this
+}
+
+fun <S> TableColumn<S, Double?>.makeProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Double?>) -> Unit)? = null): TableColumn<S, Double?> {
+    cellFactory = ProgressBarTableCell.forTableColumn()
+    setOnEditCommit {
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<Double?>
+        property.value = it.newValue
+        afterCommit?.invoke(it)
+    }
+    return this
+}
+
+fun <S> TableColumn<S, Boolean?>.makeCheckbox(): TableColumn<S, Boolean?> {
+    cellFactory = CheckBoxTableCell.forTableColumn(this)
+    return this
 }
 
 /**

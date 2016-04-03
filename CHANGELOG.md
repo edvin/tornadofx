@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
+- New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar` and `makeCheckbox` (https://github.com/edvin/tornadofx/issues/67)
 
 ### Changed
 
