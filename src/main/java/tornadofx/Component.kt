@@ -131,6 +131,8 @@ abstract class UIComponent : Component() {
         }
     }
 
+    val stage: Stage get() = root.scene.window as Stage
+    val hasStage = root.scene.window is Stage
 }
 
 abstract class Fragment : UIComponent() {

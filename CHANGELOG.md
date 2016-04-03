@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 - `tableview` builder accepts optional item list
 - New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar` and `makeCheckbox` (https://github.com/edvin/tornadofx/issues/67)
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
+- `UIComponent.hasStage` property to check if the root node is hosted in a Stage
+- `UIComponent.stage` property to access the current stage
 
 ### Changed
 
