@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.ObjectProperty
+import javafx.beans.binding.Bindings
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
@@ -14,6 +15,7 @@ import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
 import java.time.LocalDate
+import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -218,13 +220,28 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     return treetableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): TableColumn<S, Number> {
     return TableColumn<S, Number>(name).apply {
         isSortable = false
         prefWidth = width
         this@makeIndexColumn.columns += this
         setCellValueFactory { ReadOnlyObjectWrapper(items.indexOf(it.value) + startNumber) };
     }
+}
+
+fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
+    setCellFactory {
+        TableCell<S, T>().apply {
+            val text = Text();
+            graphic = text
+            prefHeight = Control.USE_COMPUTED_SIZE
+            text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())))
+            text.textProperty().bind(Bindings.createStringBinding(Callable {
+                itemProperty().get()?.toString() ?: ""
+            }, itemProperty()))
+        }
+    }
+    return this
 }
 
 /**

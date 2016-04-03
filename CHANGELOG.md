@@ -10,10 +10,12 @@ All notable changes to this project will be documented in this file.
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
 - New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar` and `makeCheckbox` (https://github.com/edvin/tornadofx/issues/67)
+- `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 
 ### Changed
 
 - `Node.toggleClass` could potentially add duplicates
+- `TableView/TreeTableView.resizeColumnsToFitContent` scans 50 rows by default
 
 ## [1.4.1] - 2016-03-28
 
