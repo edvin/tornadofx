@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Upgrade to Kotlin 1.0.1-2
 - `Node.toggleClass` could potentially add duplicates
 - `TableView/TreeTableView.resizeColumnsToFitContent` scans 50 rows by default
 
