@@ -1,7 +1,7 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
 import javafx.beans.binding.Bindings
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
@@ -21,7 +21,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
-fun Pane.titledPane(title: String, node: Node): TitledPane {
+fun Pane.titledpane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
     return opcr(this, pane)
 }
@@ -92,10 +92,10 @@ fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op:
     if (property != null) selectedProperty().bindBidirectional(property)
 }, op)
 
-fun Pane.progressIndicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
+fun Pane.progressindicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
 
-fun Pane.progressBar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
-fun Pane.progressBar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressBar(op = op).apply {
+fun Pane.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
+fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar(op = op).apply {
     progressProperty().bind(property)
 }
 
