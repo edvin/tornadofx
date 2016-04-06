@@ -135,6 +135,19 @@ fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar 
     return toolbar
 }
 
+fun Pane.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
+    var splitpane = SplitPane()
+    if (nodes.isNotEmpty())
+        splitpane.items.addAll(nodes)
+    opcr(this, splitpane, op)
+    return splitpane
+}
+
+fun SplitPane.items(op: (Pane.() -> Unit)) {
+    val fake = Pane()
+    op(fake)
+    items.addAll(fake.children)
+}
 
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
