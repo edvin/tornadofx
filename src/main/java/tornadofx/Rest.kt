@@ -195,9 +195,11 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
         for (header in headers)
             connection.addRequestProperty(header.key, header.value)
 
+        connection.requestMethod = method.toString()
+
         if (entity != null) {
             if (headers["Content-Type"] == null)
-                headers["Content-Type"] = "application/json"
+                connection.addRequestProperty("Content-Type", "application/json")
 
             connection.doOutput = true
 

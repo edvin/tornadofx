@@ -9,16 +9,16 @@ All notable changes to this project will be documented in this file.
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
-- New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar` and `makeCheckbox` (https://github.com/edvin/tornadofx/issues/67)
+- New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar`, `makeCheckbox` and `makeDatePicker` (https://github.com/edvin/tornadofx/issues/67)
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
-- `UIComponent.hasStage` property to check if the root node is hosted in a Stage
-- `UIComponent.stage` property to access the current stage
 
 ### Changed
 
 - Upgrade to Kotlin 1.0.1-2
 - `Node.toggleClass` could potentially add duplicates
 - `TableView/TreeTableView.resizeColumnsToFitContent` scans 50 rows by default
+- HttpURLEngine correctly sets Content-Type header
+
 
 ## [1.4.1] - 2016-03-28
 
