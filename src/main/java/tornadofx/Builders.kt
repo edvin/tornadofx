@@ -149,6 +149,20 @@ fun SplitPane.items(op: (Pane.() -> Unit)) {
     items.addAll(fake.children)
 }
 
+fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
+    var accordion = Accordion()
+    if (panes.isNotEmpty())
+        accordion.panes.addAll(panes)
+    opcr(this, accordion, op)
+    return accordion
+}
+
+fun Accordion.folds(op: (Pane.() -> Unit)) {
+    val fake = Pane()
+    op(fake)
+    panes.setAll(fake.children.map { TitledPane(null, it) })
+}
+
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
     if (children != null)
