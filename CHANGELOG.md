@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar`, `makeCheckbox` and `makeDatePicker` (https://github.com/edvin/tornadofx/issues/67)
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
+- `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
 
 ### Changed
 
