@@ -157,10 +157,11 @@ fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null)
     return accordion
 }
 
-fun Accordion.folds(op: (Pane.() -> Unit)) {
-    val fake = Pane()
-    op(fake)
-    panes.setAll(fake.children.map { TitledPane(null, it) })
+fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)) {
+    val vbox = VBox()
+    op(vbox)
+    val fold = TitledPane(title, if (vbox.children.size == 1) vbox.children[0] else vbox)
+    panes += fold
 }
 
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
@@ -248,7 +249,7 @@ inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<
     return treetableview
 }
 
-fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber:Int = 1): TableColumn<S, Number> {
+fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
     return TableColumn<S, Number>(name).apply {
         isSortable = false
         prefWidth = width
