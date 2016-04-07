@@ -157,11 +157,12 @@ fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null)
     return accordion
 }
 
-fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)) {
+fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)): TitledPane {
     val vbox = VBox()
     op(vbox)
     val fold = TitledPane(title, if (vbox.children.size == 1) vbox.children[0] else vbox)
     panes += fold
+    return fold
 }
 
 fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
