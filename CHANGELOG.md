@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
 - `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
+- `JsonStructure.toPrettyString` https://github.com/edvin/tornadofx/pull/77
 
 ### Changed
 
