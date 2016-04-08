@@ -100,10 +100,12 @@ fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? =
 }
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
-fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null) {
+
+fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
     items.add(button)
     op?.invoke(button)
+    return button
 }
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
