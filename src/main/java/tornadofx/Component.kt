@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -93,11 +94,15 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
-abstract class UIComponent : Component() {
-    abstract val root: Parent
+interface ViewContainer : Injectable {
+    val root: Parent
+    val titleProperty: Property<String>
+}
+
+abstract class UIComponent : Component(), ViewContainer {
     var fxmlLoader: FXMLLoader? = null
 
-    val titleProperty = SimpleStringProperty()
+    override val titleProperty = SimpleStringProperty()
     var title: String
         get() = titleProperty.get()
         set(value) = titleProperty.set(value)

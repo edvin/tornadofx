@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `SingleViewApp` for small/example applications (https://github.com/edvin/tornadofx/issues/74)
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
@@ -13,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
 - `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
-- `JsonStructure.toPrettyString` https://github.com/edvin/tornadofx/pull/77
+- `JsonStructure.toPrettyString` (https://github.com/edvin/tornadofx/pull/77)
 
 ### Changed
 
