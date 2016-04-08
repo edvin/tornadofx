@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import java.io.StringWriter
 import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -10,6 +11,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
+import javax.json.stream.JsonGenerator
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.memberProperties
@@ -307,4 +309,18 @@ interface JsonModelAuto : JsonModel {
             }
         }
     }
+}
+
+fun JsonStructure.toPrettyString(): String {
+    return toString(JsonGenerator.PRETTY_PRINTING)
+}
+
+fun JsonStructure.toString(vararg options: String): String {
+    val stringWriter = StringWriter()
+    val config = HashMap<String, Boolean>().apply { options.forEach { put(it, true) } }
+    val writerFactory = Json.createWriterFactory(config)
+    val jsonWriter = writerFactory.createWriter(stringWriter)
+    jsonWriter.write(this)
+    jsonWriter.close()
+    return stringWriter.toString()
 }
