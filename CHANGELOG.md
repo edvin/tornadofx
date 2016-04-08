@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - `Node.toggleClass` could potentially add duplicates
 - `TableView/TreeTableView.resizeColumnsToFitContent` scans 50 rows by default
 - HttpURLEngine correctly sets Content-Type header
-
+- Som builders were not all lowercase (titledPane renamed to titledpane)
 
 ## [1.4.1] - 2016-03-28
 
