@@ -110,8 +110,6 @@ fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null): Button {
     return button
 }
 
-fun Pane.togglegroup() = ToggleGroup()
-
 fun Pane.togglebutton(text: String = "", group: ToggleGroup? = null, op: (ToggleButton.() -> Unit)? = null)
         = opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
 
