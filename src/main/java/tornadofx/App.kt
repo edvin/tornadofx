@@ -43,7 +43,7 @@ abstract class App : Application() {
 
 }
 
-abstract class SingleViewApp(override val root: Pane) : App(), ViewContainer {
+abstract class SingleViewApp(title: String? = null, override val root: Pane) : App(), ViewContainer {
     override val primaryView = javaClass.kotlin
-    override val titleProperty = SimpleStringProperty()
+    override val titleProperty = SimpleStringProperty(title)
 }
