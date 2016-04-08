@@ -1,7 +1,9 @@
 package tornadofx
 
 import javafx.application.Application
+import javafx.beans.property.SimpleStringProperty
 import javafx.scene.Scene
+import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
@@ -39,4 +41,9 @@ abstract class App : Application() {
         override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class)
     }
 
+}
+
+abstract class SingleViewApp(override val root: Pane) : App(), ViewContainer {
+    override val primaryView = javaClass.kotlin
+    override val titleProperty = SimpleStringProperty()
 }
