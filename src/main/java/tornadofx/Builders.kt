@@ -113,6 +113,11 @@ fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = lab
     textProperty().bind(property)
 }
 
+fun Pane.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
+fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink(op = op).apply {
+    textProperty().bind(property)
+}
+
 fun Pane.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar(), op)
 
 fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
