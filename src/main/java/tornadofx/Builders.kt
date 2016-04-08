@@ -284,6 +284,16 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
     return column
 }
 
+/**
+ * Create a column with a PropertyValueFactory as valueProvider
+ */
+fun <S, T> TableView<S>.column(title: String, valueProvider: PropertyValueFactory<S, T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = valueProvider
+    columns.add(column)
+    return column
+}
+
 fun <S, T> TableColumn<S, T?>.makeComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     cellFactory = ComboBoxTableCell.forTableColumn(items)
     setOnEditCommit {
