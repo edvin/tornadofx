@@ -12,6 +12,7 @@ import javafx.scene.control.cell.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
+import javafx.scene.text.TextFlow
 import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.control.DatePickerTableCell
@@ -27,6 +28,10 @@ fun Pane.titledpane(title: String, node: Node): TitledPane {
 }
 
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
+
+fun Pane.textflow(op: (TextFlow.() -> Unit)? = null) = opcr(this, TextFlow(),op)
+
+fun Pane.text(op: (Text.() -> Unit)? = null) = opcr(this,Text(),op)
 
 fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null): Tab {
     val tab = Tab(text, content)
