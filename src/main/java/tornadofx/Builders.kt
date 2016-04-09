@@ -285,11 +285,11 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
 }
 
 /**
- * Create a column with a PropertyValueFactory as valueProvider
+ * Create a column using the propertyName of the attribute you want shown.
  */
-fun <S, T> TableView<S>.column(title: String, valueProvider: PropertyValueFactory<S, T>): TableColumn<S, T> {
+fun <S, T> TableView<S>.column(title: String, propertyName: String): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
-    column.cellValueFactory = valueProvider
+    column.cellValueFactory = PropertyValueFactory<S, T>(propertyName)
     columns.add(column)
     return column
 }
