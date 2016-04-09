@@ -110,10 +110,10 @@ fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null): Button {
     return button
 }
 
-fun Pane.togglebutton(text: String = "", group: ToggleGroup? = null, op: (ToggleButton.() -> Unit)? = null)
-        = opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
+fun Pane.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (ToggleButton.() -> Unit)? = null) =
+        opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
 
-fun Pane.radiobutton(text: String = "", group: ToggleGroup? = null, op: (RadioButton.() -> Unit)? = null)
+fun Pane.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (RadioButton.() -> Unit)? = null)
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
