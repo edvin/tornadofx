@@ -70,6 +70,8 @@ fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = nul
     textProperty().bindBidirectional(property)
 }
 
+fun Pane.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
+
 fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
     textProperty().bindBidirectional(property, converter)
 }
@@ -108,8 +110,19 @@ fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null): Button {
     return button
 }
 
+fun Pane.togglebutton(text: String = "", group: ToggleGroup? = null, op: (ToggleButton.() -> Unit)? = null)
+        = opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
+
+fun Pane.radiobutton(text: String = "", group: ToggleGroup? = null, op: (RadioButton.() -> Unit)? = null)
+        = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
+
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
 fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label(op = op).apply {
+    textProperty().bind(property)
+}
+
+fun Pane.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
+fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink(op = op).apply {
     textProperty().bind(property)
 }
 
