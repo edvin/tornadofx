@@ -100,6 +100,9 @@ fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op:
 }, op)
 
 fun Pane.progressindicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
+fun Pane.progressindicator(property: Property<Double>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator(op = op).apply {
+    progressProperty().bind(property)
+}
 
 fun Pane.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
 fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar(op = op).apply {
