@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - `tableview` builder accepts optional item list
 - New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar`, `makeCheckbox` and `makeDatePicker` (https://github.com/edvin/tornadofx/issues/67)
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
+- `TableColumn` cell factory that wraps `PropertyValueFactory` for better POJO support (https://github.com/edvin/tornadofx/pull/75)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
 - `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
 - `JsonStructure.toPrettyString` (https://github.com/edvin/tornadofx/pull/77)
