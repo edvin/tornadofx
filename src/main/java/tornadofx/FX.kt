@@ -18,7 +18,7 @@ class FX {
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
-        var injector: Injector? = null
+        var dicontainer: DIContainer? = null
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -94,8 +94,8 @@ fun <T : Any> find(type: KClass<T>): T {
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> findExternal(type: KClass<T>) =
-    FX.injector?.let { it.getInstance(type) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
+    FX.dicontainer?.let { it.getInstance(type) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
 
-interface Injector {
+interface DIContainer {
     fun <T: Any> getInstance(type: KClass<T>): T
 }
