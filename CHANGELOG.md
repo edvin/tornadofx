@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - `radiobutton` builder (https://github.com/edvin/tornadofx/pull/78)
 - `togglebutton` builder (https://github.com/edvin/tornadofx/pull/78)
 - `slider` builder (https://github.com/edvin/tornadofx/pull/81)
+- `separator` builder (https://github.com/edvin/tornadofx/pull/82)
 
 ### Changed
 
