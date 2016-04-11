@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - `JsonStructure.toPrettyString` (https://github.com/edvin/tornadofx/pull/77)
 - `text` builder (https://github.com/edvin/tornadofx/issues/76)
 - `textflow` builder (https://github.com/edvin/tornadofx/issues/76)
+- `htmleditor` builder (https://github.com/edvin/tornadofx/pull/83)
 - `hyperlink` builder (https://github.com/edvin/tornadofx/pull/78)
 - `passwordfield` builder (https://github.com/edvin/tornadofx/pull/78)
 - `radiobutton` builder (https://github.com/edvin/tornadofx/pull/78)
