@@ -6,6 +6,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
@@ -203,6 +204,8 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
     if (spacing != null) vbox.spacing = spacing
     return opcr(this, vbox, op)
 }
+
+fun Pane.separator(orientation: Orientation? = null, op: (Separator.() -> Unit)? = null) = opcr(this, Separator(orientation), op)
 
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
