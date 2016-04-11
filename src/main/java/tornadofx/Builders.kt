@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
+import javafx.scene.web.HTMLEditor
 import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.control.DatePickerTableCell
@@ -95,6 +96,8 @@ fun Pane.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null)
 fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
     textProperty().bindBidirectional(property, converter)
 }
+
+fun Pane.htmleditor(html: String? = null, op: (HTMLEditor.() -> Unit)? = null) = opcr(this, HTMLEditor().apply { if (html != null) htmlText = html }, op)
 
 fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text).apply {
     if (property != null) selectedProperty().bindBidirectional(property)
