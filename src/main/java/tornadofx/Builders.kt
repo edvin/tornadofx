@@ -212,6 +212,8 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
     return opcr(this, vbox, op)
 }
 
+fun Pane.separator(orientation: Orientation? = null, op: (Separator.() -> Unit)? = null) = opcr(this, Separator(orientation), op)
+
 fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
 fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
