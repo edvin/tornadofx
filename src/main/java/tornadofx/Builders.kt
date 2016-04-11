@@ -29,9 +29,9 @@ fun Pane.titledpane(title: String, node: Node): TitledPane {
 
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
 
-fun Pane.textflow(op: (TextFlow.() -> Unit)? = null) = opcr(this, TextFlow(),op)
+fun Pane.textflow(op: (TextFlow.() -> Unit)? = null) = opcr(this, TextFlow(), op)
 
-fun Pane.text(op: (Text.() -> Unit)? = null) = opcr(this,Text(),op)
+fun Pane.text(op: (Text.() -> Unit)? = null) = opcr(this, Text(), op)
 
 fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null): Tab {
     val tab = Tab(text, content)
@@ -108,6 +108,12 @@ fun Pane.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)?
 fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar(op = op).apply {
     progressProperty().bind(property)
 }
+
+fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null, op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
+    if (min != null) this.min = min
+    if (max != null) this.max = max
+    if (value != null) this.value = value
+}, op)
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
 
