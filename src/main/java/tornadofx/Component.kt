@@ -82,8 +82,11 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
+    inline fun <reified T : Any> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (Injectable::class.java.isAssignableFrom(T::class.java)) return find(T::class)
+            return findExternal(T::class)
+        }
     }
 
     val primaryStage: Stage get() = FX.primaryStage
@@ -101,6 +104,40 @@ interface ViewContainer : Injectable {
 
 abstract class UIComponent : Component(), ViewContainer {
     var fxmlLoader: FXMLLoader? = null
+    var modalStage: Stage? = null
+
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
+        if (modalStage == null) {
+            if (root !is Parent) {
+                throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
+            } else {
+                modalStage = Stage(stageStyle).apply {
+                    titleProperty().bind(titleProperty)
+                    initModality(modality)
+
+                    Scene(root).apply {
+                        if (escapeClosesWindow) {
+                            addEventFilter(KeyEvent.KEY_PRESSED) {
+                                if (it.code == KeyCode.ESCAPE)
+                                    closeModal()
+                            }
+                        }
+
+                        stylesheets.addAll(FX.stylesheets)
+                        icons += FX.primaryStage.icons
+                        scene = this
+                    }
+
+                    show()
+                }
+            }
+        }
+    }
+
+    fun closeModal() = modalStage?.apply {
+        close()
+        modalStage = null
+    }
 
     override val titleProperty = SimpleStringProperty()
     var title: String
@@ -138,42 +175,7 @@ abstract class UIComponent : Component(), ViewContainer {
 
 }
 
-abstract class Fragment : UIComponent() {
-    var modalStage: Stage? = null
-
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
-        if (modalStage == null) {
-            if (root !is Parent) {
-                throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
-            } else {
-                modalStage = Stage(stageStyle).apply {
-                    titleProperty().bind(titleProperty)
-                    initModality(modality)
-
-                    Scene(root).apply {
-                        if (escapeClosesWindow) {
-                            addEventFilter(KeyEvent.KEY_PRESSED) {
-                                if (it.code == KeyCode.ESCAPE)
-                                    closeModal()
-                            }
-                        }
-
-                        stylesheets.addAll(FX.stylesheets)
-                        scene = this
-                    }
-
-                    show()
-                }
-            }
-        }
-    }
-
-    fun closeModal() = modalStage?.apply {
-        close()
-        modalStage = null
-    }
-
-}
+abstract class Fragment : UIComponent()
 
 abstract class View : UIComponent(), Injectable
 

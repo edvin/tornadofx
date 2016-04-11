@@ -18,6 +18,7 @@ class FX {
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
+        var dicontainer: DIContainer? = null
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -80,8 +81,8 @@ fun importStylesheet(stylesheet: String) {
 inline fun <reified T : Injectable> find(): T = find(T::class)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Injectable> find(type: KClass<T>): T {
-    if (!FX.components.containsKey(type)) {
+fun <T : Any> find(type: KClass<T>): T {
+    if (!FX.components.containsKey(type as KClass<Injectable>)) {
         synchronized(FX.lock) {
             if (!FX.components.containsKey(type))
                 FX.components[type] = type.java.newInstance()
@@ -89,4 +90,12 @@ fun <T : Injectable> find(type: KClass<T>): T {
     }
 
     return FX.components[type] as T
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> findExternal(type: KClass<T>) =
+    FX.dicontainer?.let { it.getInstance(type) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
+
+interface DIContainer {
+    fun <T: Any> getInstance(type: KClass<T>): T
 }
