@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Guice dependency injection support (https://github.com/edvin/tornadofx/issues/79)
+- External dependency injection support - Guice, Spring++ (https://github.com/edvin/tornadofx/issues/79)
 - `SingleViewApp` for small/example applications (https://github.com/edvin/tornadofx/issues/74)
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)

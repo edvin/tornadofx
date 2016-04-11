@@ -85,7 +85,7 @@ abstract class Component {
     inline fun <reified T : Any> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
             if (Injectable::class.java.isAssignableFrom(T::class.java)) return find(T::class)
-            return findThirdParty(T::class)
+            return findExternal(T::class)
         }
     }
 

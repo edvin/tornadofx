@@ -1,22 +1,29 @@
 package tornadofx
 
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import org.junit.Assert
 import org.junit.Test
 
 class ListTests {
-    data class Person(val name: String, val age: Int)
+    class Person(name: String, age: Int, checked: Boolean = true) {
+        val name = SimpleStringProperty(name)
+        val age = SimpleIntegerProperty(age)
+        val checked = SimpleBooleanProperty(checked)
+    }
 
     val persons = FXCollections.observableArrayList(
-            Person("Samantha Stuart", 34),
-            Person("Tom Marks", 42),
+            Person("Samantha Stuart", 34, true),
+            Person("Tom Marks", 42, false),
             Person("Stuart Gills", 17),
             Person("Nicole Williams", 27))
 
     @Test
     fun filterTest() {
         val data = SortedFilteredList(persons)
-        data.predicate = { it.name.contains("Stu")}
+        data.predicate = { it.name.get().contains("Stu")}
         Assert.assertEquals(2, data.size)
     }
 

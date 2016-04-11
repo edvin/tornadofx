@@ -1,6 +1,5 @@
 package tornadofx
 
-import com.google.inject.Injector
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -19,7 +18,7 @@ class FX {
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
-        var guiceInjector: Any? = null
+        var injector: Injector? = null
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -94,13 +93,9 @@ fun <T : Any> find(type: KClass<T>): T {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> findThirdParty(type: KClass<T>): T {
-    FX.guiceInjector?.apply {
-        val injector = this as Injector
-        val instance = injector.getInstance(type.java)
-        if (instance != null) return instance
-    }
+fun <T : Any> findExternal(type: KClass<T>) =
+    FX.injector?.let { it.getInstance(type.java) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
 
-    throw AssertionError("Unable to find bean of type $type in any injection context")
+interface Injector {
+    fun <T> getInstance(type: Class<T>): T
 }
-
