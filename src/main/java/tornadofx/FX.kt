@@ -94,8 +94,8 @@ fun <T : Any> find(type: KClass<T>): T {
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> findExternal(type: KClass<T>) =
-    FX.injector?.let { it.getInstance(type.java) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
+    FX.injector?.let { it.getInstance(type) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
 
 interface Injector {
-    fun <T> getInstance(type: Class<T>): T
+    fun <T: Any> getInstance(type: KClass<T>): T
 }
