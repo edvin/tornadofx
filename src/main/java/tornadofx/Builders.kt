@@ -6,6 +6,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
@@ -109,10 +110,11 @@ fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? =
     progressProperty().bind(property)
 }
 
-fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null, op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
+fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null, orientation: Orientation? = null , op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
     if (min != null) this.min = min
     if (max != null) this.max = max
     if (value != null) this.value = value
+    if (orientation != null) this.orientation = orientation
 }, op)
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
