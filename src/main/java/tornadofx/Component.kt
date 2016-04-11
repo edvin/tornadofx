@@ -82,8 +82,11 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
+    inline fun <reified T : Any> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (Injectable::class.java.isAssignableFrom(T::class.java)) return find(T::class)
+            return findThirdParty(T::class)
+        }
     }
 
     val primaryStage: Stage get() = FX.primaryStage

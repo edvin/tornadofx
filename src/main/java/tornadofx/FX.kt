@@ -1,5 +1,6 @@
 package tornadofx
 
+import com.google.inject.Injector
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -18,6 +19,7 @@ class FX {
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
+        var guiceInjector: Any? = null
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -80,8 +82,8 @@ fun importStylesheet(stylesheet: String) {
 inline fun <reified T : Injectable> find(): T = find(T::class)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Injectable> find(type: KClass<T>): T {
-    if (!FX.components.containsKey(type)) {
+fun <T : Any> find(type: KClass<T>): T {
+    if (!FX.components.containsKey(type as KClass<Injectable>)) {
         synchronized(FX.lock) {
             if (!FX.components.containsKey(type))
                 FX.components[type] = type.java.newInstance()
@@ -90,3 +92,15 @@ fun <T : Injectable> find(type: KClass<T>): T {
 
     return FX.components[type] as T
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> findThirdParty(type: KClass<T>): T {
+    FX.guiceInjector?.apply {
+        val injector = this as Injector
+        val instance = injector.getInstance(type.java)
+        if (instance != null) return instance
+    }
+
+    throw AssertionError("Unable to find bean of type $type in any injection context")
+}
+
