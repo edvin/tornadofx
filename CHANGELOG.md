@@ -17,6 +17,13 @@ All notable changes to this project will be documented in this file.
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
 - `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
 - `JsonStructure.toPrettyString` (https://github.com/edvin/tornadofx/pull/77)
+- `text` builder (https://github.com/edvin/tornadofx/issues/76)
+- `textflow` builder (https://github.com/edvin/tornadofx/issues/76)
+- `hyperlink` builder (https://github.com/edvin/tornadofx/pull/78)
+- `passwordfield` builder (https://github.com/edvin/tornadofx/pull/78)
+- `radiobutton` builder (https://github.com/edvin/tornadofx/pull/78)
+- `togglebutton` builder (https://github.com/edvin/tornadofx/pull/78)
+- `slider` builder (https://github.com/edvin/tornadofx/pull/81)
 
 ### Changed
 
