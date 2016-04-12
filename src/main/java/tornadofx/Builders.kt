@@ -122,8 +122,10 @@ fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null,
 
 fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
 
-fun ToolBar.button(text: String = "", op: (Button.() -> Unit)? = null): Button {
+fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
+    if (graphic != null)
+        button.graphic = graphic
     items.add(button)
     op?.invoke(button)
     return button
