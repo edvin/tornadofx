@@ -471,6 +471,27 @@ class HBoxConstraint(
     }
 }
 
+fun <T: Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
+    val c = AnchorPaneConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class AnchorPaneConstraint(
+        var topAnchor: Double? = null,
+        var rightAnchor: Double? = null,
+        var bottomAnchor: Double? = null,
+        var leftAnchor: Double? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        topAnchor?.let { AnchorPane.setTopAnchor(node, it) }
+        rightAnchor?.let { AnchorPane.setRightAnchor(node, it) }
+        bottomAnchor?.let { AnchorPane.setBottomAnchor(node, it) }
+        leftAnchor?.let { AnchorPane.setLeftAnchor(node, it) }
+        return node
+    }
+}
+
 abstract class MarginableConstraints {
     abstract var margin: Insets
     var marginTop: Double
