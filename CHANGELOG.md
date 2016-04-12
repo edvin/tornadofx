@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 - `TableColumn` cell factory that wraps `PropertyValueFactory` for better POJO support (https://github.com/edvin/tornadofx/pull/75)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
+- `anchorpane` builder (https://github.com/edvin/tornadofx/issues/84)
 - `accordion` builder (https://github.com/edvin/tornadofx/pull/73)
 - `JsonStructure.toPrettyString` (https://github.com/edvin/tornadofx/pull/77)
 - `text` builder (https://github.com/edvin/tornadofx/issues/76)
