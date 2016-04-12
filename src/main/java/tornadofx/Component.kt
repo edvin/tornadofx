@@ -82,11 +82,12 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T : Any> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (Injectable::class.java.isAssignableFrom(T::class.java)) return find(T::class)
-            return findExternal(T::class)
-        }
+    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
+    }
+
+    inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
     }
 
     val primaryStage: Stage get() = FX.primaryStage

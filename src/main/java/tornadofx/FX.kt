@@ -81,20 +81,15 @@ fun importStylesheet(stylesheet: String) {
 inline fun <reified T : Injectable> find(): T = find(T::class)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Any> find(type: KClass<T>): T {
-    if (!FX.components.containsKey(type as KClass<Injectable>)) {
+fun <T : Injectable> find(type: KClass<T>): T {
+    if (!FX.components.containsKey(type)) {
         synchronized(FX.lock) {
             if (!FX.components.containsKey(type))
                 FX.components[type] = type.java.newInstance()
         }
     }
-
     return FX.components[type] as T
 }
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Any> findExternal(type: KClass<T>) =
-    FX.dicontainer?.let { it.getInstance(type) } ?: throw AssertionError("Injector is not configured, so bean of type $type can not be resolved")
 
 interface DIContainer {
     fun <T: Any> getInstance(type: KClass<T>): T
