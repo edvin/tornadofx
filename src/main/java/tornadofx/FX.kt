@@ -4,6 +4,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.stage.Stage
+import java.net.URL
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
@@ -75,6 +76,11 @@ class FX {
 
 fun importStylesheet(stylesheet: String) {
     val css = FX::class.java.getResource(stylesheet)
+    FX.stylesheets.add(css.toExternalForm())
+}
+
+fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
+    val css = URL("css://${stylesheetType.java.name}")
     FX.stylesheets.add(css.toExternalForm())
 }
 
