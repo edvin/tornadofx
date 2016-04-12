@@ -120,7 +120,11 @@ fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null,
     if (orientation != null) this.orientation = orientation
 }, op)
 
-fun Pane.button(text: String = "", op: (Button.() -> Unit)? = null) = opcr(this, Button(text), op)
+fun Pane.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+    val button = Button(text)
+    if (graphic != null) button.graphic = graphic
+    return opcr(this, button, op)
+}
 
 fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
