@@ -1,10 +1,10 @@
 package tornadofx
 
+import javafx.scene.Parent
+
 abstract class Stylesheet {
     abstract fun render(): String
 }
-
-import javafx.scene.Parent
 
 interface StyleChunk {
     val selections: MutableList<Selection>
