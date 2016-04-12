@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.scene.Parent
+
 interface StyleChunk {
     val selections: MutableList<Selection>
 
@@ -23,7 +25,7 @@ interface PropertyChunk {
 
 interface InnerChunk : StyleChunk, PropertyChunk
 
-class Mixin(): InnerChunk {
+class Mixin() : InnerChunk {
     override val selections = mutableListOf<Selection>()
     override val properties = mutableMapOf<String, Any>()
 }
@@ -31,12 +33,41 @@ class Mixin(): InnerChunk {
 class StyleSheet() : StyleChunk {
     override val selections = mutableListOf<Selection>()
 
-    val Int.px: String
+    // Sizes
+    val Number.px: String
         get() = "${this}px"
-    val Int.percent: String
+    val Number.mm: String
+        get() = "${this}mm"
+    val Number.cm: String
+        get() = "${this}cm"
+    val Number.inches: String
+        get() = "${this}in"
+    val Number.pt: String
+        get() = "${this}pt"
+    val Number.pc: String
+        get() = "${this}pc"
+    val Number.em: String
+        get() = "${this}em"
+    val Number.ex: String
+        get() = "${this}ex"
+    // Percent
+    val Number.percent: String
         get() = "$this%"
-    val Double.percent: String
-        get() = "$this%"
+    // Angle
+    val Number.deg: String
+        get() = "${this}deg"
+    val Number.rad: String
+        get() = "${this}rad"
+    val Number.grad: String
+        get() = "${this}grad"
+    val Number.turn: String
+        get() = "${this}turn"
+
+    fun mixin(init: Mixin.() -> Unit): Mixin {
+        val mixin = Mixin()
+        mixin.init()
+        return mixin
+    }
 
     override fun toString(): String {
         return buildString {
@@ -72,14 +103,10 @@ class Selection(val selector: String) : InnerChunk {
     }
 }
 
-fun css(init: StyleSheet.() -> Unit): StyleSheet {
-    val style = StyleSheet()
-    style.init()
-    return style
-}
-
-fun mixin(init: Mixin.() -> Unit): Mixin {
-    val mixin = Mixin()
-    mixin.init()
-    return mixin
+fun Parent.css(init: StyleSheet.() -> Unit): StyleSheet {
+    val stylesheet = StyleSheet()
+    stylesheet.init()
+    println(stylesheet)
+    // TODO: Add stylesheet to root
+    return stylesheet
 }
