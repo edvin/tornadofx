@@ -345,7 +345,7 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String): TableColumn
     return column
 }
 
-fun <S, T> TableColumn<S, T?>.makeComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     cellFactory = ComboBoxTableCell.forTableColumn(items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
@@ -358,7 +358,7 @@ fun <S, T> TableColumn<S, T?>.makeComboBox(items: ObservableList<T>, afterCommit
 /**
  * Create an editable DatePicker TableCell. This control requires tornadofx-controls on the classpath.
  */
-fun <S> TableColumn<S, LocalDate?>.makeDatePicker(converter: StringConverter<LocalDate>? = DatePickerTableCell.DefaultLocalDateConverter(), afterCommit: ((TableColumn.CellEditEvent<S, LocalDate?>) -> Unit)? = null): TableColumn<S, LocalDate?> {
+fun <S> TableColumn<S, LocalDate?>.useDatePicker(converter: StringConverter<LocalDate>? = DatePickerTableCell.DefaultLocalDateConverter(), afterCommit: ((TableColumn.CellEditEvent<S, LocalDate?>) -> Unit)? = null): TableColumn<S, LocalDate?> {
     cellFactory = DatePickerTableCell.forTableColumn(converter)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<LocalDate?>
@@ -368,7 +368,7 @@ fun <S> TableColumn<S, LocalDate?>.makeDatePicker(converter: StringConverter<Loc
     return this
 }
 
-inline fun <S, reified T> TableColumn<S, T?>.makeTextField(converter: StringConverter<T>? = null, noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConverter<T>? = null, noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     when (T::class) {
         String::class -> {
             @Suppress("CAST_NEVER_SUCCEEDS")
@@ -390,7 +390,7 @@ inline fun <S, reified T> TableColumn<S, T?>.makeTextField(converter: StringConv
     return this
 }
 
-fun <S, T> TableColumn<S, T?>.makeChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     cellFactory = ChoiceBoxTableCell.forTableColumn(items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
@@ -400,7 +400,7 @@ fun <S, T> TableColumn<S, T?>.makeChoiceBox(items: ObservableList<T>, afterCommi
     return this
 }
 
-fun <S> TableColumn<S, Double?>.makeProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Double?>) -> Unit)? = null): TableColumn<S, Double?> {
+fun <S> TableColumn<S, Double?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Double?>) -> Unit)? = null): TableColumn<S, Double?> {
     cellFactory = ProgressBarTableCell.forTableColumn()
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<Double?>
@@ -410,7 +410,7 @@ fun <S> TableColumn<S, Double?>.makeProgressBar(afterCommit: ((TableColumn.CellE
     return this
 }
 
-fun <S> TableColumn<S, Boolean?>.makeCheckbox(): TableColumn<S, Boolean?> {
+fun <S> TableColumn<S, Boolean?>.useCheckbox(): TableColumn<S, Boolean?> {
     cellFactory = CheckBoxTableCell.forTableColumn(this)
     return this
 }
