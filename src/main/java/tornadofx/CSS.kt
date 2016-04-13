@@ -1,5 +1,8 @@
 package tornadofx
 
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
+
 open class StyleChunk {
     val selections = mutableListOf<Selection>()
 
@@ -13,6 +16,10 @@ open class StyleChunk {
 
 open class PropertyChunk : StyleChunk() {
     val properties = mutableMapOf<String, Any>()
+
+    var fontSize: Any by map(properties, "-fx-font-size")
+    var textFill: Any by map(properties, "-fx-text-fill")
+    var backgroundColor: Any by map(properties, "-fx-background-color")
 
     // Sizes
     val Number.px: String
@@ -44,8 +51,6 @@ open class PropertyChunk : StyleChunk() {
     val Number.turn: String
         get() = "${this}turn"
 
-    var fontSize: Any by properties
-
     fun prop(rule: String, value: Any, isFx: Boolean = true): Pair<String, Any> {
         val prop = Pair(if (isFx) "-fx-$rule" else rule, value)
         properties += prop
@@ -53,23 +58,51 @@ open class PropertyChunk : StyleChunk() {
     }
 }
 
+class Mixin : PropertyChunk()
+
 class Selection(val selector: String) : PropertyChunk() {
-    override fun toString(): String {
+    operator fun Mixin.unaryPlus() {
+        this@Selection.properties.putAll(properties)
+        this@Selection.selections.addAll(selections)
+    }
+
+    fun render(current: String = ""): String {
         return buildString {
-            append("$selector {\n")
+            val current = "$current$selector "
+            append("$current{\n")
             for ((name, value) in properties) {
-                append("  $name: $value;\n")
+                append("    $name: $value;\n")
             }
-            append("}\n\n")
+            append("}\n")
             for (selection in selections) {
-                append("$selector $selection")
+                append(selection.render(current))
             }
         }
     }
+
+    override fun toString() = render()
 }
 
 abstract class Stylesheet : StyleChunk() {
-    fun render() = buildString { selections.forEach { append(it) } }
+    open fun render() = buildString { selections.forEach { append(it) } }
+
+    fun mixin(init: Mixin.() -> Unit): Mixin {
+        val mixin = Mixin()
+        mixin.init()
+        return mixin
+    }
 
     override fun toString() = render()
+}
+
+// Helpers
+
+fun <K, V> K.map(properties: MutableMap<String, V>, key: String): ReadWriteProperty<K, V> {
+    return object : ReadWriteProperty<K, V> {
+        override fun getValue(thisRef: K, property: KProperty<*>) = properties[key]!!
+
+        override fun setValue(thisRef: K, property: KProperty<*>, value: V) {
+            properties[key] = value
+        }
+    }
 }
