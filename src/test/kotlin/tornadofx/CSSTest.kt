@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.stage.Stage
@@ -12,10 +13,11 @@ class CSSTest : SingleViewApp("CSS Test") {
             addClass("hbox")
             setMinSize(400.0, 400.0)
         }
+
     }
 
     override fun start(stage: Stage) {
-        importStylesheet(MyTestStylesheet::class)
+//        importStylesheet(MyTestStylesheet::class)
         stage.reloadStylesheetsOnFocus()
         super.start(stage)
     }
