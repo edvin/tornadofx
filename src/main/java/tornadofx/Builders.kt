@@ -68,6 +68,11 @@ fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? 
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
+fun <T> Pane.choicebox(values: ObservableList<T>? = null, changeListener: ((ObservableValue<out T>, T?, T?) -> Unit)? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
+    if (values != null) items = values
+    if (changeListener != null) selectionModel.selectedItemProperty().addListener(changeListener)
+}, op)
+
 fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     values?.let { items = it }
 }, op)
