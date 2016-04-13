@@ -1,11 +1,7 @@
 package tornadofx
 
-abstract class Stylesheet {
-    abstract fun render(): String
-}
-
-interface StyleChunk {
-    val selections: MutableList<Selection>
+open class StyleChunk {
+    val selections = mutableListOf<Selection>()
 
     fun s(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
@@ -15,8 +11,40 @@ interface StyleChunk {
     }
 }
 
-interface PropertyChunk {
-    val properties: MutableMap<String, Any>
+open class PropertyChunk : StyleChunk() {
+    val properties = mutableMapOf<String, Any>()
+
+    // Sizes
+    val Number.px: String
+        get() = "${this}px"
+    val Number.mm: String
+        get() = "${this}mm"
+    val Number.cm: String
+        get() = "${this}cm"
+    val Number.inches: String
+        get() = "${this}in"
+    val Number.pt: String
+        get() = "${this}pt"
+    val Number.pc: String
+        get() = "${this}pc"
+    val Number.em: String
+        get() = "${this}em"
+    val Number.ex: String
+        get() = "${this}ex"
+    // Percent
+    val Number.percent: String
+        get() = "${this}%"
+    // Angle
+    val Number.deg: String
+        get() = "${this}deg"
+    val Number.rad: String
+        get() = "${this}rad"
+    val Number.grad: String
+        get() = "${this}grad"
+    val Number.turn: String
+        get() = "${this}turn"
+
+    var fontSize: Any by properties
 
     fun prop(rule: String, value: Any, isFx: Boolean = true): Pair<String, Any> {
         val prop = Pair(if (isFx) "-fx-$rule" else rule, value)
@@ -25,12 +53,7 @@ interface PropertyChunk {
     }
 }
 
-interface InnerChunk : StyleChunk, PropertyChunk
-
-class Selection(val selector: String) : InnerChunk {
-    override val selections = mutableListOf<Selection>()
-    override val properties = mutableMapOf<String, Any>()
-
+class Selection(val selector: String) : PropertyChunk() {
     override fun toString(): String {
         return buildString {
             append("$selector {\n")
@@ -45,16 +68,8 @@ class Selection(val selector: String) : InnerChunk {
     }
 }
 
-abstract class SS2 : Stylesheet(), StyleChunk {
-    override val selections = mutableListOf<Selection>()
+abstract class Stylesheet : StyleChunk() {
+    fun render() = buildString { selections.forEach { append(it) } }
 
-    override fun render() = toString()
-
-    override fun toString(): String {
-        return buildString {
-            for (selection in selections) {
-                append(selection)
-            }
-        }
-    }
+    override fun toString() = render()
 }
