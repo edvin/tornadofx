@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.4.2] - 2016-04-14
 
 ### Added
 
@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
-- New `TableColumn` cell factories: `makeComboBox`, `makeTextField`, `makeChoiceBox`, `makeProgressBar`, `makeCheckbox` and `makeDatePicker` (https://github.com/edvin/tornadofx/issues/67)
+- `TableColumn` cell factories: `useComboBox`, `useTextField`, `useChoiceBox`, `useProgressBar`, `useCheckbox` and `useDatePicker` (https://github.com/edvin/tornadofx/issues/67)
 - `TableColumn.enableTextWrap` (https://github.com/edvin/tornadofx/pull/65)
 - `TableColumn` cell factory that wraps `PropertyValueFactory` for better POJO support (https://github.com/edvin/tornadofx/pull/75)
 - `splitpane` builder (https://github.com/edvin/tornadofx/issues/72)
