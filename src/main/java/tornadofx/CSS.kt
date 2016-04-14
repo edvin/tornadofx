@@ -68,14 +68,14 @@ class Selection(val selector: String) : PropertyChunk() {
 
     fun render(current: String = ""): String {
         return buildString {
-            val current = "$current$selector "
-            append("$current{\n")
+            val currentSelector = "$current$selector "
+            append("$currentSelector{\n")
             for ((name, value) in properties) {
                 append("    $name: $value;\n")
             }
             append("}\n")
             for (selection in selections) {
-                append(selection.render(current))
+                append(selection.render(currentSelector))
             }
         }
     }
