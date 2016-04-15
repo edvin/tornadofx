@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class CssBlock {
@@ -147,7 +148,7 @@ open class SelectionBlock : CssBlock() {
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
 
     // Control
-    var skin: String by cssprop("-fx-skin")  // TODO: Check if this needs to conform to anything
+    var skin: KClass<*> by cssprop("-fx-skin")  // TODO: Check if this needs to conform to anything
 
     // DatePicker
     var showWeekNumbers: Boolean by cssprop("-fx-show-week-numbers")
@@ -372,6 +373,7 @@ fun <T> toCss(value: T): String {
         }
         is Array<*> -> return value.joinToString { toCss(it) }
         is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
+        is KClass<*> -> return value.simpleName ?: "none"
         is String -> return "\"$value\""
         is Effect -> {
             // TODO
