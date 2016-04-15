@@ -5,6 +5,8 @@ import javafx.beans.value.ObservableValue
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
+import javafx.scene.control.ContentDisplay
+import javafx.scene.control.OverrunStyle
 import javafx.scene.effect.Effect
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
@@ -151,9 +153,9 @@ open class SelectionBlock : CssBlock() {
     var showWeekNumbers: Boolean by cssprop("-fx-show-week-numbers")
 
     // Labeled
-    var textOverrun: FXTextOverrun by cssprop("-fx-text-overrun")
+    var textOverrun: OverrunStyle by cssprop("-fx-text-overrun")
     var wrapText: Boolean by cssprop("-fx-wrap-text")
-    var contentDisplay: FXContentDisplay by cssprop("-fx-content-display")
+    var contentDisplay: ContentDisplay by cssprop("-fx-content-display")
     var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
     var labelPadding: CssBox<LinearDimension> by cssprop("-fx-label-padding")
     var textFill: Color? by cssprop("-fx-text-fill")
@@ -349,6 +351,7 @@ fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 10
 fun <T> toCss(value: T): String {
     when (value) {
         null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
+        is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
         is Font -> {
             // TODO
         }
@@ -554,30 +557,6 @@ enum class FXStrokeLineJoin { miter, bevel, round; }
 enum class FXFontSmoothingType { gray, lcd; }
 enum class FXTextAlignment { left, center, right, justify; }
 enum class FXTextOrigin { baseline, top, bottom; }
-
-enum class FXTextOverrun(val value: String) {
-    centerEllipsis("center-ellipsis"),
-    centerWordEllipsis("center-word-ellipsis"),
-    clip("clip"),
-    ellipsis("ellipsis"),
-    leadingEllipsis("leading-ellipsis"),
-    leadingWordEllipsis("leading-word-ellipsis"),
-    wordEllipsis("word-ellipsis");
-
-    override fun toString() = value
-}
-
-enum class FXContentDisplay(val value: String) {
-    top("top"),
-    right("right"),
-    bottom("bottom"),
-    left("left"),
-    center("center"),
-    graphicOnly("graphic-only"),
-    textOnly("text-only");
-
-    override fun toString() = value
-}
 
 enum class FXSide { top, bottom, left, right; }
 
