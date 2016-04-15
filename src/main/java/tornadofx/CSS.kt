@@ -6,9 +6,7 @@ import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.effect.Effect
-import javafx.scene.layout.BackgroundPosition
-import javafx.scene.layout.BackgroundRepeat
-import javafx.scene.layout.BackgroundSize
+import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -42,7 +40,6 @@ open class SelectionBlock : CssBlock() {
 
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
-    // TODO: -fx-cursor
     var cursor: Cursor by cssprop("-fx-cursor")
     var effect: Effect by cssprop("-fx-effect")  // TODO: Make sure this renders properly
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
@@ -87,11 +84,11 @@ open class SelectionBlock : CssBlock() {
     var backgroundSize: BackgroundSize by cssprop("-fx-background-size")
     var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
-    // TODO: -fx-border-style
+    var borderStyle: BorderStrokeStyle by cssprop("-fx-border-style")  // TODO: Make sure this renders properly
     var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
     var borderImageSource: String by cssprop("-fx-border-image-source")
     var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
-    // TODO: -fx-border-image-repeat
+    var borderImageRepeat: Pair<BorderRepeat, BorderRepeat> by cssprop("-fx-border-image-repeat")
     var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
     var scaleShape: Boolean by cssprop("-fx-scale-shape")
