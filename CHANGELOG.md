@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `Node.bindClass` applies an observable style class to a node (https://github.com/edvin/tornadofx/issues/88)
+
 ## [1.4.2] - 2016-04-14
 
 ### Added
