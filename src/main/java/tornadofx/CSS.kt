@@ -358,7 +358,7 @@ fun <T> toCss(value: T): String {
     return value.toString()
 }
 
-abstract class Stylesheet : CssBlock() {
+open class Stylesheet : CssBlock() {
     open fun render() = buildString { selections.forEach { append(it) } }
 
     val base64URL: URL get() {
