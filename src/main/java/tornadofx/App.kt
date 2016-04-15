@@ -45,4 +45,9 @@ abstract class App : Application() {
 abstract class SingleViewApp(title: String? = null) : App(), ViewContainer {
     override val primaryView = javaClass.kotlin
     override val titleProperty = SimpleStringProperty(title)
+
+    init {
+        FX.components[javaClass.kotlin] = this
+    }
+
 }
