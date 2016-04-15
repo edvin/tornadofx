@@ -53,10 +53,6 @@ abstract class SingleViewApp(title: String? = null) : App(), ViewContainer {
     }
 
     fun css(op: (Stylesheet.() -> Unit)) {
-        stylesheet = object : Stylesheet() {
-            init {
-                op(this)
-            }
-        }
+        stylesheet = Stylesheet().apply { op(this) }
     }
 }
