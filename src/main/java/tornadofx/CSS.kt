@@ -50,10 +50,10 @@ open class SelectionBlock : CssBlock() {
     var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
 
     // ImageView
-    // TODO: -fx-image
+    var image: String by cssprop("-fx-image")
 
     // DialogPane
-    // TODO: -fx-graphic
+    var graphic: String by cssprop("-fx-graphic")
 
     // FlowPane
     var hgap: LinearDimension by cssprop("-fx-hgap")
@@ -74,7 +74,7 @@ open class SelectionBlock : CssBlock() {
     var backgroundColor: Paint? by cssprop("-fx-background-color")
     var backgroundInsets: CssBox<LinearDimension> by cssprop("-fx-background-insets")
     var backgroundRadius: CssBox<LinearDimension> by cssprop("-fx-background-radius")
-    // TODO: -fx-background-image
+    var backgroundImage: String by cssprop("-fx-background-image")
     // TODO: -fx-background-position
     // TODO: -fx-background-repeat
     // TODO: -fx-background-size
@@ -82,7 +82,7 @@ open class SelectionBlock : CssBlock() {
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
     // TODO: -fx-border-style
     var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
-    // TODO: -fx-border-image-source
+    var borderImageSource: String by cssprop("-fx-border-image-source")
     var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
     // TODO: -fx-border-image-repeat
     var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
@@ -233,7 +233,7 @@ open class SelectionBlock : CssBlock() {
     // Axis
     var side: FXSide by cssprop("-fx-side")
     var tickLength: LinearDimension by cssprop("-fx-tick-length")
-    // TODO: -fx-tick-label-font
+    var tickLabelFont: Font by cssprop("-fx-tick-label-font")
     var tickLabelFill: Paint? by cssprop("-fx-tick-label-fill")
     var tickLabelGap: LinearDimension by cssprop("-fx-tick-label-gap")
     var tickMarkVisible: Boolean by cssprop("-fx-tick-mark-visible")
@@ -467,7 +467,24 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 // Enums
 
 enum class FXFontStyle { normal, italic, oblique; }
-enum class FXFontWeight { normal, bold, bolder, lighter; }  // TODO: Add 100 - 900
+
+enum class FXFontWeight(val value: String) {
+    normal("normal"),
+    bold("bold"),
+    bolder("bolder"),
+    lighter("lighter"),
+    oneHundred("100"),
+    twoHundred("200"),
+    threeHundred("300"),
+    fourHundred("400"),
+    fiveHundred("500"),
+    sixHundred("600"),
+    sevenHundred("700"),
+    eightHundred("800"),
+    nineHundred("900");
+
+    override fun toString() = value
+}  // TODO: Add 100 - 900
 
 enum class FXBlendMode(val value: String) {
     add("add"),
