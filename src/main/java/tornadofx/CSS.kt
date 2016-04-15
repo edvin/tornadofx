@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import java.text.DecimalFormat
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -19,26 +20,148 @@ open class CssBlock {
 open class SelectionBlock : CssBlock() {
     val properties = mutableMapOf<String, Any>()
 
-    // All Nodes
+    // Font
+    // TODO: -fx-font
+    // TODO: -fx-font-family
+    var fontSize: LinearDimension by cssprop("-fx-font-size")
+    var fontStyle: FXFontStyle by cssprop("-fx-font-style")
+    var fontWeight: FXFontWeight by cssprop("-fx-font-weight")
+    // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
     // TODO: -fx-cursor
     // TODO: -fx-effect
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
     var opacity: Double by cssprop("-fx-opacity")
-    var rotate: Double by cssprop("-fx-rotate")
-    var scaleX: Double by cssprop("-fx-scale-x")
-    var scaleY: Double by cssprop("-fx-scale-y")
-    var scaleZ: Double by cssprop("-fx-scale-z")
-    var translateX: Double by cssprop("-fx-translate-x")
-    var translateY: Double by cssprop("-fx-translate-y")
-    var translateZ: Double by cssprop("-fx-translate-z")
-    // TODO: -fx-visibility
-    // Unsorted
-    var padding: BoxDimensions by cssprop("-fx-padding")
+    var rotate: AngularDimension by cssprop("-fx-rotate")
+    var scaleX: Number by cssprop("-fx-scale-x")
+    var scaleY: Number by cssprop("-fx-scale-y")
+    var scaleZ: Number by cssprop("-fx-scale-z")
+    var translateX: LinearDimension by cssprop("-fx-translate-x")
+    var translateY: LinearDimension by cssprop("-fx-translate-y")
+    var translateZ: LinearDimension by cssprop("-fx-translate-z")
+    var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
+    // ImageView
+    // TODO: -fx-image
+    // DialogPane
+    // TODO: -fx-graphic
+    // FlowPane
+    var hgap: LinearDimension by cssprop("-fx-hgap")
+    var vgap: LinearDimension by cssprop("-fx-vgap")
+    var alignment: FXAlignment by cssprop("-fx-alignment")
+    var columnHAlignment: FXColumnHAlignment by cssprop("-fx-column-halignment")
+    var rowVAlignment: FXRowVAlignment by cssprop("-fx-row-valignment")
+    var orientation: FXOrientation by cssprop("-fx-orientation")
+    // GridPane
+    var gridLinesVisible: Boolean by cssprop("-fx-grid-lines-visible")
+    // HBox
     var spacing: LinearDimension by cssprop("-fx-spacing")
-    var fontSize: LinearDimension by cssprop("-fx-font-size")
+    var fillHeight: Boolean by cssprop("-fx-fill-height")
+    // Region
+    var backgroundColor: Paint? by cssprop("-fx-background-color")
+    var backgroundInsets: BoxDimensions by cssprop("-fx-background-insets")
+    var backgroundRadius: BoxDimensions by cssprop("-fx-background-radius")
+    // TODO: -fx-background-image
+    // TODO: -fx-background-position
+    // TODO: -fx-background-repeat
+    // TODO: -fx-background-size
+    var borderColor: Paint? by cssprop("-fx-border-color")  // TODO: Allow 4
+    var borderRadius: BoxDimensions by cssprop("-fx-border-radius")
+    // TODO: -fx-border-style
+    var borderWidth: BoxDimensions by cssprop("-fx-border-width")
+    // TODO: -fx-border-image-source
+    var borderImageInsets: BoxDimensions by cssprop("-fx-border-image-insets")
+    // TODO: -fx-border-image-repeat
+    var padding: BoxDimensions by cssprop("-fx-padding")
+    var positionShape: Boolean by cssprop("-fx-position-shape")
+    var scaleShape: Boolean by cssprop("-fx-scale-shape")
+    var shape: String by cssprop("-fx-shape")  // TODO: Ensure SVG
+    var snapToPixel: Boolean by cssprop("-fx-snap-to-pixel")
+    var minHeight: LinearDimension by cssprop("-fx-min-height")
+    var prefHeight: LinearDimension by cssprop("-fx-pref-height")
+    var maxHeight: LinearDimension by cssprop("-fx-max-height")
+    var minWidth: LinearDimension by cssprop("-fx-min-width")
+    var prefWidth: LinearDimension by cssprop("-fx-pref-width")
+    var maxWidth: LinearDimension by cssprop("-fx-max-width")
+    // TilePane
+    var prefRows: Int by cssprop("-fx-pref-rows")
+    var prefColumns: Int by cssprop("-fx-pref-columns")
+    var prefTileWidth: LinearDimension by cssprop("-fx-pref-tile-width")
+    var prefTileHeight: LinearDimension by cssprop("-fx-pref-tile-height")
+    var tileAlignment: FXAlignment by cssprop("-fx-tile-alignment")
+    // VBox
+    var fillWidth: Boolean by cssprop("-fx-fill-width")
+    // Shape
+    var fill: Paint? by cssprop("-fx-fill")
+    var smooth: Boolean by cssprop("-fx-smooth")
+    var stroke: Paint? by cssprop("-fx-paint")
+    var strokeType: FXStrokeType by cssprop("-fx-stroke-type")
+    var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")  // TODO: Make sure this renders properly
+    var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
+    var strokeLineCap: FXStrokeLineCap by cssprop("-fx-stroke-line-cap")
+    var strokeLineJoin: FXStrokeLineJoin by cssprop("-fx-stroke-line-join")
+    var strokeMiterLimit: LinearDimension by cssprop("-fx-stroke-miter-limit")  // TODO: Or can this only be a Double?
+    var strokeWidth: LinearDimension by cssprop("-fx-stroke-width")
+    // Rectangle
+    var arcHeight: LinearDimension by cssprop("-fx-arc-height")
+    var arcWidth: LinearDimension by cssprop("-fx-arc-width")
+    // Text
+    // TODO: -fx-font
+    var fontSmoothingType: FXFontSmoothingType by cssprop("-fx-font-smoothing-type")
+    var strikethrough: Boolean by cssprop("-fx-strikethrough")
+    var textAlignment: FXTextAlignment by cssprop("-fx-text-alignment")
+    var textOrigin: FXTextOrigin by cssprop("-fx-text-origin")
+    var underline: Boolean by cssprop("-fx-underline")
+    // WebView
+    var contextMenuEnabled: Boolean by cssprop("-fx-context-menu-enabled")
+    var fontScale: Number by cssprop("-fx-font-scale")
+    // Cell
+    var cellSize: LinearDimension by cssprop("-fx-cell-size")
+    // ColorPicker
+    var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
+    // Control
+    var skin: String by cssprop("-fx-skin")  // TODO: Check if this needs to conform to anything
+    // DatePicker
+    var showWeekNumbers: Boolean by cssprop("-fx-show-week-numbers")
+    // Labeled
+    var textOverrun: FXTextOverrun by cssprop("-fx-text-overrun")
+    var wrapText: Boolean by cssprop("-fx-wrap-text")
+    // TODO: -fx-font
+    var contentDisplay: FXContentDisplay by cssprop("-fx-content-display")
+    var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
+    var labelPadding: BoxDimensions by cssprop("-fx-label-padding")
     var textFill: Color? by cssprop("-fx-text-fill")
-    var backgroundColor: Color? by cssprop("-fx-background-color")
+    var ellipsisString: String by cssprop("-fx-ellipsis-string")
+    // MenuBar
+    var useSystemMenyBar: Boolean by cssprop("-fx-use-system-menu-bar")
+    // Pagination
+    var maxPageIndicatorCount: Int by cssprop("-fx-max-page-indicator-count")
+    var arrowsVisible: Boolean by cssprop("-fx-arrows-visible")
+    var tooltipVisible: Boolean by cssprop("-fx-tooltip-visible")
+    var pageInformationVisible: Boolean by cssprop("-fx-page-information-visible")
+    var pageInformationAlignment: FXSide by cssprop("-fx-page-information-alignment")
+    // ProgressBar
+    var indeterminateBarLength: LinearDimension by cssprop("-fx-indeterminate-bar-length")
+    var indeterminateBarEscape: Boolean by cssprop("-fx-indeterminate-bar-escape")
+    var indeterminateBarFlip: Boolean by cssprop("-fx-indeterminate-bar-flip")
+    var indeterminateBarAnimationTime: TemporalDimension by cssprop("-fx-indeterminate-bar-animation-time")
+    // ProgressIndicator
+    var indeterminateSegmentCount: Int by cssprop("-fx-indeterminate-SegmentCount")
+    var progressColor: Paint? by cssprop("-fx-progress-color")
+    var spinEnabled: Boolean by cssprop("-fx-spin-enabled")
+    // ScrollBar
+    var blockIncrement: LinearDimension by cssprop("-fx-block-increment")
+    var unitIncrement: LinearDimension by cssprop("-fx-unit-increment")
+    // ScrollPane
+    var fitToWidth: Boolean by cssprop("-fx-fit-to-width")
+    var fitToHeight: Boolean by cssprop("-fx-fit-to-height")
+    var pannable: Boolean by cssprop("-fx-pannable")
+    var hBarPolicy: FXBarPolicy by cssprop("-fx-hbar-policy")
+    var vBarPolicy: FXBarPolicy by cssprop("-fx-vbar-policy")
+    // Separator
+    var hAlignment: FXHAlignment by cssprop("-fx-halignment")
+    var vAlignment: FXVAlignment by cssprop("-fx-valignment")
+    // Slider TODO
+
 
     private inline fun <reified V> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
@@ -165,14 +288,7 @@ fun SelectionBlock.box(top: LinearDimension, right: LinearDimension, bottom: Lin
 class AngularDimension(val value: Double, val units: Units) {
     override fun toString() = "${fiveDigits.format(value)}$units"
 
-    enum class Units(val value: String) {
-        deg("deg"),
-        rad("rad"),
-        grad("grad"),
-        turn("turn");
-
-        override fun toString() = value
-    }
+    enum class Units { deg, rad, grad, turn; }
 }
 
 val Number.deg: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.deg)
@@ -180,21 +296,19 @@ val Number.rad: AngularDimension get() = AngularDimension(this.toDouble(), Angul
 val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.grad)
 val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
 
-class TemporalDimensions(val value: Double, val units: Units) {
+class TemporalDimension(val value: Double, val units: Units) {
     override fun toString() = "${fiveDigits.format(value)}$units"
 
-    enum class Units(val value: String) {
-        s("s"),
-        ms("ms");
-
-        override fun toString() = value
-    }
+    enum class Units { s, ms; }
 }
 
-val Number.s: TemporalDimensions get() = TemporalDimensions(this.toDouble(), TemporalDimensions.Units.s)
-val Number.ms: TemporalDimensions get() = TemporalDimensions(this.toDouble(), TemporalDimensions.Units.ms)
+val Number.s: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.s)
+val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.ms)
 
 // Enums
+
+enum class FXFontStyle { normal, italic, oblique; }
+enum class FXFontWeight { normal, bold, bolder, lighter; }  // TODO: Add 100 - 900
 
 enum class FXBlendMode(val value: String) {
     add("add"),
@@ -219,3 +333,69 @@ enum class FXBlendMode(val value: String) {
 
     override fun toString() = value
 }
+
+enum class FXVisibility { visible, hidden, collapse, inherit; }
+
+enum class FXAlignment(val value: String) {
+    topLeft("top-left"),
+    topCenter("top-center"),
+    topRight("top-right"),
+    centerLeft("center-left"),
+    center("center"),
+    centerRight("center-right"),
+    bottomLeft("bottom-left"),
+    bottomCenter("bottom-center"),
+    bottomRight("bottom-right"),
+    baselineLeft("baseline-left"),
+    baselineCenter("baseline-center"),
+    baselineRight("baseline-right");
+
+    override fun toString() = value
+}
+
+enum class FXColumnHAlignment { left, center, right; }
+enum class FXRowVAlignment { top, center, baseline, bottom; }
+enum class FXOrientation { horizontal, vertical; }
+enum class FXStrokeType { inside, outside, centered; }
+enum class FXStrokeLineCap { square, butt, round; }
+enum class FXStrokeLineJoin { miter, bevel, round; }
+enum class FXFontSmoothingType { gray, lcd; }
+enum class FXTextAlignment { left, center, right, justify; }
+enum class FXTextOrigin { baseline, top, bottom; }
+
+enum class FXTextOverrun(val value: String) {
+    centerEllipsis("center-ellipsis"),
+    centerWordEllipsis("center-word-ellipsis"),
+    clip("clip"),
+    ellipsis("ellipsis"),
+    leadingEllipsis("leading-ellipsis"),
+    leadingWordEllipsis("leading-word-ellipsis"),
+    wordEllipsis("word-ellipsis");
+
+    override fun toString() = value
+}
+
+enum class FXContentDisplay(val value: String) {
+    top("top"),
+    right("right"),
+    bottom("bottom"),
+    left("left"),
+    center("center"),
+    graphicOnly("graphic-only"),
+    textOnly("text-only");
+
+    override fun toString() = value
+}
+
+enum class FXSide { top, bottom, left, right; }
+
+enum class FXBarPolicy(val value: String) {
+    never("never"),
+    always("always"),
+    asNeeded("as-needed");
+
+    override fun toString() = value
+}
+
+enum class FXHAlignment { left, center, right; }
+enum class FXVAlignment { top, center, baseline, bottom; }
