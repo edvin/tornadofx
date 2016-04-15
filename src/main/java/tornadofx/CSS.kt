@@ -6,6 +6,8 @@ import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.effect.Effect
+import javafx.scene.layout.BackgroundPosition
+import javafx.scene.layout.BackgroundRepeat
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -79,8 +81,8 @@ open class SelectionBlock : CssBlock() {
     var backgroundInsets: CssBox<LinearDimension> by cssprop("-fx-background-insets")
     var backgroundRadius: CssBox<LinearDimension> by cssprop("-fx-background-radius")
     var backgroundImage: String by cssprop("-fx-background-image")
-    // TODO: -fx-background-position
-    // TODO: -fx-background-repeat
+    var backgroundPosition: BackgroundPosition by cssprop("-fx-background-position")
+    var backgroundRepeat: Pair<BackgroundRepeat, BackgroundRepeat> by cssprop("-fx-background-repeat")
     // TODO: -fx-background-size
     var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
@@ -345,6 +347,7 @@ class Selection(val selector: String) : SelectionBlock() {
     override fun toString() = render()
 }
 
+fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
 fun <T> toCss(value: T): String {
     when (value) {
         null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
@@ -359,7 +362,10 @@ fun <T> toCss(value: T): String {
         } else {
             value.toString()
         }
+        is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
+                "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
         is Array<*> -> return value.joinToString { toCss(it) }
+        is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
         is String -> return "\"$value\""
         is Effect -> {
             // TODO
