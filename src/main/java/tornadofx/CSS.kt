@@ -341,7 +341,7 @@ class Selection(val selector: String) : SelectionBlock() {
 
 fun <T> toCss(value: T): String {
     when (value) {
-        null -> return ""  // TODO: Is there a better way to handle this?
+        null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
         is Font -> {
             // TODO
         }
@@ -350,14 +350,7 @@ fun <T> toCss(value: T): String {
         is Effect -> {
             // TODO
         }
-        is Color -> return value.css
-        is LinearGradient -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
-        is RadialGradient -> {
-            // TODO
-        }
-        is ImagePattern -> {
-            // TODO
-        }
+        is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
     }
     return value.toString()
 }
