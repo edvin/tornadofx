@@ -336,6 +336,28 @@ abstract class Stylesheet : CssBlock() {
 
 val fiveDigits = DecimalFormat("#.#####")
 
+class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
+    val listener: ChangeListener<String>
+
+    init {
+        fun checkAdd(newValue: String?) {
+            if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
+        }
+
+        listener = ChangeListener { observableValue, oldValue, newValue ->
+            if (oldValue != null) node.removeClass(oldValue)
+            checkAdd(newValue)
+        }
+
+        checkAdd(value.value)
+        value.addListener(listener)
+    }
+
+    fun dispose() = value.removeListener(listener)
+}
+
+fun Node.bindClass(value: ObservableValue<String>): ObservableStyleClass = ObservableStyleClass(this, value)
+
 // Colors
 
 fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
@@ -511,25 +533,3 @@ enum class FXBarPolicy(val value: String) {
 enum class FXHAlignment { left, center, right; }
 enum class FXVAlignment { top, center, baseline, bottom; }
 enum class FXTabAnimation { grow, none; }
-
-class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
-    val listener: ChangeListener<String>
-
-    init {
-        fun checkAdd(newValue: String?) {
-            if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
-        }
-
-        listener = ChangeListener { observableValue, oldValue, newValue ->
-            if (oldValue != null) node.removeClass(oldValue)
-            checkAdd(newValue)
-        }
-
-        checkAdd(value.value)
-        value.addListener(listener)
-    }
-
-    fun dispose() = value.removeListener(listener)
-}
-
-fun Node.bindClass(value: ObservableValue<String>): ObservableStyleClass = ObservableStyleClass(this, value)
