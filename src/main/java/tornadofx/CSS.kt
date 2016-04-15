@@ -2,9 +2,12 @@ package tornadofx
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.scene.Cursor
+import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.effect.Effect
-import javafx.scene.paint.*
+import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import javafx.scene.text.Font
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
@@ -37,6 +40,7 @@ open class SelectionBlock : CssBlock() {
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
     // TODO: -fx-cursor
+    var cursor: Cursor by cssprop("-fx-cursor")
     var effect: Effect by cssprop("-fx-effect")  // TODO: Make sure this renders properly
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
     var opacity: Double by cssprop("-fx-opacity")
@@ -346,6 +350,14 @@ fun <T> toCss(value: T): String {
         null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
         is Font -> {
             // TODO
+        }
+        is Cursor -> return if (value is ImageCursor) {
+            value.image.javaClass.getDeclaredField("url").let {
+                it.isAccessible = true
+                it.get(value.image).toString()
+            }
+        } else {
+            value.toString()
         }
         is Array<*> -> return value.joinToString { toCss(it) }
         is String -> return "\"$value\""
