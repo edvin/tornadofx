@@ -43,6 +43,20 @@ abstract class App : Application() {
 }
 
 abstract class SingleViewApp(title: String? = null) : App(), ViewContainer {
+    private var stylesheet: Stylesheet? = null
     override val primaryView = javaClass.kotlin
     override val titleProperty = SimpleStringProperty(title)
+
+    override fun start(stage: Stage) {
+        stylesheet?.apply { FX.stylesheets.add(base64URL.toExternalForm()) }
+        super.start(stage)
+    }
+
+    fun css(op: (Stylesheet.() -> Unit)) {
+        stylesheet = object : Stylesheet() {
+            init {
+                op(this)
+            }
+        }
+    }
 }

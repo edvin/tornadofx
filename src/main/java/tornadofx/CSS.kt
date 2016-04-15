@@ -7,7 +7,11 @@ import javafx.scene.Node
 import javafx.scene.paint.*
 
 import javafx.scene.text.Font
+import java.net.URL
+import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
+import java.util.*
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -335,6 +339,11 @@ fun <T> toCss(value: T): String {
 
 abstract class Stylesheet : CssBlock() {
     open fun render() = buildString { selections.forEach { append(it) } }
+
+    val base64URL: URL get() {
+        val content = Base64.getEncoder().encodeToString(render().toByteArray(UTF_8))
+        return URL("css://$content:64")
+    }
 
     fun mixin(init: Mixin.() -> Unit): Mixin {
         val mixin = Mixin()
