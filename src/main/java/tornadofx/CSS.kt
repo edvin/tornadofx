@@ -1,11 +1,12 @@
 package tornadofx
 
+import com.sun.xml.internal.fastinfoset.util.StringArray
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
+import javafx.scene.paint.*
 
-import javafx.scene.paint.Color
-import javafx.scene.paint.Paint
+import javafx.scene.text.Font
 import java.text.DecimalFormat
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -25,8 +26,8 @@ open class SelectionBlock : CssBlock() {
     val properties = mutableMapOf<String, Any>()
 
     // Font
-    // TODO: -fx-font
-    // TODO: -fx-font-family
+    var font: Font by cssprop("-fx-font")  // TODO: Make sure this renders properly
+    var fontFamily: StringArray by cssprop("-fx-font-family")
     var fontSize: LinearDimension by cssprop("-fx-font-size")
     var fontStyle: FXFontStyle by cssprop("-fx-font-style")
     var fontWeight: FXFontWeight by cssprop("-fx-font-weight")
@@ -69,23 +70,23 @@ open class SelectionBlock : CssBlock() {
 
     // Region
     var backgroundColor: Paint? by cssprop("-fx-background-color")
-    var backgroundInsets: BoxDimensions by cssprop("-fx-background-insets")
-    var backgroundRadius: BoxDimensions by cssprop("-fx-background-radius")
+    var backgroundInsets: CssBox<LinearDimension> by cssprop("-fx-background-insets")
+    var backgroundRadius: CssBox<LinearDimension> by cssprop("-fx-background-radius")
     // TODO: -fx-background-image
     // TODO: -fx-background-position
     // TODO: -fx-background-repeat
     // TODO: -fx-background-size
-    var borderColor: Paint? by cssprop("-fx-border-color")  // TODO: Allow 4
-    var borderRadius: BoxDimensions by cssprop("-fx-border-radius")
+    var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
+    var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
     // TODO: -fx-border-style
-    var borderWidth: BoxDimensions by cssprop("-fx-border-width")
+    var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
     // TODO: -fx-border-image-source
-    var borderImageInsets: BoxDimensions by cssprop("-fx-border-image-insets")
+    var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
     // TODO: -fx-border-image-repeat
-    var padding: BoxDimensions by cssprop("-fx-padding")
+    var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
     var scaleShape: Boolean by cssprop("-fx-scale-shape")
-    var shape: String by cssprop("-fx-shape")  // TODO: Ensure SVG
+    var shape: String by cssprop("-fx-shape")  // TODO: Ensure SVG?
     var snapToPixel: Boolean by cssprop("-fx-snap-to-pixel")
     var minHeight: LinearDimension by cssprop("-fx-min-height")
     var prefHeight: LinearDimension by cssprop("-fx-pref-height")
@@ -121,7 +122,6 @@ open class SelectionBlock : CssBlock() {
     var arcWidth: LinearDimension by cssprop("-fx-arc-width")
 
     // Text
-    // TODO: -fx-font
     var fontSmoothingType: FXFontSmoothingType by cssprop("-fx-font-smoothing-type")
     var strikethrough: Boolean by cssprop("-fx-strikethrough")
     var textAlignment: FXTextAlignment by cssprop("-fx-text-alignment")
@@ -147,11 +147,9 @@ open class SelectionBlock : CssBlock() {
     // Labeled
     var textOverrun: FXTextOverrun by cssprop("-fx-text-overrun")
     var wrapText: Boolean by cssprop("-fx-wrap-text")
-
-    // TODO: -fx-font
     var contentDisplay: FXContentDisplay by cssprop("-fx-content-display")
     var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
-    var labelPadding: BoxDimensions by cssprop("-fx-label-padding")
+    var labelPadding: CssBox<LinearDimension> by cssprop("-fx-label-padding")
     var textFill: Color? by cssprop("-fx-text-fill")
     var ellipsisString: String by cssprop("-fx-ellipsis-string")
 
@@ -301,14 +299,7 @@ class Selection(val selector: String) : SelectionBlock() {
             val currentSelector = "$current$selector "
             append("$currentSelector{\n")
             for ((name, value) in properties) {
-                append("    $name: ")
-                when (value) {
-                    is Color -> {
-                        append(value.toCss())
-                    }
-                    else -> append(value)
-                }
-                append(";\n")
+                append("    $name: ${toCss(value)};\n")
             }
             append("}\n")
             for (selection in selections) {
@@ -318,6 +309,28 @@ class Selection(val selector: String) : SelectionBlock() {
     }
 
     override fun toString() = render()
+}
+
+fun <T> toCss(value: T): String {
+    when (value) {
+        null -> return ""  // TODO: Is there a better way to handle this?
+        is Font -> {
+            // TODO
+        }
+        is StringArray -> return value.array.joinToString(separator = "\", \"", prefix = "\"", postfix = "\"")
+        is String -> return "\"$value\""
+        is Color -> return value.css
+        is LinearGradient -> {
+            // TODO
+        }
+        is RadialGradient -> {
+            // TODO
+        }
+        is ImagePattern -> {
+            // TODO
+        }
+    }
+    return value.toString()
 }
 
 abstract class Stylesheet : CssBlock() {
@@ -358,6 +371,10 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
 
 fun Node.bindClass(value: ObservableValue<String>): ObservableStyleClass = ObservableStyleClass(this, value)
 
+open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+    override fun toString() = "${toCss(top)} ${toCss(right)} ${toCss(bottom)} ${toCss(left)}"
+}
+
 // Colors
 
 fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
@@ -378,7 +395,12 @@ fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = t
     null
 }
 
-fun Color.toCss() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
+val Color.css: String
+    get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
+
+fun <T> SelectionBlock.box(all: T) = CssBox(all, all, all, all)
+fun <T> SelectionBlock.box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+fun <T> SelectionBlock.box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
 
 // Dimensions
 
@@ -409,14 +431,6 @@ val Number.pc: LinearDimension get() = LinearDimension(this.toDouble(), LinearDi
 val Number.em: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.em)
 val Number.ex: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.ex)
 val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.percent)
-
-class BoxDimensions(val top: LinearDimension, val right: LinearDimension, val bottom: LinearDimension, val left: LinearDimension) {
-    override fun toString() = "$top $right $bottom $left"
-}
-
-fun SelectionBlock.box(dimensions: LinearDimension): BoxDimensions = BoxDimensions(dimensions, dimensions, dimensions, dimensions)
-fun SelectionBlock.box(vertical: LinearDimension, horizontal: LinearDimension) = BoxDimensions(vertical, horizontal, vertical, horizontal)
-fun SelectionBlock.box(top: LinearDimension, right: LinearDimension, bottom: LinearDimension, left: LinearDimension) = BoxDimensions(top, right, bottom, left)
 
 class AngularDimension(val value: Double, val units: Units) {
     override fun toString() = "${fiveDigits.format(value)}$units"
