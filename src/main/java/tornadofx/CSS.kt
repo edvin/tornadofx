@@ -484,7 +484,7 @@ enum class FXFontWeight(val value: String) {
     nineHundred("900");
 
     override fun toString() = value
-}  // TODO: Add 100 - 900
+}
 
 enum class FXBlendMode(val value: String) {
     add("add"),
