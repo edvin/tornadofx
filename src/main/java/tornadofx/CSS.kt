@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
+import javafx.scene.effect.Effect
 import javafx.scene.paint.*
 import javafx.scene.text.Font
 import java.net.URL
@@ -36,7 +37,7 @@ open class SelectionBlock : CssBlock() {
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
     // TODO: -fx-cursor
-    // TODO: -fx-effect
+    var effect: Effect by cssprop("-fx-effect")  // TODO: Make sure this renders properly
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
     var opacity: Double by cssprop("-fx-opacity")
     var rotate: AngularDimension by cssprop("-fx-rotate")
@@ -87,7 +88,7 @@ open class SelectionBlock : CssBlock() {
     var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
     var scaleShape: Boolean by cssprop("-fx-scale-shape")
-    var shape: String by cssprop("-fx-shape")  // TODO: Ensure SVG?
+    var shape: String by cssprop("-fx-shape")
     var snapToPixel: Boolean by cssprop("-fx-snap-to-pixel")
     var minHeight: LinearDimension by cssprop("-fx-min-height")
     var prefHeight: LinearDimension by cssprop("-fx-pref-height")
@@ -111,7 +112,7 @@ open class SelectionBlock : CssBlock() {
     var smooth: Boolean by cssprop("-fx-smooth")
     var stroke: Paint? by cssprop("-fx-paint")
     var strokeType: FXStrokeType by cssprop("-fx-stroke-type")
-    var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")  // TODO: Make sure this renders properly
+    var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")
     var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
     var strokeLineCap: FXStrokeLineCap by cssprop("-fx-stroke-line-cap")
     var strokeLineJoin: FXStrokeLineJoin by cssprop("-fx-stroke-line-join")
@@ -346,6 +347,9 @@ fun <T> toCss(value: T): String {
         }
         is Array<*> -> return value.joinToString { toCss(it) }
         is String -> return "\"$value\""
+        is Effect -> {
+            // TODO
+        }
         is Color -> return value.css
         is LinearGradient -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
         is RadialGradient -> {
