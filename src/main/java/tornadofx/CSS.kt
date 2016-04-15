@@ -26,6 +26,7 @@ open class SelectionBlock : CssBlock() {
     var fontSize: LinearDimension by cssprop("-fx-font-size")
     var fontStyle: FXFontStyle by cssprop("-fx-font-style")
     var fontWeight: FXFontWeight by cssprop("-fx-font-weight")
+
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
     // TODO: -fx-cursor
@@ -40,10 +41,13 @@ open class SelectionBlock : CssBlock() {
     var translateY: LinearDimension by cssprop("-fx-translate-y")
     var translateZ: LinearDimension by cssprop("-fx-translate-z")
     var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
+
     // ImageView
     // TODO: -fx-image
+
     // DialogPane
     // TODO: -fx-graphic
+
     // FlowPane
     var hgap: LinearDimension by cssprop("-fx-hgap")
     var vgap: LinearDimension by cssprop("-fx-vgap")
@@ -51,11 +55,14 @@ open class SelectionBlock : CssBlock() {
     var columnHAlignment: FXColumnHAlignment by cssprop("-fx-column-halignment")
     var rowVAlignment: FXRowVAlignment by cssprop("-fx-row-valignment")
     var orientation: FXOrientation by cssprop("-fx-orientation")
+
     // GridPane
     var gridLinesVisible: Boolean by cssprop("-fx-grid-lines-visible")
+
     // HBox
     var spacing: LinearDimension by cssprop("-fx-spacing")
     var fillHeight: Boolean by cssprop("-fx-fill-height")
+
     // Region
     var backgroundColor: Paint? by cssprop("-fx-background-color")
     var backgroundInsets: BoxDimensions by cssprop("-fx-background-insets")
@@ -82,14 +89,17 @@ open class SelectionBlock : CssBlock() {
     var minWidth: LinearDimension by cssprop("-fx-min-width")
     var prefWidth: LinearDimension by cssprop("-fx-pref-width")
     var maxWidth: LinearDimension by cssprop("-fx-max-width")
+
     // TilePane
     var prefRows: Int by cssprop("-fx-pref-rows")
     var prefColumns: Int by cssprop("-fx-pref-columns")
     var prefTileWidth: LinearDimension by cssprop("-fx-pref-tile-width")
     var prefTileHeight: LinearDimension by cssprop("-fx-pref-tile-height")
     var tileAlignment: FXAlignment by cssprop("-fx-tile-alignment")
+
     // VBox
     var fillWidth: Boolean by cssprop("-fx-fill-width")
+
     // Shape
     var fill: Paint? by cssprop("-fx-fill")
     var smooth: Boolean by cssprop("-fx-smooth")
@@ -101,9 +111,11 @@ open class SelectionBlock : CssBlock() {
     var strokeLineJoin: FXStrokeLineJoin by cssprop("-fx-stroke-line-join")
     var strokeMiterLimit: LinearDimension by cssprop("-fx-stroke-miter-limit")  // TODO: Or can this only be a Double?
     var strokeWidth: LinearDimension by cssprop("-fx-stroke-width")
+
     // Rectangle
     var arcHeight: LinearDimension by cssprop("-fx-arc-height")
     var arcWidth: LinearDimension by cssprop("-fx-arc-width")
+
     // Text
     // TODO: -fx-font
     var fontSmoothingType: FXFontSmoothingType by cssprop("-fx-font-smoothing-type")
@@ -111,57 +123,152 @@ open class SelectionBlock : CssBlock() {
     var textAlignment: FXTextAlignment by cssprop("-fx-text-alignment")
     var textOrigin: FXTextOrigin by cssprop("-fx-text-origin")
     var underline: Boolean by cssprop("-fx-underline")
+
     // WebView
     var contextMenuEnabled: Boolean by cssprop("-fx-context-menu-enabled")
     var fontScale: Number by cssprop("-fx-font-scale")
+
     // Cell
     var cellSize: LinearDimension by cssprop("-fx-cell-size")
+
     // ColorPicker
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
+
     // Control
     var skin: String by cssprop("-fx-skin")  // TODO: Check if this needs to conform to anything
+
     // DatePicker
     var showWeekNumbers: Boolean by cssprop("-fx-show-week-numbers")
+
     // Labeled
     var textOverrun: FXTextOverrun by cssprop("-fx-text-overrun")
     var wrapText: Boolean by cssprop("-fx-wrap-text")
+
     // TODO: -fx-font
     var contentDisplay: FXContentDisplay by cssprop("-fx-content-display")
     var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
     var labelPadding: BoxDimensions by cssprop("-fx-label-padding")
     var textFill: Color? by cssprop("-fx-text-fill")
     var ellipsisString: String by cssprop("-fx-ellipsis-string")
+
     // MenuBar
     var useSystemMenyBar: Boolean by cssprop("-fx-use-system-menu-bar")
+
     // Pagination
     var maxPageIndicatorCount: Int by cssprop("-fx-max-page-indicator-count")
     var arrowsVisible: Boolean by cssprop("-fx-arrows-visible")
     var tooltipVisible: Boolean by cssprop("-fx-tooltip-visible")
     var pageInformationVisible: Boolean by cssprop("-fx-page-information-visible")
     var pageInformationAlignment: FXSide by cssprop("-fx-page-information-alignment")
+
     // ProgressBar
     var indeterminateBarLength: LinearDimension by cssprop("-fx-indeterminate-bar-length")
     var indeterminateBarEscape: Boolean by cssprop("-fx-indeterminate-bar-escape")
     var indeterminateBarFlip: Boolean by cssprop("-fx-indeterminate-bar-flip")
     var indeterminateBarAnimationTime: TemporalDimension by cssprop("-fx-indeterminate-bar-animation-time")
+
     // ProgressIndicator
     var indeterminateSegmentCount: Int by cssprop("-fx-indeterminate-SegmentCount")
     var progressColor: Paint? by cssprop("-fx-progress-color")
     var spinEnabled: Boolean by cssprop("-fx-spin-enabled")
+
     // ScrollBar
     var blockIncrement: LinearDimension by cssprop("-fx-block-increment")
     var unitIncrement: LinearDimension by cssprop("-fx-unit-increment")
+
     // ScrollPane
     var fitToWidth: Boolean by cssprop("-fx-fit-to-width")
     var fitToHeight: Boolean by cssprop("-fx-fit-to-height")
     var pannable: Boolean by cssprop("-fx-pannable")
     var hBarPolicy: FXBarPolicy by cssprop("-fx-hbar-policy")
     var vBarPolicy: FXBarPolicy by cssprop("-fx-vbar-policy")
+
     // Separator
     var hAlignment: FXHAlignment by cssprop("-fx-halignment")
     var vAlignment: FXVAlignment by cssprop("-fx-valignment")
-    // Slider TODO
 
+    // Slider
+    var showTickLabels: Boolean by cssprop("-fx-show-tick-labels")
+    var showTickMarks: Boolean by cssprop("-fx-show-tick-marks")
+    var majorTickUnit: Double by cssprop("-fx-major-tick-unit")
+    var minorTickCount: Int by cssprop("-fx-minor-tick-count")
+    var showTickLables: Boolean by cssprop("-fx-show-tick-labels")
+    var snapToTicks: Boolean by cssprop("-fx-snap-to-ticks")
+
+    // TabPane
+    var tabMaxHeight: LinearDimension by cssprop("-fx-tab-max-height")
+    var tabMinHeight: LinearDimension by cssprop("-fx-tab-min-height")
+    var tabMaxWidth: LinearDimension by cssprop("-fx-tab-max-width")
+    var tabMinWidth: LinearDimension by cssprop("-fx-tab-min-width")
+    var openTabAnimation: FXTabAnimation by cssprop("-fx-open-tab-animation")
+    var closeTabAnimation: FXTabAnimation by cssprop("-fx-close-tab-animation")
+
+    // TableColumnHeader
+    var size: LinearDimension by cssprop("-fx-size")
+
+    // TableView
+    var fixedCellSize: LinearDimension by cssprop("-fx-fixed-cell-size")
+
+    // TextArea
+    var prefColumnCount: Int by cssprop("-fx-pref-column-count")
+    var prefRowCount: Int by cssprop("-fx-pref-row-count")
+
+    // TextInputControl
+    var promptTextFill: Paint? by cssprop("-fx-prompt-text-fill")
+    var highlightFill: Paint? by cssprop("-fx-highlight-fill")
+    var highlightTextFill: Paint? by cssprop("-fx-highlight-text-fill")
+    var displayCaret: Boolean by cssprop("-fx-display-caret")
+
+    // TitlePane
+    var animated: Boolean by cssprop("-fx-animated")
+    var collapsible: Boolean by cssprop("-fx-collapsible")
+
+    // TreeCell
+    var indent: LinearDimension by cssprop("-fx-indent")
+
+    // Axis
+    var side: FXSide by cssprop("-fx-side")
+    var tickLength: LinearDimension by cssprop("-fx-tick-length")
+    // TODO: -fx-tick-label-font
+    var tickLabelFill: Paint? by cssprop("-fx-tick-label-fill")
+    var tickLabelGap: LinearDimension by cssprop("-fx-tick-label-gap")
+    var tickMarkVisible: Boolean by cssprop("-fx-tick-mark-visible")
+    var tickLabelsVisible: Boolean by cssprop("-fx-tick-labels-visible")
+
+    // BarChar
+    var barGap: LinearDimension by cssprop("-fx-bar-gap")
+    var categoryGap: LinearDimension by cssprop("-fx-category-group")
+
+    // CategoryAxis
+    var startMargin: LinearDimension by cssprop("-fx-start-margin")
+    var endMargin: LinearDimension by cssprop("-fx-end-margin")
+    var gapStartAndEnd: Boolean by cssprop("-fx-gap-start-and-end")
+
+    // Chart
+    var legendSide: FXSide by cssprop("-fx-legend-side")
+    var legendVisible: Boolean by cssprop("-fx-legend-visible")
+    var titleSide: FXSide by cssprop("-fx-title-side")
+
+    // NumberAxis
+    var tickUnit: Number by cssprop("-fx-tick-unit")
+
+    // PieChart
+    var clockwise: Boolean by cssprop("-fx-clockwise")
+    var pieLabelVisible: Boolean by cssprop("-fx-pie-label-visible")
+    var labelLineLength: LinearDimension by cssprop("-fx-label-line-length")
+    var startAngle: AngularDimension by cssprop("-fx-start-angle")
+
+    // ValueAxis
+    var minorTickLength: LinearDimension by cssprop("-fx-minor-tick-length")
+    var minorTickVisible: Boolean by cssprop("-fx-minor-tick-visible")
+
+    // XYChart
+    var alternativeColumnFillVisible: Boolean by cssprop("-fx-alternative-column-fill-visible")
+    var alternativeRowFillVisible: Boolean by cssprop("-fx-alternative-row-fill-visible")
+    var horizontalGridLinesVisible: Boolean by cssprop("-fx-horizontal-grid-lines-visible")
+    var horizontalZeroLineVisible: Boolean by cssprop("-fx-horizontal-zero-line-visible")
+    var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
+    var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
     private inline fun <reified V> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
@@ -399,3 +506,4 @@ enum class FXBarPolicy(val value: String) {
 
 enum class FXHAlignment { left, center, right; }
 enum class FXVAlignment { top, center, baseline, bottom; }
+enum class FXTabAnimation { grow, none; }
