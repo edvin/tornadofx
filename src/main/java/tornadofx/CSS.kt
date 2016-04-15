@@ -25,7 +25,7 @@ open class CssBlock {
 }
 
 open class SelectionBlock : CssBlock() {
-    val properties = mutableMapOf<String, Any>()
+    protected val properties = mutableMapOf<String, Any>()
 
     // Font
     var font: Font by cssprop("-fx-font")  // TODO: Make sure this renders properly
@@ -300,6 +300,11 @@ open class SelectionBlock : CssBlock() {
         null
     }
 
+    fun mix(other: SelectionBlock) {
+        properties.putAll(other.properties)
+        selections.addAll(other.selections)
+    }
+
     private inline fun <reified V> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
             override fun getValue(thisRef: SelectionBlock, property: KProperty<*>) = properties[key] as V
@@ -317,10 +322,7 @@ open class SelectionBlock : CssBlock() {
 class Mixin : SelectionBlock()
 
 class Selection(val selector: String) : SelectionBlock() {
-    operator fun Mixin.unaryPlus() {
-        this@Selection.properties.putAll(properties)
-        this@Selection.selections.addAll(selections)
-    }
+    operator fun Mixin.unaryPlus() = this@Selection.mix(this)
 
     fun render(current: String = ""): String {
         return buildString {
