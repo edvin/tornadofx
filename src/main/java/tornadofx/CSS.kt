@@ -1,14 +1,11 @@
 package tornadofx
 
-import com.sun.xml.internal.fastinfoset.util.StringArray
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.paint.*
-
 import javafx.scene.text.Font
 import java.net.URL
-import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
 import java.util.*
@@ -31,7 +28,7 @@ open class SelectionBlock : CssBlock() {
 
     // Font
     var font: Font by cssprop("-fx-font")  // TODO: Make sure this renders properly
-    var fontFamily: StringArray by cssprop("-fx-font-family")
+    var fontFamily: Array<String> by cssprop("-fx-font-family")
     var fontSize: LinearDimension by cssprop("-fx-font-size")
     var fontStyle: FXFontStyle by cssprop("-fx-font-style")
     var fontWeight: FXFontWeight by cssprop("-fx-font-weight")
@@ -276,6 +273,32 @@ open class SelectionBlock : CssBlock() {
     var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
     var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
+    // Box functions
+    fun <T> box(all: T) = CssBox(all, all, all, all)
+
+    fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+
+    fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+
+    // Color functions
+    fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
+        Color.web(colorString, opacity)
+    } catch (e: Exception) {
+        null
+    }
+
+    fun SelectionBlock.c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+        Color.color(red, green, blue, opacity)
+    } catch (e: Exception) {
+        null
+    }
+
+    fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+        Color.rgb(red, green, blue, opacity)
+    } catch (e: Exception) {
+        null
+    }
+
     private inline fun <reified V> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
             override fun getValue(thisRef: SelectionBlock, property: KProperty<*>) = properties[key] as V
@@ -321,12 +344,10 @@ fun <T> toCss(value: T): String {
         is Font -> {
             // TODO
         }
-        is StringArray -> return value.array.joinToString(separator = "\", \"", prefix = "\"", postfix = "\"")
+        is Array<*> -> return value.joinToString { toCss(it) }
         is String -> return "\"$value\""
         is Color -> return value.css
-        is LinearGradient -> {
-            // TODO
-        }
+        is LinearGradient -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
         is RadialGradient -> {
             // TODO
         }
@@ -386,30 +407,8 @@ open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
 
 // Colors
 
-fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
-    Color.web(colorString, opacity)
-} catch (e: Exception) {
-    null
-}
-
-fun SelectionBlock.c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
-    Color.color(red, green, blue, opacity)
-} catch (e: Exception) {
-    null
-}
-
-fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
-    Color.rgb(red, green, blue, opacity)
-} catch (e: Exception) {
-    null
-}
-
 val Color.css: String
     get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
-
-fun <T> SelectionBlock.box(all: T) = CssBox(all, all, all, all)
-fun <T> SelectionBlock.box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
-fun <T> SelectionBlock.box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
 
 // Dimensions
 
