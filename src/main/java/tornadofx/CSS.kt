@@ -8,6 +8,7 @@ import javafx.scene.Node
 import javafx.scene.effect.Effect
 import javafx.scene.layout.BackgroundPosition
 import javafx.scene.layout.BackgroundRepeat
+import javafx.scene.layout.BackgroundSize
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
@@ -83,7 +84,7 @@ open class SelectionBlock : CssBlock() {
     var backgroundImage: String by cssprop("-fx-background-image")
     var backgroundPosition: BackgroundPosition by cssprop("-fx-background-position")
     var backgroundRepeat: Pair<BackgroundRepeat, BackgroundRepeat> by cssprop("-fx-background-repeat")
-    // TODO: -fx-background-size
+    var backgroundSize: BackgroundSize by cssprop("-fx-background-size")
     var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
     // TODO: -fx-border-style
@@ -364,6 +365,11 @@ fun <T> toCss(value: T): String {
         }
         is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
                 "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
+        is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
+            append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
+            append(" ")
+            append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
+        }
         is Array<*> -> return value.joinToString { toCss(it) }
         is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
         is String -> return "\"$value\""
