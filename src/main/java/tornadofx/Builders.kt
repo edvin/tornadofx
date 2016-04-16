@@ -12,11 +12,13 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
+import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.util.Callback
 import javafx.util.StringConverter
+import sun.jvm.hotspot.debugger.Page
 import tornadofx.control.DatePickerTableCell
 import java.time.LocalDate
 import java.util.concurrent.Callable
@@ -34,6 +36,15 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
     if (pageCount != null) pagination.pageCount = pageCount
     if (pageIndex != null) pagination.currentPageIndex = pageIndex
     return opcr(this, pagination, op)
+}
+
+enum class ColorPickerMode { Button, MenuButton, SplitMenuButton }
+fun Pane.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorPickerMode.Button, op: (ColorPicker.() -> Unit)? = null): ColorPicker {
+    val picker = ColorPicker()
+    if (mode == ColorPickerMode.MenuButton) picker.addClass(ColorPicker.STYLE_CLASS_BUTTON)
+    else if (mode == ColorPickerMode.SplitMenuButton) picker.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
+    if (color != null) picker.value = color
+    return opcr(this, picker, op)
 }
 
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
