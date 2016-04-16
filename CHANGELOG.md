@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `chooseFile` File Chooser function (https://github.com/edvin/tornadofx/issues/76)
 - Pagination builder (https://github.com/edvin/tornadofx/issues/76)
 - Configurable alert dialog 
 - `Node.bindClass` applies an observable style class to a node (https://github.com/edvin/tornadofx/issues/88)
