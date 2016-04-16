@@ -7,7 +7,9 @@ import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.OverrunStyle
+import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
+import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
@@ -376,7 +378,12 @@ fun <T> toCss(value: T): String {
         is KClass<*> -> return value.simpleName ?: "none"
         is String -> return "\"$value\""
         is Effect -> {
-            // TODO
+            // JavaFX currently only supports DropShadow and InnerShadow in CSS
+            when (value) {
+                is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, ${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
+                is InnerShadow -> return "innershadow(${toCss(value.blurType)}, ${value.color.css}, ${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
+                else -> return "none"
+            }
         }
         is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
     }
