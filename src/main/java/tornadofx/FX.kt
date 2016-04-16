@@ -1,8 +1,10 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.scene.image.Image
 import javafx.stage.Stage
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -12,7 +14,7 @@ import kotlin.reflect.KClass
 class FX {
     companion object {
         val log = Logger.getLogger("FX")
-
+        val initialized = SimpleBooleanProperty(false)
         lateinit var primaryStage: Stage
         lateinit var application: App
         val stylesheets = FXCollections.observableArrayList<String>()
@@ -73,13 +75,18 @@ class FX {
     }
 }
 
+fun addStageIcon(vararg icons: Image) = {
+    val adder = { for (icon in icons) FX.primaryStage.icons += icon }
+    if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+}
+
 fun importStylesheet(stylesheet: String) {
     val css = FX::class.java.getResource(stylesheet)
     FX.stylesheets.add(css.toExternalForm())
 }
 
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) =
-    FX.stylesheets.add("css://${stylesheetType.java.name}")
+        FX.stylesheets.add("css://${stylesheetType.java.name}")
 
 inline fun <reified T : Injectable> find(): T = find(T::class)
 
@@ -95,5 +102,5 @@ fun <T : Injectable> find(type: KClass<T>): T {
 }
 
 interface DIContainer {
-    fun <T: Any> getInstance(type: KClass<T>): T
+    fun <T : Any> getInstance(type: KClass<T>): T
 }
