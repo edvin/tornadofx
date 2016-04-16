@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.geometry.Side
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
@@ -150,7 +151,7 @@ open class SelectionBlock : CssBlock() {
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
 
     // Control
-    var skin: KClass<*> by cssprop("-fx-skin")  // TODO: Check if this needs to conform to anything
+    var skin: KClass<*> by cssprop("-fx-skin")
 
     // DatePicker
     var showWeekNumbers: Boolean by cssprop("-fx-show-week-numbers")
@@ -172,7 +173,7 @@ open class SelectionBlock : CssBlock() {
     var arrowsVisible: Boolean by cssprop("-fx-arrows-visible")
     var tooltipVisible: Boolean by cssprop("-fx-tooltip-visible")
     var pageInformationVisible: Boolean by cssprop("-fx-page-information-visible")
-    var pageInformationAlignment: FXSide by cssprop("-fx-page-information-alignment")
+    var pageInformationAlignment: Side by cssprop("-fx-page-information-alignment")
 
     // ProgressBar
     var indeterminateBarLength: LinearDimension by cssprop("-fx-indeterminate-bar-length")
@@ -240,7 +241,7 @@ open class SelectionBlock : CssBlock() {
     var indent: LinearDimension by cssprop("-fx-indent")
 
     // Axis
-    var side: FXSide by cssprop("-fx-side")
+    var side: Side by cssprop("-fx-side")
     var tickLength: LinearDimension by cssprop("-fx-tick-length")
     var tickLabelFont: Font by cssprop("-fx-tick-label-font")
     var tickLabelFill: Paint? by cssprop("-fx-tick-label-fill")
@@ -258,9 +259,9 @@ open class SelectionBlock : CssBlock() {
     var gapStartAndEnd: Boolean by cssprop("-fx-gap-start-and-end")
 
     // Chart
-    var legendSide: FXSide by cssprop("-fx-legend-side")
+    var legendSide: Side by cssprop("-fx-legend-side")
     var legendVisible: Boolean by cssprop("-fx-legend-visible")
-    var titleSide: FXSide by cssprop("-fx-title-side")
+    var titleSide: Side by cssprop("-fx-title-side")
 
     // NumberAxis
     var tickUnit: Number by cssprop("-fx-tick-unit")
@@ -568,8 +569,6 @@ enum class FXStrokeLineJoin { miter, bevel, round; }
 enum class FXFontSmoothingType { gray, lcd; }
 enum class FXTextAlignment { left, center, right, justify; }
 enum class FXTextOrigin { baseline, top, bottom; }
-
-enum class FXSide { top, bottom, left, right; }
 
 enum class FXBarPolicy(val value: String) {
     never("never"),
