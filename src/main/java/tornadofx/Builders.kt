@@ -12,6 +12,7 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.*
+import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
@@ -27,6 +28,22 @@ import kotlin.reflect.KProperty1
 fun Pane.titledpane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
     return opcr(this, pane)
+}
+
+fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
+    val pagination = Pagination()
+    if (pageCount != null) pagination.pageCount = pageCount
+    if (pageIndex != null) pagination.currentPageIndex = pageIndex
+    return opcr(this, pagination, op)
+}
+
+enum class ColorPickerMode { Button, MenuButton, SplitMenuButton }
+fun Pane.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorPickerMode.Button, op: (ColorPicker.() -> Unit)? = null): ColorPicker {
+    val picker = ColorPicker()
+    if (mode == ColorPickerMode.MenuButton) picker.addClass(ColorPicker.STYLE_CLASS_BUTTON)
+    else if (mode == ColorPickerMode.SplitMenuButton) picker.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
+    if (color != null) picker.value = color
+    return opcr(this, picker, op)
 }
 
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)

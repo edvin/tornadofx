@@ -26,6 +26,8 @@ abstract class App : Application() {
                 titleProperty().bind(view.titleProperty)
                 show()
             }
+
+            FX.initialized.value = true
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
