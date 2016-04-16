@@ -75,8 +75,8 @@ class FX {
     }
 }
 
-fun addStageIcon(vararg icons: Image) = {
-    val adder = { for (icon in icons) FX.primaryStage.icons += icon }
+fun addStageIcon(icon: Image) {
+    val adder = { FX.primaryStage.icons += icon }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
 }
 
