@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Configurable alert dialog 
 - `Node.bindClass` applies an observable style class to a node (https://github.com/edvin/tornadofx/issues/88)
 
 ### Changed
