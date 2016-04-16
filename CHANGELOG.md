@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - `Node.bindClass` applies an observable style class to a node (https://github.com/edvin/tornadofx/issues/88)
 
+### Changed
+
+- Fixed dual instantiation of SingleViewApp
+
 ## [1.4.2] - 2016-04-14
 
 ### Added
