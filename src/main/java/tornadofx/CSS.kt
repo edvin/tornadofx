@@ -46,7 +46,7 @@ open class SelectionBlock : CssBlock() {
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
     var cursor: Cursor by cssprop("-fx-cursor")
-    var effect: Effect by cssprop("-fx-effect")  // TODO: Make sure this renders properly
+    var effect: Effect by cssprop("-fx-effect")
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
     var opacity: Double by cssprop("-fx-opacity")
     var rotate: AngularDimension by cssprop("-fx-rotate")
@@ -380,8 +380,10 @@ fun <T> toCss(value: T): String {
         is Effect -> {
             // JavaFX currently only supports DropShadow and InnerShadow in CSS
             when (value) {
-                is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, ${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
-                is InnerShadow -> return "innershadow(${toCss(value.blurType)}, ${value.color.css}, ${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
+                is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
+                is InnerShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
                 else -> return "none"
             }
         }
