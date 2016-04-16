@@ -29,6 +29,13 @@ fun Pane.titledpane(title: String, node: Node): TitledPane {
     return opcr(this, pane)
 }
 
+fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
+    val pagination = Pagination()
+    if (pageCount != null) pagination.pageCount = pageCount
+    if (pageIndex != null) pagination.currentPageIndex = pageIndex
+    return opcr(this, pagination, op)
+}
+
 fun Pane.tabpane(op: (TabPane.() -> Unit)? = null) = opcr(this, TabPane(), op)
 
 fun Pane.textflow(op: (TextFlow.() -> Unit)? = null) = opcr(this, TextFlow(), op)
