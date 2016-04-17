@@ -21,6 +21,7 @@ class FX {
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
+        @JvmStatic
         var dicontainer: DIContainer? = null
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
