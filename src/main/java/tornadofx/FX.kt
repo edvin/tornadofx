@@ -78,12 +78,14 @@ class FX {
             }
         }
 
+        @JvmStatic
         fun registerApplication(application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
             FX.primaryStage = primaryStage
             FX.application = application
         }
 
+        @JvmStatic
         fun <T: Injectable> find(componentType: Class<T>) =
             find(componentType.kotlin)
     }
