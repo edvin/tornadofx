@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `FX.registerApplication(app, stage)` function for easy integration with existing apps (https://github.com/edvin/tornadofx/issues/89)
 - `colorpicker` builder (https://github.com/edvin/tornadofx/issues/76)
 - `chooseFile` File Chooser (https://github.com/edvin/tornadofx/issues/76)
 - `pagination` builder (https://github.com/edvin/tornadofx/issues/76)

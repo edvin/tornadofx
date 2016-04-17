@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -16,7 +17,7 @@ class FX {
         val log = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
         lateinit var primaryStage: Stage
-        lateinit var application: App
+        lateinit var application: Application
         val stylesheets = FXCollections.observableArrayList<String>()
         val components = HashMap<KClass<out Injectable>, Injectable>()
         val lock = Any()
@@ -42,6 +43,11 @@ class FX {
                 log.fine({ "No global Messages found in locale $locale, using empty bundle" })
                 messages = EmptyResourceBundle.INSTANCE
             }
+        }
+
+        fun installErrorHandler() {
+            if (Thread.getDefaultUncaughtExceptionHandler() == null)
+                Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
         }
 
         init {
@@ -72,6 +78,14 @@ class FX {
             }
         }
 
+        fun registerApplication(application: Application, primaryStage: Stage) {
+            FX.installErrorHandler()
+            FX.primaryStage = primaryStage
+            FX.application = application
+        }
+
+        fun <T: Injectable> find(componentType: Class<T>) =
+            find(componentType.kotlin)
     }
 }
 

@@ -12,10 +12,7 @@ abstract class App : Application() {
     abstract val primaryView: KClass<out ViewContainer>
 
     override fun start(stage: Stage) {
-        installErrorHandler()
-
-        FX.primaryStage = stage
-        FX.application = this
+        FX.registerApplication(this, stage)
 
         try {
             val view = find(primaryView)
@@ -31,11 +28,6 @@ abstract class App : Application() {
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
-    }
-
-    private fun installErrorHandler() {
-        if (Thread.getDefaultUncaughtExceptionHandler() == null)
-            Thread.setDefaultUncaughtExceptionHandler(DefaultErrorHandler())
     }
 
     inline fun <reified T : Injectable> inject(): ReadOnlyProperty<App, T> = object : ReadOnlyProperty<App, T> {
