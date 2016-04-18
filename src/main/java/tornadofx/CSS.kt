@@ -15,6 +15,7 @@ import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.scene.text.Font
+import javafx.scene.text.FontWeight
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
@@ -49,7 +50,7 @@ open class SelectionBlock : CssBlock() {
     var fontFamily: Array<String> by cssprop("-fx-font-family")
     var fontSize: LinearDimension by cssprop("-fx-font-size")
     var fontStyle: FXFontStyle by cssprop("-fx-font-style")
-    var fontWeight: FXFontWeight by cssprop("-fx-font-weight")
+    var fontWeight: FontWeight by cssprop("-fx-font-weight")
 
     // Node
     var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
@@ -363,10 +364,9 @@ fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 10
 fun <T> toCss(value: T): String {
     when (value) {
         null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
+        is FontWeight -> return "${value.weight}"
         is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
-        is Font -> {
-            // TODO
-        }
+        is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
         is Cursor -> return if (value is ImageCursor) {
             value.image.javaClass.getDeclaredField("url").let {
                 it.isAccessible = true
@@ -506,24 +506,6 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 // Enums
 
 enum class FXFontStyle { normal, italic, oblique; }
-
-enum class FXFontWeight(val value: String) {
-    normal("normal"),
-    bold("bold"),
-    bolder("bolder"),
-    lighter("lighter"),
-    oneHundred("100"),
-    twoHundred("200"),
-    threeHundred("300"),
-    fourHundred("400"),
-    fiveHundred("500"),
-    sixHundred("600"),
-    sevenHundred("700"),
-    eightHundred("800"),
-    nineHundred("900");
-
-    override fun toString() = value
-}
 
 enum class FXBlendMode(val value: String) {
     add("add"),
