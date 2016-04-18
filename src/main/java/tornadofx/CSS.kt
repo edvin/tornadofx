@@ -2,20 +2,24 @@ package tornadofx
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
-import javafx.geometry.Side
+import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.OverrunStyle
+import javafx.scene.control.ScrollPane
+import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
-import javafx.scene.text.Font
-import javafx.scene.text.FontWeight
+import javafx.scene.shape.StrokeLineCap
+import javafx.scene.shape.StrokeLineJoin
+import javafx.scene.shape.StrokeType
+import javafx.scene.text.*
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
@@ -46,14 +50,14 @@ open class SelectionBlock : CssBlock() {
     protected val properties = mutableMapOf<String, Any>()
 
     // Font
-    var font: Font by cssprop("-fx-font")  // TODO: Make sure this renders properly
+    var font: Font by cssprop("-fx-font")
     var fontFamily: Array<String> by cssprop("-fx-font-family")
     var fontSize: LinearDimension by cssprop("-fx-font-size")
-    var fontStyle: FXFontStyle by cssprop("-fx-font-style")
+    var fontStyle: FontPosture by cssprop("-fx-font-style")
     var fontWeight: FontWeight by cssprop("-fx-font-weight")
 
     // Node
-    var blendMode: FXBlendMode by cssprop("-fx-blend-mode")
+    var blendMode: BlendMode by cssprop("-fx-blend-mode")
     var cursor: Cursor by cssprop("-fx-cursor")
     var effect: Effect by cssprop("-fx-effect")
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
@@ -76,10 +80,10 @@ open class SelectionBlock : CssBlock() {
     // FlowPane
     var hgap: LinearDimension by cssprop("-fx-hgap")
     var vgap: LinearDimension by cssprop("-fx-vgap")
-    var alignment: FXAlignment by cssprop("-fx-alignment")
-    var columnHAlignment: FXColumnHAlignment by cssprop("-fx-column-halignment")
-    var rowVAlignment: FXRowVAlignment by cssprop("-fx-row-valignment")
-    var orientation: FXOrientation by cssprop("-fx-orientation")
+    var alignment: Pos by cssprop("-fx-alignment")
+    var columnHAlignment: HPos by cssprop("-fx-column-halignment")
+    var rowVAlignment: VPos by cssprop("-fx-row-valignment")
+    var orientation: Orientation by cssprop("-fx-orientation")
 
     // GridPane
     var gridLinesVisible: Boolean by cssprop("-fx-grid-lines-visible")
@@ -120,7 +124,7 @@ open class SelectionBlock : CssBlock() {
     var prefColumns: Int by cssprop("-fx-pref-columns")
     var prefTileWidth: LinearDimension by cssprop("-fx-pref-tile-width")
     var prefTileHeight: LinearDimension by cssprop("-fx-pref-tile-height")
-    var tileAlignment: FXAlignment by cssprop("-fx-tile-alignment")
+    var tileAlignment: Pos by cssprop("-fx-tile-alignment")
 
     // VBox
     var fillWidth: Boolean by cssprop("-fx-fill-width")
@@ -129,11 +133,11 @@ open class SelectionBlock : CssBlock() {
     var fill: Paint by cssprop("-fx-fill")
     var smooth: Boolean by cssprop("-fx-smooth")
     var stroke: Paint by cssprop("-fx-paint")
-    var strokeType: FXStrokeType by cssprop("-fx-stroke-type")
+    var strokeType: StrokeType by cssprop("-fx-stroke-type")
     var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")
     var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
-    var strokeLineCap: FXStrokeLineCap by cssprop("-fx-stroke-line-cap")
-    var strokeLineJoin: FXStrokeLineJoin by cssprop("-fx-stroke-line-join")
+    var strokeLineCap: StrokeLineCap by cssprop("-fx-stroke-line-cap")
+    var strokeLineJoin: StrokeLineJoin by cssprop("-fx-stroke-line-join")
     var strokeMiterLimit: LinearDimension by cssprop("-fx-stroke-miter-limit")  // TODO: Or can this only be a Double?
     var strokeWidth: LinearDimension by cssprop("-fx-stroke-width")
 
@@ -142,10 +146,10 @@ open class SelectionBlock : CssBlock() {
     var arcWidth: LinearDimension by cssprop("-fx-arc-width")
 
     // Text
-    var fontSmoothingType: FXFontSmoothingType by cssprop("-fx-font-smoothing-type")
+    var fontSmoothingType: FontSmoothingType by cssprop("-fx-font-smoothing-type")
     var strikethrough: Boolean by cssprop("-fx-strikethrough")
-    var textAlignment: FXTextAlignment by cssprop("-fx-text-alignment")
-    var textOrigin: FXTextOrigin by cssprop("-fx-text-origin")
+    var textAlignment: TextAlignment by cssprop("-fx-text-alignment")
+    var textOrigin: VPos by cssprop("-fx-text-origin")
     var underline: Boolean by cssprop("-fx-underline")
 
     // WebView
@@ -202,12 +206,12 @@ open class SelectionBlock : CssBlock() {
     var fitToWidth: Boolean by cssprop("-fx-fit-to-width")
     var fitToHeight: Boolean by cssprop("-fx-fit-to-height")
     var pannable: Boolean by cssprop("-fx-pannable")
-    var hBarPolicy: FXBarPolicy by cssprop("-fx-hbar-policy")
-    var vBarPolicy: FXBarPolicy by cssprop("-fx-vbar-policy")
+    var hBarPolicy: ScrollPane.ScrollBarPolicy by cssprop("-fx-hbar-policy")
+    var vBarPolicy: ScrollPane.ScrollBarPolicy by cssprop("-fx-vbar-policy")
 
     // Separator
-    var hAlignment: FXHAlignment by cssprop("-fx-halignment")
-    var vAlignment: FXVAlignment by cssprop("-fx-valignment")
+    var hAlignment: HPos by cssprop("-fx-halignment")
+    var vAlignment: VPos by cssprop("-fx-valignment")
 
     // Slider
     var showTickLabels: Boolean by cssprop("-fx-show-tick-labels")
@@ -363,7 +367,7 @@ class Selection(val selector: String) : SelectionBlock() {
 fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
 fun <T> toCss(value: T): String {
     when (value) {
-        null -> return ""  // This should only happen in a container TODO: Is there a better way to handle this?
+        null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
         is FontWeight -> return "${value.weight}"
         is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
         is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
@@ -448,6 +452,10 @@ open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${toCss(top)} ${toCss(right)} ${toCss(bottom)} ${toCss(left)}"
 }
 
+enum class FXVisibility { visible, hidden, collapse, inherit; }
+
+enum class FXTabAnimation { grow, none; }
+
 // Colors
 
 val Color.css: String
@@ -502,72 +510,3 @@ class TemporalDimension(val value: Double, val units: Units) {
 
 val Number.s: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.s)
 val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.ms)
-
-// Enums
-
-enum class FXFontStyle { normal, italic, oblique; }
-
-enum class FXBlendMode(val value: String) {
-    add("add"),
-    blue("blue"),
-    colorBurn("color-burn"),
-    colorDodge("color-dodge"),
-    darken("darken"),
-    difference("difference"),
-    exclusion("exclusion"),
-    green("green"),
-    hardLight("hard-light"),
-    lighten("lighten"),
-    multiply("multiply"),
-    overlay("overlay"),
-    red("red"),
-    screen("screen"),
-    softLight("soft-light"),
-    srcAtop("src-atop"),
-    srcIn("src-in"),
-    srcOut("src-out"),
-    srcOver("src-over");
-
-    override fun toString() = value
-}
-
-enum class FXVisibility { visible, hidden, collapse, inherit; }
-
-enum class FXAlignment(val value: String) {
-    topLeft("top-left"),
-    topCenter("top-center"),
-    topRight("top-right"),
-    centerLeft("center-left"),
-    center("center"),
-    centerRight("center-right"),
-    bottomLeft("bottom-left"),
-    bottomCenter("bottom-center"),
-    bottomRight("bottom-right"),
-    baselineLeft("baseline-left"),
-    baselineCenter("baseline-center"),
-    baselineRight("baseline-right");
-
-    override fun toString() = value
-}
-
-enum class FXColumnHAlignment { left, center, right; }
-enum class FXRowVAlignment { top, center, baseline, bottom; }
-enum class FXOrientation { horizontal, vertical; }
-enum class FXStrokeType { inside, outside, centered; }
-enum class FXStrokeLineCap { square, butt, round; }
-enum class FXStrokeLineJoin { miter, bevel, round; }
-enum class FXFontSmoothingType { gray, lcd; }
-enum class FXTextAlignment { left, center, right, justify; }
-enum class FXTextOrigin { baseline, top, bottom; }
-
-enum class FXBarPolicy(val value: String) {
-    never("never"),
-    always("always"),
-    asNeeded("as-needed");
-
-    override fun toString() = value
-}
-
-enum class FXHAlignment { left, center, right; }
-enum class FXVAlignment { top, center, baseline, bottom; }
-enum class FXTabAnimation { grow, none; }
