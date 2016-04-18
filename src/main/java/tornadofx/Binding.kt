@@ -79,7 +79,6 @@ inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, 
 }
 
 inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
-    println("Looking for converter for ${T::class.javaPrimitiveType ?: T::class}")
     val converter: StringConverter<out Any>? = when (T::class.javaPrimitiveType ?: T::class) {
         Int::class.javaPrimitiveType -> IntegerStringConverter()
         Long::class.javaPrimitiveType -> LongStringConverter()
