@@ -138,7 +138,7 @@ open class SelectionBlock : CssBlock() {
     var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
     var strokeLineCap: StrokeLineCap by cssprop("-fx-stroke-line-cap")
     var strokeLineJoin: StrokeLineJoin by cssprop("-fx-stroke-line-join")
-    var strokeMiterLimit: LinearDimension by cssprop("-fx-stroke-miter-limit")  // TODO: Or can this only be a Double?
+    var strokeMiterLimit: Double by cssprop("-fx-stroke-miter-limit")
     var strokeWidth: LinearDimension by cssprop("-fx-stroke-width")
 
     // Rectangle
