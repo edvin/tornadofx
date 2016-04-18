@@ -72,7 +72,7 @@ inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, 
             } else if (format != null) {
                 stringProperty.bindBidirectional(property, format)
             } else {
-                throw IllegalArgumentException("Cannot convert from ${T::class} to String without an explicit converter")
+                throw IllegalArgumentException("Cannot convert from ${T::class} to String without an explicit converter or format")
             }
         }
     }
