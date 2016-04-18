@@ -330,6 +330,8 @@ open class SelectionBlock : CssBlock() {
         selections.addAll(other.selections)
     }
 
+    operator fun Mixin.unaryPlus() = this@SelectionBlock.mix(this)
+
     private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
             override fun getValue(thisRef: SelectionBlock, property: KProperty<*>) = properties[key] as V
@@ -344,7 +346,6 @@ open class SelectionBlock : CssBlock() {
 class Mixin : SelectionBlock()
 
 class Selection(val selector: String) : SelectionBlock() {
-    operator fun Mixin.unaryPlus() = this@Selection.mix(this)
     var modifier = false
 
     fun render(current: String = ""): String {
