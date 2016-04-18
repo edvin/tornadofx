@@ -102,7 +102,7 @@ open class SelectionBlock : CssBlock() {
     var backgroundSize: BackgroundSize by cssprop("-fx-background-size")
     var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
-    var borderStyle: BorderStrokeStyle by cssprop("-fx-border-style")  // TODO: Make sure this renders properly
+    var borderStyle: BorderStrokeStyle by cssprop("-fx-border-style")
     var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
     var borderImageSource: String by cssprop("-fx-border-image-source")
     var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
@@ -369,7 +369,7 @@ fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 10
 fun <T> toCss(value: T): String {
     when (value) {
         null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
-        is FontWeight -> return "${value.weight}"
+        is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
         is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
         is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
         is Cursor -> return if (value is ImageCursor) {
@@ -386,6 +386,22 @@ fun <T> toCss(value: T): String {
             append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
             append(" ")
             append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
+        }
+        is BorderStrokeStyle -> return when (value) {
+            BorderStrokeStyle.NONE -> "none"
+            BorderStrokeStyle.DASHED -> "dashed"
+            BorderStrokeStyle.DOTTED -> "dotted"
+            BorderStrokeStyle.SOLID -> "solid"
+            else -> buildString {
+                // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
+                append("segments(${value.dashArray.joinToString(separator = " ")}) ")
+                append(toCss(value.type))
+                append(" line-join ${toCss(value.lineJoin)} ")
+                if (value.lineJoin == StrokeLineJoin.MITER) {
+                    append(value.miterLimit)
+                }
+                append(" line-cap ${toCss(value.lineCap)}")
+            }
         }
         is Array<*> -> return value.joinToString { toCss(it) }
         is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
