@@ -26,6 +26,10 @@ import kotlin.reflect.KProperty
 open class CssBlock {
     val selections = mutableListOf<Selection>()
 
+    operator fun Selection.unaryPlus() {
+        modifier = true
+    }
+
     fun s(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
         selection.block()
@@ -81,7 +85,7 @@ open class SelectionBlock : CssBlock() {
     var fillHeight: Boolean by cssprop("-fx-fill-height")
 
     // Region
-    var backgroundColor: Paint? by cssprop("-fx-background-color")
+    var backgroundColor: Paint by cssprop("-fx-background-color")
     var backgroundInsets: CssBox<LinearDimension> by cssprop("-fx-background-insets")
     var backgroundRadius: CssBox<LinearDimension> by cssprop("-fx-background-radius")
     var backgroundImage: String by cssprop("-fx-background-image")
@@ -118,9 +122,9 @@ open class SelectionBlock : CssBlock() {
     var fillWidth: Boolean by cssprop("-fx-fill-width")
 
     // Shape
-    var fill: Paint? by cssprop("-fx-fill")
+    var fill: Paint by cssprop("-fx-fill")
     var smooth: Boolean by cssprop("-fx-smooth")
-    var stroke: Paint? by cssprop("-fx-paint")
+    var stroke: Paint by cssprop("-fx-paint")
     var strokeType: FXStrokeType by cssprop("-fx-stroke-type")
     var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")
     var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
@@ -162,7 +166,7 @@ open class SelectionBlock : CssBlock() {
     var contentDisplay: ContentDisplay by cssprop("-fx-content-display")
     var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
     var labelPadding: CssBox<LinearDimension> by cssprop("-fx-label-padding")
-    var textFill: Color? by cssprop("-fx-text-fill")
+    var textFill: Paint by cssprop("-fx-text-fill")
     var ellipsisString: String by cssprop("-fx-ellipsis-string")
 
     // MenuBar
@@ -183,7 +187,7 @@ open class SelectionBlock : CssBlock() {
 
     // ProgressIndicator
     var indeterminateSegmentCount: Int by cssprop("-fx-indeterminate-SegmentCount")
-    var progressColor: Paint? by cssprop("-fx-progress-color")
+    var progressColor: Paint by cssprop("-fx-progress-color")
     var spinEnabled: Boolean by cssprop("-fx-spin-enabled")
 
     // ScrollBar
@@ -228,9 +232,9 @@ open class SelectionBlock : CssBlock() {
     var prefRowCount: Int by cssprop("-fx-pref-row-count")
 
     // TextInputControl
-    var promptTextFill: Paint? by cssprop("-fx-prompt-text-fill")
-    var highlightFill: Paint? by cssprop("-fx-highlight-fill")
-    var highlightTextFill: Paint? by cssprop("-fx-highlight-text-fill")
+    var promptTextFill: Paint by cssprop("-fx-prompt-text-fill")
+    var highlightFill: Paint by cssprop("-fx-highlight-fill")
+    var highlightTextFill: Paint by cssprop("-fx-highlight-text-fill")
     var displayCaret: Boolean by cssprop("-fx-display-caret")
 
     // TitlePane
@@ -244,7 +248,7 @@ open class SelectionBlock : CssBlock() {
     var side: Side by cssprop("-fx-side")
     var tickLength: LinearDimension by cssprop("-fx-tick-length")
     var tickLabelFont: Font by cssprop("-fx-tick-label-font")
-    var tickLabelFill: Paint? by cssprop("-fx-tick-label-fill")
+    var tickLabelFill: Paint by cssprop("-fx-tick-label-fill")
     var tickLabelGap: LinearDimension by cssprop("-fx-tick-label-gap")
     var tickMarkVisible: Boolean by cssprop("-fx-tick-mark-visible")
     var tickLabelsVisible: Boolean by cssprop("-fx-tick-labels-visible")
@@ -295,19 +299,19 @@ open class SelectionBlock : CssBlock() {
     fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
         Color.web(colorString, opacity)
     } catch (e: Exception) {
-        null
+        Color.MAGENTA
     }
 
     fun SelectionBlock.c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
         Color.color(red, green, blue, opacity)
     } catch (e: Exception) {
-        null
+        Color.MAGENTA
     }
 
     fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
         Color.rgb(red, green, blue, opacity)
     } catch (e: Exception) {
-        null
+        Color.MAGENTA
     }
 
     fun mix(other: SelectionBlock) {
@@ -315,15 +319,12 @@ open class SelectionBlock : CssBlock() {
         selections.addAll(other.selections)
     }
 
-    private inline fun <reified V> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
+    private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
             override fun getValue(thisRef: SelectionBlock, property: KProperty<*>) = properties[key] as V
 
             override fun setValue(thisRef: SelectionBlock, property: KProperty<*>, value: V) {
-                if (value != null) {
-                    // Ignore nulls
-                    properties[key] = value as Any
-                }
+                properties[key] = value as Any
             }
         }
     }
@@ -333,11 +334,7 @@ class Mixin : SelectionBlock()
 
 class Selection(val selector: String) : SelectionBlock() {
     operator fun Mixin.unaryPlus() = this@Selection.mix(this)
-    private var modifier = false
-
-    operator fun Selection.unaryPlus() {
-        modifier = true
-    }
+    var modifier = false
 
     fun render(current: String = ""): String {
         return buildString {
