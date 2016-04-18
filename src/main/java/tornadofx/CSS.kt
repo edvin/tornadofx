@@ -480,8 +480,15 @@ val Color.css: String
 
 // Dimensions
 
+internal fun dimStr(value: Double, units: String) = when(value) {
+    Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
+    Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
+    Double.NaN -> "0$units"
+    else -> "${fiveDigits.format(value)}$units"
+}
+
 class LinearDimension(val value: Double, val units: Units) {
-    override fun toString() = "${fiveDigits.format(value)}$units"
+    override fun toString() = dimStr(value, units.toString())
 
     enum class Units(val value: String) {
         px("px"),
@@ -498,6 +505,8 @@ class LinearDimension(val value: Double, val units: Units) {
     }
 }
 
+val infinity = LinearDimension(Double.POSITIVE_INFINITY, LinearDimension.Units.px)
+
 val Number.px: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.px)
 val Number.mm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.mm)
 val Number.cm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.cm)
@@ -509,7 +518,7 @@ val Number.ex: LinearDimension get() = LinearDimension(this.toDouble(), LinearDi
 val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.percent)
 
 class AngularDimension(val value: Double, val units: Units) {
-    override fun toString() = "${fiveDigits.format(value)}$units"
+    override fun toString() = dimStr(value, units.toString())
 
     enum class Units { deg, rad, grad, turn; }
 }
@@ -520,7 +529,7 @@ val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), Angu
 val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
 
 class TemporalDimension(val value: Double, val units: Units) {
-    override fun toString() = "${fiveDigits.format(value)}$units"
+    override fun toString() = dimStr(value, units.toString())
 
     enum class Units { s, ms; }
 }
