@@ -333,17 +333,22 @@ class Mixin : SelectionBlock()
 
 class Selection(val selector: String) : SelectionBlock() {
     operator fun Mixin.unaryPlus() = this@Selection.mix(this)
+    private var modifier = false
+
+    operator fun Selection.unaryPlus() {
+        modifier = true
+    }
 
     fun render(current: String = ""): String {
         return buildString {
-            val currentSelector = "$current$selector "
-            append("$currentSelector{\n")
+            val currentSelector = "$current$selector"
+            append("$currentSelector {\n")
             for ((name, value) in properties) {
                 append("    $name: ${toCss(value)};\n")
             }
             append("}\n")
             for (selection in selections) {
-                append(selection.render(currentSelector))
+                append(selection.render(if (selection.modifier) currentSelector else "$currentSelector "))
             }
         }
     }
