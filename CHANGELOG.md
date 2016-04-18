@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Binding support (https://github.com/edvin/tornadofx/issues/91)
 - `FX.registerApplication(app, stage)` function for easy integration with existing apps (https://github.com/edvin/tornadofx/issues/89) [Docs here](https://github.com/edvin/tornadofx/wiki/Integrate-with-existing-JavaFX-Applications)
 - `colorpicker` builder (https://github.com/edvin/tornadofx/issues/76)
 - `chooseFile` File Chooser (https://github.com/edvin/tornadofx/issues/76)
