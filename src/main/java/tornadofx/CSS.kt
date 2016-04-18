@@ -19,12 +19,15 @@ import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
 import java.util.*
+import java.util.logging.Logger
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class CssBlock {
     val selections = mutableListOf<Selection>()
+    private val _log = lazy { Logger.getLogger("CSS") }
+    protected val log: Logger get() = _log.value
 
     operator fun Selection.unaryPlus() {
         modifier = true
@@ -299,18 +302,21 @@ open class SelectionBlock : CssBlock() {
     fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
         Color.web(colorString, opacity)
     } catch (e: Exception) {
+        log.warning("Error parsing color c('$colorString', opacity=$opacity)")
         Color.MAGENTA
     }
 
     fun SelectionBlock.c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
         Color.color(red, green, blue, opacity)
     } catch (e: Exception) {
+        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
         Color.MAGENTA
     }
 
     fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
         Color.rgb(red, green, blue, opacity)
     } catch (e: Exception) {
+        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
         Color.MAGENTA
     }
 
