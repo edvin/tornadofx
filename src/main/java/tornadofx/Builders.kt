@@ -186,6 +186,13 @@ fun Pane.scrollpane(op: (Pane.() -> Unit)) {
     this += scrollPane
 }
 
+fun ToolBar.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null): Pane {
+    val pane = Pane().apply { HBox.setHgrow(this, prio) }
+    op?.invoke(pane)
+    add(pane)
+    return pane
+}
+
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
@@ -250,6 +257,13 @@ fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VB
         vbox.children.addAll(children)
     if (spacing != null) vbox.spacing = spacing
     return opcr(this, vbox, op)
+}
+
+fun ToolBar.separator(orientation: Orientation = Orientation.HORIZONTAL, op: (Separator.() -> Unit)? = null): Separator {
+    val separator = Separator(orientation)
+    op?.invoke(separator)
+    add(separator)
+    return separator
 }
 
 fun Pane.separator(orientation: Orientation = Orientation.HORIZONTAL, op: (Separator.() -> Unit)? = null) = opcr(this, Separator(orientation), op)
