@@ -27,6 +27,17 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.reflect.KClass
 
+fun TableColumnBase<*, *>.hasClass(className: String) = styleClass.contains(className)
+fun TableColumnBase<*, *>.addClass(className: String) = styleClass.add(className)
+fun TableColumnBase<*, *>.removeClass(className: String) = styleClass.remove(className)
+fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
+    if (predicate) {
+        if (!hasClass(className)) addClass(className)
+    } else {
+        removeClass(className)
+    }
+}
+
 fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.addClass(className: String) = styleClass.add(className)
 fun Node.removeClass(className: String) = styleClass.remove(className)
