@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- TableColumn/TreeTableColumn `addClass`/`hasClass`/`removeClass`/`toggleClass` functions
 - Binding support (https://github.com/edvin/tornadofx/issues/91)
 - `FX.registerApplication(app, stage)` function for easy integration with existing apps (https://github.com/edvin/tornadofx/issues/89) [Docs here](https://github.com/edvin/tornadofx/wiki/Integrate-with-existing-JavaFX-Applications)
 - `colorpicker` builder (https://github.com/edvin/tornadofx/issues/76)
