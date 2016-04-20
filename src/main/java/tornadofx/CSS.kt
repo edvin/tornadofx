@@ -350,7 +350,7 @@ class Selection(val selector: String) : SelectionBlock() {
 
     fun render(current: String = ""): String {
         return buildString {
-            val currentSelector = "$current$selector"
+            val currentSelector = expand(current, selector)
             append("$currentSelector {\n")
             for ((name, value) in properties) {
                 append("    $name: ${toCss(value)};\n")
@@ -361,6 +361,9 @@ class Selection(val selector: String) : SelectionBlock() {
             }
         }
     }
+
+    private fun expand(current: String, selector: String) =
+            current.split(",").map { it + selector}.joinToString().replace("  ", " ")
 
     override fun toString() = render()
 }
