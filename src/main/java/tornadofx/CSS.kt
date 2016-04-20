@@ -345,8 +345,13 @@ open class SelectionBlock : CssBlock() {
 
 class Mixin : SelectionBlock()
 
-class Selection(val selector: String) : SelectionBlock() {
+class Selection(selector: String) : SelectionBlock() {
+    var selector: String
     var modifier = false
+
+    init {
+        this.selector = selector.trim().replace(selectorSeparator, ", ")
+    }
 
     fun render(current: String = ""): String {
         return buildString {
@@ -363,9 +368,13 @@ class Selection(val selector: String) : SelectionBlock() {
     }
 
     private fun expand(current: String, selector: String) =
-            current.split(",").map { it + selector}.joinToString().replace("  ", " ")
+            current.split(selectorSeparator).map { it + selector}.joinToString().replace("  ", " ")
 
     override fun toString() = render()
+
+    companion object {
+        private val selectorSeparator = Regex("\\s*,\\s*")
+    }
 }
 
 fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
