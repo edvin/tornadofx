@@ -435,6 +435,7 @@ fun <T> toCss(value: T): String {
                 else -> return "none"
             }
         }
+        is Color -> return value.css
         is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
     }
     return value.toString()
