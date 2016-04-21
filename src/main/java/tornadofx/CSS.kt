@@ -370,6 +370,9 @@ class Selection(selector: String) : SelectionBlock() {
     }
 
     private fun expand(current: String, selector: String) =
+            selector.split(selectorSeparator).map { internalExpand(current, it) }.joinToString().replace("  ", " ")
+
+    private fun internalExpand(current: String, selector: String) =
             current.split(selectorSeparator).map { it + selector }.joinToString().replace("  ", " ")
 
     override fun toString() = render()
