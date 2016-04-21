@@ -37,7 +37,7 @@ abstract class App : Application() {
 }
 
 abstract class SingleViewApp(title: String? = null) : App(), ViewContainer {
-    private var stylesheet: Stylesheet? = null
+    var stylesheet: Stylesheet? = null
     override val primaryView = javaClass.kotlin
     override val titleProperty = SimpleStringProperty(title)
 
