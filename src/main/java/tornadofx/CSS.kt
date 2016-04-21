@@ -23,6 +23,7 @@ import javafx.scene.text.*
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
 import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.logging.Logger
 import kotlin.properties.ReadWriteProperty
@@ -434,6 +435,8 @@ fun <T> toCss(value: T): String {
                 else -> return "none"
             }
         }
+//        is Int -> return value.toString()
+//        is Number -> return value.toDouble().toString()
         is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
     }
     return value.toString()
@@ -458,7 +461,7 @@ open class Stylesheet : CssBlock() {
 
 // Helpers
 
-val fiveDigits = DecimalFormat("#.#####")
+val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH))
 
 class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
     val listener: ChangeListener<String>
