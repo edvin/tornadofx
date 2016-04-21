@@ -132,7 +132,7 @@ open class SelectionBlock : CssBlock() {
     // Shape
     var fill: Paint by cssprop("-fx-fill")
     var smooth: Boolean by cssprop("-fx-smooth")
-    var stroke: Paint by cssprop("-fx-paint")
+    var stroke: Paint by cssprop("-fx-stroke")
     var strokeType: StrokeType by cssprop("-fx-stroke-type")
     var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")
     var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
