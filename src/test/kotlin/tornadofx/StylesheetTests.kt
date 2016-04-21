@@ -14,14 +14,12 @@ class StylesheetTests {
                     backgroundColor = c("blue", 0.25)
                 }
             }
-
-
         } shouldEqual {
             """
-            .label:hover, .text:hover, .label:armed, .text:armed {
-                -fx-background-color: rgba(0, 0, 255, 0.25);
-            }
-            """
+        .label:hover, .text:hover, .label:armed, .text:armed {
+            -fx-background-color: rgba(0, 0, 255, 0.25);
+        }
+        """
         }
     }
 
