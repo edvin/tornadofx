@@ -23,7 +23,6 @@ class StylesheetTests {
             }
             """
         }
-
     }
 
     private fun stylesheet(op: Stylesheet.() -> Unit) =
