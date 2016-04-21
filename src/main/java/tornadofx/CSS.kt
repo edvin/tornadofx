@@ -356,11 +356,13 @@ class Selection(selector: String) : SelectionBlock() {
     fun render(current: String = ""): String {
         return buildString {
             val currentSelector = expand(current, selector)
-            append("$currentSelector {\n")
-            for ((name, value) in properties) {
-                append("    $name: ${toCss(value)};\n")
+            if (properties.isNotEmpty()) {
+                append("$currentSelector {\n")
+                for ((name, value) in properties) {
+                    append("    $name: ${toCss(value)};\n")
+                }
+                append("}\n")
             }
-            append("}\n")
             for (selection in selections) {
                 append(selection.render(if (selection.modifier) currentSelector else "$currentSelector "))
             }
@@ -368,7 +370,7 @@ class Selection(selector: String) : SelectionBlock() {
     }
 
     private fun expand(current: String, selector: String) =
-            current.split(selectorSeparator).map { it + selector}.joinToString().replace("  ", " ")
+            current.split(selectorSeparator).map { it + selector }.joinToString().replace("  ", " ")
 
     override fun toString() = render()
 
