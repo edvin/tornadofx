@@ -589,6 +589,12 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
         return this
     }
 
+    // .box .label
+    operator fun invoke(other: CSSSelector): CSSSelector {
+        containings.add(other)
+        return this
+    }
+
     override fun toString(): String {
         val s = StringBuilder(cssName)
         plusses.forEach { s.append("$it") }
