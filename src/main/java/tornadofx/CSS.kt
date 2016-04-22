@@ -31,10 +31,11 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
+private val _log = lazy { Logger.getLogger("CSS") }
+val log: Logger get() = _log.value
+
 open class CssBlock {
     val selections = mutableListOf<Selection>()
-    private val _log = lazy { Logger.getLogger("CSS") }
-    protected val log: Logger get() = _log.value
 
     operator fun Selection.unaryPlus() {
         modifier = true
@@ -301,35 +302,6 @@ open class SelectionBlock : CssBlock() {
     var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
     var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
-    // Box functions
-    fun <T> box(all: T) = CssBox(all, all, all, all)
-
-    fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
-
-    fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-
-    // Color functions
-    fun SelectionBlock.c(colorString: String, opacity: Double = 1.0) = try {
-        Color.web(colorString, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c('$colorString', opacity=$opacity)")
-        Color.MAGENTA
-    }
-
-    fun SelectionBlock.c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
-        Color.color(red, green, blue, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-        Color.MAGENTA
-    }
-
-    fun SelectionBlock.c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
-        Color.rgb(red, green, blue, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-        Color.MAGENTA
-    }
-
     fun mix(other: SelectionBlock) {
         properties.putAll(other.properties)
         selections.addAll(other.selections)
@@ -347,6 +319,36 @@ open class SelectionBlock : CssBlock() {
         }
     }
 }
+
+// Box functions
+fun <T> box(all: T) = CssBox(all, all, all, all)
+
+fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+
+fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+
+// Color functions
+fun c(colorString: String, opacity: Double = 1.0) = try {
+    Color.web(colorString, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
+    Color.MAGENTA
+}
+
+fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+    Color.color(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
+}
+
+fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+    Color.rgb(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
+}
+
 
 class Mixin : SelectionBlock()
 
