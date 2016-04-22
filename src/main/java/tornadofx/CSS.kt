@@ -641,7 +641,7 @@ class TemporalDimension(val value: Double, val units: Units) {
 val Number.s: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.s)
 val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.ms)
 
-// Experimental support for type safe selectors
+// Type safe selectors
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val plusses = mutableListOf<CSSSelector>()
     private val contains = mutableListOf<CSSSelector>()
