@@ -40,7 +40,8 @@ open class CssBlock {
         modifier = true
     }
 
-    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = s(selector.joinToString(", "), block)
+    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) =
+            s(selector.joinToString(", "), block)
 
     fun s(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
@@ -603,27 +604,16 @@ open class CSSPseudoClass(name: String? = null) : CSSSelector(":", name)
 open class CSSId(name: String? = null) : CSSSelector("#", name)
 
 class CSSClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSClass> {
-    var value: CSSClass? = null
-    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSClass {
-        if (value == null) value = CSSClass(name ?: property.name)
-        return value!!
-    }
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSClass(name ?: property.name)
 }
 
 class CSSPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSPseudoClass> {
     var value: CSSPseudoClass? = null
-    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSPseudoClass {
-        if (value == null) value = CSSPseudoClass(name ?: property.name)
-        return value!!
-    }
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSPseudoClass(name ?: property.name)
 }
 
 class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
-    var value: CSSId? = null
-    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSId {
-        if (value == null) value = CSSId(name ?: property.name)
-        return value!!
-    }
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSId(name ?: property.name)
 }
 
 fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
