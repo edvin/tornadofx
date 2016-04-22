@@ -608,12 +608,21 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
 }
 
 open class CSSClass(name: String? = null) : CSSSelector(".", name)
+open class CSSPseudoClass(name: String? = null) : CSSSelector(":", name)
 open class CSSId(name: String? = null) : CSSSelector("#", name)
 
 class CSSClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSClass> {
     var value: CSSClass? = null
     override fun getValue(thisRef: Any, property: KProperty<*>) : CSSClass {
         if (value == null) value = CSSClass(name ?: property.name)
+        return value!!
+    }
+}
+
+class CSSPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSPseudoClass> {
+    var value: CSSPseudoClass? = null
+    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSPseudoClass {
+        if (value == null) value = CSSPseudoClass(name ?: property.name)
         return value!!
     }
 }
@@ -626,6 +635,7 @@ class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
     }
 }
 
+fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSClassDelegate(value)
 
