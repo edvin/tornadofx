@@ -40,7 +40,7 @@ open class CssBlock {
         modifier = true
     }
 
-    fun s(selector: CSSSelector, block: Selection.() -> Unit) = s(selector.toString(), block)
+    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = s(selector.joinToString(", "), block)
 
     fun s(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
@@ -563,7 +563,6 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val ands = mutableListOf<CSSSelector>()
     private val containings = mutableListOf<CSSSelector>()
-    private val pluses = mutableListOf<CSSSelector>()
 
     val cssName: String
     val name: String
@@ -576,12 +575,6 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
         val base = _name ?: javaClass.simpleName
         name = (base[0].toLowerCase() + base.substring(1)).replace(uc, "-$1").toLowerCase()
         cssName = prefix + name
-    }
-
-    // .box, .label
-    operator fun plus(other: CSSSelector): CSSSelector {
-        pluses.add(other)
-        return this
     }
 
     // .box.label
@@ -600,11 +593,9 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
         val s = StringBuilder(cssName)
         ands.forEach { s.append("$it") }
         containings.forEach { s.append(" $it") }
-        pluses.forEach { s.append(", $it") }
 
         return s.toString()
     }
-
 }
 
 open class CSSClass(name: String? = null) : CSSSelector(".", name)
