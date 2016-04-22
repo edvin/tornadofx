@@ -50,7 +50,7 @@ open class CssBlock {
 }
 
 open class SelectionBlock : CssBlock() {
-    protected val properties = mutableMapOf<String, Any>()
+    protected val properties = linkedMapOf<String, Any>()
 
     // Font
     var font: Font by cssprop("-fx-font")
