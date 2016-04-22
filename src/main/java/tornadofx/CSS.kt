@@ -566,6 +566,7 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val plusses = mutableListOf<CSSSelector>()
     private val contains = mutableListOf<CSSSelector>()
+    private val directs = mutableListOf<CSSSelector>()
 
     val cssName: String
     val name: String
@@ -592,9 +593,16 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
         return this
     }
 
+    // .box > .label
+    infix fun direct(other: CSSSelector): CSSSelector {
+        directs.add(other)
+        return this
+    }
+
     override fun toString(): String {
         val s = StringBuilder(cssName)
         plusses.forEach { s.append("$it") }
+        directs.forEach { s.append(" > $it") }
         contains.forEach { s.append(" $it") }
 
         return s.toString()
