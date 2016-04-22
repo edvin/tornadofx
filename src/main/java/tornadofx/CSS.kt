@@ -561,7 +561,7 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 
 // Experimental support for type safe selectors
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
-    private val ands = mutableListOf<CSSSelector>()
+    private val plusses = mutableListOf<CSSSelector>()
     private val containings = mutableListOf<CSSSelector>()
 
     val cssName: String
@@ -578,8 +578,8 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
     }
 
     // .box.label
-    infix fun and(other: CSSSelector): CSSSelector {
-        ands.add(other)
+    infix fun plus(other: CSSSelector): CSSSelector {
+        plusses.add(other)
         return this
     }
 
@@ -591,7 +591,7 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
 
     override fun toString(): String {
         val s = StringBuilder(cssName)
-        ands.forEach { s.append("$it") }
+        plusses.forEach { s.append("$it") }
         containings.forEach { s.append(" $it") }
 
         return s.toString()
