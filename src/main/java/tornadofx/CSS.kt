@@ -26,6 +26,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 import java.util.logging.Logger
+import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -567,9 +568,13 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
     val cssName: String
     val name: String
 
+    companion object {
+        val uc = Regex("([A-Z])")
+    }
+
     init {
         val base = _name ?: javaClass.simpleName
-        name = (base.substring(0, 1).toLowerCase() + base.substring(1)).replace(Regex("([A-Z])"), "-$1").toLowerCase()
+        name = (base[0].toLowerCase() + base.substring(1)).replace(uc, "-$1").toLowerCase()
         cssName = prefix + name
     }
 
@@ -591,12 +596,6 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
         return this
     }
 
-    // .box .label
-    operator fun invoke(other: CSSSelector): CSSSelector {
-        containings.add(other)
-        return this
-    }
-
     override fun toString(): String {
         val s = StringBuilder(cssName)
         ands.forEach { s.append("$it") }
@@ -610,6 +609,25 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
 
 open class CSSClass(name: String? = null) : CSSSelector(".", name)
 open class CSSId(name: String? = null) : CSSSelector("#", name)
+
+class CSSClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSClass> {
+    var value: CSSClass? = null
+    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSClass {
+        if (value == null) value = CSSClass(name ?: property.name)
+        return value!!
+    }
+}
+
+class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
+    var value: CSSId? = null
+    override fun getValue(thisRef: Any, property: KProperty<*>) : CSSId {
+        if (value == null) value = CSSId(name ?: property.name)
+        return value!!
+    }
+}
+
+fun cssclass(value: String? = null) = CSSClassDelegate(value)
+fun cssid(value: String? = null) = CSSClassDelegate(value)
 
 fun Node.setId(cssId: CSSId) { id = cssId.toString() }
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
