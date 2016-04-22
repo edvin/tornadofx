@@ -490,9 +490,9 @@ open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${toCss(top)} ${toCss(right)} ${toCss(bottom)} ${toCss(left)}"
 }
 
-enum class FXVisibility { visible, hidden, collapse, inherit; }
+enum class FXVisibility { VISIBLE, HIDDEN, COLLAPSE, INHERIT; }
 
-enum class FXTabAnimation { grow, none; }
+enum class FXTabAnimation { GROW, NONE; }
 
 // Colors
 
