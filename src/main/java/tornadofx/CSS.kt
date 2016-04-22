@@ -39,6 +39,8 @@ open class CssBlock {
         modifier = true
     }
 
+    fun s(selector: CSSSelector, block: Selection.() -> Unit) = s(selector.toString(), block)
+
     fun s(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
         selection.block()
@@ -555,3 +557,62 @@ class TemporalDimension(val value: Double, val units: Units) {
 
 val Number.s: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.s)
 val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.ms)
+
+// Experimental support for type safe selectors
+abstract class CSSSelector(val prefix: String, _name: String? = null) {
+    private val ands = mutableListOf<CSSSelector>()
+    private val containings = mutableListOf<CSSSelector>()
+    private val pluses = mutableListOf<CSSSelector>()
+
+    val cssName: String
+    val name: String
+
+    init {
+        val base = _name ?: javaClass.simpleName
+        name = (base.substring(0, 1).toLowerCase() + base.substring(1)).replace(Regex("([A-Z])"), "-$1").toLowerCase()
+        cssName = prefix + name
+    }
+
+    // .box, .label
+    operator fun plus(other: CSSSelector): CSSSelector {
+        pluses.add(other)
+        return this
+    }
+
+    // .box.label
+    infix fun and(other: CSSSelector): CSSSelector {
+        ands.add(other)
+        return this
+    }
+
+    // .box .label
+    infix fun containing(other: CSSSelector): CSSSelector {
+        containings.add(other)
+        return this
+    }
+
+    // .box .label
+    operator fun invoke(other: CSSSelector): CSSSelector {
+        containings.add(other)
+        return this
+    }
+
+    override fun toString(): String {
+        val s = StringBuilder(cssName)
+        ands.forEach { s.append("$it") }
+        containings.forEach { s.append(" $it") }
+        pluses.forEach { s.append(", $it") }
+
+        return s.toString()
+    }
+
+}
+
+open class CSSClass(name: String? = null) : CSSSelector(".", name)
+open class CSSId(name: String? = null) : CSSSelector("#", name)
+
+fun Node.setId(cssId: CSSId) { id = cssId.toString() }
+fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
+fun Node.addClass(cssClass: CSSClass) = addClass(cssClass.name)
+fun Node.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
+fun Node.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
