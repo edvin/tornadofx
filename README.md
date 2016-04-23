@@ -10,11 +10,10 @@ Lightweight JavaFX Framework for Kotlin
 ## Features
 
 - Dependency injection
-- Type safe builders
+- Type safe GUI builders
+- Type safe CSS builders
 - Async task execution
 - MVC
-- Extremely light weight
-- Small, easy to grasp API
 - REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
@@ -34,7 +33,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.0.2
+  -DarchetypeVersion=1.0.3
 ```
 > Remember to update TornadoFX version to latest
 
@@ -46,14 +45,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.2'
+compile 'no.tornado:tornadofx:1.4.3'
 ```
 
 ### What does it look like? (Code snippets)
@@ -173,7 +172,7 @@ with (api) {
 Load customers in the background and update a TableView on the UI thread:
 
 ```kotlin
-background {
+runAsync {
 	controller.loadCustomers()
 } ui {
 	customerTable.items = it
@@ -186,12 +185,48 @@ Load customers and apply to table declaratively:
 customerTable.asyncItems { controller.loadCustomers() }
 ```
 
+Define a type safe CSS stylesheet:
+
+```kotlin
+class Styles : Stylesheet() {
+    companion object {
+        // Define css classes
+        val heading by cssclass()
+        
+        // Define colors
+        val mainColor = c("#bdbd22")
+    }
+
+    init {
+		s(heading) {
+		    textFill = mainColor
+		    fontSize = 20.px
+		    fontWeight = BOLD
+		}
+
+        val flat = mixin {
+            backgroundInsets = box(0.px)
+            borderColor = box(Color.DARKGRAY)
+        }
+        
+        s(button) {
+            padding = box(10.px, 20.px)
+            fontWeight = BOLD
+        }
+
+        s(button, textInput) {
+            +flat
+        }
+    }
+}
+```
+
 Create an HBox with a Label and a TextField with type safe builders:
 
 ```kotlin
 hbox {
 	label("Hello world") {
-		addClass("heading")
+		addClass(heading)
 	}
 	
 	textfield {
