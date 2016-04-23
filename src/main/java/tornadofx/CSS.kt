@@ -718,6 +718,10 @@ fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
 fun Node.addClass(cssClass: CSSClass) = addClass(cssClass.name)
 fun Node.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
 fun Node.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+@Suppress("UNCHECKED_CAST")
+fun <T : Node>Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
+@Suppress("UNCHECKED_CAST")
+fun <T : Node>Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
 
 fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
 fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
