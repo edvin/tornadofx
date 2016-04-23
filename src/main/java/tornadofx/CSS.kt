@@ -711,7 +711,7 @@ class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
 
 fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
-fun cssid(value: String? = null) = CSSClassDelegate(value)
+fun cssid(value: String? = null) = CSSIdDelegate(value)
 
 fun Node.setId(cssId: CSSId) { id = cssId.toString() }
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
