@@ -92,7 +92,9 @@ abstract class Component {
 
     val primaryStage: Stage get() = FX.primaryStage
 
+    @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: () -> T) = task(func)
+    fun <T> runAsync(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
 

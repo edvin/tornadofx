@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Fixed dual instantiation of SingleViewApp
+- `runAsync` replaces `background` to avoid collisions with `Region.background`. `background` is now deprecated
 
 ## [1.4.2] - 2016-04-14
 
