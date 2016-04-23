@@ -661,7 +661,7 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
     }
 
     // .box.label
-    infix fun plus(other: CSSSelector): CSSSelector {
+    operator fun plus(other: CSSSelector): CSSSelector {
         entries.add(Pair(Type.plus, other))
         return this
     }

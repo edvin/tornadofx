@@ -23,6 +23,8 @@ class FX {
         val lock = Any()
         @JvmStatic
         var dicontainer: DIContainer? = null
+        @JvmStatic
+        var reloadStylesheetsOnFocus = false
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -84,6 +86,7 @@ class FX {
             FX.installErrorHandler()
             FX.primaryStage = primaryStage
             FX.application = application
+            if (reloadStylesheetsOnFocus) primaryStage.reloadStylesheetsOnFocus()
         }
 
         @JvmStatic
@@ -95,6 +98,10 @@ class FX {
 fun addStageIcon(icon: Image) {
     val adder = { FX.primaryStage.icons += icon }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+}
+
+fun reloadStylesheetsOnFocus() {
+    FX.reloadStylesheetsOnFocus = true
 }
 
 fun importStylesheet(stylesheet: String) {

@@ -130,6 +130,7 @@ abstract class UIComponent : Component(), ViewContainer {
                     }
 
                     show()
+                    if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
                 }
             }
         }

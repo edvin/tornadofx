@@ -65,9 +65,8 @@ fun Scene.reloadStylesheets() {
 }
 
 fun Stage.reloadStylesheetsOnFocus() {
-    focusedProperty().addListener { obs, old, new ->
-        if (new)
-            scene.reloadStylesheets()
+    focusedProperty().addListener { obs, old, focused ->
+        if (focused) scene.reloadStylesheets()
     }
 }
 
