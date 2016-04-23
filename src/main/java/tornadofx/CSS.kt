@@ -718,3 +718,7 @@ fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
 fun Node.addClass(cssClass: CSSClass) = addClass(cssClass.name)
 fun Node.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
 fun Node.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+
+fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
+fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
+fun Iterable<Node>.toggleClass(cssClass: CSSClass, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
