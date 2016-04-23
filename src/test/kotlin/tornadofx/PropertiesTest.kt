@@ -52,7 +52,7 @@ class PropertiesTest {
         var failed = false
 
         try {
-            val extract = instance.myProperty
+            instance.myProperty
         } catch (e: Exception) {
             failed = true
         }
@@ -61,9 +61,8 @@ class PropertiesTest {
     @Test
     fun succeedAssignment() {
         val instance = TestClass()
-        var failed = false
         instance.myProperty = "foo"
-        val extract = instance.myProperty
+        instance.myProperty
     }
     @Test
     fun failDoubleAssignment() {

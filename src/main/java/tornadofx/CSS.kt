@@ -547,11 +547,11 @@ open class Stylesheet : CssBlock() {
 
 val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH))
 
-class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
-    val listener: ChangeListener<String>
+class ObservableStyleClass(node: Node, val value: ObservableValue<CSSClass>) {
+    val listener: ChangeListener<CSSClass>
 
     init {
-        fun checkAdd(newValue: String?) {
+        fun checkAdd(newValue: CSSClass?) {
             if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
         }
 
@@ -567,7 +567,7 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<String>) {
     fun dispose() = value.removeListener(listener)
 }
 
-fun Node.bindClass(value: ObservableValue<String>): ObservableStyleClass = ObservableStyleClass(this, value)
+fun Node.bindClass(value: ObservableValue<CSSClass>): ObservableStyleClass = ObservableStyleClass(this, value)
 
 open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${toCss(top)} ${toCss(right)} ${toCss(bottom)} ${toCss(left)}"

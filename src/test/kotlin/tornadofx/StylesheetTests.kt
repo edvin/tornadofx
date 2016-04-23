@@ -5,8 +5,22 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import org.junit.Assert
 import org.junit.Test
+import tornadofx.Stylesheet.Companion.label
 
 class StylesheetTests {
+    val vbox by cssclass()
+    val wrapper by cssclass()
+
+    @Test
+    fun selectorOrder() {
+        stylesheet {
+            s(vbox direct wrapper contains label) {
+                backgroundColor = Color.WHITE
+            }
+        } shouldEqual {
+            ".vbox > .wrapper .label { -fx-background-color: rgba(255, 255, 255, 1); }"
+        }
+    }
 
     @Test
     fun nestedModifier_1() {

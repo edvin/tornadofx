@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- `Node.bindClass` now operates on `CSSClass` instead of String
+
+## [1.4.3] - 2016-04-23
+
 ### Added
 
 - TableColumn/TreeTableColumn `addClass`/`hasClass`/`removeClass`/`toggleClass` functions
