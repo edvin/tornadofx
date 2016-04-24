@@ -157,6 +157,13 @@ fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> U
     return button
 }
 
+fun Pane.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
+    val group = ToggleGroup()
+    properties["tornadofx.togglegroup"] = group
+    op?.invoke(group)
+    return group
+}
+
 fun Pane.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (ToggleButton.() -> Unit)? = null) =
         opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
 

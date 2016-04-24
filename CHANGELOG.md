@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `Pane.togglegroup()` builder
+
 ## [1.4.3] - 2016-04-23
 
 ### Added
