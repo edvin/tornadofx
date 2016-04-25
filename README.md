@@ -19,6 +19,7 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Getting started
 
+- [Screencast introduction](https://www.youtube.com/watch?v=rjc8_HGHy3c)
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
 - [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
@@ -36,7 +37,6 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
   -DarchetypeVersion=1.0.3
 ```
-> Remember to update TornadoFX version to latest
 
 ### Add TornadoFX to your project
 
