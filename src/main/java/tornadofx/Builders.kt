@@ -148,6 +148,7 @@ fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null,
     if (orientation != null) this.orientation = orientation
 }, op)
 
+
 fun Pane.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
     if (graphic != null) button.graphic = graphic
@@ -159,6 +160,15 @@ fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> U
     if (graphic != null)
         button.graphic = graphic
     items.add(button)
+    op?.invoke(button)
+    return button
+}
+
+fun ButtonBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+    val button = Button(text)
+    if (graphic != null)
+        button.graphic = graphic
+    buttons.add(button)
     op?.invoke(button)
     return button
 }

@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - `children(nodeList)` builder helper to redirect built children to a specific node list (https://github.com/edvin/tornadofx/issues/95) 
 - `buttonbar` builder (https://github.com/edvin/tornadofx/issues/95)
+- `ButtonBar.button` builder (https://github.com/edvin/tornadofx/issues/95)
 - `togglegroup` builder
 
 ## [1.4.3] - 2016-04-23
