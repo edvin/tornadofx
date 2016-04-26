@@ -119,6 +119,12 @@ fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: 
     textProperty().bindBidirectional(property, converter)
 }
 
+fun Pane.buttonbar(buttonOrder: String? = null, op: (ButtonBar.() -> Unit)): ButtonBar {
+    val bar = ButtonBar()
+    if (buttonOrder != null) bar.buttonOrder = buttonOrder
+    return opcr(this, bar, op)
+}
+
 fun Pane.htmleditor(html: String? = null, op: (HTMLEditor.() -> Unit)? = null) = opcr(this, HTMLEditor().apply { if (html != null) htmlText = html }, op)
 
 fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text).apply {

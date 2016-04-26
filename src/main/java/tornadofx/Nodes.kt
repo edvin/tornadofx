@@ -93,6 +93,12 @@ fun ToolBar.children(op: Pane.() -> Unit): ToolBar {
     return this
 }
 
+fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
+    val fake = Pane()
+    op(fake)
+    addTo.addAll(fake.children)
+}
+
 operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
     items.add(uiComponent.root)
 }
