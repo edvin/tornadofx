@@ -25,10 +25,9 @@ class FX {
         val lock = Any()
         @JvmStatic
         var dicontainer: DIContainer? = null
-        @JvmStatic
         var reloadStylesheetsOnFocus = false
-        @JvmStatic
         var reloadViewsOnFocus = false
+        var dumpStylesheets = false
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -90,6 +89,18 @@ class FX {
             FX.installErrorHandler()
             FX.primaryStage = primaryStage
             FX.application = application
+
+            with (application.parameters.unnamed) {
+                if (contains("--dev-mode")) {
+                    reloadStylesheetsOnFocus = true
+                    dumpStylesheets = true
+                    reloadViewsOnFocus = true
+                }
+                if (contains("--live-stylesheets")) reloadStylesheetsOnFocus = true
+                if (contains("--dump-stylesheets")) dumpStylesheets = true
+                if (contains("--live-views")) reloadViewsOnFocus = true
+            }
+
             if (reloadStylesheetsOnFocus) primaryStage.reloadStylesheetsOnFocus()
             if (reloadViewsOnFocus) primaryStage.reloadViewsOnFocus()
         }
@@ -127,6 +138,10 @@ fun addStageIcon(icon: Image) {
 
 fun reloadStylesheetsOnFocus() {
     FX.reloadStylesheetsOnFocus = true
+}
+
+fun dumpStylesheets() {
+    FX.dumpStylesheets = true
 }
 
 fun reloadViewsOnFocus() {
