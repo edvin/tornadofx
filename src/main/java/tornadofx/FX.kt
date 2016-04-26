@@ -102,7 +102,7 @@ class FX {
             if (obsolete is View) components.remove(obsolete.javaClass.kotlin)
             val replacement = find(obsolete.javaClass.kotlin)
 
-            val state = obsolete.pack<Any>()
+            val state = obsolete.pack()
             replacement.unpack(state)
 
             if (obsolete.root.parent is Pane) {

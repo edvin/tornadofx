@@ -106,8 +106,8 @@ interface ViewContainer : Injectable {
     val properties: ObservableMap<Any, Any>
     val root: Parent
     val titleProperty: Property<String>
-    fun <T> pack(): T? = null
-    fun <T> unpack(state: T?) {
+    fun pack(): Any? = null
+    fun unpack(state: Any?) {
     }
 }
 
