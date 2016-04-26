@@ -50,6 +50,12 @@ open class CssBlock {
         selections += selection
         return selection
     }
+
+    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) =
+            s(selector.joinToString(", "), block)
+
+    fun select(selector: String, block: Selection.() -> Unit) =
+            s(selector, block)
 }
 
 open class SelectionBlock : CssBlock() {
