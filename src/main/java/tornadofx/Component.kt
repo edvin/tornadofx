@@ -17,7 +17,6 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import java.io.Serializable
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -107,8 +106,8 @@ interface ViewContainer : Injectable {
     val properties: ObservableMap<Any, Any>
     val root: Parent
     val titleProperty: Property<String>
-    fun pack(): Serializable? = null
-    fun unpack(state: Serializable?) {
+    fun pack(): Any? = null
+    fun unpack(state: Any?) {
     }
 }
 
