@@ -13,7 +13,7 @@ Lightweight JavaFX Framework for Kotlin
 - Type safe GUI builders
 - Type safe CSS builders
 - Async task execution
-- MVC
+- Hot reload of Views and Stylesheets
 - REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
