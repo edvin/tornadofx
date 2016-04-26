@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -16,6 +17,7 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import java.io.Serializable
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -94,6 +96,7 @@ abstract class Component {
 
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: () -> T) = task(func)
+
     fun <T> runAsync(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
@@ -101,13 +104,25 @@ abstract class Component {
 abstract class Controller : Component(), Injectable
 
 interface ViewContainer : Injectable {
+    val properties: ObservableMap<Any, Any>
     val root: Parent
     val titleProperty: Property<String>
+    fun pack(): Serializable? = null
+    fun unpack(state: Serializable?) {
+    }
 }
 
 abstract class UIComponent : Component(), ViewContainer {
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
+
+    private fun tagRoot() {
+        root.properties["tornadofx.uicomponent"] = this@UIComponent
+    }
+
+    init {
+        Platform.runLater { tagRoot() }
+    }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
         if (modalStage == null) {
@@ -129,10 +144,13 @@ abstract class UIComponent : Component(), ViewContainer {
                         stylesheets.addAll(FX.stylesheets)
                         icons += FX.primaryStage.icons
                         scene = this
+                        properties["tornadofx.scene"] = this
                     }
 
                     show()
+
                     if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
+                    if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
                 }
             }
         }

@@ -2,6 +2,8 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.beans.property.SimpleStringProperty
+import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.scene.Scene
 import javafx.stage.Stage
 import kotlin.properties.ReadOnlyProperty
@@ -19,6 +21,7 @@ abstract class App : Application() {
 
             stage.apply {
                 scene = Scene(view.root)
+                view.properties["tornadofx.scene"] = scene
                 scene.stylesheets.addAll(FX.stylesheets)
                 titleProperty().bind(view.titleProperty)
                 show()
@@ -40,6 +43,9 @@ abstract class SingleViewApp(title: String? = null) : App(), ViewContainer {
     var stylesheet: Stylesheet? = null
     override val primaryView = javaClass.kotlin
     override val titleProperty = SimpleStringProperty(title)
+    override val properties: ObservableMap<Any, Any>
+        get() = _properties.value
+    private val _properties = lazy { FXCollections.observableHashMap<Any, Any>() }
 
     init {
         FX.components[javaClass.kotlin] = this

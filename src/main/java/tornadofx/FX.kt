@@ -5,7 +5,9 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.scene.Scene
 import javafx.scene.image.Image
+import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -25,6 +27,8 @@ class FX {
         var dicontainer: DIContainer? = null
         @JvmStatic
         var reloadStylesheetsOnFocus = false
+        @JvmStatic
+        var reloadViewsOnFocus = false
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
@@ -87,11 +91,32 @@ class FX {
             FX.primaryStage = primaryStage
             FX.application = application
             if (reloadStylesheetsOnFocus) primaryStage.reloadStylesheetsOnFocus()
+            if (reloadViewsOnFocus) primaryStage.reloadViewsOnFocus()
         }
 
         @JvmStatic
         fun <T: Injectable> find(componentType: Class<T>) =
             find(componentType.kotlin)
+
+        fun replaceComponent(obsolete: UIComponent) {
+            if (obsolete is View) components.remove(obsolete.javaClass.kotlin)
+            val replacement = find(obsolete.javaClass.kotlin)
+
+            val state = obsolete.pack()
+            replacement.unpack(state)
+
+            if (obsolete.root.parent is Pane) {
+                (obsolete.root.parent as Pane).children.apply {
+                    val index = indexOf(obsolete.root)
+                    remove(obsolete.root)
+                    add(index, replacement.root)
+                }
+            } else {
+                val scene = obsolete.properties["tornadofx.scene"] as Scene
+                replacement.properties["tornadofx.scene"] = scene
+                scene.root = replacement.root
+            }
+        }
     }
 }
 
@@ -102,6 +127,10 @@ fun addStageIcon(icon: Image) {
 
 fun reloadStylesheetsOnFocus() {
     FX.reloadStylesheetsOnFocus = true
+}
+
+fun reloadViewsOnFocus() {
+    FX.reloadViewsOnFocus = true
 }
 
 fun importStylesheet(stylesheet: String) {

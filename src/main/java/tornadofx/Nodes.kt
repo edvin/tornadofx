@@ -9,6 +9,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.geometry.VPos
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.cell.CheckBoxTableCell
@@ -25,6 +26,7 @@ import javafx.util.converter.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 import kotlin.reflect.KClass
 
 fun TableColumnBase<*, *>.hasClass(className: String) = styleClass.contains(className)
@@ -64,9 +66,31 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
+fun Scene.reloadViews() {
+    findUIComponents().forEach { FX.replaceComponent(it) }
+}
+
+fun Scene.findUIComponents(): List<UIComponent> {
+    val list = ArrayList<UIComponent>()
+    root.findUIComponents(list)
+    return list
+}
+
+private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
+    val uicmp = properties["tornadofx.uicomponent"]
+    if (uicmp is UIComponent) list += uicmp
+    childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).findUIComponents(list) }
+}
+
 fun Stage.reloadStylesheetsOnFocus() {
     focusedProperty().addListener { obs, old, focused ->
-        if (focused) scene.reloadStylesheets()
+        if (focused && FX.initialized.value) scene.reloadStylesheets()
+    }
+}
+
+fun Stage.reloadViewsOnFocus() {
+    focusedProperty().addListener { obs, old, focused ->
+        if (focused && FX.initialized.value) scene.reloadViews()
     }
 }
 

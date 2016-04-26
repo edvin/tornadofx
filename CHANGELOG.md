@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Hot View Reload (https://github.com/edvin/tornadofx/issues/96) 
 - `children(nodeList)` builder helper to redirect built children to a specific node list (https://github.com/edvin/tornadofx/issues/95) 
 - `buttonbar` builder (https://github.com/edvin/tornadofx/issues/95)
 - `ButtonBar.button` builder (https://github.com/edvin/tornadofx/issues/95)
