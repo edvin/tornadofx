@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tornadofx
 
 import javafx.application.Application
@@ -110,8 +112,20 @@ class FX {
             find(componentType.kotlin)
 
         fun replaceComponent(obsolete: UIComponent) {
-            if (obsolete is View) components.remove(obsolete.javaClass.kotlin)
-            val replacement = find(obsolete.javaClass.kotlin)
+            var replacement: UIComponent
+
+            if (obsolete is View) {
+                components.remove(obsolete.javaClass.kotlin)
+                replacement = find(obsolete.javaClass.kotlin)
+            } else {
+                val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
+                if (noArgsConstructor) {
+                    replacement = find(obsolete.javaClass.kotlin)
+                } else {
+                    log.warning("Unable to reload $obsolete because it's missing a no args constructor")
+                    return
+                }
+            }
 
             val state = obsolete.pack()
             replacement.unpack(state)

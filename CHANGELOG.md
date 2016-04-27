@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+[Unreleased]
+
+### Added
+
+## [1.4.4] - 2016-04-27
 
 ### Added
 
