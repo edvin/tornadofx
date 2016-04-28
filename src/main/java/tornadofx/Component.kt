@@ -132,18 +132,24 @@ abstract class UIComponent : Component(), ViewContainer {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
 
-                    Scene(root).apply {
-                        if (escapeClosesWindow) {
-                            addEventFilter(KeyEvent.KEY_PRESSED) {
-                                if (it.code == KeyCode.ESCAPE)
-                                    closeModal()
-                            }
-                        }
+                    if (root.scene != null) {
+                        scene = root.scene
+                        properties["tornadofx.scene"] = root.scene
+                    } else {
 
-                        stylesheets.addAll(FX.stylesheets)
-                        icons += FX.primaryStage.icons
-                        scene = this
-                        properties["tornadofx.scene"] = this
+                        Scene(root).apply {
+                            if (escapeClosesWindow) {
+                                addEventFilter(KeyEvent.KEY_PRESSED) {
+                                    if (it.code == KeyCode.ESCAPE)
+                                        closeModal()
+                                }
+                            }
+
+                            stylesheets.addAll(FX.stylesheets)
+                            icons += FX.primaryStage.icons
+                            scene = this
+                            properties["tornadofx.scene"] = this
+                        }
                     }
 
                     show()
