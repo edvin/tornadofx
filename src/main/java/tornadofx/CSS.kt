@@ -719,7 +719,7 @@ fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSIdDelegate(value)
 
-fun Node.setId(cssId: CSSId) { id = cssId.toString() }
+fun Node.setId(cssId: CSSId) { id = cssId.name }
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
 fun Node.addClass(cssClass: CSSClass) = addClass(cssClass.name)
 fun Node.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)

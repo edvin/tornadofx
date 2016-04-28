@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 [Unreleased]
 
-### Added
+### Changed
+
+- Node.setId(Styles.someId) did not set the correct value
 
 ## [1.4.4] - 2016-04-27
 
