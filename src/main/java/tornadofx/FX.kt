@@ -92,15 +92,17 @@ class FX {
             FX.primaryStage = primaryStage
             FX.application = application
 
-            with (application.parameters.unnamed) {
-                if (contains("--dev-mode")) {
-                    reloadStylesheetsOnFocus = true
-                    dumpStylesheets = true
-                    reloadViewsOnFocus = true
+            if (application.parameters?.unnamed != null) {
+                with (application.parameters.unnamed) {
+                    if (contains("--dev-mode")) {
+                        reloadStylesheetsOnFocus = true
+                        dumpStylesheets = true
+                        reloadViewsOnFocus = true
+                    }
+                    if (contains("--live-stylesheets")) reloadStylesheetsOnFocus = true
+                    if (contains("--dump-stylesheets")) dumpStylesheets = true
+                    if (contains("--live-views")) reloadViewsOnFocus = true
                 }
-                if (contains("--live-stylesheets")) reloadStylesheetsOnFocus = true
-                if (contains("--dump-stylesheets")) dumpStylesheets = true
-                if (contains("--live-views")) reloadViewsOnFocus = true
             }
 
             if (reloadStylesheetsOnFocus) primaryStage.reloadStylesheetsOnFocus()
@@ -120,7 +122,7 @@ class FX {
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
                 if (noArgsConstructor) {
-                    replacement = find(obsolete.javaClass.kotlin)
+                    replacement = obsolete.javaClass.newInstance()
                 } else {
                     log.warning("Unable to reload $obsolete because it's missing a no args constructor")
                     return

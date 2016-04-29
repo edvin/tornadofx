@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+- SingleViewApp increased framework complexity and had too many caveats so it was removed
 - UIComponent.pack/unpack was removed because their function was not needed and not intuitive (https://github.com/edvin/tornadofx/issues/98#issuecomment-215674901)
 
 ## [1.4.4] - 2016-04-27

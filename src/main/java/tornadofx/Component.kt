@@ -1,7 +1,6 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -102,22 +101,17 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
-interface ViewContainer : Injectable {
-    val properties: ObservableMap<Any, Any>
-    val root: Parent
-    val titleProperty: Property<String>
-}
-
-abstract class UIComponent : Component(), ViewContainer {
+abstract class UIComponent : Component() {
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
+    abstract val root: Parent
 
     private fun tagRoot() {
-        root.properties["tornadofx.uicomponent"] = this@UIComponent
+        root.properties.put("tornadofx.uicomponent", this)
     }
 
     init {
-        Platform.runLater { tagRoot() }
+        if (FX.reloadViewsOnFocus) Platform.runLater { tagRoot() }
     }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
@@ -163,7 +157,7 @@ abstract class UIComponent : Component(), ViewContainer {
         modalStage = null
     }
 
-    override val titleProperty = SimpleStringProperty()
+    val titleProperty = SimpleStringProperty()
     var title: String
         get() = titleProperty.get()
         set(value) = titleProperty.set(value)
