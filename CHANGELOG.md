@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Node.setId(Styles.someId) did not set the correct value
+- `openModal` did not configure tornadofx.scene correctly, causing issues with Live Views
+- `Node.setId(Styles.someId)` did not set the correct value
 
 ## [1.4.4] - 2016-04-27
 

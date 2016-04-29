@@ -134,7 +134,7 @@ abstract class UIComponent : Component(), ViewContainer {
 
                     if (root.scene != null) {
                         scene = root.scene
-                        properties["tornadofx.scene"] = root.scene
+                        this@UIComponent.properties["tornadofx.scene"] = root.scene
                     } else {
 
                         Scene(root).apply {
@@ -148,7 +148,7 @@ abstract class UIComponent : Component(), ViewContainer {
                             stylesheets.addAll(FX.stylesheets)
                             icons += FX.primaryStage.icons
                             scene = this
-                            properties["tornadofx.scene"] = this
+                            this@UIComponent.properties["tornadofx.scene"] = this
                         }
                     }
 
