@@ -80,6 +80,10 @@ fun Scene.findUIComponents(): List<UIComponent> {
  * Aggregate UIComponents under the given parent. Nested UIComponents
  * are not aggregated, but they are removed from the FX.components map
  * so that they would be reloaded when the parent is reloaded.
+ *
+ * This means that nested UIComponents would loose their state, because
+ * the pack/unpack functions will not be called for these views. This should
+ * be improved in a future version.
  */
 private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
     val uicmp = properties["tornadofx.uicomponent"]
