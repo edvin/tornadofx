@@ -127,9 +127,6 @@ class FX {
                 }
             }
 
-            val state = obsolete.pack()
-            replacement.unpack(state)
-
             if (obsolete.root.parent is Pane) {
                 (obsolete.root.parent as Pane).children.apply {
                     val index = indexOf(obsolete.root)

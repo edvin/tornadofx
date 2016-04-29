@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - `openModal` did not configure tornadofx.scene correctly, causing issues with Live Views
 - `Node.setId(Styles.someId)` did not set the correct value
 
+### Removed
+
+- UIComponent.pack/unpack was removed because their function was not needed and not intuitive (https://github.com/edvin/tornadofx/issues/98#issuecomment-215674901)
+
 ## [1.4.4] - 2016-04-27
 
 ### Added
