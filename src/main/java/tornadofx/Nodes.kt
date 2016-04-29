@@ -106,13 +106,13 @@ private fun Parent.clearViews() {
 
 fun Stage.reloadStylesheetsOnFocus() {
     focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene.reloadStylesheets()
+        if (focused && FX.initialized.value) scene?.reloadStylesheets()
     }
 }
 
 fun Stage.reloadViewsOnFocus() {
     focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene.reloadViews()
+        if (focused && FX.initialized.value) scene?.reloadViews()
     }
 }
 
