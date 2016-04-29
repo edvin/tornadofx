@@ -122,7 +122,7 @@ class FX {
                 if (noArgsConstructor) {
                     replacement = find(obsolete.javaClass.kotlin)
                 } else {
-                    log.warning("Unable to reload $obsolete (${obsolete.title}) because it's missing a no args constructor")
+                    log.warning("Unable to reload $obsolete because it's missing a no args constructor")
                     return
                 }
             }
@@ -136,13 +136,15 @@ class FX {
                     remove(obsolete.root)
                     add(index, replacement.root)
                 }
+                log.info("Reloaded [Parent] $obsolete")
             } else {
                 if (obsolete.properties.containsKey("tornadofx.scene")) {
                     val scene = obsolete.properties["tornadofx.scene"] as Scene
                     replacement.properties["tornadofx.scene"] = scene
                     scene.root = replacement.root
+                    log.info("Reloaded [Scene] $obsolete")
                 } else {
-                    log.warning("Unable to reload $obsolete (${obsolete.title}) because it has no parent and no scene attached")
+                    log.warning("Unable to reload $obsolete because it has no parent and no scene attached")
                 }
             }
         }

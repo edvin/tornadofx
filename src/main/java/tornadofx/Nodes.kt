@@ -76,10 +76,28 @@ fun Scene.findUIComponents(): List<UIComponent> {
     return list
 }
 
+/**
+ * Aggregate UIComponents under the given parent. Nested UIComponents
+ * are not aggregated, but they are removed from the FX.components map
+ * so that they would be reloaded when the parent is reloaded.
+ */
 private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
     val uicmp = properties["tornadofx.uicomponent"]
-    if (uicmp is UIComponent) list += uicmp
-    childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).findUIComponents(list) }
+    if (uicmp is UIComponent) {
+        list += uicmp
+        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
+    } else {
+        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).findUIComponents(list) }
+    }
+}
+
+private fun Parent.clearViews() {
+    val uicmp = properties["tornadofx.uicomponent"]
+    if (uicmp is View) {
+        FX.components.remove(uicmp.javaClass.kotlin)
+    } else {
+        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
+    }
 }
 
 fun Stage.reloadStylesheetsOnFocus() {

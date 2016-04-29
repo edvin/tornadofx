@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Live Views no longer reloads nested UIComponents twice (https://github.com/edvin/tornadofx/issues/98)
+- Added log info message when a View is reloaded
 - `openModal` did not configure tornadofx.scene correctly, causing issues with Live Views
 - `Node.setId(Styles.someId)` did not set the correct value
 
