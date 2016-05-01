@@ -190,7 +190,7 @@ open class SelectionBlock : CssBlock() {
     var ellipsisString: String by cssprop("-fx-ellipsis-string")
 
     // MenuBar
-    var useSystemMenyBar: Boolean by cssprop("-fx-use-system-menu-bar")
+    var useSystemMenuBar: Boolean by cssprop("-fx-use-system-menu-bar")
 
     // Pagination
     var maxPageIndicatorCount: Int by cssprop("-fx-max-page-indicator-count")
