@@ -51,7 +51,7 @@ fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, g
  */
 fun ContextMenu.separator(op: (SeparatorMenuItem.()->Unit)? = null){
     val separator = SeparatorMenuItem()
-    separator.op()
+    op?.invoke(separator)
     this+=separator
 }
 
