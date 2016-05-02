@@ -46,6 +46,13 @@ fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, g
     return menuItem
 }
 
+/**
+ * Add a separator to the contextmenu
+ */
+fun ContextMenu.separator(){
+    this+=SeparatorMenuItem()
+}
+
 //Menu extensions
 fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
     val menu = Menu(name)
