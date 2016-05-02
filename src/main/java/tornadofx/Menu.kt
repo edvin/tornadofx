@@ -56,7 +56,7 @@ fun ContextMenu.separator(op: (SeparatorMenuItem.()->Unit)){
 }
 
 //Menu extensions
-fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
+fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)?=null): Menu {
     val menu = Menu(name)
     menu.op()
     this += menu
