@@ -14,26 +14,32 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.control.DatePickerTableCell
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
-fun Pane.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
+fun <T> Pane.spinner(editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>()
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
+fun Pane.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
     val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
+    spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun Pane.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
+fun Pane.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
     val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
+    spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.spinner(items: ObservableList<T>, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> Pane.spinner(items: ObservableList<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(items)
+    spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 

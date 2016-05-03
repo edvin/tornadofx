@@ -12,6 +12,7 @@ class ListTests {
         val name = SimpleStringProperty(name)
         val age = SimpleIntegerProperty(age)
         val checked = SimpleBooleanProperty(checked)
+        override fun toString() = name.value
     }
 
     val persons = FXCollections.observableArrayList(
