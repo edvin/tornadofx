@@ -7,6 +7,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.scene.layout.Pane
@@ -190,4 +191,14 @@ fun <T : Injectable> find(type: KClass<T>): T {
 
 interface DIContainer {
     fun <T : Any> getInstance(type: KClass<T>): T
+}
+
+
+/**
+ * Add the given node to the pane, invoke the node operation and return the node
+ */
+internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
+    pane.children.add(node)
+    op?.invoke(node)
+    return node
 }
