@@ -43,8 +43,9 @@ fun <T> Pane.spinner(items: ObservableList<T>, editable: Boolean = false, op: (S
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(valueFactory)
+    spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
