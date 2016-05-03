@@ -93,5 +93,9 @@ class PropertiesTest {
 
         Assert.assertEquals(44, person.id)
         Assert.assertEquals("Doe", person.name)
+
+        person.id = 5
+        idObservable.refresh()
+        Assert.assertEquals(5, idObservable.value)
     }
 }
