@@ -14,10 +14,33 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.control.DatePickerTableCell
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
+
+fun Pane.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
+    val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
+    return opcr(this, spinner, op)
+}
+
+fun Pane.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
+    val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
+    return opcr(this, spinner, op)
+}
+
+fun <T> Pane.spinner(items: ObservableList<T>, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>(items)
+    return opcr(this, spinner, op)
+}
+
+fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>(valueFactory)
+    return opcr(this, spinner, op)
+}
 
 fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
     if (values != null) items = values
