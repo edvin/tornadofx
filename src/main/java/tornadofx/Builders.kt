@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
@@ -96,7 +97,7 @@ fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> 
 
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
-    textProperty().bindBidirectional(property)
+    bind(property)
 }
 
 fun Pane.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)

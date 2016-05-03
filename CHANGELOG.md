@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- POJO Binding Support (https://github.com/edvin/tornadofx/issues/104)
 
 
 ## [1.4.5] - 2016-04-29

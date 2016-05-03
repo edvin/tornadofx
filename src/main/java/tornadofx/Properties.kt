@@ -2,9 +2,7 @@ package tornadofx
 
 import javafx.beans.property.*
 import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
+import kotlin.reflect.*
 
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
@@ -41,12 +39,48 @@ fun <S, T> observable(owner: S, prop: KMutableProperty1<S, T>): ObjectProperty<T
 }
 
 /**
- * Convert an owner instance and a corresponding property reference into an observable
+ * Convert an owner instance and a corresponding property reference into a readonly observable
  */
 fun <S, T> observable(owner: S, prop: KProperty1<S, T>): ReadOnlyObjectProperty<T> {
     return object : ReadOnlyObjectWrapper<T>(owner, prop.name) {
         override fun get() = prop.get(owner)
     }
+}
+
+/**
+ * Convert an bean instance and a corresponding getter/setter reference into a writable observable.
+ *
+ * Example: val observableName = observable(myPojo, MyPojo::getName, MyPojo::setName)
+ */
+fun <S : Any, T> observable(bean: S, getter: KFunction<T>, setter: KFunction2<S, T, Unit>): PojoProperty<T> {
+    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+
+    return object : PojoProperty<T>(bean, propName) {
+        override fun get() = getter.call(bean)
+        override fun set(newValue: T) {
+            setter.invoke(bean, newValue)
+        }
+    }
+}
+
+open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T>(bean, propName) {
+    fun refresh() {
+        fireValueChangedEvent()
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>): PojoProperty<T> {
+    val suffix = propName.first().toUpperCase() + propName.substring(1)
+
+    val getter = bean.javaClass.getDeclaredMethod("get$suffix")
+    val setter = bean.javaClass.getDeclaredMethod("set$suffix", propType.java)
+
+    return object : PojoProperty<T>(bean, propName) {
+        override fun get() = getter.invoke(bean) as T
+        override fun set(newValue: T) { setter.invoke(bean, newValue) }
+    }
+
 }
 
 enum class SingleAssignThreadSafetyMode {

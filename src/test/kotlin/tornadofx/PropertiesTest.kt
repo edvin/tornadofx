@@ -1,5 +1,6 @@
 package tornadofx
 
+import org.junit.Assert
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -77,5 +78,20 @@ class PropertiesTest {
             failed = true
         }
         assertTrue(failed)
+    }
+    @Test
+    fun pojoWritableObservable() {
+        val person = JavaPerson()
+        person.id = 1
+        person.name = "John"
+
+        val idObservable = observable(person, JavaPerson::getId, JavaPerson::setId)
+        val nameObservable = observable(person, "name", String::class)
+
+        idObservable.value = 44
+        nameObservable.value = "Doe"
+
+        Assert.assertEquals(44, person.id)
+        Assert.assertEquals("Doe", person.name)
     }
 }
