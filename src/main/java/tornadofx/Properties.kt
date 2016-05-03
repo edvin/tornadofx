@@ -63,6 +63,10 @@ fun <S : Any, T> observable(bean: S, getter: KFunction<T>, setter: KFunction2<S,
     }
 }
 
+@JvmName("pojoObservable")
+fun <S : Any, T> S.observable(getter: KFunction<T>, setter: KFunction2<S, T, Unit>): PojoProperty<T> =
+        observable(this, getter, setter)
+
 open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T>(bean, propName) {
     fun refresh() {
         fireValueChangedEvent()
@@ -82,6 +86,10 @@ fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>
     }
 
 }
+
+@JvmName("pojoObservable")
+inline fun <S : Any, reified T : Any> S.observable(propName: String) =
+    observable(this, propName, T::class)
 
 enum class SingleAssignThreadSafetyMode {
     SYNCHRONIZED,
