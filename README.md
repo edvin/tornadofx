@@ -109,8 +109,7 @@ class MyView : View() {
 
     init {
         with(root) {
-            tableview<Person> {
-                items = persons
+            tableview(persons) {
                 column("ID", Person::id)
                 column("Name", Person::name)
                 column("Birthday", Person::birthday)
@@ -252,7 +251,7 @@ with (config) {
 ```
 	
 Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
-create a new instance via the constructor and you can reuse the Fragment in multiple ui locations simultaneously.
+create a new instance and you can reuse the Fragment in multiple ui locations simultaneously.
  	
 ```kotlin
 class MyFragment : Fragment() {
