@@ -719,11 +719,11 @@ fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSIdDelegate(value)
 
-fun Node.setId(cssId: CSSId) { id = cssId.name }
+fun <T : Node> T.setId(cssId: CSSId): T { id = cssId.name; return this }
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
-fun Node.addClass(cssClass: CSSClass) = addClass(cssClass.name)
-fun Node.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
-fun Node.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+fun <T : Node> T.addClass(cssClass: CSSClass) = addClass(cssClass.name)
+fun <T : Node> T.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
+fun <T : Node> T.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 @Suppress("UNCHECKED_CAST")
 fun <T : Node>Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
 @Suppress("UNCHECKED_CAST")

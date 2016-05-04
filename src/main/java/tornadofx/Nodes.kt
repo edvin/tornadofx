@@ -41,14 +41,15 @@ fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
 }
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
-fun Node.addClass(className: String) = styleClass.add(className)
-fun Node.removeClass(className: String) = styleClass.remove(className)
-fun Node.toggleClass(className: String, predicate: Boolean) {
+fun <T : Node> T.addClass(className: String): T { styleClass.add(className); return this }
+fun <T : Node> T.removeClass(className: String): T { styleClass.remove(className); return this }
+fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
     } else {
         removeClass(className)
     }
+    return this
 }
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?

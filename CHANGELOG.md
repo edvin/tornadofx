@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 - Spinner builder (https://github.com/edvin/tornadofx/issues/106)
 - POJO Binding Support (https://github.com/edvin/tornadofx/issues/104)
 
+### Changed
+
+- addClass, removeClass, toggleClass returns the Node it was applied to (for chaining support)
 
 ## [1.4.5] - 2016-04-29
 
