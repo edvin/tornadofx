@@ -16,11 +16,13 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import javafx.stage.Window
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.logging.Logger
+import kotlin.concurrent.thread
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -114,7 +116,7 @@ abstract class UIComponent : Component() {
         if (FX.reloadViewsOnFocus) Platform.runLater { tagRoot() }
     }
 
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -122,6 +124,7 @@ abstract class UIComponent : Component() {
                 modalStage = Stage(stageStyle).apply {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
+                    if (owner != null) initOwner(owner)
 
                     if (root.scene != null) {
                         scene = root.scene
@@ -143,13 +146,26 @@ abstract class UIComponent : Component() {
                         }
                     }
 
-                    show()
-
-                    if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
-                    if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
+                    if (block) {
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
+                            thread(true) {
+                                Thread.sleep(5000)
+                                configureReloading()
+                            }
+                        }
+                        showAndWait()
+                    } else {
+                        show()
+                        configureReloading()
+                    }
                 }
             }
         }
+    }
+
+    private fun Stage.configureReloading() {
+        if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
+        if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
     }
 
     fun closeModal() = modalStage?.apply {

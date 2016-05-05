@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- openModal supports new optional `block` and `owner` parameters
 - Spinner builder (https://github.com/edvin/tornadofx/issues/106)
 - POJO Binding Support (https://github.com/edvin/tornadofx/issues/104)
 
