@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- App can be started without overriding `primaryView` -> startup parameter `--view-class=package.View`
 - addClass, removeClass, toggleClass returns the Node it was applied to (for chaining support)
 
 ## [1.4.5] - 2016-04-29
