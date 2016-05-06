@@ -41,21 +41,18 @@ open class CssBlock {
         modifier = true
     }
 
-    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) =
-            s(selector.joinToString(", "), block)
-
-    fun s(selector: String, block: Selection.() -> Unit): Selection {
+    fun select(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
         selection.block()
         selections += selection
         return selection
     }
 
-    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) =
-            s(selector.joinToString(", "), block)
+    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(selector.joinToString(), block)
 
-    fun select(selector: String, block: Selection.() -> Unit) =
-            s(selector, block)
+    fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
+
+    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
 }
 
 open class SelectionBlock : CssBlock() {
