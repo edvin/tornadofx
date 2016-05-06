@@ -41,21 +41,18 @@ open class CssBlock {
         modifier = true
     }
 
-    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) =
-            s(selector.joinToString(", "), block)
-
-    fun s(selector: String, block: Selection.() -> Unit): Selection {
+    fun select(selector: String, block: Selection.() -> Unit): Selection {
         val selection = Selection(selector)
         selection.block()
         selections += selection
         return selection
     }
 
-    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) =
-            s(selector.joinToString(", "), block)
+    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(selector.joinToString(), block)
 
-    fun select(selector: String, block: Selection.() -> Unit) =
-            s(selector, block)
+    fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
+
+    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
 }
 
 open class SelectionBlock : CssBlock() {
@@ -456,63 +453,74 @@ fun <T> toCss(value: T): String {
 open class Stylesheet : CssBlock() {
     companion object {
         // Pseudo classes used by JavaFX
+        val armed by csspseudoclass()
+        val disabled by csspseudoclass()
+        val focused by csspseudoclass()
         val hover by csspseudoclass()
         val pressed by csspseudoclass()
-        val disabled by csspseudoclass()
-        val armed by csspseudoclass()
-        val focused by csspseudoclass()
         val showMnemonics by csspseudoclass()
 
         // Style classes used by JavaFX
-        val label by cssclass()
+        val accordion by cssclass()
+        val arrow by cssclass()
+        val arrowButton by cssclass()
+        val axis by cssclass()
+        val axisMinorTickMark by cssclass()
         val button by cssclass()
+        val buttonBar by cssclass()
+        val cell by cssclass()
+        val chart by cssclass()
+        val chartLegend by cssclass()
+        val chartLegendItem by cssclass()
+        val chartLegendSymbol by cssclass()
         val checkBox by cssclass()
         val choiceBox by cssclass()
+        val colorPicker by cssclass()
+        val columnHeader by cssclass()
         val comboBox by cssclass()
         val comboBoxBase by cssclass()
         val comboBoxPopup by cssclass()
-        val imageView by cssclass()
-        val dialogPane by cssclass()
-        val mediaView by cssclass()
-        val webView by cssclass()
-        val accordion by cssclass()
-        val cell by cssclass()
-        val listCell by cssclass()
-        val indexedCell by cssclass()
-        val colorPicker by cssclass()
-        val textInput by cssclass()
-        val listView by cssclass()
+        val content by cssclass()
         val contextMenu by cssclass()
-        val arrowButton by cssclass()
-        val arrow by cssclass()
+        val datePicker by cssclass()
+        val dialogPane by cssclass()
+        val firstTitledPane by cssclass()
+        val graphicContainer by cssclass()
+        val headerPanel by cssclass()
+        val htmlEditor by cssclass()
+        val hyperlink by cssclass()
+        val imageView by cssclass()
+        val indexedCell by cssclass()
+        val label by cssclass()
+        val leftContainer by cssclass()
+        val listCell by cssclass()
+        val listView by cssclass()
+        val mediaView by cssclass()
         val menu by cssclass()
-        val menuItem by cssclass()
         val menuBar by cssclass()
         val menuButton by cssclass()
-        val passwordField by cssclass()
+        val menuItem by cssclass()
         val pagination by cssclass()
-        val scrollArrow by cssclass()
-        val datePicker by cssclass()
-        val htmlEditor by cssclass()
-        val leftContainer by cssclass()
-        val rightContainer by cssclass()
-        val graphicContainer by cssclass()
-        val hyperlink by cssclass()
+        val passwordField by cssclass()
         val progressBar by cssclass()
         val progressIndicator by cssclass()
         val radioButton by cssclass()
+        val rightContainer by cssclass()
+        val root by cssclass()
+        val rootPopup by cssclass("root.popup")
+        val scrollArrow by cssclass()
         val scrollBar by cssclass()
         val scrollPane by cssclass()
         val separator by cssclass()
-        val spinner by cssclass()
         val slider by cssclass()
+        val spinner by cssclass()
         val splitMenuButton by cssclass()
         val splitPane by cssclass()
-        val tabPane by cssclass()
-        val columnHeader by cssclass()
         val tableView by cssclass()
+        val tabPane by cssclass()
         val textArea by cssclass()
         val textField by cssclass()
+        val textInput by cssclass()
         val toggleButton by cssclass()
         val toolBar by cssclass()
         val tooltip by cssclass()
@@ -520,17 +528,7 @@ open class Stylesheet : CssBlock() {
         val treeTableCell by cssclass()
         val treeTableView by cssclass()
         val treeView by cssclass()
-        val axis by cssclass()
-        val axisMinorTickMark by cssclass()
-        val chart by cssclass()
-        val chartLegend by cssclass()
-        val chartLegendItem by cssclass()
-        val chartLegendSymbol by cssclass()
-        val rootPopup by cssclass("root.popup")
-        val headerPanel by cssclass()
-        val content by cssclass()
-        val buttonBar by cssclass()
-        val firstTitledPane by cssclass()
+        val webView by cssclass()
     }
 
     open fun render() = buildString { selections.forEach { append(it) } }
@@ -590,7 +588,7 @@ val Color.css: String
 
 // Dimensions
 
-internal fun dimStr(value: Double, units: String) = when(value) {
+internal fun dimStr(value: Double, units: String) = when (value) {
     Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
     Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
     Double.NaN -> "0$units"
@@ -651,7 +649,11 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val entries by lazy { mutableListOf<Pair<Type, CSSSelector>>() }
 
-    enum class Type { plus, contains, direct }
+    enum class Type(val prefix: String) {
+        PLUS(""), CONTAINS(" "), DIRECT(" > ");
+
+        override fun toString() = prefix
+    }
 
     val cssName: String
     val name: String
@@ -668,33 +670,25 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
 
     // .box.label
     operator fun plus(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.plus, other))
+        entries.add(Pair(Type.PLUS, other))
         return this
     }
 
     // .box .label
     infix fun contains(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.contains, other))
+        entries.add(Pair(Type.CONTAINS, other))
         return this
     }
 
     // .box > .label
     infix fun direct(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.direct, other))
+        entries.add(Pair(Type.DIRECT, other))
         return this
     }
 
-    override fun toString(): String {
-        val s = StringBuilder(cssName)
-        for (entry in entries) {
-            val prefix = when (entry.first) {
-                Type.contains -> " "
-                Type.plus -> ""
-                Type.direct -> " > "
-            }
-            s.append(prefix + entry.second)
-        }
-        return s.toString()
+    override fun toString() = buildString {
+        append(cssName)
+        for ((prefix, selector) in entries) append("$prefix$selector")
     }
 }
 
@@ -719,15 +713,19 @@ fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSIdDelegate(value)
 
-fun <T : Node> T.setId(cssId: CSSId): T { id = cssId.name; return this }
+fun <T : Node> T.setId(cssId: CSSId): T {
+    id = cssId.name; return this
+}
+
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
 fun <T : Node> T.addClass(cssClass: CSSClass) = addClass(cssClass.name)
 fun <T : Node> T.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
 fun <T : Node> T.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 @Suppress("UNCHECKED_CAST")
-fun <T : Node>Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
+fun <T : Node> Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
+
 @Suppress("UNCHECKED_CAST")
-fun <T : Node>Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
+fun <T : Node> Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
 
 fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
 fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
