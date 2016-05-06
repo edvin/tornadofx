@@ -648,7 +648,11 @@ val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), Temp
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val entries by lazy { mutableListOf<Pair<Type, CSSSelector>>() }
 
-    enum class Type { plus, contains, direct }
+    enum class Type(val prefix: String) {
+        PLUS(""), CONTAINS(" "), DIRECT(" > ");
+
+        override fun toString() = prefix
+    }
 
     val cssName: String
     val name: String
@@ -665,33 +669,25 @@ abstract class CSSSelector(val prefix: String, _name: String? = null) {
 
     // .box.label
     operator fun plus(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.plus, other))
+        entries.add(Pair(Type.PLUS, other))
         return this
     }
 
     // .box .label
     infix fun contains(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.contains, other))
+        entries.add(Pair(Type.CONTAINS, other))
         return this
     }
 
     // .box > .label
     infix fun direct(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.direct, other))
+        entries.add(Pair(Type.DIRECT, other))
         return this
     }
 
-    override fun toString(): String {
-        val s = StringBuilder(cssName)
-        for (entry in entries) {
-            val prefix = when (entry.first) {
-                Type.contains -> " "
-                Type.plus -> ""
-                Type.direct -> " > "
-            }
-            s.append(prefix + entry.second)
-        }
-        return s.toString()
+    override fun toString() = buildString {
+        append(cssName)
+        for ((prefix, selector) in entries) append("$prefix$selector")
     }
 }
 
