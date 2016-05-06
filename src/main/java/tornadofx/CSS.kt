@@ -587,7 +587,7 @@ val Color.css: String
 
 // Dimensions
 
-internal fun dimStr(value: Double, units: String) = when(value) {
+internal fun dimStr(value: Double, units: String) = when (value) {
     Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
     Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
     Double.NaN -> "0$units"
@@ -716,15 +716,19 @@ fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSIdDelegate(value)
 
-fun <T : Node> T.setId(cssId: CSSId): T { id = cssId.name; return this }
+fun <T : Node> T.setId(cssId: CSSId): T {
+    id = cssId.name; return this
+}
+
 fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
 fun <T : Node> T.addClass(cssClass: CSSClass) = addClass(cssClass.name)
 fun <T : Node> T.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
 fun <T : Node> T.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 @Suppress("UNCHECKED_CAST")
-fun <T : Node>Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
+fun <T : Node> Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
+
 @Suppress("UNCHECKED_CAST")
-fun <T : Node>Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
+fun <T : Node> Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
 
 fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
 fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
