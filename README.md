@@ -37,7 +37,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
   -DarchetypeVersion=1.0.3
 ```
-> Remember to update version to 1.4.5 in pom.xml
+> Remember to update version to 1.4.6 in pom.xml
 
 ### Add TornadoFX to your project
 
@@ -47,14 +47,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.4.5</version>
+	<version>1.4.6</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.5'
+compile 'no.tornado:tornadofx:1.4.6'
 ```
 
 ### What does it look like? (Code snippets)
