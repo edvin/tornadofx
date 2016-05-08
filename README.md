@@ -11,6 +11,7 @@ Lightweight JavaFX Framework for Kotlin
 
 - Dependency injection
 - Type safe GUI builders
+- First class FXML support
 - Type safe CSS builders
 - Async task execution
 - Hot reload of Views and Stylesheets
