@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Form Builder (https://github.com/edvin/tornadofx/issues/111)
+
 ## [1.4.6] - 2016-05-06
 
 ### Added

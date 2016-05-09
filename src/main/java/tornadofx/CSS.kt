@@ -529,6 +529,14 @@ open class Stylesheet : CssBlock() {
         val treeTableView by cssclass()
         val treeView by cssclass()
         val webView by cssclass()
+
+        // Style classes used by Form Builder
+        val form by cssclass()
+        val fieldset by cssclass()
+        val legend by cssclass()
+        val field by cssclass()
+        val labelContainer by cssclass()
+        val inputContainer by cssclass()
     }
 
     open fun render() = buildString { selections.forEach { append(it) } }
