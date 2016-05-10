@@ -27,6 +27,7 @@ Lightweight JavaFX Framework for Kotlin
 - [Dev Forum](https://groups.google.com/forum/#!forum/tornadofx-dev)
 - [Stack Overflow](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
+- [IntelliJ IDEA Plugin](https://github.com/edvin/tornadofx-idea-plugin) 
 - [Example Application](https://github.com/edvin/tornadofx-samples) 
 - [Maven QuickStart Archetype](https://github.com/edvin/tornadofx-quickstart-archetype) 
 - [Changelog](CHANGELOG.md)
