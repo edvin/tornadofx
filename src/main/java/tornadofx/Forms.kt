@@ -11,7 +11,6 @@ import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.Node
 import javafx.scene.control.Control
 import javafx.scene.control.Label
-import javafx.scene.control.Skin
 import javafx.scene.control.SkinBase
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
@@ -34,7 +33,7 @@ class Form : VBox() {
         get() = children.filter { it is Fieldset }.map { it as Fieldset }
 
     override fun getUserAgentStylesheet() =
-        Form::class.java.getResource("form.css").toExternalForm()
+            Form::class.java.getResource("form.css").toExternalForm()
 
     fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
         val fieldset = Fieldset(text ?: "")
@@ -48,7 +47,7 @@ class Form : VBox() {
 }
 
 @DefaultProperty("children")
-class Fieldset(name: String? = null) : VBox() {
+class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : VBox() {
     var text by property<String>()
     fun textProperty() = getProperty(Fieldset::text)
 
@@ -67,16 +66,19 @@ class Fieldset(name: String? = null) : VBox() {
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun field(text: String? = null, vararg inputs: Node, op: (Field.() -> Unit)? = null): Field {
+    fun field(text: String? = null, vararg inputs: Node, op: (Pane.() -> Unit)? = null): Field {
         val field = Field(text ?: "", *inputs)
         children.add(field)
-        op?.invoke(field)
+        val fake = Pane()
+        op?.invoke(fake)
+        field.inputContainer.children.addAll(fake.children)
         return field
     }
 
     init {
         addClass(Stylesheet.fieldset)
 
+        // Apply pseudo classes when orientation changes
         syncOrientationState()
 
         // Add legend label when text is populated
@@ -86,6 +88,14 @@ class Fieldset(name: String? = null) : VBox() {
         iconProperty().addListener { observable1, oldValue1, newValue -> if (newValue != null) addLegend() }
 
         // Make sure input children gets the configured HBox.hgrow property
+        syncHgrow()
+
+        // Initial values
+        this@Fieldset.labelPosition = labelPosition
+        if (text != null) this@Fieldset.text = text
+    }
+
+    private fun syncHgrow() {
         children.addListener(ListChangeListener { c ->
             while (c.next()) {
                 if (c.wasAdded()) {
@@ -107,14 +117,9 @@ class Fieldset(name: String? = null) : VBox() {
                 it.inputContainer.children.forEach { this.configureHgrow(it) }
             }
         }
-
-        // Default
-        labelPosition = HORIZONTAL
-        if (name != null) text = name
     }
 
     private fun syncOrientationState() {
-        // Apply pseudo classes when orientation changes
         labelPositionProperty().addListener { observable, oldValue, newValue ->
             if (newValue == HORIZONTAL) {
                 pseudoClassStateChanged(VERTICAL_PSEUDOCLASS_STATE, false)
@@ -127,7 +132,9 @@ class Fieldset(name: String? = null) : VBox() {
 
         // Setup listeneres for wrapping
         wrapWidthProperty().addListener { observable, oldValue, newValue ->
-            val responsiveOrientation = createObjectBinding<Orientation>(Callable { if (width < newValue) VERTICAL else HORIZONTAL }, widthProperty())
+            val responsiveOrientation = createObjectBinding<Orientation>(Callable {
+                if (width < newValue) VERTICAL else HORIZONTAL
+            }, widthProperty())
 
             if (labelPositionProperty().isBound)
                 labelPositionProperty().unbind()
@@ -167,9 +174,9 @@ class Field() : Control() {
     var text by property<String>()
     fun textProperty() = getProperty(Field::text)
 
-    private val label = Label()
-    val labelContainer = LabelContainer(label)
-    val inputContainer = InputContainer()
+    val label = Label()
+    val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
+    val inputContainer = HBox().apply { addClass(Stylesheet.inputContainer) }
     var inputs: ObservableList<Node>? = null
 
     constructor(text: String, vararg inputs: Node) : this() {
@@ -185,24 +192,9 @@ class Field() : Control() {
         children.addAll(labelContainer, inputContainer)
     }
 
-    val fieldset: Fieldset
-        get() = parent as Fieldset
+    val fieldset: Fieldset get() = parent as Fieldset
 
     override fun createDefaultSkin() = FieldSkin(this)
-
-    inner class LabelContainer(label: Label) : HBox() {
-        init {
-            children.add(label)
-            addClass(Stylesheet.labelContainer)
-        }
-    }
-
-    inner class InputContainer : HBox() {
-        init {
-            addClass(Stylesheet.inputContainer)
-        }
-    }
-
 }
 
 class FieldSkin(control: Field) : SkinBase<Field>(control) {
@@ -243,8 +235,8 @@ class FieldSkin(control: Field) : SkinBase<Field>(control) {
         val field = skinnable
         val fieldset = field.fieldset
         val labelHasContent = field.text.isNotBlank()
-
         val labelWidth = field.fieldset.form.labelContainerWidth
+
         if (fieldset.labelPosition == HORIZONTAL) {
             if (labelHasContent) {
                 field.labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), contentHeight)
