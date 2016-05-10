@@ -36,9 +36,11 @@ class Form : VBox() {
     override fun getUserAgentStylesheet() =
         Form::class.java.getResource("form.css").toExternalForm()
 
-    fun fieldset(text: String? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
+    fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
         val fieldset = Fieldset(text ?: "")
         children.add(fieldset)
+        if (labelPosition != null) fieldset.labelPosition = labelPosition
+        if (icon != null) fieldset.icon = icon
         op?.invoke(fieldset)
         return fieldset
     }
@@ -53,8 +55,8 @@ class Fieldset(name: String? = null) : VBox() {
     var inputGrow by property(SOMETIMES)
     fun inputGrowProperty() = getProperty(Fieldset::inputGrow)
 
-    var orientation by property<Orientation>()
-    fun orientationProperty() = getProperty(Fieldset::orientation)
+    var labelPosition by property<Orientation>()
+    fun labelPositionProperty() = getProperty(Fieldset::labelPosition)
 
     var wrapWidth by property<Double>()
     fun wrapWidthProperty() = getProperty(Fieldset::wrapWidth)
@@ -79,7 +81,6 @@ class Fieldset(name: String? = null) : VBox() {
 
         // Add legend label when text is populated
         textProperty().addListener { observable, oldValue, newValue -> if (newValue != null) addLegend() }
-        if (name != null) text = name
 
         // Add legend when icon is populated
         iconProperty().addListener { observable1, oldValue1, newValue -> if (newValue != null) addLegend() }
@@ -94,7 +95,7 @@ class Fieldset(name: String? = null) : VBox() {
                         added.inputContainer.children.forEach { this.configureHgrow(it) }
 
                         // Add listener to support inputs added later
-                        added.inputContainer.children.addListener(ListChangeListener { c1 -> while (c1.next()) if (c1.wasAdded()) c1.addedSubList.forEach { this.configureHgrow(it) } })
+                        added.inputContainer.children.addListener(ListChangeListener { while (it.next()) if (it.wasAdded()) it.addedSubList.forEach { this.configureHgrow(it) } })
                     }
                 }
             }
@@ -102,18 +103,19 @@ class Fieldset(name: String? = null) : VBox() {
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().addListener { observable, oldValue, newValue ->
-            children.filter { it is Field }.map { it as Field }.forEach { c ->
-                c.inputContainer.children.forEach { this.configureHgrow(it) }
+            children.filter { it is Field }.map { it as Field }.forEach {
+                it.inputContainer.children.forEach { this.configureHgrow(it) }
             }
         }
 
         // Default
-        orientation = HORIZONTAL
+        labelPosition = HORIZONTAL
+        if (name != null) text = name
     }
 
     private fun syncOrientationState() {
         // Apply pseudo classes when orientation changes
-        orientationProperty().addListener { observable, oldValue, newValue ->
+        labelPositionProperty().addListener { observable, oldValue, newValue ->
             if (newValue == HORIZONTAL) {
                 pseudoClassStateChanged(VERTICAL_PSEUDOCLASS_STATE, false)
                 pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true)
@@ -127,10 +129,10 @@ class Fieldset(name: String? = null) : VBox() {
         wrapWidthProperty().addListener { observable, oldValue, newValue ->
             val responsiveOrientation = createObjectBinding<Orientation>(Callable { if (width < newValue) VERTICAL else HORIZONTAL }, widthProperty())
 
-            if (orientationProperty().isBound)
-                orientationProperty().unbind()
+            if (labelPositionProperty().isBound)
+                labelPositionProperty().unbind()
 
-            orientationProperty().bind(responsiveOrientation)
+            labelPositionProperty().bind(responsiveOrientation)
         }
     }
 
@@ -186,9 +188,7 @@ class Field() : Control() {
     val fieldset: Fieldset
         get() = parent as Fieldset
 
-    override fun createDefaultSkin(): Skin<*> {
-        return FieldSkin(this)
-    }
+    override fun createDefaultSkin() = FieldSkin(this)
 
     inner class LabelContainer(label: Label) : HBox() {
         init {
@@ -215,7 +215,7 @@ class FieldSkin(control: Field) : SkinBase<Field>(control) {
         val labelWidth = if (labelHasContent) field.fieldset.form.labelContainerWidth else 0.0
         val inputWidth = field.inputContainer.prefWidth(height)
 
-        if (fieldset.orientation == HORIZONTAL)
+        if (fieldset.labelPosition == HORIZONTAL)
             return Math.max(labelWidth, inputWidth) + leftInset + rightInset
 
         return labelWidth + inputWidth + leftInset + rightInset
@@ -233,7 +233,7 @@ class FieldSkin(control: Field) : SkinBase<Field>(control) {
         val labelHeight = if (labelHasContent) field.labelContainer.prefHeight(-1.0) else 0.0
         val inputHeight = field.inputContainer.prefHeight(-1.0)
 
-        if (fieldset.orientation == HORIZONTAL)
+        if (fieldset.labelPosition == HORIZONTAL)
             return Math.max(labelHeight, inputHeight) + topInset + bottomInset
 
         return labelHeight + inputHeight + topInset + bottomInset
@@ -245,7 +245,7 @@ class FieldSkin(control: Field) : SkinBase<Field>(control) {
         val labelHasContent = field.text.isNotBlank()
 
         val labelWidth = field.fieldset.form.labelContainerWidth
-        if (fieldset.orientation == HORIZONTAL) {
+        if (fieldset.labelPosition == HORIZONTAL) {
             if (labelHasContent) {
                 field.labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), contentHeight)
 
