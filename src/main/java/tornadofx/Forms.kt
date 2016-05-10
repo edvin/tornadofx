@@ -9,9 +9,7 @@ import javafx.geometry.Orientation
 import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.Node
-import javafx.scene.control.Control
 import javafx.scene.control.Label
-import javafx.scene.control.SkinBase
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
@@ -35,8 +33,9 @@ class Form : VBox() {
     override fun getUserAgentStylesheet() =
             Form::class.java.getResource("form.css").toExternalForm()
 
-    fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
+    fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
         val fieldset = Fieldset(text ?: "")
+        if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
         children.add(fieldset)
         if (labelPosition != null) fieldset.labelPosition = labelPosition
         if (icon != null) fieldset.icon = icon
@@ -66,12 +65,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun field(text: String? = null, vararg inputs: Node, op: (Pane.() -> Unit)? = null): Field {
-        val field = Field(text ?: "", *inputs)
+    fun field(text: String? = null, op: (Pane.() -> Unit)? = null): Field {
+        val field = Field(text ?: "")
         children.add(field)
-        val fake = Pane()
-        op?.invoke(fake)
-        field.inputContainer.children.addAll(fake.children)
+        op?.invoke(field.inputContainer)
         return field
     }
 
@@ -170,19 +167,14 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 }
 
 @DefaultProperty("inputs")
-class Field() : Control() {
-    var text by property<String>()
+class Field(text: String? = null) : Pane() {
+    var text by property(text)
     fun textProperty() = getProperty(Field::text)
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
     val inputContainer = HBox().apply { addClass(Stylesheet.inputContainer) }
     var inputs: ObservableList<Node>? = null
-
-    constructor(text: String, vararg inputs: Node) : this() {
-        this@Field.text = text
-        inputContainer.children.addAll(*inputs)
-    }
 
     init {
         isFocusTraversable = false
@@ -194,73 +186,74 @@ class Field() : Control() {
 
     val fieldset: Fieldset get() = parent as Fieldset
 
-    override fun createDefaultSkin() = FieldSkin(this)
-}
+    override fun computePrefHeight(width: Double): Double {
+        val labelHasContent = text.isNotBlank()
 
-class FieldSkin(control: Field) : SkinBase<Field>(control) {
+        val labelHeight = if (labelHasContent) labelContainer.prefHeight(-1.0) else 0.0
+        val inputHeight = inputContainer.prefHeight(-1.0)
 
-    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        val field = skinnable
-        val fieldset = field.fieldset
-        val labelHasContent = field.text.isNotBlank()
-
-        val labelWidth = if (labelHasContent) field.fieldset.form.labelContainerWidth else 0.0
-        val inputWidth = field.inputContainer.prefWidth(height)
+        val insets = insets
 
         if (fieldset.labelPosition == HORIZONTAL)
-            return Math.max(labelWidth, inputWidth) + leftInset + rightInset
+            return Math.max(labelHeight, inputHeight) + insets.top + insets.bottom
 
-        return labelWidth + inputWidth + leftInset + rightInset
+        return labelHeight + inputHeight + insets.top + insets.bottom
     }
 
-    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
-    }
+    override fun computePrefWidth(height: Double): Double {
+        val fieldset = fieldset
+        val labelHasContent = text.isNotBlank()
 
-    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        val field = skinnable
-        val fieldset = field.fieldset
-        val labelHasContent = field.text.isNotBlank()
+        val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth else 0.0
+        val inputWidth = inputContainer.prefWidth(height)
 
-        val labelHeight = if (labelHasContent) field.labelContainer.prefHeight(-1.0) else 0.0
-        val inputHeight = field.inputContainer.prefHeight(-1.0)
+        val insets = insets
 
         if (fieldset.labelPosition == HORIZONTAL)
-            return Math.max(labelHeight, inputHeight) + topInset + bottomInset
+            return Math.max(labelWidth, inputWidth) + insets.left + insets.right
 
-        return labelHeight + inputHeight + topInset + bottomInset
+        return labelWidth + inputWidth + insets.left + insets.right
     }
 
-    override fun layoutChildren(contentX: Double, contentY: Double, contentWidth: Double, contentHeight: Double) {
-        val field = skinnable
-        val fieldset = field.fieldset
-        val labelHasContent = field.text.isNotBlank()
-        val labelWidth = field.fieldset.form.labelContainerWidth
+    override fun computeMinHeight(width: Double) = computePrefHeight(width)
+
+    override fun layoutChildren() {
+        val fieldset = fieldset
+        val labelHasContent = text.isNotBlank()
+
+        val insets = insets
+        var contentX = insets.left
+        val contentY = insets.top
+        val contentWidth = width - insets.left - insets.right
+        val contentHeight = height - insets.top - insets.bottom
+
+        val labelWidth = Math.min(contentWidth, fieldset.form.labelContainerWidth)
 
         if (fieldset.labelPosition == HORIZONTAL) {
             if (labelHasContent) {
-                field.labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), contentHeight)
+                labelContainer.resizeRelocate(contentX, contentY, labelWidth, contentHeight)
 
                 val inputX = contentX + labelWidth
                 val inputWidth = contentWidth - labelWidth
 
-                field.inputContainer.resizeRelocate(inputX, contentY, inputWidth, contentHeight)
+                inputContainer.resizeRelocate(inputX, contentY, inputWidth, contentHeight)
             } else {
-                field.inputContainer.resizeRelocate(contentX, contentY, contentWidth, contentHeight)
+                inputContainer.resizeRelocate(contentX, contentY, contentWidth, contentHeight)
             }
         } else {
             if (labelHasContent) {
-                val labelPrefHeight = field.labelContainer.prefHeight(-1.0)
+                val labelPrefHeight = labelContainer.prefHeight(-1.0)
                 val labelHeight = Math.min(labelPrefHeight, contentHeight)
 
-                field.labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), labelHeight)
+                labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), labelHeight)
 
                 val restHeight = labelHeight - contentHeight
 
-                field.inputContainer.resizeRelocate(contentX, contentY + labelHeight, contentWidth, restHeight)
+                inputContainer.resizeRelocate(contentX, contentY + labelHeight, contentWidth, restHeight)
             } else {
-                field.inputContainer.resizeRelocate(contentX, contentY, contentWidth, contentHeight)
+                inputContainer.resizeRelocate(contentX, contentY, contentWidth, contentHeight)
             }
         }
     }
+
 }
