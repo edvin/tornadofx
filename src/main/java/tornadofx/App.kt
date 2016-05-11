@@ -3,7 +3,12 @@ package tornadofx
 import javafx.application.Application
 import javafx.scene.Scene
 import javafx.scene.layout.Pane
+import javafx.scene.paint.Color
 import javafx.stage.Stage
+import sun.net.www.protocol.css.Handler
+import java.net.MalformedURLException
+import java.net.URL
+import java.util.logging.Level
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -25,9 +30,33 @@ open class App : Application() {
                 show()
             }
 
+            installCSSUrlHandler()
             FX.initialized.value = true
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
+        }
+    }
+
+    /**
+     * Try to retrieve a type safe stylesheet, and force installation of url handler
+     * if it's missing. This typically happens in environments with atypical class loaders.
+     *
+     * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
+     * up by the JVM automatically.
+     */
+    private fun installCSSUrlHandler() {
+        try {
+            Stylesheet().apply {
+                s(Stylesheet.label) { textFill = Color.BLACK }
+                base64URL.openStream()?.close()
+            }
+        } catch (ex: MalformedURLException) {
+            log.info("Installing CSS url handler, since it was not picked up automatically")
+            try {
+                URL.setURLStreamHandlerFactory(Handler.HandlerFactory())
+            } catch (installFailed: Exception) {
+                log.log(Level.WARNING, "Unable to install CSS url handler, type safe stylesheets might not work", ex)
+            }
         }
     }
 

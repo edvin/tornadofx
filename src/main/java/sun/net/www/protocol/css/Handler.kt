@@ -6,6 +6,7 @@ import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
 import java.net.URLStreamHandler
+import java.net.URLStreamHandlerFactory
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -23,5 +24,10 @@ class Handler : URLStreamHandler() {
             if (FX.dumpStylesheets) println(rendered)
             return rendered.byteInputStream(StandardCharsets.UTF_8)
         }
+    }
+
+    class HandlerFactory : URLStreamHandlerFactory {
+        override fun createURLStreamHandler(protocol: String) =
+            if ("css" == protocol) Handler() else null
     }
 }
