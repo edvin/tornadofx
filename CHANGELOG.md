@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 - Type Safe CSS URL Handler will be force-installed if the JVM does not pick it up
 
+### Changed
+
+- Upgrade to Kotlin 1.0.2
 
 ## [1.4.7] - 2016-05-10
 
