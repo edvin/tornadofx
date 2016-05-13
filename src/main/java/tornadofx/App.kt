@@ -3,7 +3,6 @@ package tornadofx
 import javafx.application.Application
 import javafx.scene.Scene
 import javafx.scene.layout.Pane
-import javafx.scene.paint.Color
 import javafx.stage.Stage
 import sun.net.www.protocol.css.Handler
 import java.net.MalformedURLException
@@ -46,10 +45,7 @@ open class App : Application() {
      */
     private fun installCSSUrlHandler() {
         try {
-            Stylesheet().apply {
-                s(Stylesheet.label) { textFill = Color.BLACK }
-                base64URL.openStream()?.close()
-            }
+            URL("css://content:64")
         } catch (ex: MalformedURLException) {
             log.info("Installing CSS url handler, since it was not picked up automatically")
             try {
@@ -79,4 +75,5 @@ open class App : Application() {
     class DeterminedByParameter : View() {
         override val root = Pane()
     }
+
 }
