@@ -35,7 +35,7 @@ class FXResourceBundleControl private constructor(): ResourceBundle.Control() {
             val resourceName = toResourceName(bundleName, "properties") ?: return bundle!!
             val classLoader = loader
             val reloadFlag = reload
-            var stream: InputStream?
+            val stream: InputStream?
             try {
                 stream = AccessController.doPrivileged(
                         PrivilegedExceptionAction<java.io.InputStream> {

@@ -113,7 +113,8 @@ abstract class UIComponent : Component() {
     }
 
     init {
-        if (FX.reloadViewsOnFocus) Platform.runLater { tagRoot() }
+        if (Platform.isFxApplicationThread())
+            Platform.runLater { tagRoot() }
     }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
