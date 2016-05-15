@@ -178,6 +178,12 @@ operator fun Pane.plusAssign(view: UIComponent): Unit {
     plusAssign(view.root)
 }
 
+operator fun UIComponent.plusAssign(view: UIComponent): Unit {
+    val r = root
+    if (r is Pane)
+        r += view
+}
+
 var Region.useMaxWidth: Boolean
     get() = maxWidth == Double.MAX_VALUE
     set(value) = if (value) maxWidth = Double.MAX_VALUE else Unit

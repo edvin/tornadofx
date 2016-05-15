@@ -108,7 +108,7 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     abstract val root: Parent
 
-    private fun tagRoot() {
+    fun tagRoot() {
         root.properties.put("tornadofx.uicomponent", this)
     }
 
