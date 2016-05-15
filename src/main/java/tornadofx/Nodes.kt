@@ -41,8 +41,14 @@ fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
 }
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
-fun <T : Node> T.addClass(className: String): T { styleClass.add(className); return this }
-fun <T : Node> T.removeClass(className: String): T { styleClass.remove(className); return this }
+fun <T : Node> T.addClass(className: String): T {
+    styleClass.add(className); return this
+}
+
+fun <T : Node> T.removeClass(className: String): T {
+    styleClass.remove(className); return this
+}
+
 fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
@@ -534,7 +540,7 @@ class HBoxConstraint(
     }
 }
 
-fun <T: Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
+fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()
     c.op()
     return c.applyToNode(this)
@@ -630,3 +636,34 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
         forEach { populateTree(it, itemFactory, childFactory) }
     }
 }
+
+/**
+ * Return the UIComponent (View or Fragment) that owns this Parent
+ */
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"]?.let {
+    if (it is T) it else null
+}
+
+/**
+ * Find all UIComponents of the specified type that owns any of this node's children
+ */
+inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable
+        .filter { it is Parent }
+        .map { it as Parent }
+        .filter { it.uiComponent<UIComponent>() is T }
+        .map { it.uiComponent<T>()!! }
+
+/**
+ * Find all UIComponents of the specified type that owns any of this UIComponent's root node's children
+ */
+inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findAll()
+
+/**
+ * Find the first UIComponent of the specified type that owns any of this node's children
+ */
+inline fun <reified T : UIComponent> Parent.find(): T? = findAll<T>().getOrNull(0)
+
+/**
+ * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
+ */
+inline fun <reified T : UIComponent> UIComponent.find(): T? = findAll<T>().getOrNull(0)
