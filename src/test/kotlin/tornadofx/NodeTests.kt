@@ -34,19 +34,21 @@ class NodeTests {
     fun findComponents() {
         val view1 = View1()
         val view2 = View2()
+        val view3 = View3()
 
         view1 += view2
+        view1 += view3
 
+        // TODO: Get rid of this ugly hack
         view2.tagRoot()
+        view3.tagRoot()
 
         assertEquals(view2, view1.find<View2>())
+        assertEquals(view3, view1.find<View3>())
+        assertEquals(2, view1.findAll<View>().size)
     }
 
-    class View1 : View() {
-        override val root = HBox(Label("View 1"))
-    }
-
-    class View2 : View() {
-        override val root = HBox(Label("View 2"))
-    }
+    class View1 : View() { override val root = HBox(Label("View 1")) }
+    class View2 : View() { override val root = HBox(Label("View 2")) }
+    class View3 : View() { override val root = HBox(Label("View 3")) }
 }
