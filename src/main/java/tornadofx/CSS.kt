@@ -56,7 +56,7 @@ open class CssBlock {
 }
 
 open class SelectionBlock : CssBlock() {
-    protected val properties = linkedMapOf<String, Any>()
+    val properties = linkedMapOf<String, Any>()
 
     // Font
     var font: Font by cssprop("-fx-font")
@@ -738,3 +738,16 @@ fun <T : Node> Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toStr
 fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
 fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
 fun Iterable<Node>.toggleClass(cssClass: CSSClass, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
+
+fun Node.style(op: SelectionBlock.() -> Unit) {
+    val block = SelectionBlock()
+    op(block)
+    val output = StringBuilder()
+    for ((name, value) in block.properties)
+        output.append(" $name: ${toCss(value)};")
+
+    if (style.isBlank())
+        style = output.toString().trim()
+    else
+        style += output.toString()
+}

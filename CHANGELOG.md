@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Inline type safe styles
 - Easier navigation of View to Node and Node to View (https://github.com/edvin/tornadofx/issues/112)
 - Type Safe CSS URL Handler will be force-installed if the JVM does not pick it up
 

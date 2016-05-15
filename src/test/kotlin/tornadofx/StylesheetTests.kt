@@ -1,11 +1,13 @@
 package tornadofx
 
+import javafx.scene.layout.Pane
 import javafx.scene.paint.*
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import org.junit.Assert
 import org.junit.Test
 import tornadofx.Stylesheet.Companion.label
+import kotlin.test.assertEquals
 
 class StylesheetTests {
     val vbox by cssclass()
@@ -107,6 +109,15 @@ class StylesheetTests {
             }
             """
         }
+    }
+
+    @Test
+    fun inlineStyle() {
+        val node = Pane()
+        node.style {
+            backgroundColor = Color.RED
+        }
+        assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
     }
 
     private fun stylesheet(op: Stylesheet.() -> Unit) =

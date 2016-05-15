@@ -39,7 +39,7 @@ class NodeTests {
         view1 += view2
         view1 += view3
 
-        // TODO: Get rid of this ugly hack
+        // TODO: Get rid of this
         view2.tagRoot()
         view3.tagRoot()
 

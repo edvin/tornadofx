@@ -93,7 +93,7 @@ fun Scene.findUIComponents(): List<UIComponent> {
  * be improved in a future version.
  */
 private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
-    val uicmp = properties["tornadofx.uicomponent"]
+    val uicmp = uiComponent<UIComponent>()
     if (uicmp is UIComponent) {
         list += uicmp
         childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
@@ -103,7 +103,7 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
 }
 
 private fun Parent.clearViews() {
-    val uicmp = properties["tornadofx.uicomponent"]
+    val uicmp = uiComponent<UIComponent>()
     if (uicmp is View) {
         FX.components.remove(uicmp.javaClass.kotlin)
     } else {
