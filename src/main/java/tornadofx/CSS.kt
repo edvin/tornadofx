@@ -745,9 +745,5 @@ fun Node.style(op: SelectionBlock.() -> Unit) {
     val output = StringBuilder()
     for ((name, value) in block.properties)
         output.append(" $name: ${toCss(value)};")
-
-    if (style.isBlank())
-        style = output.toString().trim()
-    else
-        style += output.toString()
+    style = output.toString().trim()
 }
