@@ -162,23 +162,35 @@ operator fun ToolBar.plusAssign(node: Node): Unit {
 
 fun ToolBar.add(node: Node) = plusAssign(node)
 
+@JvmName("addView")
 inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
+
+@JvmName("addFragment")
+inline fun <reified T : Fragment> ToolBar.add(type: KClass<T>): Unit = plusAssign(findFragment(type))
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
 }
 
-inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).root)
+@JvmName("addView")
+inline fun <reified T : View> Pane.add(type: KClass<T>): Unit = plusAssign(find(type).root)
+
+@JvmName("addFragment")
+inline fun <reified T : Fragment> Pane.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
 
 fun Pane.add(node: Node) = plusAssign(node)
 
-operator fun <T : View> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
+@JvmName("plusView")
+operator fun <T : View> Pane.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
 
-operator fun Pane.plusAssign(view: UIComponent): Unit {
+@JvmName("plusFragment")
+operator fun <T : Fragment> Pane.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
+
+operator fun Pane.plusAssign(view: UIComponent) {
     plusAssign(view.root)
 }
 
-operator fun UIComponent.plusAssign(view: UIComponent): Unit {
+operator fun UIComponent.plusAssign(view: UIComponent) {
     val r = root
     if (r is Pane)
         r += view

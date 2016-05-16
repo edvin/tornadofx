@@ -32,16 +32,12 @@ class NodeTests {
 
     @Test
     fun findComponents() {
-        val view1 = View1()
-        val view2 = View2()
-        val view3 = View3()
+        val view1 = find(View1::class)
+        val view2 = find(View2::class)
+        val view3 = find(View3::class)
 
         view1 += view2
         view1 += view3
-
-        // TODO: Get rid of this
-        view2.tagRoot()
-        view3.tagRoot()
 
         assertEquals(view2, view1.find<View2>())
         assertEquals(view3, view1.find<View3>())

@@ -177,6 +177,13 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) =
         FX.stylesheets.add("css://${stylesheetType.java.name}")
 
 inline fun <reified T : Injectable> find(): T = find(T::class)
+inline fun <reified T : Fragment> findFragment(): T = findFragment(T::class)
+
+fun <T : Fragment> findFragment(type: KClass<T>): T {
+    val cmp = type.java.newInstance()
+    cmp.root.properties["tornadofx.uicomponent"] = cmp
+    return cmp
+}
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Injectable> find(type: KClass<T>): T {
@@ -184,8 +191,7 @@ fun <T : Injectable> find(type: KClass<T>): T {
         synchronized(FX.lock) {
             if (!FX.components.containsKey(type)) {
                 val cmp = type.java.newInstance()
-                if (cmp is UIComponent)
-                    cmp.root.properties["tornadofx.uicomponent"] = cmp
+                if (cmp is UIComponent) cmp.root.properties["tornadofx.uicomponent"] = cmp
                 FX.components[type] = cmp
             }
         }

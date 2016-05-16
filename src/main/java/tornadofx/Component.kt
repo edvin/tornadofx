@@ -87,6 +87,15 @@ abstract class Component {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
 
+    inline fun <reified T : Fragment> fragment(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        var fragment: T? = null
+
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (fragment == null) fragment = findFragment(T::class)
+            return fragment!!
+        }
+    }
+
     inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
     }
