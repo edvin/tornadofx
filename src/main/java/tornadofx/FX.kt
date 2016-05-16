@@ -182,8 +182,12 @@ inline fun <reified T : Injectable> find(): T = find(T::class)
 fun <T : Injectable> find(type: KClass<T>): T {
     if (!FX.components.containsKey(type)) {
         synchronized(FX.lock) {
-            if (!FX.components.containsKey(type))
-                FX.components[type] = type.java.newInstance()
+            if (!FX.components.containsKey(type)) {
+                val cmp = type.java.newInstance()
+                if (cmp is UIComponent)
+                    cmp.root.properties["tornadofx.uicomponent"] = cmp
+                FX.components[type] = cmp
+            }
         }
     }
     return FX.components[type] as T

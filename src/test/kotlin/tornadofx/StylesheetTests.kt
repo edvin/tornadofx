@@ -118,7 +118,7 @@ class StylesheetTests {
             backgroundColor = Color.RED
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
-        node.style(true) {
+        node.style(append = true) {
             padding = box(10.px)
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)

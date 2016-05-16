@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -107,15 +106,6 @@ abstract class UIComponent : Component() {
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
     abstract val root: Parent
-
-    fun tagRoot() {
-        root.properties.put("tornadofx.uicomponent", this)
-    }
-
-    init {
-        if (Platform.isFxApplicationThread())
-            Platform.runLater { tagRoot() }
-    }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {

@@ -739,6 +739,9 @@ fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass
 fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
 fun Iterable<Node>.toggleClass(cssClass: CSSClass, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
 
+/**
+ * Add styles to the node using type safe CSS
+ */
 fun Node.style(append: Boolean = false, op: SelectionBlock.() -> Unit) {
     val block = SelectionBlock()
     op(block)
