@@ -116,6 +116,10 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     abstract val root: Parent
 
+    fun init() {
+        root.properties["tornadofx.uicomponent"] = this
+    }
+
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {

@@ -181,7 +181,7 @@ inline fun <reified T : Fragment> findFragment(): T = findFragment(T::class)
 
 fun <T : Fragment> findFragment(type: KClass<T>): T {
     val cmp = type.java.newInstance()
-    cmp.root.properties["tornadofx.uicomponent"] = cmp
+    cmp.init()
     return cmp
 }
 
@@ -191,7 +191,7 @@ fun <T : Injectable> find(type: KClass<T>): T {
         synchronized(FX.lock) {
             if (!FX.components.containsKey(type)) {
                 val cmp = type.java.newInstance()
-                if (cmp is UIComponent) cmp.root.properties["tornadofx.uicomponent"] = cmp
+                if (cmp is UIComponent) cmp.init()
                 FX.components[type] = cmp
             }
         }
