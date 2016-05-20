@@ -12,7 +12,7 @@ import javafx.scene.control.TableView
 import java.util.function.Predicate
 
 /**
- * A wrapper delegate for an observable list of items that can be bound to a list control like TableView, ListView etc.
+ * A wrapper for an observable list of items that can be bound to a list control like TableView, ListView etc.
  *
  * The wrapper makes the data sortable and filterable. Configure a filter by setting the
  * predicate property or by calling filterWhen to automatically update the predicate when
