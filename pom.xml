@@ -6,7 +6,7 @@
 
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.4.6-SNAPSHOT</version>
+    <version>1.4.8</version>
     <packaging>jar</packaging>
     <name>TornadoFX</name>
     <description>Lightweight JavaFX Framework for Kotlin</description>
@@ -216,8 +216,8 @@
     </build>
 
     <properties>
-        <kotlin.version>1.0.1-2</kotlin.version>
-        <dokka.version>0.9.4</dokka.version>
+        <kotlin.version>1.0.2</kotlin.version>
+        <dokka.version>0.9.8</dokka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

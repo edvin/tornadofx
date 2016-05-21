@@ -41,14 +41,21 @@ fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
 }
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
-fun Node.addClass(className: String) = styleClass.add(className)
-fun Node.removeClass(className: String) = styleClass.remove(className)
-fun Node.toggleClass(className: String, predicate: Boolean) {
+fun <T : Node> T.addClass(className: String): T {
+    styleClass.add(className); return this
+}
+
+fun <T : Node> T.removeClass(className: String): T {
+    styleClass.remove(className); return this
+}
+
+fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
     } else {
         removeClass(className)
     }
+    return this
 }
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
@@ -86,7 +93,7 @@ fun Scene.findUIComponents(): List<UIComponent> {
  * be improved in a future version.
  */
 private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
-    val uicmp = properties["tornadofx.uicomponent"]
+    val uicmp = uiComponent<UIComponent>()
     if (uicmp is UIComponent) {
         list += uicmp
         childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
@@ -96,7 +103,7 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
 }
 
 private fun Parent.clearViews() {
-    val uicmp = properties["tornadofx.uicomponent"]
+    val uicmp = uiComponent<UIComponent>()
     if (uicmp is View) {
         FX.components.remove(uicmp.javaClass.kotlin)
     } else {
@@ -155,20 +162,38 @@ operator fun ToolBar.plusAssign(node: Node): Unit {
 
 fun ToolBar.add(node: Node) = plusAssign(node)
 
+@JvmName("addView")
 inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
+
+@JvmName("addFragment")
+inline fun <reified T : Fragment> ToolBar.add(type: KClass<T>): Unit = plusAssign(findFragment(type))
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
 }
 
-inline fun <reified T : View> Pane.add(type: KClass<T>) = plusAssign(find(type).root)
+@JvmName("addView")
+inline fun <reified T : View> Pane.add(type: KClass<T>): Unit = plusAssign(find(type).root)
+
+@JvmName("addFragment")
+inline fun <reified T : Fragment> Pane.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
 
 fun Pane.add(node: Node) = plusAssign(node)
 
-operator fun <T : View> Pane.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
+@JvmName("plusView")
+operator fun <T : View> Pane.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
 
-operator fun Pane.plusAssign(view: UIComponent): Unit {
+@JvmName("plusFragment")
+operator fun <T : Fragment> Pane.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
+
+operator fun Pane.plusAssign(view: UIComponent) {
     plusAssign(view.root)
+}
+
+operator fun UIComponent.plusAssign(view: UIComponent) {
+    val r = root
+    if (r is Pane)
+        r += view
 }
 
 var Region.useMaxWidth: Boolean
@@ -533,7 +558,7 @@ class HBoxConstraint(
     }
 }
 
-fun <T: Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
+fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()
     c.op()
     return c.applyToNode(this)
@@ -629,3 +654,34 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
         forEach { populateTree(it, itemFactory, childFactory) }
     }
 }
+
+/**
+ * Return the UIComponent (View or Fragment) that owns this Parent
+ */
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"]?.let {
+    if (it is T) it else null
+}
+
+/**
+ * Find all UIComponents of the specified type that owns any of this node's children
+ */
+inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable
+        .filter { it is Parent }
+        .map { it as Parent }
+        .filter { it.uiComponent<UIComponent>() is T }
+        .map { it.uiComponent<T>()!! }
+
+/**
+ * Find all UIComponents of the specified type that owns any of this UIComponent's root node's children
+ */
+inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findAll()
+
+/**
+ * Find the first UIComponent of the specified type that owns any of this node's children
+ */
+inline fun <reified T : UIComponent> Parent.find(): T? = findAll<T>().getOrNull(0)
+
+/**
+ * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
+ */
+inline fun <reified T : UIComponent> UIComponent.find(): T? = findAll<T>().getOrNull(0)

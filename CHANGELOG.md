@@ -2,12 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [1.4.8] - 2016-05-20
 
 ### Added
 
+- Inline type safe styles
+- Easier navigation of View to Node and Node to View (https://github.com/edvin/tornadofx/issues/112)
+- Fragments can be declaratively created via `fragment` delegate
+- Type Safe CSS URL Handler will be force-installed if the JVM does not pick it up
+
+### Changed
+
+- Upgrade to Kotlin 1.0.2
+
+## [1.4.7] - 2016-05-10
+
+### Added
+
+- Form Builder (https://github.com/edvin/tornadofx/issues/111)
+
+## [1.4.6] - 2016-05-06
+
+### Added
+
+- openModal supports new optional `block` and `owner` parameters
+- Spinner builder (https://github.com/edvin/tornadofx/issues/106)
 - POJO Binding Support (https://github.com/edvin/tornadofx/issues/104)
 
+### Changed
+
+- App can be started without overriding `primaryView` -> startup parameter `--view-class=package.View`
+- addClass, removeClass, toggleClass returns the Node it was applied to (for chaining support)
 
 ## [1.4.5] - 2016-04-29
 

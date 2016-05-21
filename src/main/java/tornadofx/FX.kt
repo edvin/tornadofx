@@ -177,13 +177,23 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) =
         FX.stylesheets.add("css://${stylesheetType.java.name}")
 
 inline fun <reified T : Injectable> find(): T = find(T::class)
+inline fun <reified T : Fragment> findFragment(): T = findFragment(T::class)
+
+fun <T : Fragment> findFragment(type: KClass<T>): T {
+    val cmp = type.java.newInstance()
+    cmp.init()
+    return cmp
+}
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Injectable> find(type: KClass<T>): T {
     if (!FX.components.containsKey(type)) {
         synchronized(FX.lock) {
-            if (!FX.components.containsKey(type))
-                FX.components[type] = type.java.newInstance()
+            if (!FX.components.containsKey(type)) {
+                val cmp = type.java.newInstance()
+                if (cmp is UIComponent) cmp.init()
+                FX.components[type] = cmp
+            }
         }
     }
     return FX.components[type] as T
@@ -197,7 +207,7 @@ interface DIContainer {
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-internal fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
+fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
     pane.children.add(node)
     op?.invoke(node)
     return node

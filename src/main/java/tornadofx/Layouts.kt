@@ -70,6 +70,36 @@ fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op
 fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
+fun BorderPane.top(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    top = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
+
+fun BorderPane.bottom(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    bottom = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
+
+fun BorderPane.left(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    left = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
+
+fun BorderPane.right(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    right = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
+
+fun BorderPane.center(op: Pane.() -> Unit) {
+    val vbox = VBox()
+    op(vbox)
+    center = if (vbox.children.size == 1) vbox.children[0] else vbox
+}
+
 fun Pane.titledpane(title: String, node: Node): TitledPane {
     val pane = TitledPane(title, node)
     return opcr(this, pane)

@@ -19,6 +19,36 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
+fun <T> Pane.spinner(editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>()
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
+fun Pane.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
+    val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
+fun Pane.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
+    val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
+fun <T> Pane.spinner(items: ObservableList<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>(items)
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
+fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner = Spinner<T>(valueFactory)
+    spinner.isEditable = editable
+    return opcr(this, spinner, op)
+}
+
 fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
     if (values != null) items = values
     if (property != null) valueProperty().bindBidirectional(property)

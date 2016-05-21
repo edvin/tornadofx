@@ -11,6 +11,7 @@ Lightweight JavaFX Framework for Kotlin
 
 - Dependency injection
 - Type safe GUI builders
+- First class FXML support
 - Type safe CSS builders
 - Async task execution
 - Hot reload of Views and Stylesheets
@@ -26,6 +27,7 @@ Lightweight JavaFX Framework for Kotlin
 - [Dev Forum](https://groups.google.com/forum/#!forum/tornadofx-dev)
 - [Stack Overflow](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
+- [IntelliJ IDEA Plugin](https://github.com/edvin/tornadofx-idea-plugin) 
 - [Example Application](https://github.com/edvin/tornadofx-samples) 
 - [Maven QuickStart Archetype](https://github.com/edvin/tornadofx-quickstart-archetype) 
 - [Changelog](CHANGELOG.md)
@@ -37,7 +39,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
   -DarchetypeVersion=1.0.3
 ```
-> Remember to update version to 1.4.5 in pom.xml
+> Remember to update version to 1.4.7 in pom.xml
 
 ### Add TornadoFX to your project
 
@@ -47,14 +49,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.4.5</version>
+	<version>1.4.8</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.5'
+compile 'no.tornado:tornadofx:1.4.8'
 ```
 
 ### What does it look like? (Code snippets)
@@ -109,8 +111,7 @@ class MyView : View() {
 
     init {
         with(root) {
-            tableview<Person> {
-                items = persons
+            tableview(persons) {
                 column("ID", Person::id)
                 column("Name", Person::name)
                 column("Birthday", Person::birthday)
@@ -252,7 +253,7 @@ with (config) {
 ```
 	
 Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
-create a new instance via the constructor and you can reuse the Fragment in multiple ui locations simultaneously.
+create a new instance and you can reuse the Fragment in multiple ui locations simultaneously.
  	
 ```kotlin
 class MyFragment : Fragment() {

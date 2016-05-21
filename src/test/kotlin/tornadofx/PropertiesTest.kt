@@ -85,8 +85,8 @@ class PropertiesTest {
         person.id = 1
         person.name = "John"
 
-        val idObservable = observable(person, JavaPerson::getId, JavaPerson::setId)
-        val nameObservable = observable(person, "name", String::class)
+        val idObservable = person.observable(JavaPerson::getId, JavaPerson::setId)
+        val nameObservable = person.observable<String>("name")
 
         idObservable.value = 44
         nameObservable.value = "Doe"

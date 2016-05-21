@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -16,11 +15,13 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import javafx.stage.Window
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.logging.Logger
+import kotlin.concurrent.thread
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -86,6 +87,15 @@ abstract class Component {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
 
+    inline fun <reified T : Fragment> fragment(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        var fragment: T? = null
+
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (fragment == null) fragment = findFragment(T::class)
+            return fragment!!
+        }
+    }
+
     inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
     }
@@ -106,15 +116,11 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     abstract val root: Parent
 
-    private fun tagRoot() {
-        root.properties.put("tornadofx.uicomponent", this)
+    fun init() {
+        root.properties["tornadofx.uicomponent"] = this
     }
 
-    init {
-        if (FX.reloadViewsOnFocus) Platform.runLater { tagRoot() }
-    }
-
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true) {
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -122,6 +128,7 @@ abstract class UIComponent : Component() {
                 modalStage = Stage(stageStyle).apply {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
+                    if (owner != null) initOwner(owner)
 
                     if (root.scene != null) {
                         scene = root.scene
@@ -143,13 +150,26 @@ abstract class UIComponent : Component() {
                         }
                     }
 
-                    show()
-
-                    if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
-                    if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
+                    if (block) {
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
+                            thread(true) {
+                                Thread.sleep(5000)
+                                configureReloading()
+                            }
+                        }
+                        showAndWait()
+                    } else {
+                        show()
+                        configureReloading()
+                    }
                 }
             }
         }
+    }
+
+    private fun Stage.configureReloading() {
+        if (FX.reloadStylesheetsOnFocus) reloadStylesheetsOnFocus()
+        if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
     }
 
     fun closeModal() = modalStage?.apply {
