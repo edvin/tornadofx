@@ -12,12 +12,7 @@ import java.util.prefs.Preferences
  *     <li>Linux stores it at ~/.java</li>
  * </ul>
  */
-private var _nodename: String? = null
-private val _preferences: Preferences by lazy {
-    Preferences.userRoot().node(_nodename)
-}
-
 fun preferences(nodename: String? = null, op: Preferences.() -> Unit) {
-    if (_nodename == null) _nodename = nodename ?: FX.application.javaClass.canonicalName
-    _preferences.op()
+    val node = if (nodename != null) Preferences.userRoot().node(nodename) else Preferences.userNodeForPackage(FX.application.javaClass)
+    op(node)
 }
