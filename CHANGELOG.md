@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+### Added
+- Preferences can be saved and loaded using the prefences function, see https://github.com/edvin/tornadofx/pull/107
+
 ## [1.4.8] - 2016-05-20
 
 ### Added
