@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Application
 import org.junit.Assert
 import org.junit.Test
 
@@ -9,7 +10,7 @@ class PreferencesKtTest {
 
     @Test
     fun testPreferences() {
-
+        FX.application = App()
         preferences("test app") {
             putBoolean("boolean key", true)
             put("string", "value")
@@ -17,7 +18,7 @@ class PreferencesKtTest {
 
         var bool: Boolean = false
         var str: String = ""
-        preferences {
+        preferences("test app") {
             bool = getBoolean("boolean key", false)
             str = get("string", "")
         }
