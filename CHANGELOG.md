@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- ContextMenu builder
+
 ## [1.4.8] - 2016-05-20
 
 ### Added
