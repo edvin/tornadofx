@@ -33,15 +33,15 @@ fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
     this += menu
     return menu
 }
-fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)): MenuItem {
+fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
     return this.menuitem(name, KeyCombination.valueOf(keyCombination),graphic,onAction)
 }
 
-fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)): MenuItem {
+fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name,graphic);
     keyCombination?.apply { menuItem.accelerator = this }
     graphic?.apply { menuItem.graphic = graphic }
-    menuItem.setOnAction { onAction.invoke(it) }
+    onAction?.apply { menuItem.setOnAction { onAction.invoke(it) } }
     this += menuItem
     return menuItem
 }
@@ -79,19 +79,20 @@ fun Menu.separator() {
     this += SeparatorMenuItem()
 }
 
-fun Menu.radiomenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)): RadioMenuItem {
+fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination?, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)? = null): RadioMenuItem {
     val radioMenuItem = RadioMenuItem(name,graphic)
+    toggleGroup?.apply { radioMenuItem.toggleGroup = this }
     keyCombination?.apply { radioMenuItem.accelerator = this }
     graphic?.apply { radioMenuItem.graphic = graphic }
-    radioMenuItem.op()
+    op?.let { it.invoke(radioMenuItem) }
     this += radioMenuItem
     return radioMenuItem
 }
-fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)): CheckMenuItem {
+fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name,graphic)
     keyCombination?.apply { checkMenuItem.accelerator = this }
     graphic?.apply { checkMenuItem.graphic = graphic }
-    checkMenuItem.op()
+    op?.let { it.invoke(checkMenuItem) }
     this+= checkMenuItem
     return checkMenuItem
 }
