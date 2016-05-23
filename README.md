@@ -9,6 +9,7 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Features
 
+- Supports both MVC, MVP and their derivatives
 - Dependency injection
 - Type safe GUI builders
 - First class FXML support
