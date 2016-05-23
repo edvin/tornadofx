@@ -36,26 +36,6 @@ open class App : Application() {
         }
     }
 
-    /**
-     * Try to retrieve a type safe stylesheet, and force installation of url handler
-     * if it's missing. This typically happens in environments with atypical class loaders.
-     *
-     * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
-     * up by the JVM automatically.
-     */
-    private fun installCSSUrlHandler() {
-        try {
-            URL("css://content:64")
-        } catch (ex: MalformedURLException) {
-            log.info("Installing CSS url handler, since it was not picked up automatically")
-            try {
-                URL.setURLStreamHandlerFactory(Handler.HandlerFactory())
-            } catch (installFailed: Exception) {
-                log.log(Level.WARNING, "Unable to install CSS url handler, type safe stylesheets might not work", ex)
-            }
-        }
-    }
-
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out View> {
         if (primaryView == DeterminedByParameter::class) {
@@ -74,6 +54,29 @@ open class App : Application() {
 
     class DeterminedByParameter : View() {
         override val root = Pane()
+    }
+
+    companion object {
+        /**
+         * Try to retrieve a type safe stylesheet, and force installation of url handler
+         * if it's missing. This typically happens in environments with atypical class loaders.
+         *
+         * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
+         * up by the JVM automatically.
+         */
+        @JvmStatic
+        fun installCSSUrlHandler() {
+            try {
+                URL("css://content:64")
+            } catch (ex: MalformedURLException) {
+                log.info("Installing CSS url handler, since it was not picked up automatically")
+                try {
+                    URL.setURLStreamHandlerFactory(Handler.HandlerFactory())
+                } catch (installFailed: Exception) {
+                    log.log(Level.WARNING, "Unable to install CSS url handler, type safe stylesheets might not work", ex)
+                }
+            }
+        }
     }
 
 }

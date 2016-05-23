@@ -34,6 +34,11 @@ import kotlin.reflect.KProperty
 private val _log = lazy { Logger.getLogger("CSS") }
 val log: Logger get() = _log.value
 
+@FunctionalInterface
+interface JavaSelectorBlock {
+    fun selection(selection: Selection)
+}
+
 open class CssBlock {
     val selections = mutableListOf<Selection>()
 
@@ -47,6 +52,15 @@ open class CssBlock {
         selections += selection
         return selection
     }
+
+    fun select(selector: String, javaBlock: JavaSelectorBlock): Selection {
+        val selection = Selection(selector)
+        javaBlock.selection(selection)
+        selections += selection
+        return selection
+    }
+
+    fun select(selector: CSSSelector, javaBlock: JavaSelectorBlock) = select(selector.toString(), javaBlock)
 
     fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(selector.joinToString(), block)
 
