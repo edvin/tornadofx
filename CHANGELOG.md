@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - ContextMenu builder
 - TreeTableView column builder that takes an observable value creator
+- TreeTableView `rowItem` accessor
+- TreeTableView `onUserSelect`
 
 ## [1.4.8] - 2016-05-20
 

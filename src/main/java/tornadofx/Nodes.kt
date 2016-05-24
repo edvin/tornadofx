@@ -362,7 +362,31 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
+/**
+ * Execute action when the enter key is pressed or the mouse is clicked
+
+ * @param clickCount The number of mouse clicks to trigger the action
+ * *
+ * @param action The action to execute on select
+ */
+fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
+    val isSelected = { event: InputEvent ->
+        event.target.isInsideTableRow() && !selectionModel.isEmpty
+    }
+
+    addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+        if (event.clickCount == clickCount && isSelected(event))
+            action(selectedItem!!)
+    }
+
+    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+        if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
+            action(selectedItem!!)
+    }
+}
+
 val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
+val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
 
 fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
         task { func() } success { if (items == null) items = it else items.setAll(it) }
@@ -421,7 +445,7 @@ fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
 }
 
 /**
- * Did the event occur inside a TableRow?
+ * Did the event occur inside a TableRow or TreeTableRow?
  */
 fun EventTarget.isInsideTableRow(): Boolean {
     if (this !is Node)
@@ -430,7 +454,7 @@ fun EventTarget.isInsideTableRow(): Boolean {
     if (this is TableColumnHeader)
         return false
 
-    if (this is TableRow<*> || this is TableView<*>)
+    if (this is TableRow<*> || this is TableView<*> || this is TreeTableRow<*> || this is TreeTableView<*>)
         return true
 
     if (this.parent != null)
