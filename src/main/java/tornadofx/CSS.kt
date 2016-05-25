@@ -34,11 +34,6 @@ import kotlin.reflect.KProperty
 private val _log = lazy { Logger.getLogger("CSS") }
 val log: Logger get() = _log.value
 
-@FunctionalInterface
-interface JavaSelectorBlock {
-    fun selection(selection: Selection)
-}
-
 open class CssBlock {
     val selections = mutableListOf<Selection>()
 
@@ -53,20 +48,41 @@ open class CssBlock {
         return selection
     }
 
-    fun select(selector: String, javaBlock: JavaSelectorBlock): Selection {
-        val selection = Selection(selector)
-        javaBlock.selection(selection)
-        selections += selection
-        return selection
-    }
-
-    fun select(selector: CSSSelector, javaBlock: JavaSelectorBlock) = select(selector.toString(), javaBlock)
-
     fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(selector.joinToString(), block)
 
     fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
 
     fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
+
+    // Box functions
+    fun <T> box(all: T) = CssBox(all, all, all, all)
+
+    fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+
+    fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+
+    // Color functions
+    fun c(colorString: String, opacity: Double = 1.0) = try {
+        Color.web(colorString, opacity)
+    } catch (e: Exception) {
+        log.warning("Error parsing color c('$colorString', opacity=$opacity)")
+        Color.MAGENTA
+    }
+
+    fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+        Color.color(red, green, blue, opacity)
+    } catch (e: Exception) {
+        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+        Color.MAGENTA
+    }
+
+    fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+        Color.rgb(red, green, blue, opacity)
+    } catch (e: Exception) {
+        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+        Color.MAGENTA
+    }
+
 }
 
 open class SelectionBlock : CssBlock() {
@@ -336,36 +352,6 @@ open class SelectionBlock : CssBlock() {
         }
     }
 }
-
-// Box functions
-fun <T> box(all: T) = CssBox(all, all, all, all)
-
-fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
-
-fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-
-// Color functions
-fun c(colorString: String, opacity: Double = 1.0) = try {
-    Color.web(colorString, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
-    Color.MAGENTA
-}
-
-fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
-    Color.color(red, green, blue, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-    Color.MAGENTA
-}
-
-fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
-    Color.rgb(red, green, blue, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-    Color.MAGENTA
-}
-
 
 class Mixin : SelectionBlock()
 
