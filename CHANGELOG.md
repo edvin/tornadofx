@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - TreeTableView column builder that takes an observable value creator
 - TreeTableView `rowItem` accessor
 - TreeTableView `onUserSelect`
+- Preferences can be saved and loaded using the prefences function, see https://github.com/edvin/tornadofx/pull/107
 
 ## [1.4.8] - 2016-05-20
 

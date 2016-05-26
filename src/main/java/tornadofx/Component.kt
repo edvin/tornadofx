@@ -21,6 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.logging.Logger
+import java.util.prefs.Preferences
 import kotlin.concurrent.thread
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -45,6 +46,21 @@ abstract class Component {
             if (Files.exists(configPath.value))
                 Files.newInputStream(configPath.value).use { load(it) }
         }
+    }
+
+    /**
+     * Store and retrieve preferences.
+     *
+     * Preferences are stored automatically in a OS specific way.
+     * <ul>
+     *     <li>Windows stores it in the registry at HKEY_CURRENT_USER/Software/JavaSoft/....</li>
+     *     <li>Mac OS stores it at ~/Library/Preferences/com.apple.java.util.prefs.plist</li>
+     *     <li>Linux stores it at ~/.java</li>
+     * </ul>
+     */
+    fun preferences(nodename: String? = null, op: Preferences.() -> Unit) {
+        val node = if (nodename != null) Preferences.userRoot().node(nodename) else Preferences.userNodeForPackage(FX.application.javaClass)
+        op(node)
     }
 
     private val _properties = lazy { FXCollections.observableHashMap<Any, Any>() }
