@@ -10,6 +10,7 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.stage.Modality
@@ -31,6 +32,8 @@ interface Injectable
 abstract class Component {
     val config: Properties
         get() = _config.value
+
+    val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
 
     val properties: ObservableMap<Any, Any>
         get() = _properties.value

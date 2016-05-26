@@ -9,6 +9,10 @@ import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
+import javafx.scene.input.Clipboard
+import javafx.scene.input.ClipboardContent
+import javafx.scene.input.DataFormat
+import java.io.File
 import java.util.function.Predicate
 
 /**
@@ -100,3 +104,13 @@ infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> {
     }
     return this
 }
+
+fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
+    val content = ClipboardContent()
+    op(content)
+    setContent(content)
+}
+
+fun Clipboard.putString(value: String) = setContent { putString(value) }
+fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
+fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
