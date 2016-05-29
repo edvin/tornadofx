@@ -324,3 +324,5 @@ fun JsonStructure.toString(vararg options: String): String {
     jsonWriter.close()
     return stringWriter.toString()
 }
+
+fun <T: JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()

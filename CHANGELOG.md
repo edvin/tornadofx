@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Convert Iterable<JsonModel> to JsonArray (`Iterable<JsonModel>.toJSON()`)
 - Clipboard functions (https://github.com/edvin/tornadofx/issues/110)
 - ContextMenu builder
 - TreeTableView column builder that takes an observable value creator
