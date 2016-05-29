@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.10-SNAPSHOT]
+
+### Added
+
+- Default Rest Client Engine supports gzip encoded content
+
+### Changed
+
+- Moved box/c functions outside CssBlock so they can be used in Stylesheet companion object
+
 ## [1.4.9]
 
 ### Added

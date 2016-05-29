@@ -53,36 +53,35 @@ open class CssBlock {
     fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
 
     fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
+}
 
-    // Box functions
-    fun <T> box(all: T) = CssBox(all, all, all, all)
+// Box functions
+fun <T> box(all: T) = CssBox(all, all, all, all)
 
-    fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 
-    fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
 
-    // Color functions
-    fun c(colorString: String, opacity: Double = 1.0) = try {
-        Color.web(colorString, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c('$colorString', opacity=$opacity)")
-        Color.MAGENTA
-    }
+// Color functions
+fun c(colorString: String, opacity: Double = 1.0) = try {
+    Color.web(colorString, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
+    Color.MAGENTA
+}
 
-    fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
-        Color.color(red, green, blue, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-        Color.MAGENTA
-    }
+fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+    Color.color(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
+}
 
-    fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
-        Color.rgb(red, green, blue, opacity)
-    } catch (e: Exception) {
-        log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-        Color.MAGENTA
-    }
-
+fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+    Color.rgb(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
 }
 
 open class SelectionBlock : CssBlock() {
