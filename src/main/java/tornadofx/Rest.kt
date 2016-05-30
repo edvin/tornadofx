@@ -189,6 +189,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     init {
         connection = uri.toURL().openConnection() as HttpURLConnection
         headers += "Accept-Encoding" to "gzip"
+        headers += "Content-Type" to "application/json"
+        headers += "Accept" to "application/json"
     }
 
     override fun execute(): Rest.Response {
@@ -308,9 +310,6 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
         engine.authInterceptor?.invoke(this)
 
         if (entity != null && request is HttpEntityEnclosingRequestBase) {
-
-            if (!request.containsHeader("Content-Type"))
-                addHeader("Content-Type", "application/json")
 
             when (entity) {
                 is JsonModel -> request.entity = StringEntity(entity.toJSON().toString(), UTF_8)

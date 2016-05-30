@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Default Rest Client Engine supports gzip encoded content
+- Default Rest Engine supports gzip encoded content
+- Default Rest Engine adds Accept: application/json by default
 
 ### Changed
 
