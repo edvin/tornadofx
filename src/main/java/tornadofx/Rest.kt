@@ -26,6 +26,7 @@ import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.zip.DeflaterInputStream
 import java.util.zip.GZIPInputStream
 import javax.json.Json
 import javax.json.JsonArray
@@ -188,7 +189,7 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
     init {
         connection = uri.toURL().openConnection() as HttpURLConnection
-        headers += "Accept-Encoding" to "gzip"
+        headers += "Accept-Encoding" to "gzip, deflate"
         headers += "Content-Type" to "application/json"
         headers += "Accept" to "application/json"
     }
@@ -249,6 +250,7 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
             val connection = request.connection
             val unwrapped = when (connection.contentEncoding) {
                 "gzip" -> GZIPInputStream(connection.inputStream)
+                "deflate" -> DeflaterInputStream(connection.inputStream)
                 else -> connection.inputStream
             }
             return unwrapped.readBytes()
