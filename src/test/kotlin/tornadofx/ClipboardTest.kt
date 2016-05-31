@@ -6,7 +6,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
 
-class ClipboardTests {
+class ClipboardTest {
 
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
