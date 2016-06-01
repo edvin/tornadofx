@@ -3,7 +3,6 @@ package tornadofx
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
@@ -35,9 +34,6 @@ abstract class Component {
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
 
-    val properties: ObservableMap<Any, Any>
-        get() = _properties.value
-
     fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
@@ -66,9 +62,8 @@ abstract class Component {
         op(node)
     }
 
-    private val _properties = lazy { FXCollections.observableHashMap<Any, Any>() }
-    private val _log = lazy { Logger.getLogger(this@Component.javaClass.name) }
-    val log: Logger get() = _log.value
+    val properties by lazy { FXCollections.observableHashMap<Any, Any>() }
+    val log by lazy { Logger.getLogger(this@Component.javaClass.name) }
 
     private val configPath = lazy {
         val conf = Paths.get("conf")
