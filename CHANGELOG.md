@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.10-SNAPSHOT]
+## [1.4.10] - 2016-06-02
 
 ### Added
 
@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Moved box/c functions outside CssBlock so they can be used in Stylesheet companion object
 - Better error reporting and logging for missing or wrong fx:id vs fxid() usage
 
-## [1.4.9]
+## [1.4.9] - 2016-05-29
 
 ### Added
 
