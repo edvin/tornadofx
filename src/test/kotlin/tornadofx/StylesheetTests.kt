@@ -133,6 +133,15 @@ class StylesheetTests {
 
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
+    /**
+     * This is just a "compile" test to make sure box and c are not moved
+     */
+    class StylesheetFunctionsTest : Stylesheet() {
+        companion object {
+            val aColor = c("#335566")
+            val boxDims = box(20.px)
+        }
+    }
 }
 
 
