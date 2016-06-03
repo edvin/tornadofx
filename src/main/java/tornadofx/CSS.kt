@@ -139,12 +139,15 @@ open class SelectionBlock : CssBlock() {
     var backgroundRepeat: Pair<BackgroundRepeat, BackgroundRepeat> by cssprop("-fx-background-repeat")
     var backgroundSize: BackgroundSize by cssprop("-fx-background-size")
     var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
+    var borderInsets: CssBox<LinearDimension> by cssprop("-fx-border-radius")
     var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
     var borderStyle: BorderStrokeStyle by cssprop("-fx-border-style")
     var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
     var borderImageSource: String by cssprop("-fx-border-image-source")
     var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
     var borderImageRepeat: Pair<BorderRepeat, BorderRepeat> by cssprop("-fx-border-image-repeat")
+    var borderImageSlice: BorderImageSlice by cssprop("-fx-border-image-slice")
+    var borderImageWidth: CssBox<LinearDimension> by cssprop("-fx-border-image-width")
     var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
     var scaleShape: Boolean by cssprop("-fx-scale-shape")
@@ -256,7 +259,6 @@ open class SelectionBlock : CssBlock() {
     var showTickMarks: Boolean by cssprop("-fx-show-tick-marks")
     var majorTickUnit: Double by cssprop("-fx-major-tick-unit")
     var minorTickCount: Int by cssprop("-fx-minor-tick-count")
-    var showTickLables: Boolean by cssprop("-fx-show-tick-labels")
     var snapToTicks: Boolean by cssprop("-fx-snap-to-ticks")
 
     // TabPane
@@ -312,6 +314,9 @@ open class SelectionBlock : CssBlock() {
     var legendSide: Side by cssprop("-fx-legend-side")
     var legendVisible: Boolean by cssprop("-fx-legend-visible")
     var titleSide: Side by cssprop("-fx-title-side")
+
+    // LineChart
+    var createSymbols: Boolean by cssprop("-fx-create-symbols")
 
     // NumberAxis
     var tickUnit: Number by cssprop("-fx-tick-unit")
@@ -429,6 +434,7 @@ fun <T> toCss(value: T): String {
                 append(" line-cap ${toCss(value.lineCap)}")
             }
         }
+        is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
         is Array<*> -> return value.joinToString { toCss(it) }
         is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
         is KClass<*> -> return value.simpleName ?: "none"
@@ -753,3 +759,5 @@ fun Node.style(append: Boolean = false, op: SelectionBlock.() -> Unit) {
     else
         style = output.toString().trim()
 }
+
+class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)
