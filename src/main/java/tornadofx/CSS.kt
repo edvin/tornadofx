@@ -782,6 +782,7 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
         elements.add(element)
     }
 
+    fun add(element: T) = elements.add(element)
     fun addAll(list: Iterable<T>) = elements.addAll(list)
     fun addAll(vararg element: T) = elements.addAll(element)
 }
