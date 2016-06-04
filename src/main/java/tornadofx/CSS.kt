@@ -70,6 +70,8 @@ fun c(colorString: String, opacity: Double = 1.0) = try {
     Color.MAGENTA
 }
 
+fun <T> multi(vararg elements: T) = MultiValue(elements)
+
 fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
     Color.color(red, green, blue, opacity)
 } catch (e: Exception) {
@@ -131,22 +133,22 @@ open class SelectionBlock : CssBlock() {
     var fillHeight: Boolean by cssprop("-fx-fill-height")
 
     // Region
-    var backgroundColor: Paint by cssprop("-fx-background-color")
-    var backgroundInsets: CssBox<LinearDimension> by cssprop("-fx-background-insets")
-    var backgroundRadius: CssBox<LinearDimension> by cssprop("-fx-background-radius")
-    var backgroundImage: String by cssprop("-fx-background-image")
-    var backgroundPosition: BackgroundPosition by cssprop("-fx-background-position")
-    var backgroundRepeat: Pair<BackgroundRepeat, BackgroundRepeat> by cssprop("-fx-background-repeat")
-    var backgroundSize: BackgroundSize by cssprop("-fx-background-size")
-    var borderColor: CssBox<Paint?> by cssprop("-fx-border-color")
-    var borderInsets: CssBox<LinearDimension> by cssprop("-fx-border-radius")
-    var borderRadius: CssBox<LinearDimension> by cssprop("-fx-border-radius")
-    var borderStyle: BorderStrokeStyle by cssprop("-fx-border-style")
-    var borderWidth: CssBox<LinearDimension> by cssprop("-fx-border-width")
-    var borderImageSource: String by cssprop("-fx-border-image-source")
-    var borderImageInsets: CssBox<LinearDimension> by cssprop("-fx-border-image-insets")
-    var borderImageRepeat: Pair<BorderRepeat, BorderRepeat> by cssprop("-fx-border-image-repeat")
-    var borderImageSlice: BorderImageSlice by cssprop("-fx-border-image-slice")
+    var backgroundColor: MultiValue<Paint> by cssprop("-fx-background-color")
+    var backgroundInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-background-insets")
+    var backgroundRadius: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-background-radius")
+    var backgroundImage: MultiValue<String> by cssprop("-fx-background-image")
+    var backgroundPosition: MultiValue<BackgroundPosition> by cssprop("-fx-background-position")
+    var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
+    var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
+    var borderColor: MultiValue<CssBox<Paint?>> by cssprop("-fx-border-color")
+    var borderInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-radius")
+    var borderRadius: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-radius")
+    var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
+    var borderWidth: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-width")
+    var borderImageSource: MultiValue<String> by cssprop("-fx-border-image-source")
+    var borderImageInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-image-insets")
+    var borderImageRepeat: MultiValue<Pair<BorderRepeat, BorderRepeat>> by cssprop("-fx-border-image-repeat")
+    var borderImageSlice: MultiValue<BorderImageSlice> by cssprop("-fx-border-image-slice")
     var borderImageWidth: CssBox<LinearDimension> by cssprop("-fx-border-image-width")
     var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
@@ -348,7 +350,11 @@ open class SelectionBlock : CssBlock() {
 
     private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
         return object : ReadWriteProperty<SelectionBlock, V> {
-            override fun getValue(thisRef: SelectionBlock, property: KProperty<*>) = properties[key] as V
+            override fun getValue(thisRef: SelectionBlock, property: KProperty<*>): V {
+                if (!properties.containsKey(key) && MultiValue::class.java.isAssignableFrom(V::class.java))
+                    properties[key] = MultiValue<V>()
+                return properties[key] as V
+            }
 
             override fun setValue(thisRef: SelectionBlock, property: KProperty<*>, value: V) {
                 properties[key] = value as Any
@@ -373,7 +379,9 @@ class Selection(selector: String) : SelectionBlock() {
             if (properties.isNotEmpty()) {
                 append("$currentSelector {\n")
                 for ((name, value) in properties) {
-                    append("    $name: ${toCss(value)};\n")
+                    val renderedValue = toCss(value)
+                    if (renderedValue.isNotBlank())
+                        append("    $name: $renderedValue;\n")
                 }
                 append("}\n")
             }
@@ -400,6 +408,7 @@ fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 10
 fun <T> toCss(value: T): String {
     when (value) {
         null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
+        is MultiValue<*> -> return value.elements.map { toCss(it) }.joinToString(", ")
         is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
         is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
         is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
@@ -761,3 +770,18 @@ fun Node.style(append: Boolean = false, op: SelectionBlock.() -> Unit) {
 }
 
 class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)
+
+class MultiValue<T>(initialElements: Array<out T>? = null) {
+    val elements = mutableListOf<T>()
+
+    init {
+        if (initialElements != null) elements.addAll(initialElements)
+    }
+
+    operator fun plusAssign(element: T) {
+        elements.add(element)
+    }
+
+    fun addAll(list: Iterable<T>) = elements.addAll(list)
+    fun addAll(vararg element: T) = elements.addAll(element)
+}

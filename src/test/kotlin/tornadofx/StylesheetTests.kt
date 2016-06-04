@@ -14,10 +14,32 @@ class StylesheetTests {
     val wrapper by cssclass()
 
     @Test
+    fun multiValue() {
+        stylesheet {
+            s(label) {
+                backgroundColor = multi(Color.WHITE, Color.BLUE)
+            }
+        } shouldEqual {
+            ".label { -fx-background-color: rgba(255, 255, 255, 1), rgba(0, 0, 255, 1); }"
+        }
+    }
+
+    @Test
+    fun singleValue() {
+        stylesheet {
+            s(label) {
+                backgroundColor += Color.WHITE
+            }
+        } shouldEqual {
+            ".label { -fx-background-color: rgba(255, 255, 255, 1); }"
+        }
+    }
+
+    @Test
     fun selectorOrder() {
         stylesheet {
             s(vbox direct wrapper contains label) {
-                backgroundColor = Color.WHITE
+                backgroundColor += Color.WHITE
             }
         } shouldEqual {
             ".vbox > .wrapper .label { -fx-background-color: rgba(255, 255, 255, 1); }"
@@ -29,7 +51,7 @@ class StylesheetTests {
         stylesheet {
             s(".label, .text") {
                 +s(":hover, :armed") {
-                    backgroundColor = c("blue", 0.25)
+                    backgroundColor += c("blue", 0.25)
                 }
             }
         } shouldEqual {
@@ -46,21 +68,21 @@ class StylesheetTests {
         stylesheet {
             val hover = mixin {
                 +s(":hover") {
-                    backgroundColor = RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
+                    backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
                 }
             }
             val wrap = mixin {
                 padding = box(1.em)
-                borderColor = box(LinearGradient(0.0, 0.0, 10.0, 10.0, false, CycleMethod.REFLECT, Stop(0.0, Color.RED), Stop(1.0, c(0.0, 1.0, 0.0))))
-                borderWidth = box(5.px)
-                backgroundRadius = box(25.px)
-                borderRadius = box(25.px)
+                borderColor += box(LinearGradient(0.0, 0.0, 10.0, 10.0, false, CycleMethod.REFLECT, Stop(0.0, Color.RED), Stop(1.0, c(0.0, 1.0, 0.0))))
+                borderWidth += box(5.px)
+                backgroundRadius += box(25.px)
+                borderRadius += box(25.px)
                 +hover
             }
 
             s(".box") {
                 +wrap
-                backgroundColor = RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(1.0, Color.BLACK))
+                backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(1.0, Color.BLACK))
                 spacing = 5.px
 
                 s(".label") {
@@ -115,7 +137,7 @@ class StylesheetTests {
     fun inlineStyle() {
         val node = Pane()
         node.style {
-            backgroundColor = Color.RED
+            backgroundColor = multi(Color.RED)
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
         node.style(append = true) {
@@ -134,7 +156,7 @@ class StylesheetTests {
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
     /**
-     * This is just a "compile" test to make sure box and c are not moved
+     * This is just a compile test to make sure box and c are not moved
      */
     class StylesheetFunctionsTest : Stylesheet() {
         companion object {
