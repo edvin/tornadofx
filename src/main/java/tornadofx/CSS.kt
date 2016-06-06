@@ -234,7 +234,7 @@ open class SelectionBlock : CssBlock() {
     var indeterminateBarLength: LinearDimension by cssprop("-fx-indeterminate-bar-length")
     var indeterminateBarEscape: Boolean by cssprop("-fx-indeterminate-bar-escape")
     var indeterminateBarFlip: Boolean by cssprop("-fx-indeterminate-bar-flip")
-    var indeterminateBarAnimationTime: TemporalDimension by cssprop("-fx-indeterminate-bar-animation-time")
+    var indeterminateBarAnimationTime: Number by cssprop("-fx-indeterminate-bar-animation-time")
 
     // ProgressIndicator
     var indeterminateSegmentCount: Int by cssprop("-fx-indeterminate-SegmentCount")
@@ -657,15 +657,6 @@ val Number.deg: AngularDimension get() = AngularDimension(this.toDouble(), Angul
 val Number.rad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.rad)
 val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.grad)
 val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
-
-class TemporalDimension(val value: Double, val units: Units) {
-    override fun toString() = dimStr(value, units.toString())
-
-    enum class Units { s, ms; }
-}
-
-val Number.s: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.s)
-val Number.ms: TemporalDimension get() = TemporalDimension(this.toDouble(), TemporalDimension.Units.ms)
 
 // Type safe selectors
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
