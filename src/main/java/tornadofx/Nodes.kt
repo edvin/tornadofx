@@ -74,7 +74,10 @@ fun Scene.reloadStylesheets() {
 }
 
 fun Scene.reloadViews() {
-    findUIComponents().forEach { FX.replaceComponent(it) }
+    findUIComponents().forEach {
+        if (it.reloadInit) FX.replaceComponent(it)
+        it.reloadInit = true
+    }
 }
 
 fun Scene.findUIComponents(): List<UIComponent> {

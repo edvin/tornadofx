@@ -115,7 +115,7 @@ class FX {
             find(componentType.kotlin)
 
         fun replaceComponent(obsolete: UIComponent) {
-            var replacement: UIComponent
+            val replacement: UIComponent
 
             if (obsolete is View) {
                 components.remove(obsolete.javaClass.kotlin)
@@ -129,6 +129,8 @@ class FX {
                     return
                 }
             }
+
+            replacement.reloadInit = true
 
             if (obsolete.root.parent is Pane) {
                 (obsolete.root.parent as Pane).children.apply {

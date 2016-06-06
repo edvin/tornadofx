@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventTarget
@@ -128,10 +129,25 @@ abstract class Controller : Component(), Injectable
 abstract class UIComponent : Component() {
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
+    internal var reloadInit = false
     abstract val root: Parent
 
     fun init() {
         root.properties["tornadofx.uicomponent"] = this
+        root.parentProperty().addListener({ observable, oldParent, newParent ->
+            if (newParent == null && oldParent != null) onUndock()
+            if (newParent != null && newParent != oldParent) onDock()
+        })
+        root.sceneProperty().addListener({ observable, oldParent, newParent ->
+            if (newParent == null && oldParent != null) onUndock()
+            if (newParent != null && newParent != oldParent) onDock()
+        })
+    }
+
+    open fun onUndock() {
+    }
+
+    open fun onDock() {
     }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
