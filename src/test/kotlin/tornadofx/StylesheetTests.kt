@@ -137,7 +137,7 @@ class StylesheetTests {
     fun inlineStyle() {
         val node = Pane()
         node.style {
-            backgroundColor = multi(Color.RED)
+            backgroundColor += Color.RED
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
         node.style(append = true) {
@@ -165,5 +165,3 @@ class StylesheetTests {
         }
     }
 }
-
-

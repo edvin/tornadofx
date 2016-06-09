@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.11-SNAPSHOT]
+
+### Added
+
+- Multivalue property support in type safe stylesheets (API break)
+- `UIComponent.onDock` and `UIComponent.onUndock`
+
 ## [1.4.10] - 2016-06-02
 
 ### Added
