@@ -175,7 +175,8 @@ class ModelWrapper<M : Any>
         set(value) = modelProperty.set(value)
 
     /**
-     * This interface defines the operations that are possible for each field of a wrapped class.
+     * This abstract class defines the operations that are possible for each field of a wrapped class and implements
+     * [equals] and [hashCode] based on the field name.
      *
      * @param T
      * *            target type. The base type of the returned property, f.e. [String].
@@ -186,16 +187,16 @@ class ModelWrapper<M : Any>
      * @param R
      * *            return type. The type of the Property that is returned via [property], e.g. [StringProperty].
      */
-    internal interface PropertyField<T, in M, out R : Property<T>> {
-        fun commit(wrappedObject: M)
+    internal abstract class PropertyField<T, in M, out R : Property<T>> {
+        abstract fun commit(wrappedObject: M)
 
-        fun reload(wrappedObject: M)
+        abstract fun reload(wrappedObject: M)
 
-        fun resetToDefault()
+        abstract  fun resetToDefault()
 
-        fun updateDefault(wrappedObject: M)
+        abstract fun updateDefault(wrappedObject: M)
 
-        val property: R
+        abstract  val property: R
 
         /**
          * Determines if the value in the model object and the property field are different or not.
@@ -208,7 +209,7 @@ class ModelWrapper<M : Any>
          * @return `false` if both the wrapped model object and the property field have the same value,
          * *         otherwise `true`
          */
-        fun isDifferent(wrappedObject: M): Boolean
+        abstract fun isDifferent(wrappedObject: M): Boolean
 
         // TODO: It's probably better to fully do this on the ViewModel level instead and have an overridable method stub
         //       just like [ViewModel.commit] there. Advantage: Access to multiple field at the same time allows
@@ -221,32 +222,44 @@ class ModelWrapper<M : Any>
         // those without iterating through all fields; depends on whether or not we want to expose differentFields/dirtyFields
         // as an ObservableList; otoh it would also be nice to have something like Property<*>.differentProperty, maybe
         // as an extension function (see @bottom))
-        fun isValid(): Boolean
+        abstract fun isValid(): Boolean
 
         //fun differentProperty(): ReadOnlyBooleanProperty
         //fun dirtyProperty(): ReadOnlyBooleanProperty
+
+        @Suppress("UNCHECKED_CAST")
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other?.javaClass != javaClass) return false
+
+            other as PropertyField<*, *, *>
+            return property.name == other.property.name
+        }
+
+        override fun hashCode(): Int {
+            return property.name.hashCode()
+        }
     }
 
     /**
-     * So, this could easily replace KPropertyField and FxPropertyField.
-     * The same can probably be done with KListPropertyField/FxListPropertyField and the Set-equivalents
-     * Could also name this PropertyFieldImpl or sth else
+     * An implementation of [PropertyField] that is used when the fields of the model class are primitives,
+     * JavaFX properties or simple objects.
      */
-    private inner class GenericPropertyField<T, out R : Property<T>>
-    constructor(
-            name: String,
-            private val getter: (M) -> T,
-            private val setter: ((M, T) -> Unit)?,
-            private var defaultValue: T? = null,
-            propertySupplier: (M?, String?) -> R,
-            private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
+    private inner class PropertyFieldImpl<T, out R : Property<T>>
+    constructor(name: String,
+                private val getter: (M) -> T,
+                private val setter: ((M, T) -> Unit)?,
+                private var defaultValue: T? = null,
+                propertySupplier: (M?, String?) -> R,
+                private val validator: (T) -> Boolean = { t: T -> true }
+               ) : PropertyField<T, M, R>() {
 
         constructor(accessor: KProperty1<M, T>,
                     defaultValue: T? = null,
                     propertySupplier: (M?, String?) -> R,
                     validator: (T) -> Boolean = { t: T -> true }
-                   ) : this(accessor.name, accessor.getter, if (accessor is KMutableProperty1<M, T>) accessor.setter else null,
+                   ) : this(accessor.name, accessor.getter,
+                if (accessor is KMutableProperty1<M, T>) accessor.setter else null,
                 defaultValue, propertySupplier, validator)
 
         //@JvmName("FxPropertyField")
@@ -303,248 +316,48 @@ class ModelWrapper<M : Any>
         override fun isValid(): Boolean {
             return validator(property.value)
         }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as GenericPropertyField<*, *>
-            return property.name == other.property.name
-        }
-
-        override fun hashCode(): Int {
-            return property.name.hashCode()
-        }
     }
 
     /**
-     * An implementation of [PropertyField] that is used when the fields of the model class are JavaFX Properties too.
-     * TODO: Should we accept ReadOnly(List|Set)?Property for the Fx(Set|List)?PropertyFields and gracefully ignore commit()s
-     *       or throw an exception; and what about KProperty vs KMutableProperty?
+     * An implementation of [PropertyField] that is used when the field of the model class is a [List] or a JavaFX [ListProperty].
+
+     * @param E
+     * *            the type of the list elements.
      */
-    private inner class FxPropertyField<T, R : Property<T>>
+    private inner class ListPropertyFieldImpl<E, T : ObservableList<E>, out R : Property<T>>
     //@JvmOverloads // causes CompilationException!
     constructor(name: String,
-                private val accessor: (M) -> Property<T>,
-                private var defaultValue: T? = null,
-                propertySupplier: (M?, String?) -> R,
-                private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
-
-        constructor(accessor: KProperty1<M, Property<T>>,
-                    defaultValue: T? = null,
-                    propertySupplier: (M?, String?) -> R,
-                    validator: (T) -> Boolean = { t: T -> true }) : this(accessor.name, accessor, defaultValue,
-                propertySupplier, validator)
-
-        override val property: R // TODO: use property.name for equals()/hashCode() now that it's set?
-
-        init {
-            this.property = propertySupplier(null, name)
-            this.property.addListener { observable, oldValue, newValue -> this@ModelWrapper.propertyWasChanged() }
-        }
-
-        override fun commit(wrappedObject: M) {
-            accessor(wrappedObject).value = property.value
-        }
-
-        override fun reload(wrappedObject: M) {
-            property.value = accessor(wrappedObject).value
-        }
-
-        override fun resetToDefault() {
-            property.value = defaultValue
-        }
-
-        override fun updateDefault(wrappedObject: M) {
-            defaultValue = accessor(wrappedObject).value
-        }
-
-        override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject).value
-            val wrapperValue = property.value
-
-            return modelValue != wrapperValue
-        }
-
-        override fun isValid(): Boolean {
-            return validator(property.value)
-        }
-
-        // TODO: do we also want to compare `property.name` or `defaultValue`?
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as FxPropertyField<*, *>
-            return accessor == other.accessor
-        }
-
-        override fun hashCode(): Int {
-            return accessor.hashCode()
-        }
-    }
-
-
-    /**
-     * An implementation of [PropertyField] that is used when the fields of the model class are **not** JavaFX
-     * Properties but are normal Kotlin properties (any visible `val` or `var`).
-     *
-     * @property accessor [KProperty1] or [KMutableProperty1] of the model class field
-     */
-    private inner class KPropertyField<T, out R : Property<T>>
-    //@JvmOverloads // causes CompilationException!
-    constructor(private val accessor: KProperty1<M, T>,
-            //private val setter: ((M, T) -> Unit)?,
-                private var defaultValue: T? = null,
-                propertySupplier: (M?, String?) -> R,
-                private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
-
-        override val property: R
-
-        init {
-            this.property = propertySupplier(null, accessor.name)
-            this.property.addListener { observable, oldValue, newValue -> this@ModelWrapper.propertyWasChanged() }
-        }
-
-        override fun commit(wrappedObject: M) {
-            if (isDifferent(wrappedObject) && accessor is KMutableProperty1<M, T>) {
-                accessor.set(wrappedObject, property.value)
-            }
-            // do nothing if property is immutable (`val`)
-        }
-
-        override fun reload(wrappedObject: M) {
-            property.value = accessor(wrappedObject)
-        }
-
-        override fun resetToDefault() {
-            property.value = defaultValue
-        }
-
-        override fun updateDefault(wrappedObject: M) {
-            defaultValue = accessor(wrappedObject)
-        }
-
-        override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject)
-            val wrapperValue = property.value
-
-            return modelValue != wrapperValue
-        }
-
-        override fun isValid(): Boolean {
-            return validator(property.value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as KPropertyField<*, *>
-
-            if (accessor != other.accessor) return false
-            if (defaultValue != other.defaultValue) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = accessor.hashCode()
-            result = 31 * result + (defaultValue?.hashCode() ?: 0)
-            return result
-        }
-    }
-
-    /**
-     * An implementation of [PropertyField] that is used when the field of the model class is a [ListProperty] too.
-     *
-     * @param E
-     * *            the type of the list elements.
-     */
-    private inner class FxListPropertyField<E, T : ObservableList<E>, out R : Property<T>>
-    //@JvmOverloads // causes CompilationException!
-    constructor(private val accessor: KProperty1<M, ListProperty<E>>,
+                private val getter: (M) -> List<E>,
+                private val setter: ((M, List<E>) -> Unit)?,
                 private var defaultValue: List<E>? = mutableListOf<E>(),
                 private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
+               ) : PropertyField<T, M, R>() {
 
-        private val targetProperty = SimpleListProperty(FXCollections.observableArrayList<E>())
+        constructor(accessor: KProperty1<M, List<E>>,
+                    defaultValue: List<E>? = mutableListOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this(accessor.name, accessor.getter,
+                if (accessor is KMutableProperty1<M, List<E>>) accessor.setter else null, defaultValue, validator)
 
-        init {
-            this.targetProperty.addListener(ListChangeListener<E> { change -> this@ModelWrapper.propertyWasChanged() })
-        }
+        constructor(name: String,
+                    accessor: (M) -> ListProperty<E>,
+                    defaultValue: List<E>? = mutableListOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this(name, { accessor(it).value },
+                { m: M, l: List<E> -> accessor(m).value = FXCollections.observableArrayList(l) }, defaultValue,
+                validator)
 
-        override fun commit(wrappedObject: M) {
-            accessor(wrappedObject).setAll(targetProperty.value)
-        }
+        /*
+        constructor(accessor: KProperty1<M, ListProperty<E>>,
+                    defaultValue: List<E>? = mutableListOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this(accessor.name, { accessor.get(it).value },
+                if (accessor is KMutableProperty1<M, ListProperty<E>>) { m: M, l: List<E> -> accessor(m).value = l}
+                else null as ((M, List<E>) -> Unit)?,
+                defaultValue, validator)
+         */
 
-        override fun reload(wrappedObject: M) {
-            targetProperty.setAll(accessor(wrappedObject).value)
-        }
-
-        override fun resetToDefault() {
-            targetProperty.setAll(defaultValue)
-        }
-
-        override fun updateDefault(wrappedObject: M) {
-            defaultValue = ArrayList(accessor(wrappedObject).value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override val property: R
-            get() = targetProperty as R
-
-        override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject).value
-            val wrapperValue = targetProperty
-
-            return modelValue != wrapperValue
-        }
-
-        override fun isValid(): Boolean {
-            return validator(property.value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as FxListPropertyField<*, *, *>
-
-            if (accessor != other.accessor) return false
-            if (defaultValue != other.defaultValue) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = accessor.hashCode()
-            result = 31 * result + (defaultValue?.hashCode() ?: 0)
-            return result
-        }
-    }
-
-    /**
-     * An implementation of [PropertyField] that is used when the field of the model class is a [List] and
-     * is **not** a JavaFX [ListProperty].
-
-     * @param E
-     * *            the type of the list elements.
-     */
-    private inner class KListPropertyField<E, T : ObservableList<E>, out R : Property<T>>
-    //@JvmOverloads // causes CompilationException!
-    constructor(private val accessor: KProperty1<M, List<E>>,
-                private var defaultValue: List<E>? = mutableListOf<E>(),
-                private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
-
-        private val targetProperty = SimpleListProperty(FXCollections.observableArrayList<E>())
+        private val targetProperty = SimpleListProperty(null, name, FXCollections.observableArrayList<E>())
 
         init {
             this.targetProperty.addListener(ListChangeListener<E> { change -> this@ModelWrapper.propertyWasChanged() })
@@ -557,7 +370,7 @@ class ModelWrapper<M : Any>
         // need to have proper `equals()`-implementations. I'm not sure if we can assume this to be the case :/
         // Also, we may not change the order of the list... With a [Set] it's probably easier :/
         override fun commit(wrappedObject: M) {
-            val list = accessor(wrappedObject)
+            val list = getter(wrappedObject)
             if (list is MutableList<E>) {
                 list.clear()
                 list.addAll(targetProperty.value)
@@ -566,7 +379,7 @@ class ModelWrapper<M : Any>
         }
 
         override fun reload(wrappedObject: M) {
-            targetProperty.setAll(accessor(wrappedObject))
+            targetProperty.setAll(getter(wrappedObject))
         }
 
         override fun resetToDefault() {
@@ -574,7 +387,7 @@ class ModelWrapper<M : Any>
         }
 
         override fun updateDefault(wrappedObject: M) {
-            defaultValue = ArrayList<E>(accessor(wrappedObject))
+            defaultValue = ArrayList<E>(getter(wrappedObject))
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -582,7 +395,7 @@ class ModelWrapper<M : Any>
             get() = targetProperty as R
 
         override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject)
+            val modelValue = getter(wrappedObject)
             val wrapperValue = targetProperty
 
             return modelValue != wrapperValue
@@ -591,118 +404,42 @@ class ModelWrapper<M : Any>
         override fun isValid(): Boolean {
             return validator(property.value)
         }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as KListPropertyField<*, *, *>
-
-            if (accessor != other.accessor) return false
-            if (defaultValue != other.defaultValue) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = accessor.hashCode()
-            result = 31 * result + (defaultValue?.hashCode() ?: 0)
-            return result
-        }
     }
 
     /**
-     * An implementation of [PropertyField] that is used when the field of the model class is a [SetProperty] too.
+     * An implementation of [PropertyField] that is used when the field of the model class is a [Set] or a JavaFX [SetProperty].
      *
      * @param E
      * *            the type of the set elements.
      */
-    private inner class FxSetPropertyField<E, T : ObservableSet<E>, out R : Property<T>>
+    private inner class SetPropertyFieldImpl<E, T : ObservableSet<E>, out R : Property<T>>
     //@JvmOverloads // causes CompilationException!
-    constructor(private val accessor: KProperty1<M, SetProperty<E>>,
+    constructor(name: String,
+                private val getter: (M) -> Set<E>,
+                private val setter: ((M, Set<E>) -> Unit)?,
                 private var defaultValue: Set<E>? = mutableSetOf<E>(),
                 private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
+               ) : PropertyField<T, M, R>() {
 
-        private val targetProperty = SimpleSetProperty(FXCollections.observableSet<E>())
+        constructor(accessor: KProperty1<M, Set<E>>,
+                    defaultValue: Set<E>? = mutableSetOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this(accessor.name, accessor.getter, null, defaultValue, validator)
 
-        init {
-            this.targetProperty.addListener(SetChangeListener<E> { change -> this@ModelWrapper.propertyWasChanged() })
-        }
+        constructor(name: String,
+                    accessor: (M) -> SetProperty<E>,
+                    defaultValue: Set<E>? = mutableSetOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this(name, { accessor(it).value },
+                { m: M, s: Set<E> -> accessor(m).value = FXCollections.observableSet(s) }, defaultValue, validator)
 
-        override fun commit(wrappedObject: M) {
-            val set = accessor(wrappedObject)
-            if (set is SetProperty<E>) {
-                set.clear()
-                set.addAll(targetProperty.value)
-            }
-        }
-
-        override fun reload(wrappedObject: M) {
-            targetProperty.clear()
-            targetProperty.addAll(accessor(wrappedObject).value)
-        }
-
-        override fun resetToDefault() {
-            targetProperty.clear()
-            targetProperty.addAll(defaultValue ?: emptySet())
-        }
-
-        override fun updateDefault(wrappedObject: M) {
-            defaultValue = LinkedHashSet<E>(accessor(wrappedObject).value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override val property: R
-            get() = targetProperty as R
-
-        override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject).value
-            val wrapperValue = targetProperty
-
-            return modelValue != wrapperValue
-        }
-
-        override fun isValid(): Boolean {
-            return validator(property.value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as FxSetPropertyField<*, *, *>
-
-            if (accessor != other.accessor) return false
-            if (defaultValue != other.defaultValue) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = accessor.hashCode()
-            result = 31 * result + (defaultValue?.hashCode() ?: 0)
-            return result
-        }
-    }
-
-    /**
-     * An implementation of [PropertyField] that is used when the field of the model class is a [Set] and
-     * is **not** a JavaFX [SetProperty].
-     *
-     * @param E
-     * *            the type of the set elements.
-     */
-    private inner class KSetPropertyField<E, T : ObservableSet<E>, out R : Property<T>>
-    //@JvmOverloads // causes CompilationException!
-    constructor(private val accessor: KProperty1<M, Set<E>>,
-                private var defaultValue: Set<E>? = mutableSetOf<E>(),
-                private val validator: (T) -> Boolean = { t: T -> true }
-               ) : PropertyField<T, M, R> {
-
-        private val targetProperty = SimpleSetProperty(FXCollections.observableSet<E>())
+        /*
+        constructor(accessor: KProperty1<M, SetProperty<E>>,
+                    defaultValue: Set<E>? = mutableSetOf<E>(),
+                    validator: (T) -> Boolean = { t: T -> true }
+                   ) : this()
+       */
+        private val targetProperty = SimpleSetProperty(null, name, FXCollections.observableSet<E>())
 
         init {
             this.targetProperty.addListener(SetChangeListener<E> { change -> this@ModelWrapper.propertyWasChanged() })
@@ -710,7 +447,7 @@ class ModelWrapper<M : Any>
 
         // TODO: KMutableProperty vs MutableSet!
         override fun commit(wrappedObject: M) {
-            val set = accessor(wrappedObject)
+            val set = getter(wrappedObject)
             if (set is MutableSet<E>) {
                 set.clear()
                 set.addAll(targetProperty.value)
@@ -720,7 +457,7 @@ class ModelWrapper<M : Any>
 
         override fun reload(wrappedObject: M) {
             targetProperty.clear()
-            targetProperty.addAll(accessor(wrappedObject))
+            targetProperty.addAll(getter(wrappedObject))
         }
 
         override fun resetToDefault() {
@@ -729,7 +466,7 @@ class ModelWrapper<M : Any>
         }
 
         override fun updateDefault(wrappedObject: M) {
-            defaultValue = LinkedHashSet(accessor(wrappedObject))
+            defaultValue = LinkedHashSet(getter(wrappedObject))
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -737,7 +474,7 @@ class ModelWrapper<M : Any>
             get() = targetProperty as R
 
         override fun isDifferent(wrappedObject: M): Boolean {
-            val modelValue = accessor(wrappedObject)
+            val modelValue = getter(wrappedObject)
             val wrapperValue = targetProperty
 
             return modelValue != wrapperValue
@@ -745,25 +482,6 @@ class ModelWrapper<M : Any>
 
         override fun isValid(): Boolean {
             return validator(property.value)
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other?.javaClass != javaClass) return false
-
-            other as KSetPropertyField<*, *, *>
-
-            if (accessor != other.accessor) return false
-            if (defaultValue != other.defaultValue) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = accessor.hashCode()
-            result = 31 * result + (defaultValue?.hashCode() ?: 0)
-            return result
         }
     }
 
@@ -968,7 +686,7 @@ class ModelWrapper<M : Any>
     @JvmOverloads
     @JvmName("nullableField")
     fun field(accessor: KProperty1<M, String?>, defaultValue: String? = null): ReadOnlyStringProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleStringProperty))
     }
 
     // TODO: Do we want to separate ReadOnly and ReadWrite fields?
@@ -977,7 +695,7 @@ class ModelWrapper<M : Any>
     @JvmOverloads
     @JvmName("nullableField")
     fun field(accessor: KMutableProperty1<M, String?>, defaultValue: String? = null): StringProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleStringProperty))
     }
 
     // TODO: Is this a good idea to provide nice default values if the KProperty value is not nullable?
@@ -986,12 +704,12 @@ class ModelWrapper<M : Any>
     // to have a no-argument constructor so we can have a look, so just do something "good enough"
     @JvmOverloads
     fun field(accessor: KProperty1<M, String>, defaultValue: String = ""): ReadOnlyStringProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleStringProperty))
     }
 
     @JvmOverloads
     fun field(accessor: KMutableProperty1<M, String>, defaultValue: String = ""): StringProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleStringProperty))
     }
 
     // TODO: we could support POJOs more or less like in Properties.kt:
@@ -1029,17 +747,17 @@ class ModelWrapper<M : Any>
         val wrappedSetter = { m: M, v: String? -> model?.javaClass?.getDeclaredMethod("set$suffix")?.invoke(m, v) }
                 as (M, String?) -> Unit
 
-        return add(GenericPropertyField(propName, wrappedGetter, wrappedSetter, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(propName, wrappedGetter, wrappedSetter, defaultValue, ::SimpleStringProperty))
 
         //return field(propName, wrappedGetter, wrappedSetter, defaultValue)
     }
 
     @JvmOverloads
     fun field(propName: String, getter: (M) -> String?, setter: (M, String?) -> Unit, defaultValue: String? = null): StringProperty {
-        return add(GenericPropertyField(propName, getter, setter, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(propName, getter, setter, defaultValue, ::SimpleStringProperty))
 
 
-        /* @Deprecated in favor of GenericPropertyField
+        /* @Deprecated in favor of PropertyFieldImpl
         // or we could just do this
 
         val kProp = object : KMutableProperty1<M, String?> {
@@ -1082,7 +800,7 @@ class ModelWrapper<M : Any>
 
         }
 
-        return add(KPropertyField(kProp, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(kProp, defaultValue, ::SimpleStringProperty))
         */
         //throw NotImplementedError()
         //return add(PojoPropertyField(propName, getter, setter, defaultValue, ::SimpleStringProperty))
@@ -1116,7 +834,7 @@ class ModelWrapper<M : Any>
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, StringProperty>, defaultValue: String? = null): StringProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleStringProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleStringProperty))
     }
 
 
@@ -1125,18 +843,18 @@ class ModelWrapper<M : Any>
     @JvmOverloads
     @JvmName("nullableField")
     fun field(accessor: KProperty1<M, Boolean?>, defaultValue: Boolean? = null): BooleanProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleBooleanProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleBooleanProperty))
     }
 
     @JvmOverloads
     fun field(accessor: KProperty1<M, Boolean>, defaultValue: Boolean = false): BooleanProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleBooleanProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleBooleanProperty))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, BooleanProperty>, defaultValue: Boolean? = null): BooleanProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleBooleanProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleBooleanProperty))
     }
 
 
@@ -1147,13 +865,13 @@ class ModelWrapper<M : Any>
 
     @JvmOverloads
     fun field(accessor: KProperty1<M, Double?>, defaultValue: Double? = null): DoubleProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleDoubleProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleDoubleProperty))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, DoubleProperty>, defaultValue: Double? = null): DoubleProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleDoubleProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleDoubleProperty))
     }
 
 
@@ -1161,13 +879,13 @@ class ModelWrapper<M : Any>
 
     @JvmOverloads
     fun field(accessor: KProperty1<M, Float?>, defaultValue: Float? = null): FloatProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleFloatProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleFloatProperty))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, FloatProperty>, defaultValue: Float? = null): FloatProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleFloatProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleFloatProperty))
     }
 
 
@@ -1175,13 +893,13 @@ class ModelWrapper<M : Any>
 
     @JvmOverloads
     fun field(accessor: KProperty1<M, Int?>, defaultValue: Int? = null): IntegerProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleIntegerProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleIntegerProperty))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, IntegerProperty>, defaultValue: Int? = null): IntegerProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleIntegerProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleIntegerProperty))
     }
 
 
@@ -1189,13 +907,13 @@ class ModelWrapper<M : Any>
 
     @JvmOverloads
     fun field(accessor: KProperty1<M, Long?>, defaultValue: Long? = null): LongProperty {
-        return add(KPropertyField(accessor, defaultValue, ::SimpleLongProperty))
+        return add(PropertyFieldImpl(accessor, defaultValue, ::SimpleLongProperty))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun field(accessor: KProperty1<M, LongProperty>, defaultValue: Long? = null): LongProperty {
-        return add(FxPropertyField(accessor, defaultValue, ::SimpleLongProperty))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue, ::SimpleLongProperty))
     }
 
 
@@ -1204,13 +922,14 @@ class ModelWrapper<M : Any>
     //@JvmOverloads
     fun <T> field(accessor: KProperty1<M, T>, defaultValue: T): ObjectProperty<T> {
         return add<T, ObjectProperty<T>>(// ::SimpleObjectProperty cannot infer type parameter
-                KPropertyField(accessor, defaultValue, { b: Any?, n: String? -> SimpleObjectProperty<T>(b, n) }))
+                PropertyFieldImpl(accessor, defaultValue, { b: Any?, n: String? -> SimpleObjectProperty<T>(b, n) }))
     }
 
     //@JvmOverloads
     @JvmName("fxfield")
     fun <T> field(accessor: KProperty1<M, Property<T>>, defaultValue: T): ObjectProperty<T> {
-        return add(FxPropertyField(accessor, defaultValue, { b: Any?, n: String? -> SimpleObjectProperty<T>(b, n) }))
+        return add(PropertyFieldImpl(accessor.name, accessor, defaultValue,
+                { b: Any?, n: String? -> SimpleObjectProperty<T>(b, n) }))
     }
 
 
@@ -1219,26 +938,26 @@ class ModelWrapper<M : Any>
 
     @JvmOverloads
     fun <E> field(accessor: KProperty1<M, List<E>>, defaultValue: List<E>? = mutableListOf<E>()): ListProperty<E> {
-        return add(KListPropertyField<E, ObservableList<E>, ListProperty<E>>(accessor, defaultValue))
+        return add(ListPropertyFieldImpl<E, ObservableList<E>, ListProperty<E>>(accessor, defaultValue))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun <E> field(accessor: KProperty1<M, ListProperty<E>>, defaultValue: List<E>? = mutableListOf<E>()): ListProperty<E> {
-        return add(FxListPropertyField<E, ObservableList<E>, ListProperty<E>>(accessor, defaultValue))
+        return add(ListPropertyFieldImpl<E, ObservableList<E>, ListProperty<E>>(accessor, defaultValue))
     }
 
     /** Field type Set  */
 
     @JvmOverloads
     fun <E> field(accessor: KProperty1<M, Set<E>>, defaultValue: Set<E>? = mutableSetOf<E>()): SetProperty<E> {
-        return add(KSetPropertyField<E, ObservableSet<E>, SetProperty<E>>(accessor, defaultValue))
+        return add(SetPropertyFieldImpl<E, ObservableSet<E>, SetProperty<E>>(accessor, defaultValue))
     }
 
     @JvmOverloads
     @JvmName("fxfield")
     fun <E> field(accessor: KProperty1<M, SetProperty<E>>, defaultValue: Set<E>? = mutableSetOf<E>()): SetProperty<E> {
-        return add(FxSetPropertyField<E, ObservableSet<E>, SetProperty<E>>(accessor, defaultValue))
+        return add(SetPropertyFieldImpl<E, ObservableSet<E>, SetProperty<E>>(accessor, defaultValue))
     }
 
 
