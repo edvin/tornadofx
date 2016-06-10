@@ -40,7 +40,6 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
   -DarchetypeVersion=1.5.0
 ```
-> Remember to update version to 1.4.7 in pom.xml
 
 ### Add TornadoFX to your project
 
