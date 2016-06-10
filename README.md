@@ -38,7 +38,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.0.3
+  -DarchetypeVersion=1.5.0
 ```
 > Remember to update version to 1.4.7 in pom.xml
 
@@ -50,14 +50,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.4.9</version>
+	<version>1.5.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.9'
+compile 'no.tornado:tornadofx:1.5.0'
 ```
 
 ### What does it look like? (Code snippets)
