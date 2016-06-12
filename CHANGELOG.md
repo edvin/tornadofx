@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1-SNAPSHOT]
+
+### Added
+
+- `fxid()` specific fx:id name as optional parameter 
+
 ## [1.5.0] - 2016-06-10
 
 ### Added

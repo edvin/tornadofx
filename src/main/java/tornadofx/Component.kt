@@ -233,16 +233,17 @@ abstract class UIComponent : Component() {
     }
 
 
-    inline fun <reified T : EventTarget> fxid() = object : ReadOnlyProperty<UIComponent, T> {
+    inline fun <reified T : EventTarget> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
-            val value = thisRef.fxmlLoader!!.namespace[property.name]
+            val key = propName ?: property.name
+            val value = thisRef.fxmlLoader!!.namespace[key]
             if (value is T) return value
             if (value == null)
-                log.warning("Property ${property.name} of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader!!.location}")
+                log.warning("Property $key of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader!!.location}")
             else
-                log.warning("Property ${property.name} of $thisRef did not resolve to the correct type. Check declaration in ${thisRef.fxmlLoader!!.location}")
+                log.warning("Property $key of $thisRef did not resolve to the correct type. Check declaration in ${thisRef.fxmlLoader!!.location}")
 
-            throw IllegalArgumentException("Property ${property.name} does not match fx:id declaration")
+            throw IllegalArgumentException("Property $key does not match fx:id declaration")
         }
     }
 
