@@ -115,6 +115,21 @@ class StylesheetTests {
     }
 
     @Test
+    fun multiSelect() {
+        stylesheet {
+            s(vbox child wrapper contains label, label) {
+                textFill = Color.BLUE
+            }
+        } shouldEqual {
+            """
+            .vbox > .wrapper .label, .label {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
     fun nestedModifier_1() {
         stylesheet {
             s(label, text) {
