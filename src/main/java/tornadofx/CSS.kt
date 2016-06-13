@@ -55,13 +55,14 @@ interface Selectable {
 interface SelectionHolder {
     fun addSelection(selection: CssSelection)
     fun removeSelection(selection: CssSelection)
-    operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelection = TODO()
+    operator fun String.invoke(op: CssSelectionBlock.() -> Unit) = toSelector()(op)
     operator fun Selectable.invoke(op: CssSelectionBlock.() -> Unit): CssSelection {
         val selection = CssSelection(toSelection(), op)
         addSelection(selection)
         return selection
     }
 
+    fun s(selector: String, op: CssSelectionBlock.() -> Unit) = selector(op)
     fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = s(selector, *selectors)(op)
     fun s(selector: Selectable, vararg selectors: Selectable) = CssSelector(
             *selector.toSelection().rule,
@@ -606,10 +607,11 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
 
 class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
     companion object {
-        fun elem(value: String) = CssRule("", value)
-        fun id(value: String) = CssRule("#", value)
-        fun c(value: String) = CssRule(".", value)
-        fun pc(value: String) = CssRule(":", value)
+        val validNameRegex = Regex("-?[_a-zA-Z][_a-zA-Z0-9-]*")
+        fun elem(value: String) = CssRule("", value.cssValidate())
+        fun id(value: String) = CssRule("#", value.cssValidate())
+        fun c(value: String) = CssRule(".", value.cssValidate())
+        fun pc(value: String) = CssRule(":", value.cssValidate())
     }
 
     override fun render() = "$prefix$name"
@@ -737,6 +739,12 @@ val Color.css: String
 fun <T : Node> T.setId(cssId: CssRule): T {
     id = cssId.name
     return this
+}
+
+fun String.cssValidate() = if (matches(CssRule.validNameRegex)) this else throw IllegalArgumentException("$this is not a valid Css name")
+
+fun String.toSelector(): CssSelector {
+    TODO()  // TODO
 }
 
 // Style Class
