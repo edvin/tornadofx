@@ -8,29 +8,29 @@ import org.junit.Assert
 import org.junit.Test
 import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
+import tornadofx.Stylesheet.Companion.label
 import kotlin.test.assertEquals
-import tornadofx.Stylesheet.Companion.label as label2
 
 class StylesheetTests {
-    val vbox by cssclassrule()
-    val wrapper by cssclassrule()
+    val vbox by cssclass()
+    val wrapper by cssclass()
 
-    val text by cssclassrule()
-    val box by cssclassrule()
+    val text by cssclass()
+    val box by cssclass()
 
-    val a by csselementrule()
-    val b by cssclassrule()
-    val c by cssclassrule()
-    val d by cssclassrule()
-    val e by cssclassrule()
-    val f by cssclassrule()
-    val x by cssclassrule()
-    val y by cssclassrule()
-    val z by cssclassrule()
-    val john by cssclassrule()
-    val smith by csspseudoclassrule()
-    val jane by cssidrule()
-    val doe by cssidrule()
+    val a by csselement()
+    val b by cssclass()
+    val c by cssclass()
+    val d by cssclass()
+    val e by cssclass()
+    val f by cssclass()
+    val x by cssclass()
+    val y by cssclass()
+    val z by cssclass()
+    val john by cssclass()
+    val smith by csspseudoclass()
+    val jane by cssid()
+    val doe by cssid()
 
     @Test
     fun cartesian() {
@@ -45,13 +45,13 @@ class StylesheetTests {
                 textFill = Color.GREEN
                 +mixin
             }
-            x.descendant(y).descendant(z) or a.refine(b).child(c).descendant(d).adjacent(e).sibling(f) {
+            x.contains(y).contains(z) or a.and(b).child(c).contains(d).next(e).sibling(f) {
                 textFill = Color.RED
                 backgroundColor += Color.BROWN
                 backgroundColor += Color.WHITE
                 +mixin
 
-                john.refine(smith) or jane.child(doe) {
+                john.and(smith) or jane.child(doe) {
                     textFill = Color.BLUE
                 }
             }
@@ -74,7 +74,7 @@ class StylesheetTests {
     @Test
     fun multiValue() {
         stylesheet {
-            label2 {
+            label {
                 backgroundColor = multi(Color.WHITE, Color.BLUE)
             }
         } shouldEqual {
@@ -85,7 +85,7 @@ class StylesheetTests {
     @Test
     fun singleValue() {
         stylesheet {
-            label2 {
+            label {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -96,7 +96,7 @@ class StylesheetTests {
     @Test
     fun selectorOrder() {
         stylesheet {
-            vbox.child(wrapper).descendant(label2) {
+            vbox.child(wrapper).contains(label) {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -107,7 +107,7 @@ class StylesheetTests {
     @Test
     fun nestedModifier_1() {
         stylesheet {
-            label2 or text {
+            label or text {
                 +(hover or armed) {
                     backgroundColor += c("blue", 0.25)
                 }
@@ -143,7 +143,7 @@ class StylesheetTests {
                 backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(1.0, Color.BLACK))
                 spacing = 5.px
 
-                label2 {
+                label {
                     +wrap
                     font = Font.font(14.0)
                     fontWeight = FontWeight.BOLD
