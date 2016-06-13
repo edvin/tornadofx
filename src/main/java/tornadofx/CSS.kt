@@ -76,7 +76,7 @@ interface SelectionHolder {
     fun Scoped.append(oldSelection: CssSelection, relation: CssSubRule.Relation): CssSelection {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
-        if (ruleSets.size > 0) {
+        if (ruleSets.size > 1) {
             log.warning { "Selection has ${ruleSets.size} selectors, but only the first will be used" }
         }
         val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
