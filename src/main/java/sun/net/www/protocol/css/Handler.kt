@@ -16,9 +16,7 @@ class Handler : URLStreamHandler() {
     }
 
     class CSSURLConnection(url: URL) : URLConnection(url) {
-        override fun connect() {
-        }
-
+        override fun connect() { }
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
             val stylesheet = Class.forName(url.host).newInstance() as Stylesheet
@@ -30,6 +28,6 @@ class Handler : URLStreamHandler() {
 
     class HandlerFactory : URLStreamHandlerFactory {
         override fun createURLStreamHandler(protocol: String) =
-                if ("css" == protocol) Handler() else null
+            if ("css" == protocol) Handler() else null
     }
 }
