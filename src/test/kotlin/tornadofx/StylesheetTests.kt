@@ -6,12 +6,17 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import org.junit.Assert
 import org.junit.Test
-import tornadofx.Stylesheet.Companion.label
+import tornadofx.Stylesheet.Companion.armed
+import tornadofx.Stylesheet.Companion.hover
 import kotlin.test.assertEquals
+import tornadofx.Stylesheet.Companion.label as label2
 
 class StylesheetTests {
-    val vbox by cssclass()
-    val wrapper by cssclass()
+    val vbox by cssclassrule()
+    val wrapper by cssclassrule()
+
+    val text by cssclassrule()
+    val box by cssclassrule()
 
     val a by csselementrule()
     val b by cssclassrule()
@@ -35,7 +40,7 @@ class StylesheetTests {
                 fontSize = 30.mm
             }
         }
-        val ss = stylesheet2 {
+        val ss = stylesheet {
             john {
                 textFill = Color.GREEN
                 +mixin
@@ -64,10 +69,12 @@ class StylesheetTests {
         println(rendered.strip())
     }
 
+    // TODO: Test string parsing
+
     @Test
     fun multiValue() {
         stylesheet {
-            s(label) {
+            label2 {
                 backgroundColor = multi(Color.WHITE, Color.BLUE)
             }
         } shouldEqual {
@@ -78,7 +85,7 @@ class StylesheetTests {
     @Test
     fun singleValue() {
         stylesheet {
-            s(label) {
+            label2 {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -89,7 +96,7 @@ class StylesheetTests {
     @Test
     fun selectorOrder() {
         stylesheet {
-            s(vbox direct wrapper contains label) {
+            vbox.child(wrapper).descendant(label2) {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -100,14 +107,14 @@ class StylesheetTests {
     @Test
     fun nestedModifier_1() {
         stylesheet {
-            s(".label, .text") {
-                +s(":hover, :armed") {
+            label2 or text {
+                +(hover or armed) {
                     backgroundColor += c("blue", 0.25)
                 }
             }
         } shouldEqual {
             """
-        .label:hover, .text:hover, .label:armed, .text:armed {
+        .label:hover, .label:armed, .text:hover, .text:armed {
             -fx-background-color: rgba(0, 0, 255, 0.25);
         }
         """
@@ -118,7 +125,7 @@ class StylesheetTests {
     fun gradientsWithErrorColor() {
         stylesheet {
             val hover = mixin {
-                +s(":hover") {
+                +hover {
                     backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
                 }
             }
@@ -131,12 +138,12 @@ class StylesheetTests {
                 +hover
             }
 
-            s(".box") {
+            box {
                 +wrap
                 backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(1.0, Color.BLACK))
                 spacing = 5.px
 
-                s(".label") {
+                label2 {
                     +wrap
                     font = Font.font(14.0)
                     fontWeight = FontWeight.BOLD
@@ -187,27 +194,20 @@ class StylesheetTests {
     @Test
     fun inlineStyle() {
         val node = Pane()
-        node.style {
+        node.style2 {
             backgroundColor += Color.RED
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
-        node.style(append = true) {
+        node.style2(append = true) {
             padding = box(10.px)
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
     }
 
     private fun stylesheet(op: Stylesheet.() -> Unit) =
-            Stylesheet().apply { op(this) }
+            Stylesheet().apply(op)
 
     infix fun Stylesheet.shouldEqual(op: () -> String) {
-        Assert.assertEquals(op().strip(), render().strip())
-    }
-
-    private fun stylesheet2(op: Stylesheet2.() -> Unit) =
-            Stylesheet2().apply(op)
-
-    infix fun Stylesheet2.shouldEqual(op: () -> String) {
         Assert.assertEquals(op().strip(), render().strip())
     }
 

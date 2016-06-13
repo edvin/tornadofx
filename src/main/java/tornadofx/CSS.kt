@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
@@ -19,35 +21,237 @@ import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import java.net.URL
-import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.charset.StandardCharsets
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.*
+import java.util.logging.Logger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class CssBlock {
-    val selections = mutableListOf<Selection>()
+private val _log = lazy { Logger.getLogger("CSS") }
+val log: Logger get() = _log.value
 
-    operator fun Selection.unaryPlus() {
-        modifier = true
-    }
+interface Rendered {
+    fun render(): String
+}
 
-    fun select(selector: String, block: Selection.() -> Unit): Selection {
-        val selection = Selection(selector)
-        selection.block()
-        selections += selection
+interface Scoped {
+    fun append(rule: CssSubRule): CssRuleSet
+    fun refine(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.REFINE))
+    fun child(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.CHILD))
+    fun descendant(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.DESCENDANT))
+    fun adjacent(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.ADJACENT))
+    fun sibling(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.SIBLING))
+}
+
+interface Selectable {
+    fun toSelection(): CssSelector
+    infix fun or(rule: CssRuleSet) = toSelection().addRule(rule)
+    infix fun or(rule: CssRule) = toSelection().addRule(CssRuleSet(rule))
+}
+
+interface SelectionHolder {
+    fun addSelection(selection: CssSelection)
+    fun removeSelection(selection: CssSelection)
+    operator fun Selectable.invoke(op: CssSelectionBlock.() -> Unit): CssSelection {
+        val selection = CssSelection(toSelection(), op)
+        addSelection(selection)
         return selection
     }
 
-    fun select(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(selector.joinToString(), block)
+    fun s(selector: Selectable, op: CssSelectionBlock.() -> Unit) = selector.toSelection()(op)
+    fun s(selection: String, op: CssSelectionBlock.() -> Unit) = selection(op)
+    operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelectionBlock = TODO()
 
-    fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
+    infix fun Selectable.or(selection: CssSelection): CssSelection {
+        removeSelection(selection)
+        val newSelection = CssSelection(CssSelector(*toSelection().rule, *selection.selector.rule)) { mix(selection.block) }
+        addSelection(newSelection)
+        return newSelection
+    }
 
-    fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
+    fun Scoped.refine(rule: CssRule, op: CssSelectionBlock.() -> Unit) = refine(rule)(op)
+    fun Scoped.child(rule: CssRule, op: CssSelectionBlock.() -> Unit) = child(rule)(op)
+    fun Scoped.descendant(rule: CssRule, op: CssSelectionBlock.() -> Unit) = descendant(rule)(op)
+    fun Scoped.adjacent(rule: CssRule, op: CssSelectionBlock.() -> Unit) = adjacent(rule)(op)
+    fun Scoped.sibling(rule: CssRule, op: CssSelectionBlock.() -> Unit) = sibling(rule)(op)
 }
 
-open class SelectionBlock : CssBlock() {
+open class Stylesheet : SelectionHolder, Rendered {
+    companion object {
+        // TODO: Elements?
+
+        // Style classes used by JavaFX
+        val accordion by cssclassrule()
+        val arrow by cssclassrule()
+        val arrowButton by cssclassrule()
+        val axis by cssclassrule()
+        val axisMinorTickMark by cssclassrule()
+        val button by cssclassrule()
+        val buttonBar by cssclassrule()
+        val cell by cssclassrule()
+        val chart by cssclassrule()
+        val chartLegend by cssclassrule()
+        val chartLegendItem by cssclassrule()
+        val chartLegendSymbol by cssclassrule()
+        val checkBox by cssclassrule()
+        val choiceBox by cssclassrule()
+        val colorPicker by cssclassrule()
+        val columnHeader by cssclassrule()
+        val comboBox by cssclassrule()
+        val comboBoxBase by cssclassrule()
+        val comboBoxPopup by cssclassrule()
+        val content by cssclassrule()
+        val contextMenu by cssclassrule()
+        val datePicker by cssclassrule()
+        val dialogPane by cssclassrule()
+        val firstTitledPane by cssclassrule()
+        val graphicContainer by cssclassrule()
+        val headerPanel by cssclassrule()
+        val htmlEditor by cssclassrule()
+        val hyperlink by cssclassrule()
+        val imageView by cssclassrule()
+        val indexedCell by cssclassrule()
+        val label by cssclassrule()
+        val leftContainer by cssclassrule()
+        val listCell by cssclassrule()
+        val listView by cssclassrule()
+        val mediaView by cssclassrule()
+        val menu by cssclassrule()
+        val menuBar by cssclassrule()
+        val menuButton by cssclassrule()
+        val menuItem by cssclassrule()
+        val pagination by cssclassrule()
+        val passwordField by cssclassrule()
+        val progressBar by cssclassrule()
+        val progressIndicator by cssclassrule()
+        val radioButton by cssclassrule()
+        val rightContainer by cssclassrule()
+        val root by cssclassrule()
+        val rootPopup by cssclassrule("root.popup")
+        val scrollArrow by cssclassrule()
+        val scrollBar by cssclassrule()
+        val scrollPane by cssclassrule()
+        val separator by cssclassrule()
+        val slider by cssclassrule()
+        val spinner by cssclassrule()
+        val splitMenuButton by cssclassrule()
+        val splitPane by cssclassrule()
+        val tableView by cssclassrule()
+        val tabPane by cssclassrule()
+        val textArea by cssclassrule()
+        val textField by cssclassrule()
+        val textInput by cssclassrule()
+        val toggleButton by cssclassrule()
+        val toolBar by cssclassrule()
+        val tooltip by cssclassrule()
+        val treeCell by cssclassrule()
+        val treeTableCell by cssclassrule()
+        val treeTableView by cssclassrule()
+        val treeView by cssclassrule()
+        val webView by cssclassrule()
+
+        // Style classes used by Form Builder
+        val form by cssclassrule()
+        val fieldset by cssclassrule()
+        val legend by cssclassrule()
+        val field by cssclassrule()
+        val labelContainer by cssclassrule()
+        val inputContainer by cssclassrule()
+
+        // Pseudo classes used by JavaFX
+        val armed by csspseudoclassrule()
+        val disabled by csspseudoclassrule()
+        val focused by csspseudoclassrule()
+        val hover by csspseudoclassrule()
+        val pressed by csspseudoclassrule()
+        val showMnemonics by csspseudoclassrule()
+    }
+
+    val selections = mutableListOf<CssSelection>()
+
+    override fun addSelection(selection: CssSelection) {
+        selections += selection
+    }
+
+    override fun removeSelection(selection: CssSelection) {
+        selections -= selection
+    }
+
+    override fun render() = selections.joinToString(separator = "") { it.render() }
+
+    val base64URL: URL get() {
+        val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
+        return URL("css://$content:64")
+    }
+}
+
+open class Proper {
+    companion object {
+        fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
+        fun <T> toCss(value: T): String {
+            when (value) {
+                null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
+                is MultiValue<*> -> return value.elements.joinToString { toCss(it) }
+                is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
+                is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
+                is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
+                is Cursor -> return if (value is ImageCursor) {
+                    value.image.javaClass.getDeclaredField("url").let {
+                        it.isAccessible = true
+                        it.get(value.image).toString()
+                    }
+                } else {
+                    value.toString()
+                }
+                is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
+                        "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
+                is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
+                    append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
+                    append(" ")
+                    append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
+                }
+                is BorderStrokeStyle -> return when (value) {
+                    BorderStrokeStyle.NONE -> "none"
+                    BorderStrokeStyle.DASHED -> "dashed"
+                    BorderStrokeStyle.DOTTED -> "dotted"
+                    BorderStrokeStyle.SOLID -> "solid"
+                    else -> buildString {
+                        // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
+                        append("segments(${value.dashArray.joinToString(separator = " ")}) ")
+                        append(toCss(value.type))
+                        append(" line-join ${toCss(value.lineJoin)} ")
+                        if (value.lineJoin == StrokeLineJoin.MITER) {
+                            append(value.miterLimit)
+                        }
+                        append(" line-cap ${toCss(value.lineCap)}")
+                    }
+                }
+                is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
+                is Array<*> -> return value.joinToString { toCss(it) }
+                is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
+                is KClass<*> -> return value.simpleName ?: "none"
+                is String -> return "\"$value\""
+                is Effect -> {
+                    // JavaFX currently only supports DropShadow and InnerShadow in CSS
+                    when (value) {
+                        is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                                "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
+                        is InnerShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                                "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
+                        else -> return "none"
+                    }
+                }
+                is Color -> return value.css
+                is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
+            }
+            return value.toString()
+        }
+    }
+
     val properties = linkedMapOf<String, Any>()
 
     // Font
@@ -302,316 +506,304 @@ open class SelectionBlock : CssBlock() {
     var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
     var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
-    fun mix(other: SelectionBlock) {
-        properties.putAll(other.properties)
-        selections.addAll(other.selections)
-    }
-
-    operator fun Mixin.unaryPlus() = this@SelectionBlock.mix(this)
-
-    private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<SelectionBlock, V> {
-        return object : ReadWriteProperty<SelectionBlock, V> {
-            override fun getValue(thisRef: SelectionBlock, property: KProperty<*>): V {
+    private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<Proper, V> {
+        return object : ReadWriteProperty<Proper, V> {
+            override fun getValue(thisRef: Proper, property: KProperty<*>): V {
                 if (!properties.containsKey(key) && MultiValue::class.java.isAssignableFrom(V::class.java))
                     properties[key] = MultiValue<V>()
                 return properties[key] as V
             }
 
-            override fun setValue(thisRef: SelectionBlock, property: KProperty<*>, value: V) {
+            override fun setValue(thisRef: Proper, property: KProperty<*>, value: V) {
                 properties[key] = value as Any
             }
         }
     }
 }
 
-class Mixin : SelectionBlock()
+class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
+    val block = CssSelectionBlock().apply(op)
 
-class Selection(selector: String) : SelectionBlock() {
-    var selector: String
-    var modifier = false
+    override fun render() = render(emptyList(), false)
 
-    init {
-        this.selector = selector.trim().replace(selectorSeparator, ", ")
-    }
-
-    fun render(current: String = ""): String {
-        return buildString {
-            val currentSelector = expand(current, selector)
-            if (properties.isNotEmpty()) {
-                append("$currentSelector {\n")
-                for ((name, value) in properties) {
-                    val renderedValue = toCss(value)
-                    if (renderedValue.isNotBlank())
-                        append("    $name: $renderedValue;\n")
-                }
-                append("}\n")
+    fun render(parents: List<String>, refine: Boolean): String = buildString {
+        val ruleStrings = selector.strings(parents, refine)
+        if (block.properties.size > 0) {
+            append("${ruleStrings.joinToString()} {\n")
+            for ((name, value) in block.properties) {
+                append("    $name: ${Proper.toCss(value)};\n")
             }
-            for (selection in selections) {
-                append(selection.render(if (selection.modifier) currentSelector else "$currentSelector "))
-            }
+            append("}\n\n")
         }
-    }
-
-    private fun expand(current: String, selector: String) =
-            selector.split(selectorSeparator).map { internalExpand(current, it) }.joinToString().replace("  ", " ")
-
-    private fun internalExpand(current: String, selector: String) =
-            current.split(selectorSeparator).map { it + selector }.joinToString().replace("  ", " ")
-
-    override fun toString() = render()
-
-    companion object {
-        private val selectorSeparator = Regex("\\s*,\\s*")
+        for ((selection, refine) in block.selections) {
+            append(selection.render(ruleStrings, refine))
+        }
     }
 }
 
-fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
-fun <T> toCss(value: T): String {
-    when (value) {
-        null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
-        is MultiValue<*> -> return value.elements.map { toCss(it) }.joinToString(", ")
-        is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
-        is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
-        is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
-        is Cursor -> return if (value is ImageCursor) {
-            value.image.javaClass.getDeclaredField("url").let {
-                it.isAccessible = true
-                it.get(value.image).toString()
+class CssSelector(vararg val rule: CssRuleSet) : Selectable {
+    companion object {
+        fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
+
+        fun List<String>.cartesian(parents: List<String>, refine: Boolean): List<String> {
+            if (parents.size == 0) {
+                return this;
             }
-        } else {
-            value.toString()
+            return parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
         }
-        is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
-                "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
-        is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
-            append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
-            append(" ")
-            append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
-        }
-        is BorderStrokeStyle -> return when (value) {
-            BorderStrokeStyle.NONE -> "none"
-            BorderStrokeStyle.DASHED -> "dashed"
-            BorderStrokeStyle.DOTTED -> "dotted"
-            BorderStrokeStyle.SOLID -> "solid"
-            else -> buildString {
-                // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
-                append("segments(${value.dashArray.joinToString(separator = " ")}) ")
-                append(toCss(value.type))
-                append(" line-join ${toCss(value.lineJoin)} ")
-                if (value.lineJoin == StrokeLineJoin.MITER) {
-                    append(value.miterLimit)
-                }
-                append(" line-cap ${toCss(value.lineCap)}")
-            }
-        }
-        is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
-        is Array<*> -> return value.joinToString { toCss(it) }
-        is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
-        is KClass<*> -> return value.simpleName ?: "none"
-        is String -> return "\"$value\""
-        is Effect -> {
-            // JavaFX currently only supports DropShadow and InnerShadow in CSS
-            when (value) {
-                is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                        "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
-                is InnerShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                        "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
-                else -> return "none"
-            }
-        }
-        is Color -> return value.css
-        is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
     }
-    return value.toString()
+
+    override fun toSelection() = this
+
+    fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
+
+    fun addRule(cssRuleSet: CssRuleSet) = CssSelector(*rule, cssRuleSet)
 }
 
-open class Stylesheet : CssBlock() {
-    companion object {
-        // Pseudo classes used by JavaFX
-        val armed by csspseudoclass()
-        val disabled by csspseudoclass()
-        val focused by csspseudoclass()
-        val hover by csspseudoclass()
-        val pressed by csspseudoclass()
-        val showMnemonics by csspseudoclass()
+class CssSelectionBlock() : Proper(), SelectionHolder {
+    val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
 
-        // Style classes used by JavaFX
-        val accordion by cssclass()
-        val arrow by cssclass()
-        val arrowButton by cssclass()
-        val axis by cssclass()
-        val axisMinorTickMark by cssclass()
-        val button by cssclass()
-        val buttonBar by cssclass()
-        val cell by cssclass()
-        val chart by cssclass()
-        val chartLegend by cssclass()
-        val chartLegendItem by cssclass()
-        val chartLegendSymbol by cssclass()
-        val checkBox by cssclass()
-        val choiceBox by cssclass()
-        val colorPicker by cssclass()
-        val columnHeader by cssclass()
-        val comboBox by cssclass()
-        val comboBoxBase by cssclass()
-        val comboBoxPopup by cssclass()
-        val content by cssclass()
-        val contextMenu by cssclass()
-        val datePicker by cssclass()
-        val dialogPane by cssclass()
-        val firstTitledPane by cssclass()
-        val graphicContainer by cssclass()
-        val headerPanel by cssclass()
-        val htmlEditor by cssclass()
-        val hyperlink by cssclass()
-        val imageView by cssclass()
-        val indexedCell by cssclass()
-        val label by cssclass()
-        val leftContainer by cssclass()
-        val listCell by cssclass()
-        val listView by cssclass()
-        val mediaView by cssclass()
-        val menu by cssclass()
-        val menuBar by cssclass()
-        val menuButton by cssclass()
-        val menuItem by cssclass()
-        val pagination by cssclass()
-        val passwordField by cssclass()
-        val progressBar by cssclass()
-        val progressIndicator by cssclass()
-        val radioButton by cssclass()
-        val rightContainer by cssclass()
-        val root by cssclass()
-        val rootPopup by cssclass("root.popup")
-        val scrollArrow by cssclass()
-        val scrollBar by cssclass()
-        val scrollPane by cssclass()
-        val separator by cssclass()
-        val slider by cssclass()
-        val spinner by cssclass()
-        val splitMenuButton by cssclass()
-        val splitPane by cssclass()
-        val tableView by cssclass()
-        val tabPane by cssclass()
-        val textArea by cssclass()
-        val textField by cssclass()
-        val textInput by cssclass()
-        val toggleButton by cssclass()
-        val toolBar by cssclass()
-        val tooltip by cssclass()
-        val treeCell by cssclass()
-        val treeTableCell by cssclass()
-        val treeTableView by cssclass()
-        val treeView by cssclass()
-        val webView by cssclass()
-
-        // Style classes used by Form Builder
-        val form by cssclass()
-        val fieldset by cssclass()
-        val legend by cssclass()
-        val field by cssclass()
-        val labelContainer by cssclass()
-        val inputContainer by cssclass()
+    override fun addSelection(selection: CssSelection) {
+        selections[selection] = false
     }
 
-    open fun render() = buildString { selections.forEach { append(it) } }
-
-    val base64URL: URL get() {
-        val content = Base64.getEncoder().encodeToString(render().toByteArray(UTF_8))
-        return URL("css://$content:64")
+    override fun removeSelection(selection: CssSelection) {
+        selections.remove(selection)
     }
 
-    fun mixin(init: Mixin.() -> Unit): Mixin {
-        val mixin = Mixin()
-        mixin.init()
-        return mixin
-    }
-
-    override fun toString() = render()
-}
-
-// Type safe selectors
-abstract class CSSSelector(val prefix: String, _name: String? = null) {
-    private val entries by lazy { mutableListOf<Pair<Type, CSSSelector>>() }
-
-    enum class Type(val prefix: String) {
-        PLUS(""), CONTAINS(" "), DIRECT(" > ");
-
-        override fun toString() = prefix
-    }
-
-    val cssName: String
-    val name: String
-
-    companion object {
-        val uc = Regex("([A-Z])")
-    }
-
-    init {
-        val base = _name ?: javaClass.simpleName
-        name = (base[0].toLowerCase() + base.substring(1)).replace(uc, "-$1").toLowerCase()
-        cssName = prefix + name
-    }
-
-    // .box.label
-    operator fun plus(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.PLUS, other))
+    operator fun CssSelection.unaryPlus(): CssSelection {
+        this@CssSelectionBlock.selections[this] = true
         return this
     }
 
-    // .box .label
-    infix fun contains(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.CONTAINS, other))
+    operator fun CssSelection.unaryMinus(): CssSelection {
+        this@CssSelectionBlock.selections[this] = false
         return this
     }
 
-    // .box > .label
-    infix fun direct(other: CSSSelector): CSSSelector {
-        entries.add(Pair(Type.DIRECT, other))
-        return this
+    operator fun CssSelectionBlock.unaryPlus() {
+        this@CssSelectionBlock.mix(this)
     }
 
-    override fun toString() = buildString {
-        append(cssName)
-        for ((prefix, selector) in entries) append("$prefix$selector")
+    fun mix(mixin: CssSelectionBlock) {
+        properties.putAll(mixin.properties)
+        selections.putAll(mixin.selections)
     }
 }
 
-open class CSSClass(name: String? = null) : CSSSelector(".", name)
-open class CSSPseudoClass(name: String? = null) : CSSSelector(":", name)
-open class CSSId(name: String? = null) : CSSSelector("#", name)
+fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock().apply(op)
 
-class CSSClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSClass> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSClass(name ?: property.name)
+class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Selectable, Scoped, Rendered {
+    override fun render() = buildString {
+        append(rootRule.render())
+        subRule.forEach { append(it.render()) }
+    }
+
+    override fun toSelection() = CssSelector(this)
+    override fun append(rule: CssSubRule) = CssRuleSet(rootRule, *subRule, rule)
 }
 
-class CSSPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CSSPseudoClass> {
-    var value: CSSPseudoClass? = null
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSPseudoClass(name ?: property.name)
+class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
+    companion object {
+        fun elem(value: String) = CssRule("", value)
+        fun id(value: String) = CssRule("#", value)
+        fun c(value: String) = CssRule(".", value)
+        fun pc(value: String) = CssRule(":", value)
+    }
+
+    override fun render() = "$prefix$name"
+    override fun toSelection() = CssRuleSet(this).toSelection()
+    override fun append(rule: CssSubRule) = CssRuleSet(this, rule)
 }
 
-class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CSSId(name ?: property.name)
+class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
+    override fun render() = "${relation.render()}${rule.render()}"
+
+    enum class Relation(val symbol: String) : Rendered {
+        REFINE(""),
+        CHILD(" > "),
+        DESCENDANT(" "),
+        ADJACENT(" + "),
+        SIBLING(" ~ ");
+
+        override fun render() = symbol
+    }
+
+    operator fun component1() = rule
+    operator fun component2() = relation
 }
 
-fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
-fun cssclass(value: String? = null) = CSSClassDelegate(value)
-fun cssid(value: String? = null) = CSSIdDelegate(value)
+// Inline CSS
 
-/**
- * Add styles to the node using type safe CSS
- */
-fun Node.style(append: Boolean = false, op: SelectionBlock.() -> Unit) {
-    val block = SelectionBlock()
-    op(block)
-    val output = StringBuilder()
-    for ((name, value) in block.properties)
-        output.append(" $name: ${toCss(value)};")
+class InlineCss : Proper(), Rendered {
+    override fun render() = properties.entries.joinToString("") { " ${it.key}: ${toCss(it.value)};" }
+}
+
+fun Node.style2(append: Boolean = false, op: InlineCss.() -> Unit) {
+    val block = InlineCss().apply(op)
 
     if (append && style.isNotBlank())
-        style += output.toString()
+        style += block.render()
     else
-        style = output.toString().trim()
+        style = block.render().trim()
+}
+
+// Delegates
+
+fun csselementrule(value: String? = null) = CssElementDelegate(value)
+fun cssidrule(value: String? = null) = CssIdDelegate(value)
+fun cssclassrule(value: String? = null) = CssClassDelegate(value)
+fun csspseudoclassrule(value: String? = null) = CssPseudoClassDelegate(value)
+
+class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
+}
+
+class CssIdDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name)
+}
+
+class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name)
+}
+
+class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
+}
+
+// Dimensions
+
+internal fun dimStr(value: Double, units: String) = when (value) {
+    Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
+    Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
+    Double.NaN -> "0$units"
+    else -> "${fiveDigits.format(value)}$units"
+}
+
+class LinearDimension(val value: Double, val units: Units) {
+    override fun toString() = dimStr(value, units.toString())
+
+    enum class Units(val value: String) {
+        px("px"),
+        mm("mm"),
+        cm("cm"),
+        inches("in"),
+        pt("pt"),
+        pc("pc"),
+        em("em"),
+        ex("ex"),
+        percent("%");
+
+        override fun toString() = value
+    }
+}
+
+val infinity = LinearDimension(Double.POSITIVE_INFINITY, LinearDimension.Units.px)
+
+val Number.px: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.px)
+val Number.mm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.mm)
+val Number.cm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.cm)
+val Number.inches: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.inches)
+val Number.pt: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pt)
+val Number.pc: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pc)
+val Number.em: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.em)
+val Number.ex: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.ex)
+val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.percent)
+
+class AngularDimension(val value: Double, val units: Units) {
+    override fun toString() = dimStr(value, units.toString())
+    enum class Units { deg, rad, grad, turn; }
+}
+
+val Number.deg: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.deg)
+val Number.rad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.rad)
+val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.grad)
+val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
+
+// Enums
+
+enum class FXVisibility { VISIBLE, HIDDEN, COLLAPSE, INHERIT; }
+enum class FXTabAnimation { GROW, NONE; }
+
+// Misc
+
+val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH))
+
+val Color.css: String
+    get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
+
+fun <T : Node> T.setId(cssId: CssRule): T {
+    id = cssId.name
+    return this
+}
+
+// Style Class
+
+fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
+fun <T : Node> T.addClass(cssClass: CssRule) = addClass(cssClass.name)
+fun <T : Node> T.removeClass(cssClass: CssRule) = removeClass(cssClass.name)
+fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+@Suppress("UNCHECKED_CAST")
+fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.toString()) as T
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
+
+fun Iterable<Node>.addClass(cssClass: CssRule) = forEach { it.addClass(cssClass) }
+fun Iterable<Node>.removeClass(cssClass: CssRule) = forEach { it.removeClass(cssClass) }
+fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
+
+class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
+    val listener: ChangeListener<CssRule>
+
+    init {
+        fun checkAdd(newValue: CssRule?) {
+            if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
+        }
+        listener = ChangeListener { observableValue, oldValue, newValue ->
+            if (oldValue != null) node.removeClass(oldValue)
+            checkAdd(newValue)
+        }
+        checkAdd(value.value)
+        value.addListener(listener)
+    }
+
+    fun dispose() = value.removeListener(listener)
+}
+
+fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
+
+// Containers
+
+fun <T> multi(vararg elements: T) = MultiValue(elements)
+
+open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+    override fun toString() = "${Proper.toCss(top)} ${Proper.toCss(right)} ${Proper.toCss(bottom)} ${Proper.toCss(left)}"
+}
+
+fun <T> box(all: T) = CssBox(all, all, all, all)
+fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+
+fun c(colorString: String, opacity: Double = 1.0) = try {
+    Color.web(colorString, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
+    Color.MAGENTA
+}
+
+fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+    Color.color(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
+}
+
+fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+    Color.rgb(red, green, blue, opacity)
+} catch (e: Exception) {
+    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Color.MAGENTA
 }
 
 class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)

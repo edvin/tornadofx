@@ -111,8 +111,8 @@ class FX {
         }
 
         @JvmStatic
-        fun <T: Injectable> find(componentType: Class<T>) =
-            find(componentType.kotlin)
+        fun <T : Injectable> find(componentType: Class<T>) =
+                find(componentType.kotlin)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
