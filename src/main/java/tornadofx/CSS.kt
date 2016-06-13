@@ -573,18 +573,14 @@ class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
         selections.remove(selection)
     }
 
-    operator fun CssSelection.unaryPlus(): CssSelection {
-        this@CssSelectionBlock.selections[this] = true
-        return this
-    }
-
-    operator fun CssSelection.unaryMinus(): CssSelection {
-        this@CssSelectionBlock.selections[this] = false
-        return this
-    }
-
     operator fun CssSelectionBlock.unaryPlus() {
         this@CssSelectionBlock.mix(this)
+    }
+
+    fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+        val s = s(selector, *selectors)(op)
+        selections[s] = true
+        return s
     }
 
     fun mix(mixin: CssSelectionBlock) {

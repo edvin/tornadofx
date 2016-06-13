@@ -48,8 +48,8 @@ class StylesheetTests {
 
         stylesheet {
             s(a, b, c) {
-                +s(d, e, f) {
-                    +s(g, h, i) {
+                add(d, e, f) {
+                    add(g, h, i) {
                         textFill = Color.BLUE
                     }
                 }
@@ -64,7 +64,7 @@ class StylesheetTests {
 
         stylesheet {
             s(a, b, c) {
-                +s(d, e, f) {
+                add(d, e, f) {
                     s(g, h, i) {
                         textFill = Color.BLUE
                     }
@@ -133,7 +133,7 @@ class StylesheetTests {
     fun nestedModifier_1() {
         stylesheet {
             s(label, text) {
-                +s(hover, armed) {
+                add(hover, armed) {
                     backgroundColor += c("blue", 0.25)
                 }
             }
@@ -150,7 +150,7 @@ class StylesheetTests {
     fun gradientsWithErrorColor() {
         stylesheet {
             val hover = mixin {
-                +hover {
+                add(hover) {
                     backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
                 }
             }
