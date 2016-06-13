@@ -156,6 +156,7 @@ abstract class UIComponent : Component() {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
             } else {
                 modalStage = Stage(stageStyle).apply {
+                    showingProperty().addListener { obs, old, new -> if (!new) onUndock() }
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
