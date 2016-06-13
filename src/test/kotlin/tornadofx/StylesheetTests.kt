@@ -18,55 +18,71 @@ class StylesheetTests {
     val text by cssclass()
     val box by cssclass()
 
-    val a by csselement()
+    val a by cssclass()
     val b by cssclass()
     val c by cssclass()
     val d by cssclass()
     val e by cssclass()
     val f by cssclass()
-    val x by cssclass()
-    val y by cssclass()
-    val z by cssclass()
-    val john by cssclass()
-    val smith by csspseudoclass()
-    val jane by cssid()
-    val doe by cssid()
+    val g by cssclass()
+    val h by cssclass()
+    val i by cssclass()
 
     @Test
-    fun cartesian() {
-        val mixin = mixin {
-            fontSize = 50.mm
-            jane {
-                fontSize = 30.mm
-            }
-        }
-        val ss = stylesheet {
-            john {
-                textFill = Color.GREEN
-                +mixin
-            }
-            x.contains(y).contains(z) or a.and(b).child(c).contains(d).next(e).sibling(f) {
-                textFill = Color.RED
-                backgroundColor += Color.BROWN
-                backgroundColor += Color.WHITE
-                +mixin
-
-                john.and(smith) or jane.child(doe) {
-                    textFill = Color.BLUE
-                }
-            }
-            a or b {
-                c or d {
-                    e or f {
+    fun cartesianDeep() {
+        stylesheet {
+            a or b or c {
+                d or e or f {
+                    g or h or i {
                         textFill = Color.BLUE
-                        +mixin
                     }
                 }
             }
+        } shouldEqual {
+            """
+            .a .d .g, .a .d .h, .a .d .i, .a .e .g, .a .e .h, .a .e .i, .a .f .g, .a .f .h, .a .f .i, .b .d .g, .b .d .h, .b .d .i, .b .e .g, .b .e .h, .b .e .i, .b .f .g, .b .f .h, .b .f .i, .c .d .g, .c .d .h, .c .d .i, .c .e .g, .c .e .h, .c .e .i, .c .f .g, .c .f .h, .c .f .i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
         }
-        val rendered = ss.render()
-        println(rendered)
-        println(rendered.strip())
+    }
+
+    @Test
+    fun cartesianWide() {
+        stylesheet {
+            a or b or c {
+                +(d or e or f) {
+                    +(g or h or i) {
+                        textFill = Color.BLUE
+                    }
+                }
+            }
+        } shouldEqual {
+            """
+            .a.d.g, .a.d.h, .a.d.i, .a.e.g, .a.e.h, .a.e.i, .a.f.g, .a.f.h, .a.f.i, .b.d.g, .b.d.h, .b.d.i, .b.e.g, .b.e.h, .b.e.i, .b.f.g, .b.f.h, .b.f.i, .c.d.g, .c.d.h, .c.d.i, .c.e.g, .c.e.h, .c.e.i, .c.f.g, .c.f.h, .c.f.i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun cartesianMixed() {
+        stylesheet {
+            a or b or c {
+                +(d or e or f) {
+                    g or h or i {
+                        textFill = Color.BLUE
+                    }
+                }
+            }
+        } shouldEqual {
+            """
+            .a.d .g, .a.d .h, .a.d .i, .a.e .g, .a.e .h, .a.e .i, .a.f .g, .a.f .h, .a.f .i, .b.d .g, .b.d .h, .b.d .i, .b.e .g, .b.e .h, .b.e .i, .b.f .g, .b.f .h, .b.f .i, .c.d .g, .c.d .h, .c.d .i, .c.e .g, .c.e .h, .c.e .i, .c.f .g, .c.f .h, .c.f .i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
     }
 
     // TODO: Test string parsing
