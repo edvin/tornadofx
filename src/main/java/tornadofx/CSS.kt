@@ -62,12 +62,16 @@ interface SelectionHolder {
         return selection
     }
 
-    fun s(selector: String, op: CssSelectionBlock.() -> Unit) = selector(op)
-    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = s(selector, *selectors)(op)
-    fun s(selector: Selectable, vararg selectors: Selectable) = CssSelector(
+    fun select(selector: String, op: CssSelectionBlock.() -> Unit) = selector(op)
+    fun select(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = select(selector, *selectors)(op)
+    fun select(selector: Selectable, vararg selectors: Selectable) = CssSelector(
             *selector.toSelection().rule,
             *selectors.flatMap { it.toSelection().rule.asIterable() }.toTypedArray()
     )
+
+    fun s(selector: String, op: CssSelectionBlock.() -> Unit) = selector(op)
+    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = select(selector, *selectors)(op)
+    fun s(selector: Selectable, vararg selectors: Selectable) = select(selector, *selectors)
 
     infix fun Scoped.and(selection: CssSelection) = append(selection, CssSubRule.Relation.REFINE)
     infix fun Scoped.child(selection: CssSelection) = append(selection, CssSubRule.Relation.CHILD)
@@ -580,7 +584,7 @@ class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
 
     fun add(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector.toSelector(), op = op)
     fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = s(selector, *selectors)(op)
+        val s = select(selector, *selectors)(op)
         selections[s] = true
         return s
     }
