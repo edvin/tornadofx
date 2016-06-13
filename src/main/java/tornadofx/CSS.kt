@@ -55,21 +55,24 @@ interface Selectable {
 interface SelectionHolder {
     fun addSelection(selection: CssSelection)
     fun removeSelection(selection: CssSelection)
+    operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelection = TODO()
     operator fun Selectable.invoke(op: CssSelectionBlock.() -> Unit): CssSelection {
         val selection = CssSelection(toSelection(), op)
         addSelection(selection)
         return selection
     }
 
-    operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelectionBlock = TODO()
-
+    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = s(selector, *selectors)(op)
     fun s(selector: Selectable, vararg selectors: Selectable) = CssSelector(
             *selector.toSelection().rule,
             *selectors.flatMap { it.toSelection().rule.asIterable() }.toTypedArray()
     )
 
-    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = s(selector, *selectors)(op)
-
+    infix fun Scoped.and(selection: CssSelection) = append(selection, CssSubRule.Relation.REFINE)
+    infix fun Scoped.child(selection: CssSelection) = append(selection, CssSubRule.Relation.CHILD)
+    infix fun Scoped.contains(selection: CssSelection) = append(selection, CssSubRule.Relation.DESCENDANT)
+    infix fun Scoped.next(selection: CssSelection) = append(selection, CssSubRule.Relation.ADJACENT)
+    infix fun Scoped.sibling(selection: CssSelection) = append(selection, CssSubRule.Relation.SIBLING)
     fun Scoped.append(oldSelection: CssSelection, relation: CssSubRule.Relation): CssSelection {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
@@ -80,12 +83,6 @@ interface SelectionHolder {
         addSelection(selection)
         return selection
     }
-
-    infix fun Scoped.and(selection: CssSelection) = append(selection, CssSubRule.Relation.REFINE)
-    infix fun Scoped.child(selection: CssSelection) = append(selection, CssSubRule.Relation.CHILD)
-    infix fun Scoped.contains(selection: CssSelection) = append(selection, CssSubRule.Relation.DESCENDANT)
-    infix fun Scoped.next(selection: CssSelection) = append(selection, CssSubRule.Relation.ADJACENT)
-    infix fun Scoped.sibling(selection: CssSelection) = append(selection, CssSubRule.Relation.SIBLING)
 }
 
 open class Stylesheet : SelectionHolder, Rendered {
