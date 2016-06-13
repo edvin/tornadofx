@@ -13,9 +13,6 @@ class StylesheetTests {
     val vbox by cssclass()
     val wrapper by cssclass()
 
-    val vbox2 by cssclassrule()
-    val hbox2 by cssclassrule()
-    val wrapper2 by cssclassrule()
     val a by csselementrule()
     val b by cssclassrule()
     val c by cssclassrule()
@@ -32,24 +29,32 @@ class StylesheetTests {
 
     @Test
     fun cartesian() {
+        val mixin = mixin {
+            fontSize = 50.mm
+            jane {
+                fontSize = 30.mm
+            }
+        }
         val ss = stylesheet2 {
             john {
                 textFill = Color.GREEN
+                +mixin
             }
-
-            (x.descendant(y).descendant(z) or a.refine(b).child(c).descendant(d).adjacent(e).sibling(f)) {
+            x.descendant(y).descendant(z) or a.refine(b).child(c).descendant(d).adjacent(e).sibling(f) {
                 textFill = Color.RED
                 backgroundColor += Color.BROWN
                 backgroundColor += Color.WHITE
+                +mixin
 
-                +(john.refine(smith) or jane.child(doe)) {
+                john.refine(smith) or jane.child(doe) {
                     textFill = Color.BLUE
                 }
             }
-            (CssRuleSet(a) or b) {
-                (c or CssRuleSet(d)) {
-                    (e or f) {
+            a or b {
+                c or d {
+                    e or f {
                         textFill = Color.BLUE
+                        +mixin
                     }
                 }
             }

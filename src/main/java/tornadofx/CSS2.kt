@@ -46,23 +46,36 @@ interface Scoped {
 }
 
 interface Selectable {
-    fun toSelection(): CssSelection
+    fun toSelection(): CssSelector
     infix fun or(rule: CssRuleSet) = toSelection().addRule(rule)
     infix fun or(rule: CssRule) = toSelection().addRule(CssRuleSet(rule))
 }
 
 interface SelectionHolder {
-    fun addSelection(selection: CssSelectionBlock)
-    operator fun CssRule.invoke(op: CssSelectionBlock.() -> Unit) = CssRuleSet(this)(op)
-    operator fun CssRuleSet.invoke(op: CssSelectionBlock.() -> Unit) = CssSelection(this)(op)
-    operator fun CssSelection.invoke(op: CssSelectionBlock.() -> Unit): CssSelectionBlock {
-        val selection = CssSelectionBlock(this).apply(op)
+    fun addSelection(selection: CssSelection)
+    fun removeSelection(selection: CssSelection)
+    operator fun Selectable.invoke(op: CssSelectionBlock.() -> Unit): CssSelection {
+        val selection = CssSelection(toSelection(), op)
         addSelection(selection)
         return selection
     }
+
     fun s(selector: Selectable, op: CssSelectionBlock.() -> Unit) = selector.toSelection()(op)
     fun s(selection: String, op: CssSelectionBlock.() -> Unit) = selection(op)
     operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelectionBlock = TODO()
+
+    infix fun Selectable.or(selection: CssSelection): CssSelection {
+        removeSelection(selection)
+        val newSelection = CssSelection(CssSelector(*toSelection().rule, *selection.selector.rule)) { mix(selection.block) }
+        addSelection(newSelection)
+        return newSelection
+    }
+
+    fun Scoped.refine(rule: CssRule, op: CssSelectionBlock.() -> Unit) = refine(rule)(op)
+    fun Scoped.child(rule: CssRule, op: CssSelectionBlock.() -> Unit) = child(rule)(op)
+    fun Scoped.descendant(rule: CssRule, op: CssSelectionBlock.() -> Unit) = descendant(rule)(op)
+    fun Scoped.adjacent(rule: CssRule, op: CssSelectionBlock.() -> Unit) = adjacent(rule)(op)
+    fun Scoped.sibling(rule: CssRule, op: CssSelectionBlock.() -> Unit) = sibling(rule)(op)
 }
 
 class Stylesheet2 : SelectionHolder, Rendered {
@@ -156,10 +169,14 @@ class Stylesheet2 : SelectionHolder, Rendered {
         val showMnemonics by csspseudoclassrule()
     }
 
-    val selections = mutableListOf<CssSelectionBlock>()
+    val selections = mutableListOf<CssSelection>()
 
-    override fun addSelection(selection: CssSelectionBlock) {
+    override fun addSelection(selection: CssSelection) {
         selections += selection
+    }
+
+    override fun removeSelection(selection: CssSelection) {
+        selections -= selection
     }
 
     override fun render() = selections.joinToString(separator = "") { it.render() }
@@ -494,39 +511,27 @@ open class Proper {
     }
 }
 
-class CssSelectionBlock(val selection: CssSelection) : Proper(), SelectionHolder, Rendered {
-    private val selections = mutableMapOf<CssSelectionBlock, Boolean>()  // If the boolean is true, this is a refine selection
-
-    override fun addSelection(selection: CssSelectionBlock) {
-        selections[selection] = false
-    }
-
-    operator fun CssSelectionBlock.unaryPlus() {
-        this@CssSelectionBlock.selections[this] = true
-    }
-
-    operator fun CssSelectionBlock.unaryMinus() {
-        this@CssSelectionBlock.selections[this] = false
-    }
+class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
+    val block = CssSelectionBlock().apply(op)
 
     override fun render() = render(emptyList(), false)
 
     fun render(parents: List<String>, refine: Boolean): String = buildString {
-        val ruleStrings = selection.strings(parents, refine)
-        if (properties.size > 0) {
+        val ruleStrings = selector.strings(parents, refine)
+        if (block.properties.size > 0) {
             append("${ruleStrings.joinToString()} {\n")
-            for ((name, value) in properties) {
+            for ((name, value) in block.properties) {
                 append("    $name: ${toCss(value)};\n")
             }
             append("}\n\n")
         }
-        for ((selection, refine) in selections) {
+        for ((selection, refine) in block.selections) {
             append(selection.render(ruleStrings, refine))
         }
     }
 }
 
-class CssSelection(vararg val rule: CssRuleSet) : Selectable {
+class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     companion object {
         fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
 
@@ -542,8 +547,41 @@ class CssSelection(vararg val rule: CssRuleSet) : Selectable {
 
     fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
 
-    fun addRule(cssRuleSet: CssRuleSet) = CssSelection(*rule, cssRuleSet)
+    fun addRule(cssRuleSet: CssRuleSet) = CssSelector(*rule, cssRuleSet)
 }
+
+class CssSelectionBlock() : Proper(), SelectionHolder {
+    val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
+
+    override fun addSelection(selection: CssSelection) {
+        selections[selection] = false
+    }
+
+    override fun removeSelection(selection: CssSelection) {
+        selections.remove(selection)
+    }
+
+    operator fun CssSelection.unaryPlus(): CssSelection {
+        this@CssSelectionBlock.selections[this] = true
+        return this
+    }
+
+    operator fun CssSelection.unaryMinus(): CssSelection {
+        this@CssSelectionBlock.selections[this] = false
+        return this
+    }
+
+    operator fun CssSelectionBlock.unaryPlus() {
+        this@CssSelectionBlock.mix(this)
+    }
+
+    fun mix(mixin: CssSelectionBlock) {
+        properties.putAll(mixin.properties)
+        selections.putAll(mixin.selections)
+    }
+}
+
+fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock().apply(op)
 
 class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Selectable, Scoped, Rendered {
     override fun render() = buildString {
@@ -551,39 +589,24 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
         subRule.forEach { append(it.render()) }
     }
 
-    override fun toSelection() = CssSelection(this)
+    override fun toSelection() = CssSelector(this)
     override fun append(rule: CssSubRule) = CssRuleSet(rootRule, *subRule, rule)
 }
 
-sealed class CssRule(val value: String) : Selectable, Scoped, Rendered {
-    class ElementRule(value: String) : CssRule(value) {
-        override fun render() = value
+class CssRule(val prefix: String, val value: String) : Selectable, Scoped, Rendered {
+    companion object {
+        fun elem(value: String) = CssRule("", value)
+        fun id(value: String) = CssRule("#", value)
+        fun c(value: String) = CssRule(".", value)
+        fun pc(value: String) = CssRule(":", value)
     }
 
-    class IdRule(value: String) : CssRule(value) {
-        override fun render() = "#$value"
-    }
-
-    class ClassRule(value: String) : CssRule(value) {
-        override fun render() = ".$value"
-    }
-
-    class PseudoClassRule(value: String) : CssRule(value) {
-        override fun render() = ":$value"
-    }
-
-    override fun toSelection() = CssSelection(CssRuleSet(this))
+    override fun render() = "$prefix$value"
+    override fun toSelection() = CssRuleSet(this).toSelection()
     override fun append(rule: CssSubRule) = CssRuleSet(this, rule)
 }
 
 class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
-    init {
-        if (rule is CssRule.ElementRule && relation == Relation.REFINE) {
-            // ClassRule("test").refine(ElementRule("oops") => .testoops
-            throw IllegalArgumentException("Refining with an element is not possible")
-        }
-    }
-
     override fun render() = "${relation.render()}${rule.render()}"
 
     enum class Relation(val symbol: String) : Rendered {
@@ -622,20 +645,20 @@ fun cssidrule(value: String? = null) = CssIdDelegate(value)
 fun cssclassrule(value: String? = null) = CssClassDelegate(value)
 fun csspseudoclassrule(value: String? = null) = CssPseudoClassDelegate(value)
 
-class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule.ElementRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.ElementRule(name ?: property.name)
+class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
 }
 
-class CssIdDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule.IdRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.IdRule(name ?: property.name)
+class CssIdDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name)
 }
 
-class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule.ClassRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.ClassRule(name ?: property.name)
+class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name)
 }
 
-class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule.PseudoClassRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.PseudoClassRule(name ?: property.name)
+class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
 }
 
 // Dimensions
