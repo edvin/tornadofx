@@ -29,7 +29,7 @@ class StylesheetTests {
     val i by cssclass()
 
     @Test
-    fun cartesianDeep() {
+    fun cartesian() {
         stylesheet {
             a or b or c {
                 d or e or f {
@@ -45,10 +45,7 @@ class StylesheetTests {
             }
             """
         }
-    }
 
-    @Test
-    fun cartesianWide() {
         stylesheet {
             a or b or c {
                 +(d or e or f) {
@@ -64,10 +61,7 @@ class StylesheetTests {
             }
             """
         }
-    }
 
-    @Test
-    fun cartesianMixed() {
         stylesheet {
             a or b or c {
                 +(d or e or f) {
@@ -220,13 +214,8 @@ class StylesheetTests {
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
     }
 
-    private fun stylesheet(op: Stylesheet.() -> Unit) =
-            Stylesheet().apply(op)
-
-    infix fun Stylesheet.shouldEqual(op: () -> String) {
-        Assert.assertEquals(op().strip(), render().strip())
-    }
-
+    private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
+    infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
     /**
