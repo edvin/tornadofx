@@ -643,7 +643,7 @@ class InlineCss : PropertyHolder(), Rendered {
     override fun render() = properties.entries.joinToString("") { " ${it.key}: ${toCss(it.value)};" }
 }
 
-fun Node.style2(append: Boolean = false, op: InlineCss.() -> Unit) {
+fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
     if (append && style.isNotBlank())
