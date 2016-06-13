@@ -14,6 +14,39 @@ class StylesheetTests {
     val wrapper by cssclass()
 
     @Test
+    fun cartesian() {
+        val ss = stylesheet2 {
+            s(RuleSet(Rule.IdRule("test"))) {
+                green = "awesome"
+            }
+            s(
+                    Rule.ClassRule("X")
+                            .descendant(Rule.ClassRule("Y"))
+                            .descendant(Rule.ClassRule("Z")),
+                    Rule.ClassRule("A")
+                            .refine(Rule.ClassRule("B"))
+                            .child(Rule.ClassRule("C"))
+                            .descendant(Rule.ClassRule("D"))
+                            .adjacent(Rule.ClassRule("E"))
+                            .sibling(Rule.ClassRule("F"))
+            ) {
+                red = "yep"
+                green = "nope"
+
+                +s(
+                        Rule.ClassRule("John").refine(Rule.PseudoClassRule("Doe")),
+                        Rule.ClassRule("Jane").child(Rule.IdRule("Doe"))
+                ) {
+                    blue = "maybe"
+                }
+            }
+        }
+        val rendered = ss.render()
+        println(rendered)
+        println(rendered.strip())
+    }
+
+    @Test
     fun multiValue() {
         stylesheet {
             s(label) {
@@ -150,6 +183,13 @@ class StylesheetTests {
             Stylesheet().apply { op(this) }
 
     infix fun Stylesheet.shouldEqual(op: () -> String) {
+        Assert.assertEquals(op().strip(), render().strip())
+    }
+
+    private fun stylesheet2(op: Stylesheet2.() -> Unit) =
+            Stylesheet2().apply(op)
+
+    infix fun Stylesheet2.shouldEqual(op: () -> String) {
         Assert.assertEquals(op().strip(), render().strip())
     }
 
