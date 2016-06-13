@@ -1,7 +1,5 @@
 package tornadofx
 
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
@@ -22,17 +20,11 @@ import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import java.net.URL
 import java.nio.charset.StandardCharsets.UTF_8
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 import java.util.*
-import java.util.logging.Logger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-
-private val _log = lazy { Logger.getLogger("CSS") }
-val log: Logger get() = _log.value
 
 open class CssBlock {
     val selections = mutableListOf<Selection>()
@@ -53,37 +45,6 @@ open class CssBlock {
     fun s(selector: String, block: Selection.() -> Unit) = select(selector, block)
 
     fun s(vararg selector: CSSSelector, block: Selection.() -> Unit) = select(*selector, block = block)
-}
-
-// Box functions
-fun <T> box(all: T) = CssBox(all, all, all, all)
-
-fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
-
-fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-
-// Color functions
-fun c(colorString: String, opacity: Double = 1.0) = try {
-    Color.web(colorString, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
-    Color.MAGENTA
-}
-
-fun <T> multi(vararg elements: T) = MultiValue(elements)
-
-fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
-    Color.color(red, green, blue, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-    Color.MAGENTA
-}
-
-fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
-    Color.rgb(red, green, blue, opacity)
-} catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
-    Color.MAGENTA
 }
 
 open class SelectionBlock : CssBlock() {
@@ -569,95 +530,6 @@ open class Stylesheet : CssBlock() {
     override fun toString() = render()
 }
 
-// Helpers
-
-val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH))
-
-class ObservableStyleClass(node: Node, val value: ObservableValue<CSSClass>) {
-    val listener: ChangeListener<CSSClass>
-
-    init {
-        fun checkAdd(newValue: CSSClass?) {
-            if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
-        }
-
-        listener = ChangeListener { observableValue, oldValue, newValue ->
-            if (oldValue != null) node.removeClass(oldValue)
-            checkAdd(newValue)
-        }
-
-        checkAdd(value.value)
-        value.addListener(listener)
-    }
-
-    fun dispose() = value.removeListener(listener)
-}
-
-fun Node.bindClass(value: ObservableValue<CSSClass>): ObservableStyleClass = ObservableStyleClass(this, value)
-
-open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
-    override fun toString() = "${toCss(top)} ${toCss(right)} ${toCss(bottom)} ${toCss(left)}"
-}
-
-enum class FXVisibility { VISIBLE, HIDDEN, COLLAPSE, INHERIT; }
-
-enum class FXTabAnimation { GROW, NONE; }
-
-// Colors
-
-val Color.css: String
-    get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
-
-// Dimensions
-
-internal fun dimStr(value: Double, units: String) = when (value) {
-    Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
-    Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
-    Double.NaN -> "0$units"
-    else -> "${fiveDigits.format(value)}$units"
-}
-
-class LinearDimension(val value: Double, val units: Units) {
-    override fun toString() = dimStr(value, units.toString())
-
-    enum class Units(val value: String) {
-        px("px"),
-        mm("mm"),
-        cm("cm"),
-        inches("in"),
-        pt("pt"),
-        pc("pc"),
-        em("em"),
-        ex("ex"),
-        percent("%");
-
-        override fun toString() = value
-    }
-}
-
-val infinity = LinearDimension(Double.POSITIVE_INFINITY, LinearDimension.Units.px)
-
-val Number.px: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.px)
-val Number.mm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.mm)
-val Number.cm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.cm)
-val Number.inches: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.inches)
-val Number.pt: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pt)
-val Number.pc: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pc)
-val Number.em: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.em)
-val Number.ex: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.ex)
-val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.percent)
-
-class AngularDimension(val value: Double, val units: Units) {
-    override fun toString() = dimStr(value, units.toString())
-
-    enum class Units { deg, rad, grad, turn; }
-}
-
-val Number.deg: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.deg)
-val Number.rad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.rad)
-val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.grad)
-val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
-
 // Type safe selectors
 abstract class CSSSelector(val prefix: String, _name: String? = null) {
     private val entries by lazy { mutableListOf<Pair<Type, CSSSelector>>() }
@@ -725,24 +597,6 @@ class CSSIdDelegate(val name: String?) : ReadOnlyProperty<Any, CSSId> {
 fun csspseudoclass(value: String? = null) = CSSPseudoClassDelegate(value)
 fun cssclass(value: String? = null) = CSSClassDelegate(value)
 fun cssid(value: String? = null) = CSSIdDelegate(value)
-
-fun <T : Node> T.setId(cssId: CSSId): T {
-    id = cssId.name; return this
-}
-
-fun Node.hasClass(cssClass: CSSClass) = hasClass(cssClass.name)
-fun <T : Node> T.addClass(cssClass: CSSClass) = addClass(cssClass.name)
-fun <T : Node> T.removeClass(cssClass: CSSClass) = removeClass(cssClass.name)
-fun <T : Node> T.toggleClass(cssClass: CSSClass, predicate: Boolean) = toggleClass(cssClass.name, predicate)
-@Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.select(selector: CSSSelector) = lookup(selector.toString()) as T
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.selectAll(selector: CSSSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
-
-fun Iterable<Node>.addClass(cssClass: CSSClass) = forEach { it.addClass(cssClass) }
-fun Iterable<Node>.removeClass(cssClass: CSSClass) = forEach { it.removeClass(cssClass) }
-fun Iterable<Node>.toggleClass(cssClass: CSSClass, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
 
 /**
  * Add styles to the node using type safe CSS

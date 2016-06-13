@@ -13,31 +13,44 @@ class StylesheetTests {
     val vbox by cssclass()
     val wrapper by cssclass()
 
+    val vbox2 by cssclassrule()
+    val hbox2 by cssclassrule()
+    val wrapper2 by cssclassrule()
+    val a by csselementrule()
+    val b by cssclassrule()
+    val c by cssclassrule()
+    val d by cssclassrule()
+    val e by cssclassrule()
+    val f by cssclassrule()
+    val x by cssclassrule()
+    val y by cssclassrule()
+    val z by cssclassrule()
+    val john by cssclassrule()
+    val smith by csspseudoclassrule()
+    val jane by cssidrule()
+    val doe by cssidrule()
+
     @Test
     fun cartesian() {
         val ss = stylesheet2 {
-            s(RuleSet(Rule.IdRule("test"))) {
-                green = "awesome"
+            john {
+                textFill = Color.GREEN
             }
-            s(
-                    Rule.ClassRule("X")
-                            .descendant(Rule.ClassRule("Y"))
-                            .descendant(Rule.ClassRule("Z")),
-                    Rule.ClassRule("A")
-                            .refine(Rule.ClassRule("B"))
-                            .child(Rule.ClassRule("C"))
-                            .descendant(Rule.ClassRule("D"))
-                            .adjacent(Rule.ClassRule("E"))
-                            .sibling(Rule.ClassRule("F"))
-            ) {
-                red = "yep"
-                green = "nope"
 
-                +s(
-                        Rule.ClassRule("John").refine(Rule.PseudoClassRule("Doe")),
-                        Rule.ClassRule("Jane").child(Rule.IdRule("Doe"))
-                ) {
-                    blue = "maybe"
+            (x.descendant(y).descendant(z) or a.refine(b).child(c).descendant(d).adjacent(e).sibling(f)) {
+                textFill = Color.RED
+                backgroundColor += Color.BROWN
+                backgroundColor += Color.WHITE
+
+                +(john.refine(smith) or jane.child(doe)) {
+                    textFill = Color.BLUE
+                }
+            }
+            (CssRuleSet(a) or b) {
+                (c or CssRuleSet(d)) {
+                    (e or f) {
+                        textFill = Color.BLUE
+                    }
                 }
             }
         }
