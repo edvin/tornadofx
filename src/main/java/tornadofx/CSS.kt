@@ -615,7 +615,7 @@ class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Render
 
         private val validNameString = "-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         val validNameRegex = Regex(validNameString)
-        val validNameRegexWithLeading = Regex(".*?(?<name>$validNameString)")
+        val validNameRegexWithLeading = Regex(".*?($validNameString)")
         val splitter = Regex("\\s*,\\s*")
     }
 
