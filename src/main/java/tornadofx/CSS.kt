@@ -189,7 +189,7 @@ open class Stylesheet : SelectionHolder, Rendered {
     }
 }
 
-open class Proper {
+open class PropertyHolder {
     companion object {
         fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
         fun <T> toCss(value: T): String {
@@ -506,15 +506,15 @@ open class Proper {
     var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
     var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
-    private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<Proper, V> {
-        return object : ReadWriteProperty<Proper, V> {
-            override fun getValue(thisRef: Proper, property: KProperty<*>): V {
+    private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<PropertyHolder, V> {
+        return object : ReadWriteProperty<PropertyHolder, V> {
+            override fun getValue(thisRef: PropertyHolder, property: KProperty<*>): V {
                 if (!properties.containsKey(key) && MultiValue::class.java.isAssignableFrom(V::class.java))
                     properties[key] = MultiValue<V>()
                 return properties[key] as V
             }
 
-            override fun setValue(thisRef: Proper, property: KProperty<*>, value: V) {
+            override fun setValue(thisRef: PropertyHolder, property: KProperty<*>, value: V) {
                 properties[key] = value as Any
             }
         }
@@ -531,7 +531,7 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
         if (block.properties.size > 0) {
             append("${ruleStrings.joinToString()} {\n")
             for ((name, value) in block.properties) {
-                append("    $name: ${Proper.toCss(value)};\n")
+                append("    $name: ${PropertyHolder.toCss(value)};\n")
             }
             append("}\n\n")
         }
@@ -560,7 +560,7 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     fun addRule(cssRuleSet: CssRuleSet) = CssSelector(*rule, cssRuleSet)
 }
 
-class CssSelectionBlock() : Proper(), SelectionHolder {
+class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
     val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
 
     override fun addSelection(selection: CssSelection) {
@@ -635,7 +635,7 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 
 // Inline CSS
 
-class InlineCss : Proper(), Rendered {
+class InlineCss : PropertyHolder(), Rendered {
     override fun render() = properties.entries.joinToString("") { " ${it.key}: ${toCss(it.value)};" }
 }
 
@@ -778,7 +778,7 @@ fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = Obse
 fun <T> multi(vararg elements: T) = MultiValue(elements)
 
 open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
-    override fun toString() = "${Proper.toCss(top)} ${Proper.toCss(right)} ${Proper.toCss(bottom)} ${Proper.toCss(left)}"
+    override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
 }
 
 fun <T> box(all: T) = CssBox(all, all, all, all)
