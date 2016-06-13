@@ -39,18 +39,17 @@ interface Rendered {
 }
 
 interface Scoped {
+    fun toRuleSet(): CssRuleSet
     fun append(rule: CssSubRule): CssRuleSet
-    fun and(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.REFINE))
-    fun child(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.CHILD))
-    fun contains(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.DESCENDANT))
-    fun next(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.ADJACENT))
-    fun sibling(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.SIBLING))
+    infix fun and(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.REFINE))
+    infix fun child(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.CHILD))
+    infix fun contains(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.DESCENDANT))
+    infix fun next(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.ADJACENT))
+    infix fun sibling(rule: CssRule) = append(CssSubRule(rule, CssSubRule.Relation.SIBLING))
 }
 
 interface Selectable {
     fun toSelection(): CssSelector
-    infix fun or(rule: CssRuleSet) = toSelection().addRule(rule)
-    infix fun or(rule: CssRule) = toSelection().addRule(CssRuleSet(rule))
 }
 
 interface SelectionHolder {
@@ -62,22 +61,31 @@ interface SelectionHolder {
         return selection
     }
 
-    fun s(selector: Selectable, op: CssSelectionBlock.() -> Unit) = selector.toSelection()(op)
-    fun s(selection: String, op: CssSelectionBlock.() -> Unit) = selection(op)
     operator fun String.invoke(op: CssSelectionBlock.() -> Unit): CssSelectionBlock = TODO()
 
-    infix fun Selectable.or(selection: CssSelection): CssSelection {
-        removeSelection(selection)
-        val newSelection = CssSelection(CssSelector(*toSelection().rule, *selection.selector.rule)) { mix(selection.block) }
-        addSelection(newSelection)
-        return newSelection
+    fun s(selector: Selectable, vararg selectors: Selectable) = CssSelector(
+            *selector.toSelection().rule,
+            *selectors.flatMap { it.toSelection().rule.asIterable() }.toTypedArray()
+    )
+
+    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = s(selector, *selectors)(op)
+
+    fun Scoped.append(oldSelection: CssSelection, relation: CssSubRule.Relation): CssSelection {
+        removeSelection(oldSelection)
+        val ruleSets = oldSelection.selector.rule
+        if (ruleSets.size > 0) {
+            log.warning { "Selection has ${ruleSets.size} selectors, but only the first will be used" }
+        }
+        val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
+        addSelection(selection)
+        return selection
     }
 
-    fun Scoped.and(rule: CssRule, op: CssSelectionBlock.() -> Unit) = and(rule)(op)
-    fun Scoped.child(rule: CssRule, op: CssSelectionBlock.() -> Unit) = child(rule)(op)
-    fun Scoped.contains(rule: CssRule, op: CssSelectionBlock.() -> Unit) = contains(rule)(op)
-    fun Scoped.next(rule: CssRule, op: CssSelectionBlock.() -> Unit) = next(rule)(op)
-    fun Scoped.sibling(rule: CssRule, op: CssSelectionBlock.() -> Unit) = sibling(rule)(op)
+    infix fun Scoped.and(selection: CssSelection) = append(selection, CssSubRule.Relation.REFINE)
+    infix fun Scoped.child(selection: CssSelection) = append(selection, CssSubRule.Relation.CHILD)
+    infix fun Scoped.contains(selection: CssSelection) = append(selection, CssSubRule.Relation.DESCENDANT)
+    infix fun Scoped.next(selection: CssSelection) = append(selection, CssSubRule.Relation.ADJACENT)
+    infix fun Scoped.sibling(selection: CssSelection) = append(selection, CssSubRule.Relation.SIBLING)
 }
 
 open class Stylesheet : SelectionHolder, Rendered {
@@ -554,10 +562,7 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     }
 
     override fun toSelection() = this
-
     fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
-
-    fun addRule(cssRuleSet: CssRuleSet) = CssSelector(*rule, cssRuleSet)
 }
 
 class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
@@ -599,8 +604,11 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
         subRule.forEach { append(it.render()) }
     }
 
+    override fun toRuleSet() = this
     override fun toSelection() = CssSelector(this)
     override fun append(rule: CssSubRule) = CssRuleSet(rootRule, *subRule, rule)
+    fun append(ruleSet: CssRuleSet, relation: CssSubRule.Relation)
+            = CssRuleSet(rootRule, *subRule, CssSubRule(ruleSet.rootRule, relation), *ruleSet.subRule)
 }
 
 class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
@@ -612,7 +620,8 @@ class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Render
     }
 
     override fun render() = "$prefix$name"
-    override fun toSelection() = CssRuleSet(this).toSelection()
+    override fun toRuleSet() = CssRuleSet(this)
+    override fun toSelection() = toRuleSet().toSelection()
     override fun append(rule: CssSubRule) = CssRuleSet(this, rule)
 }
 

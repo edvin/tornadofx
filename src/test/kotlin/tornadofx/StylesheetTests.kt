@@ -31,9 +31,9 @@ class StylesheetTests {
     @Test
     fun cartesian() {
         stylesheet {
-            a or b or c {
-                d or e or f {
-                    g or h or i {
+            s(a, b, c) {
+                s(d, e, f) {
+                    s(g, h, i) {
                         textFill = Color.BLUE
                     }
                 }
@@ -47,9 +47,9 @@ class StylesheetTests {
         }
 
         stylesheet {
-            a or b or c {
-                +(d or e or f) {
-                    +(g or h or i) {
+            s(a, b, c) {
+                +s(d, e, f) {
+                    +s(g, h, i) {
                         textFill = Color.BLUE
                     }
                 }
@@ -63,9 +63,9 @@ class StylesheetTests {
         }
 
         stylesheet {
-            a or b or c {
-                +(d or e or f) {
-                    g or h or i {
+            s(a, b, c) {
+                +s(d, e, f) {
+                    s(g, h, i) {
                         textFill = Color.BLUE
                     }
                 }
@@ -106,7 +106,7 @@ class StylesheetTests {
     @Test
     fun selectorOrder() {
         stylesheet {
-            vbox.child(wrapper).contains(label) {
+            vbox child wrapper contains label {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -117,8 +117,8 @@ class StylesheetTests {
     @Test
     fun nestedModifier_1() {
         stylesheet {
-            label or text {
-                +(hover or armed) {
+            s(label, text) {
+                +s(hover, armed) {
                     backgroundColor += c("blue", 0.25)
                 }
             }
