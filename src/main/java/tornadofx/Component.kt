@@ -135,10 +135,12 @@ abstract class UIComponent : Component() {
     fun init() {
         root.properties["tornadofx.uicomponent"] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
+            if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null) onUndock()
             if (newParent != null && newParent != oldParent) onDock()
         })
         root.sceneProperty().addListener({ observable, oldParent, newParent ->
+            if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null) onUndock()
             if (newParent != null && newParent != oldParent) onDock()
         })
@@ -192,6 +194,10 @@ abstract class UIComponent : Component() {
                         show()
                         configureReloading()
                     }
+                }
+
+                modalStage!!.showingProperty().addListener { obs, old, showing ->
+                    if (showing) onDock() else onUndock()
                 }
             }
         }
