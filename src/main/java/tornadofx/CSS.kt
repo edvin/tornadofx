@@ -578,6 +578,7 @@ class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
         this@CssSelectionBlock.mix(this)
     }
 
+    fun add(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector.toSelector(), op = op)
     fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
         val s = s(selector, *selectors)(op)
         selections[s] = true
@@ -607,11 +608,15 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
 
 class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
     companion object {
-        val validNameRegex = Regex("-?[_a-zA-Z][_a-zA-Z0-9-]*")
         fun elem(value: String) = CssRule("", value.cssValidate())
         fun id(value: String) = CssRule("#", value.cssValidate())
         fun c(value: String) = CssRule(".", value.cssValidate())
         fun pc(value: String) = CssRule(":", value.cssValidate())
+
+        private val validNameString = "-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
+        val validNameRegex = Regex(validNameString)
+        val validNameRegexWithLeading = Regex(".*?(?<name>$validNameString)")
+        val splitter = Regex("\\s*,\\s*")
     }
 
     override fun render() = "$prefix$name"
@@ -743,8 +748,39 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 
 fun String.cssValidate() = if (matches(CssRule.validNameRegex)) this else throw IllegalArgumentException("$this is not a valid Css name")
 
-fun String.toSelector(): CssSelector {
-    TODO()  // TODO
+internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
+internal fun String.toRuleSet(): CssRuleSet {
+    val all = CssRule.validNameRegexWithLeading.findAll(this)
+    val rules = all.map {
+        val nameGroup = it.groups[1] ?: throw IllegalArgumentException("No name found")
+        val control = it.value.substring(0 until nameGroup.range.first - it.range.first)
+        var operatorIndex = control.lastIndex
+        val rule = when (control[control.lastIndex]) {
+            '.' -> {
+                operatorIndex--
+                CssRule.c(nameGroup.value)
+            }
+            '#' -> {
+                operatorIndex--
+                CssRule.id(nameGroup.value)
+            }
+            ':' -> {
+                operatorIndex--
+                CssRule.pc(nameGroup.value)
+            }
+            else -> CssRule.elem(nameGroup.value)
+        }
+        val operator = control.substring(0..operatorIndex)
+        val relation = if (operator.length == 0) CssSubRule.Relation.REFINE else when (operator.trim()) {
+            "" -> CssSubRule.Relation.DESCENDANT
+            ">" -> CssSubRule.Relation.CHILD
+            "+" -> CssSubRule.Relation.ADJACENT
+            "~" -> CssSubRule.Relation.SIBLING
+            else -> throw IllegalArgumentException("$operator is not a valid CSS operator")
+        }
+        CssSubRule(rule, relation)
+    }.toList()
+    return CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 }
 
 // Style Class

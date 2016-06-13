@@ -29,6 +29,28 @@ class StylesheetTests {
     val i by cssclass()
 
     @Test
+    fun splitting() {
+        stylesheet {
+            ".label     >lab   #la:l          ,.label,#fred" {
+                textFill = Color.BLANCHEDALMOND
+                add(":hover") {
+                    backgroundColor += Color.CHARTREUSE
+                }
+            }
+        } shouldEqual {
+            """
+            .label > lab #la:l, .label, #fred {
+                -fx-text-fill: rgba(255, 235, 205, 1);
+            }
+
+            .label > lab #la:l:hover, .label:hover, #fred:hover {
+                -fx-background-color: rgba(127, 255, 0, 1);
+            }
+            """
+        }
+    }
+
+    @Test
     fun cartesian() {
         stylesheet {
             s(a, b, c) {
@@ -78,8 +100,6 @@ class StylesheetTests {
             """
         }
     }
-
-    // TODO: Test string parsing
 
     @Test
     fun multiValue() {
