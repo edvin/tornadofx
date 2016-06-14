@@ -31,7 +31,7 @@ class StylesheetTests {
     @Test
     fun splitting() {
         stylesheet {
-            ".label     >lab   #la:l          ,.label,#fred" {
+            "label     >.lab   #la:l          ,.label,           #fred    " {
                 textFill = Color.BLANCHEDALMOND
                 add(":hover") {
                     backgroundColor += Color.CHARTREUSE
@@ -39,11 +39,11 @@ class StylesheetTests {
             }
         } shouldEqual {
             """
-            .label > lab #la:l, .label, #fred {
+            label > .lab #la:l, .label, #fred {
                 -fx-text-fill: rgba(255, 235, 205, 1);
             }
 
-            .label > lab #la:l:hover, .label:hover, #fred:hover {
+            label > .lab #la:l:hover, .label:hover, #fred:hover {
                 -fx-background-color: rgba(127, 255, 0, 1);
             }
             """

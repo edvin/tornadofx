@@ -617,9 +617,12 @@ class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Render
         fun c(value: String) = CssRule(".", value.cssValidate())
         fun pc(value: String) = CssRule(":", value.cssValidate())
 
-        private val validNameString = "-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
-        val validNameRegex = Regex(validNameString)
-        val validNameRegexWithLeading = Regex(".*?($validNameString)")
+        private val name = "-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
+        private val prefix = "[.#:]?"
+        private val relation = "[ >+~]?"
+        val nameRegex = Regex(name)
+        val ruleSetRegex = Regex("(\\s*$relation\\s*$prefix$name)+\\s*")
+        val subRuleRegex = Regex("\\s*?($relation)\\s*($prefix)($name)")
         val splitter = Regex("\\s*,\\s*")
     }
 
@@ -638,6 +641,17 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
         DESCENDANT(" "),
         ADJACENT(" + "),
         SIBLING(" ~ ");
+
+        companion object {
+            fun of(symbol: String) = when (symbol) {
+                "" -> REFINE
+                ">" -> CHILD
+                " " -> DESCENDANT
+                "+" -> ADJACENT
+                "~" -> SIBLING
+                else -> throw IllegalArgumentException("Invalid Css Relation: $symbol")
+            }
+        }
 
         override fun render() = symbol
     }
@@ -750,42 +764,16 @@ fun <T : Node> T.setId(cssId: CssRule): T {
     return this
 }
 
-fun String.cssValidate() = if (matches(CssRule.validNameRegex)) this else throw IllegalArgumentException("$this is not a valid Css name")
+fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
 
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
-internal fun String.toRuleSet(): CssRuleSet {
-    val all = CssRule.validNameRegexWithLeading.findAll(this)
-    val rules = all.map {
-        val nameGroup = it.groups[1] ?: throw IllegalArgumentException("No name found")
-        val control = it.value.substring(0 until nameGroup.range.first - it.range.first)
-        var operatorIndex = control.lastIndex
-        val rule = if (control.length == 0) CssRule.elem(nameGroup.value) else when (control[control.lastIndex]) {
-            '.' -> {
-                operatorIndex--
-                CssRule.c(nameGroup.value)
-            }
-            '#' -> {
-                operatorIndex--
-                CssRule.id(nameGroup.value)
-            }
-            ':' -> {
-                operatorIndex--
-                CssRule.pc(nameGroup.value)
-            }
-            else -> CssRule.elem(nameGroup.value)
-        }
-        val operator = control.substring(0..operatorIndex)
-        val relation = if (operator.length == 0) CssSubRule.Relation.REFINE else when (operator.trim()) {
-            "" -> CssSubRule.Relation.DESCENDANT
-            ">" -> CssSubRule.Relation.CHILD
-            "+" -> CssSubRule.Relation.ADJACENT
-            "~" -> CssSubRule.Relation.SIBLING
-            else -> throw IllegalArgumentException("$operator is not a valid CSS operator")
-        }
-        CssSubRule(rule, relation)
+internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
+    val rules = CssRule.subRuleRegex.findAll(this).map { match ->
+        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3]), CssSubRule.Relation.of(match.groupValues[1]))
     }.toList()
-    return CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
-}
+    CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
+} else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
+
 
 // Style Class
 
