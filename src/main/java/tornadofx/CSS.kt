@@ -660,7 +660,7 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 // Inline CSS
 
 class InlineCss : PropertyHolder(), Rendered {
-    override fun render() = properties.entries.joinToString("") { " ${it.key}: ${toCss(it.value)};" }
+    override fun render() = properties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
 }
 
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
