@@ -69,8 +69,8 @@ interface SelectionHolder {
             *selectors.flatMap { it.toSelection().rule.asIterable() }.toTypedArray()
     )
 
-    fun s(selector: String, op: CssSelectionBlock.() -> Unit) = selector(op)
-    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = select(selector, *selectors)(op)
+    fun s(selector: String, op: CssSelectionBlock.() -> Unit) = select(selector, op)
+    fun s(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = select(selector, *selectors, op = op)
     fun s(selector: Selectable, vararg selectors: Selectable) = select(selector, *selectors)
 
     infix fun Scoped.and(selection: CssSelection) = append(selection, CssSubRule.Relation.REFINE)
@@ -655,9 +655,6 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 
         override fun render() = symbol
     }
-
-    operator fun component1() = rule
-    operator fun component2() = relation
 }
 
 // Inline CSS
@@ -756,16 +753,9 @@ enum class FXTabAnimation { GROW, NONE; }
 
 val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH))
 
-val Color.css: String
-    get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
+val Color.css: String get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
 
-fun <T : Node> T.setId(cssId: CssRule): T {
-    id = cssId.name
-    return this
-}
-
-fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
-
+internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     val rules = CssRule.subRuleRegex.findAll(this).map { match ->
@@ -781,16 +771,12 @@ fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
 fun <T : Node> T.addClass(cssClass: CssRule) = addClass(cssClass.name)
 fun <T : Node> T.removeClass(cssClass: CssRule) = removeClass(cssClass.name)
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
-@Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.toString()) as T
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
 
 fun Iterable<Node>.addClass(cssClass: CssRule) = forEach { it.addClass(cssClass) }
 fun Iterable<Node>.removeClass(cssClass: CssRule) = forEach { it.removeClass(cssClass) }
 fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
 
+fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
 class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
     val listener: ChangeListener<CssRule>
 
@@ -809,19 +795,25 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
     fun dispose() = value.removeListener(listener)
 }
 
-fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
+@Suppress("UNCHECKED_CAST")
+fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.toString()) as T
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
+
+fun <T : Node> T.setId(cssId: CssRule): T {
+    id = cssId.name
+    return this
+}
 
 // Containers
-
-fun <T> multi(vararg elements: T) = MultiValue(elements)
-
-open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
-    override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
-}
 
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
+open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+    override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
+}
 
 fun c(colorString: String, opacity: Double = 1.0) = try {
     Color.web(colorString, opacity)
@@ -844,8 +836,7 @@ fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
     Color.MAGENTA
 }
 
-class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)
-
+fun <T> multi(vararg elements: T) = MultiValue(elements)
 class MultiValue<T>(initialElements: Array<out T>? = null) {
     val elements = mutableListOf<T>()
 
@@ -861,3 +852,5 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
     fun addAll(list: Iterable<T>) = elements.addAll(list)
     fun addAll(vararg element: T) = elements.addAll(element)
 }
+
+class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)
