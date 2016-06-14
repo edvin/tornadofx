@@ -759,7 +759,7 @@ internal fun String.toRuleSet(): CssRuleSet {
         val nameGroup = it.groups[1] ?: throw IllegalArgumentException("No name found")
         val control = it.value.substring(0 until nameGroup.range.first - it.range.first)
         var operatorIndex = control.lastIndex
-        val rule = when (control[control.lastIndex]) {
+        val rule = if (control.length == 0) CssRule.elem(nameGroup.value) else when (control[control.lastIndex]) {
             '.' -> {
                 operatorIndex--
                 CssRule.c(nameGroup.value)
