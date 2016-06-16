@@ -2,7 +2,6 @@ package tornadofx
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventTarget
