@@ -88,7 +88,7 @@ fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>
 }
 
 @JvmName("pojoObservable")
-inline fun <reified T : Any> Any.observable(propName: String) =
+inline fun <reified T : Any> T.observable(propName: String) =
     observable(this, propName, T::class)
 
 enum class SingleAssignThreadSafetyMode {
