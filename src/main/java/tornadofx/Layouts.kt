@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -157,4 +158,26 @@ fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)): TitledPane {
     val fold = TitledPane(title, if (vbox.children.size == 1) vbox.children[0] else vbox)
     panes += fold
     return fold
+}
+
+
+fun Node.vboxMargin(top: Double = 0.0, right: Double = 0.0, bottom: Double = 0.0, left: Double = 0.0) {
+    VBox.setMargin(this, Insets(top, right, bottom, left))
+}
+fun Node.vboxMargin(all: Double) {
+    VBox.setMargin(this, Insets(all, all, all, all))
+}
+
+fun Node.hboxMargin(top: Double = 0.0, right: Double = 0.0, bottom: Double = 0.0, left: Double = 0.0) {
+    HBox.setMargin(this, Insets(top, right, bottom, left))
+}
+fun Node.hboxMargin(all: Double) {
+    HBox.setMargin(this, Insets(all, all, all, all))
+}
+
+fun Node.vboxGrow(priority: Priority) {
+    VBox.setVgrow(this, priority)
+}
+fun Node.hboxGrow(priority: Priority) {
+    HBox.setHgrow(this, priority)
 }
