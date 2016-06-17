@@ -706,6 +706,7 @@ internal fun dimStr(value: Double, units: String) = when (value) {
 
 class LinearDimension(val value: Double, val units: Units) {
     override fun toString() = dimStr(value, units.toString())
+    operator fun unaryMinus() = LinearDimension(-value, units)
 
     enum class Units(val value: String) {
         px("px"),
@@ -736,6 +737,7 @@ val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), Lin
 
 class AngularDimension(val value: Double, val units: Units) {
     override fun toString() = dimStr(value, units.toString())
+    operator fun unaryMinus() = AngularDimension(-value, units)
     enum class Units { deg, rad, grad, turn; }
 }
 
