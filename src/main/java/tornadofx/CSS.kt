@@ -267,7 +267,7 @@ open class PropertyHolder {
     // Font
     var font: Font by cssprop("-fx-font")
     var fontFamily: Array<String> by cssprop("-fx-font-family")
-    var fontSize: LinearDimension by cssprop("-fx-font-size")
+    var fontSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-font-size")
     var fontStyle: FontPosture by cssprop("-fx-font-style")
     var fontWeight: FontWeight by cssprop("-fx-font-weight")
 
@@ -277,13 +277,13 @@ open class PropertyHolder {
     var effect: Effect by cssprop("-fx-effect")
     var focusTraversable: Boolean by cssprop("-fx-focus-traversable")
     var opacity: Double by cssprop("-fx-opacity")
-    var rotate: AngularDimension by cssprop("-fx-rotate")
+    var rotate: Dimension<Dimension.AngularUnits> by cssprop("-fx-rotate")
     var scaleX: Number by cssprop("-fx-scale-x")
     var scaleY: Number by cssprop("-fx-scale-y")
     var scaleZ: Number by cssprop("-fx-scale-z")
-    var translateX: LinearDimension by cssprop("-fx-translate-x")
-    var translateY: LinearDimension by cssprop("-fx-translate-y")
-    var translateZ: LinearDimension by cssprop("-fx-translate-z")
+    var translateX: Dimension<Dimension.LinearUnits> by cssprop("-fx-translate-x")
+    var translateY: Dimension<Dimension.LinearUnits> by cssprop("-fx-translate-y")
+    var translateZ: Dimension<Dimension.LinearUnits> by cssprop("-fx-translate-z")
     var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
 
     // ImageView
@@ -293,8 +293,8 @@ open class PropertyHolder {
     var graphic: String by cssprop("-fx-graphic")
 
     // FlowPane
-    var hgap: LinearDimension by cssprop("-fx-hgap")
-    var vgap: LinearDimension by cssprop("-fx-vgap")
+    var hgap: Dimension<Dimension.LinearUnits> by cssprop("-fx-hgap")
+    var vgap: Dimension<Dimension.LinearUnits> by cssprop("-fx-vgap")
     var alignment: Pos by cssprop("-fx-alignment")
     var columnHAlignment: HPos by cssprop("-fx-column-halignment")
     var rowVAlignment: VPos by cssprop("-fx-row-valignment")
@@ -304,44 +304,44 @@ open class PropertyHolder {
     var gridLinesVisible: Boolean by cssprop("-fx-grid-lines-visible")
 
     // HBox
-    var spacing: LinearDimension by cssprop("-fx-spacing")
+    var spacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-spacing")
     var fillHeight: Boolean by cssprop("-fx-fill-height")
 
     // Region
     var backgroundColor: MultiValue<Paint> by cssprop("-fx-background-color")
-    var backgroundInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-background-insets")
-    var backgroundRadius: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-background-radius")
+    var backgroundInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-insets")
+    var backgroundRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-radius")
     var backgroundImage: MultiValue<String> by cssprop("-fx-background-image")
     var backgroundPosition: MultiValue<BackgroundPosition> by cssprop("-fx-background-position")
     var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
     var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
     var borderColor: MultiValue<CssBox<Paint?>> by cssprop("-fx-border-color")
-    var borderInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-radius")
-    var borderRadius: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-radius")
+    var borderInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
+    var borderRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
     var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
-    var borderWidth: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-width")
+    var borderWidth: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-width")
     var borderImageSource: MultiValue<String> by cssprop("-fx-border-image-source")
-    var borderImageInsets: MultiValue<CssBox<LinearDimension>> by cssprop("-fx-border-image-insets")
+    var borderImageInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-image-insets")
     var borderImageRepeat: MultiValue<Pair<BorderRepeat, BorderRepeat>> by cssprop("-fx-border-image-repeat")
     var borderImageSlice: MultiValue<BorderImageSlice> by cssprop("-fx-border-image-slice")
-    var borderImageWidth: CssBox<LinearDimension> by cssprop("-fx-border-image-width")
-    var padding: CssBox<LinearDimension> by cssprop("-fx-padding")
+    var borderImageWidth: CssBox<Dimension<Dimension.LinearUnits>> by cssprop("-fx-border-image-width")
+    var padding: CssBox<Dimension<Dimension.LinearUnits>> by cssprop("-fx-padding")
     var positionShape: Boolean by cssprop("-fx-position-shape")
     var scaleShape: Boolean by cssprop("-fx-scale-shape")
     var shape: String by cssprop("-fx-shape")
     var snapToPixel: Boolean by cssprop("-fx-snap-to-pixel")
-    var minHeight: LinearDimension by cssprop("-fx-min-height")
-    var prefHeight: LinearDimension by cssprop("-fx-pref-height")
-    var maxHeight: LinearDimension by cssprop("-fx-max-height")
-    var minWidth: LinearDimension by cssprop("-fx-min-width")
-    var prefWidth: LinearDimension by cssprop("-fx-pref-width")
-    var maxWidth: LinearDimension by cssprop("-fx-max-width")
+    var minHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-min-height")
+    var prefHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-pref-height")
+    var maxHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-max-height")
+    var minWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-min-width")
+    var prefWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-pref-width")
+    var maxWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-max-width")
 
     // TilePane
     var prefRows: Int by cssprop("-fx-pref-rows")
     var prefColumns: Int by cssprop("-fx-pref-columns")
-    var prefTileWidth: LinearDimension by cssprop("-fx-pref-tile-width")
-    var prefTileHeight: LinearDimension by cssprop("-fx-pref-tile-height")
+    var prefTileWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-pref-tile-width")
+    var prefTileHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-pref-tile-height")
     var tileAlignment: Pos by cssprop("-fx-tile-alignment")
 
     // VBox
@@ -352,16 +352,16 @@ open class PropertyHolder {
     var smooth: Boolean by cssprop("-fx-smooth")
     var stroke: Paint by cssprop("-fx-stroke")
     var strokeType: StrokeType by cssprop("-fx-stroke-type")
-    var strokeDashArray: Array<LinearDimension> by cssprop("-fx-stroke-dash-array")
-    var strokeDashOffset: LinearDimension by cssprop("-fx-stroke-dash-offset")
+    var strokeDashArray: Array<Dimension<Dimension.LinearUnits>> by cssprop("-fx-stroke-dash-array")
+    var strokeDashOffset: Dimension<Dimension.LinearUnits> by cssprop("-fx-stroke-dash-offset")
     var strokeLineCap: StrokeLineCap by cssprop("-fx-stroke-line-cap")
     var strokeLineJoin: StrokeLineJoin by cssprop("-fx-stroke-line-join")
     var strokeMiterLimit: Double by cssprop("-fx-stroke-miter-limit")
-    var strokeWidth: LinearDimension by cssprop("-fx-stroke-width")
+    var strokeWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-stroke-width")
 
     // Rectangle
-    var arcHeight: LinearDimension by cssprop("-fx-arc-height")
-    var arcWidth: LinearDimension by cssprop("-fx-arc-width")
+    var arcHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-arc-height")
+    var arcWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-arc-width")
 
     // Text
     var fontSmoothingType: FontSmoothingType by cssprop("-fx-font-smoothing-type")
@@ -375,7 +375,7 @@ open class PropertyHolder {
     var fontScale: Number by cssprop("-fx-font-scale")
 
     // Cell
-    var cellSize: LinearDimension by cssprop("-fx-cell-size")
+    var cellSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-size")
 
     // ColorPicker
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
@@ -390,8 +390,8 @@ open class PropertyHolder {
     var textOverrun: OverrunStyle by cssprop("-fx-text-overrun")
     var wrapText: Boolean by cssprop("-fx-wrap-text")
     var contentDisplay: ContentDisplay by cssprop("-fx-content-display")
-    var graphicTextGap: LinearDimension by cssprop("-fx-graphic-text-gap")
-    var labelPadding: CssBox<LinearDimension> by cssprop("-fx-label-padding")
+    var graphicTextGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-graphic-text-gap")
+    var labelPadding: CssBox<Dimension<Dimension.LinearUnits>> by cssprop("-fx-label-padding")
     var textFill: Paint by cssprop("-fx-text-fill")
     var ellipsisString: String by cssprop("-fx-ellipsis-string")
 
@@ -406,7 +406,7 @@ open class PropertyHolder {
     var pageInformationAlignment: Side by cssprop("-fx-page-information-alignment")
 
     // ProgressBar
-    var indeterminateBarLength: LinearDimension by cssprop("-fx-indeterminate-bar-length")
+    var indeterminateBarLength: Dimension<Dimension.LinearUnits> by cssprop("-fx-indeterminate-bar-length")
     var indeterminateBarEscape: Boolean by cssprop("-fx-indeterminate-bar-escape")
     var indeterminateBarFlip: Boolean by cssprop("-fx-indeterminate-bar-flip")
     var indeterminateBarAnimationTime: Number by cssprop("-fx-indeterminate-bar-animation-time")
@@ -417,8 +417,8 @@ open class PropertyHolder {
     var spinEnabled: Boolean by cssprop("-fx-spin-enabled")
 
     // ScrollBar
-    var blockIncrement: LinearDimension by cssprop("-fx-block-increment")
-    var unitIncrement: LinearDimension by cssprop("-fx-unit-increment")
+    var blockIncrement: Dimension<Dimension.LinearUnits> by cssprop("-fx-block-increment")
+    var unitIncrement: Dimension<Dimension.LinearUnits> by cssprop("-fx-unit-increment")
 
     // ScrollPane
     var fitToWidth: Boolean by cssprop("-fx-fit-to-width")
@@ -439,18 +439,18 @@ open class PropertyHolder {
     var snapToTicks: Boolean by cssprop("-fx-snap-to-ticks")
 
     // TabPane
-    var tabMaxHeight: LinearDimension by cssprop("-fx-tab-max-height")
-    var tabMinHeight: LinearDimension by cssprop("-fx-tab-min-height")
-    var tabMaxWidth: LinearDimension by cssprop("-fx-tab-max-width")
-    var tabMinWidth: LinearDimension by cssprop("-fx-tab-min-width")
+    var tabMaxHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-tab-max-height")
+    var tabMinHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-tab-min-height")
+    var tabMaxWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-tab-max-width")
+    var tabMinWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-tab-min-width")
     var openTabAnimation: FXTabAnimation by cssprop("-fx-open-tab-animation")
     var closeTabAnimation: FXTabAnimation by cssprop("-fx-close-tab-animation")
 
     // TableColumnHeader
-    var size: LinearDimension by cssprop("-fx-size")
+    var size: Dimension<Dimension.LinearUnits> by cssprop("-fx-size")
 
     // TableView
-    var fixedCellSize: LinearDimension by cssprop("-fx-fixed-cell-size")
+    var fixedCellSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-fixed-cell-size")
 
     // TextArea
     var prefColumnCount: Int by cssprop("-fx-pref-column-count")
@@ -467,24 +467,24 @@ open class PropertyHolder {
     var collapsible: Boolean by cssprop("-fx-collapsible")
 
     // TreeCell
-    var indent: LinearDimension by cssprop("-fx-indent")
+    var indent: Dimension<Dimension.LinearUnits> by cssprop("-fx-indent")
 
     // Axis
     var side: Side by cssprop("-fx-side")
-    var tickLength: LinearDimension by cssprop("-fx-tick-length")
+    var tickLength: Dimension<Dimension.LinearUnits> by cssprop("-fx-tick-length")
     var tickLabelFont: Font by cssprop("-fx-tick-label-font")
     var tickLabelFill: Paint by cssprop("-fx-tick-label-fill")
-    var tickLabelGap: LinearDimension by cssprop("-fx-tick-label-gap")
+    var tickLabelGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-tick-label-gap")
     var tickMarkVisible: Boolean by cssprop("-fx-tick-mark-visible")
     var tickLabelsVisible: Boolean by cssprop("-fx-tick-labels-visible")
 
     // BarChar
-    var barGap: LinearDimension by cssprop("-fx-bar-gap")
-    var categoryGap: LinearDimension by cssprop("-fx-category-group")
+    var barGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-bar-gap")
+    var categoryGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-category-group")
 
     // CategoryAxis
-    var startMargin: LinearDimension by cssprop("-fx-start-margin")
-    var endMargin: LinearDimension by cssprop("-fx-end-margin")
+    var startMargin: Dimension<Dimension.LinearUnits> by cssprop("-fx-start-margin")
+    var endMargin: Dimension<Dimension.LinearUnits> by cssprop("-fx-end-margin")
     var gapStartAndEnd: Boolean by cssprop("-fx-gap-start-and-end")
 
     // Chart
@@ -501,11 +501,11 @@ open class PropertyHolder {
     // PieChart
     var clockwise: Boolean by cssprop("-fx-clockwise")
     var pieLabelVisible: Boolean by cssprop("-fx-pie-label-visible")
-    var labelLineLength: LinearDimension by cssprop("-fx-label-line-length")
-    var startAngle: AngularDimension by cssprop("-fx-start-angle")
+    var labelLineLength: Dimension<Dimension.LinearUnits> by cssprop("-fx-label-line-length")
+    var startAngle: Dimension<Dimension.AngularUnits> by cssprop("-fx-start-angle")
 
     // ValueAxis
-    var minorTickLength: LinearDimension by cssprop("-fx-minor-tick-length")
+    var minorTickLength: Dimension<Dimension.LinearUnits> by cssprop("-fx-minor-tick-length")
     var minorTickVisible: Boolean by cssprop("-fx-minor-tick-visible")
 
     // XYChart
@@ -697,18 +697,17 @@ class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule>
 
 // Dimensions
 
-internal fun dimStr(value: Double, units: String) = when (value) {
-    Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
-    Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
-    Double.NaN -> "0$units"
-    else -> "${fiveDigits.format(value)}$units"
-}
+open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
+    operator fun unaryMinus() = Dimension(-value, units)
+    override fun toString() = when (value) {
+        Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
+        Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
+        Double.NaN -> "0$units"
+        else -> "${fiveDigits.format(value)}$units"
+    }
 
-class LinearDimension(val value: Double, val units: Units) {
-    override fun toString() = dimStr(value, units.toString())
-    operator fun unaryMinus() = LinearDimension(-value, units)
-
-    enum class Units(val value: String) {
+    enum class AngularUnits { deg, rad, grad, turn }
+    enum class LinearUnits(val value: String) {
         px("px"),
         mm("mm"),
         cm("cm"),
@@ -723,28 +722,22 @@ class LinearDimension(val value: Double, val units: Units) {
     }
 }
 
-val infinity = LinearDimension(Double.POSITIVE_INFINITY, LinearDimension.Units.px)
+val infinity = Dimension(Double.POSITIVE_INFINITY, Dimension.LinearUnits.px)
 
-val Number.px: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.px)
-val Number.mm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.mm)
-val Number.cm: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.cm)
-val Number.inches: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.inches)
-val Number.pt: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pt)
-val Number.pc: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.pc)
-val Number.em: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.em)
-val Number.ex: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.ex)
-val Number.percent: LinearDimension get() = LinearDimension(this.toDouble(), LinearDimension.Units.percent)
+val Number.px: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.px)
+val Number.mm: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.mm)
+val Number.cm: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.cm)
+val Number.inches: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.inches)
+val Number.pt: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.pt)
+val Number.pc: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.pc)
+val Number.em: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.em)
+val Number.ex: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.ex)
+val Number.percent: Dimension<Dimension.LinearUnits> get() = Dimension(this.toDouble(), Dimension.LinearUnits.percent)
 
-class AngularDimension(val value: Double, val units: Units) {
-    override fun toString() = dimStr(value, units.toString())
-    operator fun unaryMinus() = AngularDimension(-value, units)
-    enum class Units { deg, rad, grad, turn; }
-}
-
-val Number.deg: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.deg)
-val Number.rad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.rad)
-val Number.grad: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.grad)
-val Number.turn: AngularDimension get() = AngularDimension(this.toDouble(), AngularDimension.Units.turn)
+val Number.deg: Dimension<Dimension.AngularUnits> get() = Dimension(this.toDouble(), Dimension.AngularUnits.deg)
+val Number.rad: Dimension<Dimension.AngularUnits> get() = Dimension(this.toDouble(), Dimension.AngularUnits.rad)
+val Number.grad: Dimension<Dimension.AngularUnits> get() = Dimension(this.toDouble(), Dimension.AngularUnits.grad)
+val Number.turn: Dimension<Dimension.AngularUnits> get() = Dimension(this.toDouble(), Dimension.AngularUnits.turn)
 
 // Enums
 
@@ -855,4 +848,4 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
     fun addAll(vararg element: T) = elements.addAll(element)
 }
 
-class BorderImageSlice(val widths: CssBox<LinearDimension>, val filled: Boolean = false)
+class BorderImageSlice(val widths: CssBox<Dimension<Dimension.LinearUnits>>, val filled: Boolean = false)
