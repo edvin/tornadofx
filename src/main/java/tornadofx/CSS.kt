@@ -529,6 +529,13 @@ open class PropertyHolder {
             }
         }
     }
+
+    class CssProperty<T>(val name: String)
+
+    infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
+    fun <T : Any> setProperty(property: CssProperty<T>, value: T) {
+        properties[property.name] = value
+    }
 }
 
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
@@ -678,6 +685,7 @@ fun csselement(value: String? = null) = CssElementDelegate(value)
 fun cssid(value: String? = null) = CssIdDelegate(value)
 fun cssclass(value: String? = null) = CssClassDelegate(value)
 fun csspseudoclass(value: String? = null) = CssPseudoClassDelegate(value)
+fun <T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value)
 
 class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
@@ -693,6 +701,10 @@ class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
 
 class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
+}
+
+class CssPropertyDelegate<T : Any>(val name: String?) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name)
 }
 
 // Dimensions

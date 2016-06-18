@@ -28,6 +28,8 @@ class StylesheetTests {
     val h by cssclass()
     val i by cssclass()
 
+    val base by cssproperty<Paint>("-fx-base")
+
     @Test
     fun splitting() {
         stylesheet {
@@ -35,6 +37,7 @@ class StylesheetTests {
                 textFill = Color.BLANCHEDALMOND
                 add(":hover") {
                     backgroundColor += Color.CHARTREUSE
+                    base set c("green")
                 }
             }
         } shouldEqual {
@@ -45,6 +48,7 @@ class StylesheetTests {
 
             label > .lab #la:l:hover, .label:hover, #fred:hover {
                 -fx-background-color: rgba(127, 255, 0, 1);
+                -fx-base: rgba(0, 128, 0, 1);
             }
             """
         }
