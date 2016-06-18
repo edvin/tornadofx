@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- `fxid()` specific fx:id name as optional parameter 
+- `fxid()` specific fx:id name as optional parameter
+- webview builder
 
 ### Changed
 

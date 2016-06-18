@@ -10,8 +10,11 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
+import javafx.scene.web.WebView
 import javafx.util.StringConverter
 import java.time.LocalDate
+
+fun Pane.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
 enum class ColorPickerMode { Button, MenuButton, SplitMenuButton }
 fun Pane.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorPickerMode.Button, op: (ColorPicker.() -> Unit)? = null): ColorPicker {
