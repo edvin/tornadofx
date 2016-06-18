@@ -37,7 +37,7 @@ class StylesheetTests {
                 textFill = Color.BLANCHEDALMOND
                 add(":hover") {
                     backgroundColor += Color.CHARTREUSE
-                    base set c("green")
+                    base.value = c("green")
                 }
             }
         } shouldEqual {

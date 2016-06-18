@@ -200,7 +200,11 @@ open class Stylesheet : SelectionHolder, Rendered {
 }
 
 open class PropertyHolder {
+    init {
+        scope.set(this)
+    }
     companion object {
+        val scope = ThreadLocal<PropertyHolder>()
         fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
         fun <T> toCss(value: T): String {
             when (value) {
@@ -530,7 +534,10 @@ open class PropertyHolder {
         }
     }
 
-    class CssProperty<T>(val name: String)
+    @Suppress("UNCHECKED_CAST")
+    class CssProperty<T>(val name: String) {
+        var value: T get() = scope.get().properties[name] as T; set(value) { scope.get().properties.put(name, value as Any) }
+    }
 
     infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
     fun <T : Any> setProperty(property: CssProperty<T>, value: T) {
