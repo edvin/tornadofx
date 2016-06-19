@@ -200,11 +200,8 @@ open class Stylesheet : SelectionHolder, Rendered {
 }
 
 open class PropertyHolder {
-    init {
-        scope.set(this)
-    }
     companion object {
-        val scope = ThreadLocal<PropertyHolder>()
+        val selectionScope = ThreadLocal<CssSelectionBlock>()
         fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
         fun <T> toCss(value: T): String {
             when (value) {
@@ -536,7 +533,7 @@ open class PropertyHolder {
 
     @Suppress("UNCHECKED_CAST")
     class CssProperty<T>(val name: String) {
-        var value: T get() = scope.get().properties[name] as T; set(value) { scope.get().properties.put(name, value as Any) }
+        var value: T get() = selectionScope.get().properties[name] as T; set(value) { selectionScope.get().properties.put(name, value as Any) }
     }
 
     infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
@@ -546,7 +543,14 @@ open class PropertyHolder {
 }
 
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
-    val block = CssSelectionBlock().apply(op)
+    val block = CssSelectionBlock()
+
+    init {
+        val currentScope = PropertyHolder.selectionScope.get()
+        PropertyHolder.selectionScope.set(block)
+        block.apply(op)
+        PropertyHolder.selectionScope.set(currentScope)
+    }
 
     override fun render() = render(emptyList(), false)
 

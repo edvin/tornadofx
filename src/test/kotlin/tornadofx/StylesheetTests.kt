@@ -31,6 +31,27 @@ class StylesheetTests {
     val base by cssproperty<Paint>("-fx-base")
 
     @Test
+    fun propertySelectionScope() {
+        stylesheet {
+            label {
+                add(":hover") {
+                    base.value = c("blue")
+                }
+                base.value = c("red")
+            }
+        } shouldEqual {
+            """
+            .label {
+                -fx-base: rgba(255, 0, 0, 1);
+            }
+            .label:hover {
+                -fx-base: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
     fun splitting() {
         stylesheet {
             "label     >.lab   #la:l          ,.label,           #fred    " {
