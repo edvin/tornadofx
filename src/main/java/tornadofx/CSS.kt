@@ -533,7 +533,18 @@ open class PropertyHolder {
 
     @Suppress("UNCHECKED_CAST")
     class CssProperty<T>(val name: String) {
-        var value: T get() = selectionScope.get().properties[name] as T; set(value) { selectionScope.get().properties.put(name, value as Any) }
+        var value: T
+            get() {
+                val props = selectionScope.get().properties
+
+                if (!props.containsKey(name)) // && MultiValue::class.java.isAssignableFrom(T::class.java))
+                    props[name] = MultiValue<T>()
+
+                return selectionScope.get().properties[name] as T;
+            }
+            set(value) {
+                selectionScope.get().properties.put(name, value as Any)
+            }
     }
 
     infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
@@ -543,14 +554,7 @@ open class PropertyHolder {
 }
 
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
-    val block = CssSelectionBlock()
-
-    init {
-        val currentScope = PropertyHolder.selectionScope.get()
-        PropertyHolder.selectionScope.set(block)
-        block.apply(op)
-        PropertyHolder.selectionScope.set(currentScope)
-    }
+    val block = CssSelectionBlock(op)
 
     override fun render() = render(emptyList(), false)
 
@@ -585,8 +589,15 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
 }
 
-class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
+class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), SelectionHolder {
     val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
+
+    init {
+        val currentScope = PropertyHolder.selectionScope.get()
+        PropertyHolder.selectionScope.set(this)
+        op(this)
+        PropertyHolder.selectionScope.set(currentScope)
+    }
 
     override fun addSelection(selection: CssSelection) {
         selections[selection] = false
@@ -613,7 +624,7 @@ class CssSelectionBlock() : PropertyHolder(), SelectionHolder {
     }
 }
 
-fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock().apply(op)
+fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock(op)
 
 class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Selectable, Scoped, Rendered {
     override fun render() = buildString {

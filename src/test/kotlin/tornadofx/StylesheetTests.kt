@@ -29,6 +29,19 @@ class StylesheetTests {
     val i by cssclass()
 
     val base by cssproperty<Paint>("-fx-base")
+    val multiProp by cssproperty<MultiValue<Paint>>()
+
+    @Test
+    fun multiProp() {
+        stylesheet {
+            label {
+                multiProp.value += Color.RED
+                multiProp.value += Color.BLUE
+            }
+        } shouldEqual {
+            ".label { multiProp: rgba(255, 0, 0, 1), rgba(0, 0, 255, 1); }"
+        }
+    }
 
     @Test
     fun propertySelectionScope() {
