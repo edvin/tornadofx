@@ -532,12 +532,12 @@ open class PropertyHolder {
     }
 
     @Suppress("UNCHECKED_CAST")
-    class CssProperty<T>(val name: String) {
+    class CssProperty<T>(val name: String, val multiValue: Boolean) {
         var value: T
             get() {
                 val props = selectionScope.get().properties
 
-                if (!props.containsKey(name)) // && MultiValue::class.java.isAssignableFrom(T::class.java))
+                if (!props.containsKey(name) && multiValue)
                     props[name] = MultiValue<T>()
 
                 return selectionScope.get().properties[name] as T;
@@ -707,7 +707,7 @@ fun csselement(value: String? = null) = CssElementDelegate(value)
 fun cssid(value: String? = null) = CssIdDelegate(value)
 fun cssclass(value: String? = null) = CssClassDelegate(value)
 fun csspseudoclass(value: String? = null) = CssPseudoClassDelegate(value)
-fun <T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value)
+inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
 
 class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
@@ -725,8 +725,8 @@ class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule>
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
 }
 
-class CssPropertyDelegate<T : Any>(val name: String?) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name)
+class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name, multiValue)
 }
 
 // Dimensions
