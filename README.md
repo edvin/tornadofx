@@ -22,6 +22,7 @@ Lightweight JavaFX Framework for Kotlin
 ## Getting started
 
 - [Screencast introduction](https://www.youtube.com/watch?v=rjc8_HGHy3c)
+- [Book (EAP)](https://edvin.gitbooks.io/tornadofx-guide/content/)
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
 - [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
