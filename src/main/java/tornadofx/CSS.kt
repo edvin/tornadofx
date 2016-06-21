@@ -618,8 +618,14 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
         return s
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
-        properties.putAll(mixin.properties)
+        mixin.properties.forEach { k, v ->
+            if (properties[k] is MultiValue<*>)
+                (properties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
+            else
+                properties[k] = v
+        }
         selections.putAll(mixin.selections)
     }
 }
@@ -878,6 +884,7 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
     }
 
     fun add(element: T) = elements.add(element)
+    fun add(multivalue: MultiValue<T>) = addAll(multivalue.elements)
     fun addAll(list: Iterable<T>) = elements.addAll(list)
     fun addAll(vararg element: T) = elements.addAll(element)
 }

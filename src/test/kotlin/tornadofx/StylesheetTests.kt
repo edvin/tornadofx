@@ -34,12 +34,20 @@ class StylesheetTests {
     @Test
     fun multiProp() {
         stylesheet {
+            val mix = mixin {
+                multiProp.value += Color.GREEN
+            }
             label {
                 multiProp.value += Color.RED
+                +mix
                 multiProp.value += Color.BLUE
             }
         } shouldEqual {
-            ".label { multiProp: rgba(255, 0, 0, 1), rgba(0, 0, 255, 1); }"
+            """
+            .label {
+                multiProp: rgba(255, 0, 0, 1), rgba(0, 128, 0, 1), rgba(0, 0, 255, 1);
+            }
+            """
         }
     }
 
