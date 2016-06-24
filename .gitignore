@@ -6,3 +6,6 @@ target/
 *.iml
 *.ipr
 *.iws
+
+# TornadoFX Tests
+example-table.png

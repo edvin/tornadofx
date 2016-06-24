@@ -6,6 +6,8 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import org.junit.Assert
 import org.junit.Test
+import tornadofx.Stylesheet.Companion.armed
+import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.label
 import kotlin.test.assertEquals
 
@@ -13,10 +15,142 @@ class StylesheetTests {
     val vbox by cssclass()
     val wrapper by cssclass()
 
+    val text by cssclass()
+    val box by cssclass()
+
+    val a by cssclass()
+    val b by cssclass()
+    val c by cssclass()
+    val d by cssclass()
+    val e by cssclass()
+    val f by cssclass()
+    val g by cssclass()
+    val h by cssclass()
+    val i by cssclass()
+
+    val base by cssproperty<Paint>("-fx-base")
+    val multiProp by cssproperty<MultiValue<Paint>>()
+
+    @Test
+    fun multiProp() {
+        stylesheet {
+            val mix = mixin {
+                multiProp.value += Color.GREEN
+            }
+            label {
+                multiProp.value += Color.RED
+                +mix
+                multiProp.value += Color.BLUE
+            }
+        } shouldEqual {
+            """
+            .label {
+                multiProp: rgba(255, 0, 0, 1), rgba(0, 128, 0, 1), rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun propertySelectionScope() {
+        stylesheet {
+            label {
+                add(":hover") {
+                    base.value = c("blue")
+                }
+                base.value = c("red")
+            }
+        } shouldEqual {
+            """
+            .label {
+                -fx-base: rgba(255, 0, 0, 1);
+            }
+            .label:hover {
+                -fx-base: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun splitting() {
+        stylesheet {
+            "label     >.lab   #la:l          ,.label,           #fred    " {
+                textFill = Color.BLANCHEDALMOND
+                add(":hover") {
+                    backgroundColor += Color.CHARTREUSE
+                    base.value = c("green")
+                }
+            }
+        } shouldEqual {
+            """
+            label > .lab #la:l, .label, #fred {
+                -fx-text-fill: rgba(255, 235, 205, 1);
+            }
+
+            label > .lab #la:l:hover, .label:hover, #fred:hover {
+                -fx-background-color: rgba(127, 255, 0, 1);
+                -fx-base: rgba(0, 128, 0, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun cartesian() {
+        stylesheet {
+            s(a, b, c) {
+                s(d, e, f) {
+                    s(g, h, i) {
+                        textFill = Color.BLUE
+                    }
+                }
+            }
+        } shouldEqual {
+            """
+            .a .d .g, .a .d .h, .a .d .i, .a .e .g, .a .e .h, .a .e .i, .a .f .g, .a .f .h, .a .f .i, .b .d .g, .b .d .h, .b .d .i, .b .e .g, .b .e .h, .b .e .i, .b .f .g, .b .f .h, .b .f .i, .c .d .g, .c .d .h, .c .d .i, .c .e .g, .c .e .h, .c .e .i, .c .f .g, .c .f .h, .c .f .i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+
+        stylesheet {
+            s(a, b, c) {
+                add(d, e, f) {
+                    add(g, h, i) {
+                        textFill = Color.BLUE
+                    }
+                }
+            }
+        } shouldEqual {
+            """
+            .a.d.g, .a.d.h, .a.d.i, .a.e.g, .a.e.h, .a.e.i, .a.f.g, .a.f.h, .a.f.i, .b.d.g, .b.d.h, .b.d.i, .b.e.g, .b.e.h, .b.e.i, .b.f.g, .b.f.h, .b.f.i, .c.d.g, .c.d.h, .c.d.i, .c.e.g, .c.e.h, .c.e.i, .c.f.g, .c.f.h, .c.f.i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+
+        stylesheet {
+            s(a, b, c) {
+                add(d, e, f) {
+                    s(g, h, i) {
+                        textFill = Color.BLUE
+                    }
+                }
+            }
+        } shouldEqual {
+            """
+            .a.d .g, .a.d .h, .a.d .i, .a.e .g, .a.e .h, .a.e .i, .a.f .g, .a.f .h, .a.f .i, .b.d .g, .b.d .h, .b.d .i, .b.e .g, .b.e .h, .b.e .i, .b.f .g, .b.f .h, .b.f .i, .c.d .g, .c.d .h, .c.d .i, .c.e .g, .c.e .h, .c.e .i, .c.f .g, .c.f .h, .c.f .i {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
     @Test
     fun multiValue() {
         stylesheet {
-            s(label) {
+            label {
                 backgroundColor = multi(Color.WHITE, Color.BLUE)
             }
         } shouldEqual {
@@ -27,7 +161,7 @@ class StylesheetTests {
     @Test
     fun singleValue() {
         stylesheet {
-            s(label) {
+            label {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -38,7 +172,7 @@ class StylesheetTests {
     @Test
     fun selectorOrder() {
         stylesheet {
-            s(vbox direct wrapper contains label) {
+            vbox child wrapper contains label {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
@@ -47,16 +181,31 @@ class StylesheetTests {
     }
 
     @Test
+    fun multiSelect() {
+        stylesheet {
+            s(vbox child wrapper contains label, label) {
+                textFill = Color.BLUE
+            }
+        } shouldEqual {
+            """
+            .vbox > .wrapper .label, .label {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
+
+    @Test
     fun nestedModifier_1() {
         stylesheet {
-            s(".label, .text") {
-                +s(":hover, :armed") {
+            s(label, text) {
+                add(hover, armed) {
                     backgroundColor += c("blue", 0.25)
                 }
             }
         } shouldEqual {
             """
-        .label:hover, .text:hover, .label:armed, .text:armed {
+        .label:hover, .label:armed, .text:hover, .text:armed {
             -fx-background-color: rgba(0, 0, 255, 0.25);
         }
         """
@@ -67,7 +216,7 @@ class StylesheetTests {
     fun gradientsWithErrorColor() {
         stylesheet {
             val hover = mixin {
-                +s(":hover") {
+                add(hover) {
                     backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
                 }
             }
@@ -80,12 +229,12 @@ class StylesheetTests {
                 +hover
             }
 
-            s(".box") {
+            box {
                 +wrap
                 backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(1.0, Color.BLACK))
                 spacing = 5.px
 
-                s(".label") {
+                label {
                     +wrap
                     font = Font.font(14.0)
                     fontWeight = FontWeight.BOLD
@@ -146,13 +295,8 @@ class StylesheetTests {
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
     }
 
-    private fun stylesheet(op: Stylesheet.() -> Unit) =
-            Stylesheet().apply { op(this) }
-
-    infix fun Stylesheet.shouldEqual(op: () -> String) {
-        Assert.assertEquals(op().strip(), render().strip())
-    }
-
+    private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
+    infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
     /**
