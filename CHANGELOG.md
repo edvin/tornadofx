@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Call `onUndock` when UIComponent.modalStage closes
+- Rewrite of the CSS sub structure, cleaner selector syntax, negative dimensions, no need for `select` keyword for single selectors
 
 ## [1.5.0] - 2016-06-10
 
