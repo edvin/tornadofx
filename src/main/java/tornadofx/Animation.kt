@@ -18,10 +18,10 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
     values.add(keyValue)
 }
 
-fun Pane.timeline(op: (Timeline).() -> Unit): Timeline {
+fun Pane.timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
     val timeline = Timeline()
     timeline.op()
-    timeline.play()
+    if (play) timeline.play()
     return timeline
 }
 
@@ -58,17 +58,18 @@ class KeyFrameBuilder(val duration: Duration) {
 
 }
 
-fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: (Timeline.() -> Unit)? = null) {
+fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: (Timeline.() -> Unit)? = null, play: Boolean = false) {
     val writableValue = this
     val timeline = Timeline()
-    op?.apply {this.invoke(timeline) }
 
     timeline.apply {
         keyframe(duration) {
             keyvalue(writableValue,endValue,interpolator)
         }
-        play()
     }
+
+    op?.apply {this.invoke(timeline) }
+
 }
 
 val Number.millis: Duration get() = Duration.millis(this.toDouble())
