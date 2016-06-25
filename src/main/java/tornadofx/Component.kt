@@ -12,6 +12,7 @@ import javafx.scene.Scene
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.Pane
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -250,6 +251,22 @@ abstract class UIComponent : Component() {
 
             throw IllegalArgumentException("Property $key does not match fx:id declaration")
         }
+    }
+
+    fun replaceWith(replacement: UIComponent): Boolean {
+        if (root.scene != null) {
+            root.scene.root = replacement.root
+            return true
+        } else if (root.parent is Pane) {
+            (root.parent as Pane).apply {
+                if (children.remove(root)) {
+                    children.add(replacement.root)
+                    return true
+                }
+            }
+        }
+
+        return false
     }
 
 }
