@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Swap View functions: `UIComponent.replace` and `UIComponent.replaceView`
 - `fxid()` specific fx:id name as optional parameter
 - webview builder
 

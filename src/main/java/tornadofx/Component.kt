@@ -261,8 +261,9 @@ abstract class UIComponent : Component() {
             return true
         } else if (root.parent is Pane) {
             (root.parent as Pane).apply {
+                val index = children.indexOf(root)
                 if (children.remove(root)) {
-                    children.add(replacement.root)
+                    children.add(index, replacement.root)
                     return true
                 }
             }

@@ -283,3 +283,15 @@ init {
 	root += myFragment
 }
 ```
+
+Swap a View for another (change Scene root or parent/pos)
+
+```kotlin
+val pageTwo: PageTwo by inject()
+
+button("Go to next page") {
+    setOnAction {
+    	replaceWith(pageTwo)
+    }
+}
+```
