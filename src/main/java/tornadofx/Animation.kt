@@ -70,6 +70,8 @@ fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: 
 
     op?.apply {this.invoke(timeline) }
 
+    timeline.play()
+
 }
 
 val Number.millis: Duration get() = Duration.millis(this.toDouble())
