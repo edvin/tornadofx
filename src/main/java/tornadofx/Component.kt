@@ -253,6 +253,8 @@ abstract class UIComponent : Component() {
         }
     }
 
+    fun replace(replacee: UIComponent) = replacee.replaceWith(this)
+
     fun replaceWith(replacement: UIComponent): Boolean {
         if (root.scene != null) {
             root.scene.root = replacement.root
