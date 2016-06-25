@@ -58,7 +58,7 @@ class KeyFrameBuilder(val duration: Duration) {
 
 }
 
-fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: (Timeline.() -> Unit)? = null, play: Boolean = false) {
+fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: (Timeline.() -> Unit)? = null) {
     val writableValue = this
     val timeline = Timeline()
 
