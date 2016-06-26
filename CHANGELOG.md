@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Swap View functions: `UIComponent.replace` and `UIComponent.replaceView`
+- Shape builders
+- Animation builders (https://github.com/edvin/tornadofx/issues/131)
+- Swap View function: `UIComponent.replaceWith`
 - `fxid()` specific fx:id name as optional parameter
 - webview builder
 
