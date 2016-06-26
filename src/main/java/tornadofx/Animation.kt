@@ -82,7 +82,7 @@ operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
 
 class ViewTransition {
     companion object {
-        val SlideIn = fun (existing: UIComponent, replacement: UIComponent, listener: EventHandler<ActionEvent>) {
+        val SlideIn = fun (existing: UIComponent, replacement: UIComponent, transitionCompleteCallback: () -> Unit) {
             replacement.root.translateX = existing.root.boundsInLocal.width
 
             val existingSlide = TranslateTransition(0.2.seconds, existing.root).apply {
@@ -92,7 +92,7 @@ class ViewTransition {
 
             val replacementSlide = TranslateTransition(0.2.seconds, replacement.root).apply {
                 toX = 0.0
-                onFinished = listener
+                onFinished = EventHandler { transitionCompleteCallback() }
                 interpolator = Interpolator.EASE_OUT
             }
 
@@ -100,7 +100,7 @@ class ViewTransition {
             replacementSlide.play()
         }
 
-        val SlideOut = fun (existing: UIComponent, replacement: UIComponent, listener: EventHandler<ActionEvent>) {
+        val SlideOut = fun (existing: UIComponent, replacement: UIComponent, transitionCompleteCallback: () -> Unit) {
             replacement.root.translateX = -existing.root.boundsInLocal.width
 
             val existingSlide = TranslateTransition(0.2.seconds, existing.root).apply {
@@ -110,7 +110,7 @@ class ViewTransition {
 
             val replacementSlide = TranslateTransition(0.2.seconds, replacement.root).apply {
                 toX = 0.0
-                onFinished = listener
+                onFinished = EventHandler { transitionCompleteCallback() }
                 interpolator = Interpolator.EASE_OUT
             }
 

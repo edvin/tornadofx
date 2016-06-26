@@ -4,8 +4,6 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
-import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -256,14 +254,14 @@ abstract class UIComponent : Component() {
         }
     }
 
-    fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, EventHandler<ActionEvent>) -> Unit)? = null): Boolean {
+    fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
         if (root.scene != null) {
             if (transition != null) {
                 val scene = root.scene
                 val temp = StackPane(root, replacement.root)
                 scene.root = temp
 
-                transition.invoke(this@UIComponent, replacement, EventHandler {
+                transition.invoke(this@UIComponent, replacement, {
                     temp.children.remove(replacement.root)
                     undockFromParent(replacement)
                     scene.root = replacement.root
@@ -285,7 +283,7 @@ abstract class UIComponent : Component() {
                     val idx = children.indexOf(root)
                     children.add(idx, temp)
 
-                    transition.invoke(this@UIComponent, replacement, EventHandler {
+                    transition.invoke(this@UIComponent, replacement, {
                         val index = children.indexOf(temp)
                         temp.children.remove(replacement.root)
                         children.remove(temp)
