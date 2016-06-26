@@ -1,11 +1,9 @@
 package tornadofx
 
-import javafx.animation.Interpolator
-import javafx.animation.KeyFrame
-import javafx.animation.KeyValue
-import javafx.animation.Timeline
+import javafx.animation.*
 import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.scene.layout.Pane
 import javafx.util.Duration
 import java.util.ArrayList
@@ -81,3 +79,43 @@ val Number.hours: Duration get() = Duration.hours(this.toDouble())
 
 operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
 operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
+
+class ViewTransition {
+    companion object {
+        val SlideIn = fun (existing: UIComponent, replacement: UIComponent, listener: EventHandler<ActionEvent>) {
+            replacement.root.translateX = existing.root.boundsInLocal.width
+
+            val existingSlide = TranslateTransition(0.2.seconds, existing.root).apply {
+                toX = -existing.root.boundsInLocal.width
+                interpolator = Interpolator.EASE_OUT
+            }
+
+            val replacementSlide = TranslateTransition(0.2.seconds, replacement.root).apply {
+                toX = 0.0
+                onFinished = listener
+                interpolator = Interpolator.EASE_OUT
+            }
+
+            existingSlide.play()
+            replacementSlide.play()
+        }
+
+        val SlideOut = fun (existing: UIComponent, replacement: UIComponent, listener: EventHandler<ActionEvent>) {
+            replacement.root.translateX = -existing.root.boundsInLocal.width
+
+            val existingSlide = TranslateTransition(0.2.seconds, existing.root).apply {
+                toX = existing.root.boundsInLocal.width
+                interpolator = Interpolator.EASE_OUT
+            }
+
+            val replacementSlide = TranslateTransition(0.2.seconds, replacement.root).apply {
+                toX = 0.0
+                onFinished = listener
+                interpolator = Interpolator.EASE_OUT
+            }
+
+            existingSlide.play()
+            replacementSlide.play()
+        }
+    }
+}

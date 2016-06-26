@@ -4,6 +4,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
+import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -13,6 +15,7 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -253,23 +256,55 @@ abstract class UIComponent : Component() {
         }
     }
 
-    fun replace(replacee: UIComponent) = replacee.replaceWith(this)
-
-    fun replaceWith(replacement: UIComponent): Boolean {
+    fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, EventHandler<ActionEvent>) -> Unit)? = null): Boolean {
         if (root.scene != null) {
-            root.scene.root = replacement.root
+            if (transition != null) {
+                val scene = root.scene
+                val temp = StackPane(root, replacement.root)
+                scene.root = temp
+
+                transition.invoke(this@UIComponent, replacement, EventHandler {
+                    temp.children.remove(replacement.root)
+                    undockFromParent(replacement)
+                    scene.root = replacement.root
+                })
+
+                return true
+            } else {
+                undockFromParent(replacement)
+                root.scene.root = replacement.root
+            }
+
             return true
         } else if (root.parent is Pane) {
             (root.parent as Pane).apply {
-                val index = children.indexOf(root)
-                if (children.remove(root)) {
+                if (transition != null) {
+                    val temp = StackPane(root, replacement.root)
+
+                    children.remove(root)
+                    val idx = children.indexOf(root)
+                    children.add(idx, temp)
+
+                    transition.invoke(this@UIComponent, replacement, EventHandler {
+                        val index = children.indexOf(temp)
+                        temp.children.remove(replacement.root)
+                        children.remove(temp)
+                        children.add(index, replacement.root)
+                    })
+                } else {
+                    val index = children.indexOf(root)
+                    children.remove(root)
                     children.add(index, replacement.root)
-                    return true
                 }
+                return true
             }
         }
 
         return false
+    }
+
+    private fun undockFromParent(replacement: UIComponent) {
+        if (replacement.root.parent is Pane) (replacement.root.parent as Pane).children.remove(replacement.root)
     }
 
 }
