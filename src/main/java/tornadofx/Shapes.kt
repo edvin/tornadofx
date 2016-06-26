@@ -21,13 +21,33 @@ fun Pane.line(startX: Double = 0.0, startY: Double = 0.0, endX: Double = 0.0, en
 fun Pane.path(vararg elements: PathElement, op: (Path.() -> Unit)? = null) =
         opcr(this, Path(*elements), op)
 
-fun Path.moveTo(x: Double = 0.0, y: Double = 0.0) = elements.add(MoveTo(x, y))
-fun Path.hlineTo(x: Double) = elements.add(HLineTo(x))
-fun Path.vlineTo(y: Double) = elements.add(VLineTo(y))
-fun Path.quadqurveTo(controlX: Double = 0.0, controlY: Double = 0.0, x: Double = 0.0, y: Double = 0.0) = elements.add(QuadCurveTo(controlX, controlY, x, y))
-fun Path.lineTo(x: Double = 0.0, y: Double = 0.0) = elements.add(LineTo(x, y))
-fun Path.arcTo(radiusX: Double = 0.0, radiusY: Double = 0.0, xAxisRotation: Double = 0.0, x: Double = 0.0, y: Double = 0.0, largeArcFlag: Boolean = false, sweepFlag: Boolean = false) = elements.add(ArcTo(radiusX, radiusY, xAxisRotation, x, y, largeArcFlag, sweepFlag))
-fun Path.closepath() = elements.add(ClosePath())
+fun Path.moveTo(x: Double = 0.0, y: Double = 0.0): Path {
+    elements.add(MoveTo(x, y)); return this
+}
+
+fun Path.hlineTo(x: Double): Path {
+    elements.add(HLineTo(x)); return this
+}
+
+fun Path.vlineTo(y: Double): Path {
+    elements.add(VLineTo(y)); return this
+}
+
+fun Path.quadqurveTo(controlX: Double = 0.0, controlY: Double = 0.0, x: Double = 0.0, y: Double = 0.0): Path {
+    elements.add(QuadCurveTo(controlX, controlY, x, y)); return this
+}
+
+fun Path.lineTo(x: Double = 0.0, y: Double = 0.0): Path {
+    elements.add(LineTo(x, y)); return this
+}
+
+fun Path.arcTo(radiusX: Double = 0.0, radiusY: Double = 0.0, xAxisRotation: Double = 0.0, x: Double = 0.0, y: Double = 0.0, largeArcFlag: Boolean = false, sweepFlag: Boolean = false): Path {
+    elements.add(ArcTo(radiusX, radiusY, xAxisRotation, x, y, largeArcFlag, sweepFlag)); return this
+}
+
+fun Path.closepath(): Path {
+    elements.add(ClosePath()); return this
+}
 
 fun Pane.polygon(vararg points: Double, op: (Polygon.() -> Unit)? = null) =
         opcr(this, Polygon(*points), op)
@@ -41,10 +61,9 @@ fun Pane.quadcurve(startX: Double = 0.0, startY: Double = 0.0, controlX: Double 
 fun Pane.rectangle(x: Double = 0.0, y: Double = 0.0, width: Double = 0.0, height: Double = 0.0, op: (Rectangle.() -> Unit)? = null) =
         opcr(this, Rectangle(x, y, width, height), op)
 
-fun Pane.svgpath(content: String? = null, fillRule: FillRule? = null, op: (SVGPath.() -> Unit)? = null) : SVGPath {
+fun Pane.svgpath(content: String? = null, fillRule: FillRule? = null, op: (SVGPath.() -> Unit)? = null): SVGPath {
     val p = SVGPath()
     if (content != null) p.content = content
     if (fillRule != null) p.fillRule = fillRule
     return opcr(this, p, op)
 }
-
