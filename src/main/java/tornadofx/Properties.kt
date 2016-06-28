@@ -75,7 +75,7 @@ open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T
 
 @Suppress("UNCHECKED_CAST")
 fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>): PojoProperty<T> {
-    val suffix = propName.first().toUpperCase() + propName.substring(1)
+    val suffix = propName.capitalize()
 
     val getter = bean.javaClass.getDeclaredMethod("get$suffix")
     val setter = bean.javaClass.getDeclaredMethod("set$suffix", propType.java)
