@@ -50,14 +50,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.5.0</version>
+	<version>1.5.1</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.5.0'
+compile 'no.tornado:tornadofx:1.5.1'
 ```
 
 ### What does it look like? (Code snippets)
@@ -90,11 +90,21 @@ class HelloWorldApp : App {
 	override val primaryView = HelloWorld::class
 
 	init {
-		importStylesheet("/styles.css")
+		importStylesheet(Styles::class)
 	}
 }
+
+class Styles : Stylesheet() {
+    init {
+        label {
+            fontSize = 20.px
+            fontWeight = FontWeight.BOLD
+            backgroundColor += c("#cecece")
+        }    
+    }    
+}
 ```
-> Start app and load a stylesheet
+> Start app and load a type safe stylesheet
 
 Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Builders) to quickly create complex user interfaces
 
