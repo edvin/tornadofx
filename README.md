@@ -83,7 +83,7 @@ class HelloWorld : View() {
 }
 ```
 
-Start your application and show the primary `View` by extending the `App` class
+Start your application and show the primary `View` and add a type safe stylesheet
     
 ```kotlin
 class HelloWorldApp : App {
