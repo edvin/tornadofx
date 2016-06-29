@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.1-SNAPSHOT]
+## [Unreleased]
+
+
+## [1.5.1] - 2016-06-29
 
 ### Added
 
