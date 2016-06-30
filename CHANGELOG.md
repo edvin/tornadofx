@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Builder op parameter made optional on many builders (https://github.com/edvin/tornadofx/issues/126)
+- Builder op block made optional on many builders (https://github.com/edvin/tornadofx/issues/126)
 
 ## [1.5.1] - 2016-06-29
 
