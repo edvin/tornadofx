@@ -7,7 +7,7 @@ import javafx.scene.layout.Pane
 /**
  * Create a PieChart with optional title data and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun Pane.piechart(title: String? = null, data: ObservableList<PieChart.Data>? = null, op: PieChart.() -> Unit): PieChart {
+fun Pane.piechart(title: String? = null, data: ObservableList<PieChart.Data>? = null, op: (PieChart.() -> Unit)? = null): PieChart {
     val chart = if (data != null) PieChart(data) else PieChart()
     chart.title = title
     return opcr(this, chart, op)
@@ -131,10 +131,10 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
  * }
  * </pre>
  */
-fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: (MultiSeries<X, Y>).() -> Unit): MultiSeries<X, Y> {
+fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: ((MultiSeries<X, Y>).() -> Unit)? = null): MultiSeries<X, Y> {
     val series = names.map { XYChart.Series<X, Y>().apply { name = it } }
     val multiseries = MultiSeries(series, this)
-    op(multiseries)
+    op?.invoke(multiseries)
     data.addAll(series)
     return multiseries
 }

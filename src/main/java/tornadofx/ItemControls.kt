@@ -63,26 +63,26 @@ fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> 
     values?.let { items = it }
 }, op)
 
-inline fun <S> Pane.tableview(items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)): TableView<S> {
+inline fun <S> Pane.tableview(items: ObservableList<S>? = null, noinline op: (TableView<S>.() -> Unit)? = null): TableView<S> {
     val tableview = TableView<S>()
     if (items != null) tableview.items = items
-    op(tableview)
+    op?.invoke(tableview)
     children.add(tableview)
     return tableview
 }
 
-inline fun <S> Pane.treeview(root: TreeItem<S>? = null, op: (TreeView<S>.() -> Unit)): TreeView<S> {
+inline fun <S> Pane.treeview(root: TreeItem<S>? = null, noinline op: (TreeView<S>.() -> Unit)?= null): TreeView<S> {
     val treeview = TreeView<S>()
     if (root != null) treeview.root = root
-    op(treeview)
+    op?.invoke(treeview)
     children.add(treeview)
     return treeview
 }
 
-inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -> Unit)): TreeTableView<S> {
+inline fun <S> Pane.treetableview(root: TreeItem<S>? = null, noinline op: (TreeTableView<S>.() -> Unit)? = null): TreeTableView<S> {
     val treetableview = TreeTableView<S>()
     if (root != null) treetableview.root = root
-    op(treetableview)
+    op?.invoke(treetableview)
     children.add(treetableview)
     return treetableview
 }

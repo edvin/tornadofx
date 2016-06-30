@@ -7,7 +7,7 @@ import javafx.scene.layout.*
 
 val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
 
-fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
+fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
 
     // Allow the caller to add children to a fake pane
@@ -15,7 +15,7 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit) {
     if (title != null)
         fake.children.add(Label(title))
 
-    op(fake)
+    op?.invoke(fake)
 
     // Create a new row in the GridPane and add the children added to the fake pane
     addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
@@ -70,33 +70,33 @@ fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op
 fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
-fun BorderPane.top(op: Pane.() -> Unit) {
+fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     top = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun BorderPane.bottom(op: Pane.() -> Unit) {
+fun BorderPane.bottom(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     bottom = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun BorderPane.left(op: Pane.() -> Unit) {
+fun BorderPane.left(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     left = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun BorderPane.right(op: Pane.() -> Unit) {
+fun BorderPane.right(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     right = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun BorderPane.center(op: Pane.() -> Unit) {
+fun BorderPane.center(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     center = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
@@ -112,9 +112,9 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
     return opcr(this, pagination, op)
 }
 
-fun Pane.scrollpane(op: (Pane.() -> Unit)) {
+fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     val scrollPane = ScrollPane()
     scrollPane.content = if (vbox.children.size == 1) vbox.children[0] else vbox
     this += scrollPane
@@ -151,9 +151,9 @@ fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null)
     return accordion
 }
 
-fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)): TitledPane {
+fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): TitledPane {
     val vbox = VBox()
-    op(vbox)
+    op?.invoke(vbox)
     val fold = TitledPane(title, if (vbox.children.size == 1) vbox.children[0] else vbox)
     panes += fold
     return fold

@@ -19,17 +19,17 @@ operator fun <T: MenuItem> ContextMenu.plusAssign(menuItem: T): Unit{
 }
 
 //MenuBar extensions
-fun MenuBar.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
+fun MenuBar.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
     val menu = Menu(name)
-    menu.op()
+    op?.invoke(menu)
     this += menu
     return menu
 }
 
 //ContextMenu extensions
-fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
+fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
     val menu = Menu(name)
-    menu.op()
+    op?.invoke(menu)
     this += menu
     return menu
 }
@@ -56,9 +56,9 @@ fun ContextMenu.separator(op: (SeparatorMenuItem.()->Unit)? = null){
 }
 
 //Menu extensions
-fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)): Menu {
+fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
     val menu = Menu(name)
-    menu.op()
+    op?.invoke(menu)
     this += menu
     return menu
 }
@@ -98,9 +98,9 @@ fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: N
     return checkMenuItem
 }
 
-fun Control.contextmenu(op: ContextMenu.() -> Unit): Node {
+fun Control.contextmenu(op: (ContextMenu.() -> Unit)? = null): Node {
     val menu = ContextMenu()
-    op(menu)
+    op?.invoke(menu)
     contextMenu = menu
     return this
 }
