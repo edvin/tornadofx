@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.collections.ObservableList
 import javafx.scene.chart.*
+import javafx.scene.control.TableView
 import javafx.scene.layout.Pane
 
 /**
@@ -120,7 +121,7 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
 }
 
 /**
- * Add multiple series XYChart.Series wihh data in one go. Specify a list of names for the series
+ * Add multiple series XYChart.Series with data in one go. Specify a list of names for the series
  * and then add values in the op. Example:
  * <pre>
  * multiseries("Portfolio 1", "Portfolio 2") {

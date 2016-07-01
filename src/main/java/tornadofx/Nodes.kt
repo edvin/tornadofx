@@ -99,9 +99,9 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
     val uicmp = uiComponent<UIComponent>()
     if (uicmp is UIComponent) {
         list += uicmp
-        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
+        childrenUnmodifiable.asSequence().filter { it is Parent }.forEach { (it as Parent).clearViews() }
     } else {
-        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).findUIComponents(list) }
+        childrenUnmodifiable.asSequence().filter { it is Parent }.forEach { (it as Parent).findUIComponents(list) }
     }
 }
 
@@ -110,7 +110,7 @@ private fun Parent.clearViews() {
     if (uicmp is View) {
         FX.components.remove(uicmp.javaClass.kotlin)
     } else {
-        childrenUnmodifiable.filtered { it is Parent }.forEach { (it as Parent).clearViews() }
+        childrenUnmodifiable.asSequence().filter { it is Parent }.forEach { (it as Parent).clearViews() }
     }
 }
 

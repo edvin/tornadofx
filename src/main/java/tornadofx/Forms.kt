@@ -31,7 +31,7 @@ class Form : VBox() {
         get() = children.filter { it is Fieldset }.map { it as Fieldset }
 
     override fun getUserAgentStylesheet() =
-            Form::class.java.getResource("form.css").toExternalForm()
+            Form::class.java.getResource("form.css").toExternalForm()!!
 
     fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
         val fieldset = Fieldset(text ?: "")
@@ -96,7 +96,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         children.addListener(ListChangeListener { c ->
             while (c.next()) {
                 if (c.wasAdded()) {
-                    c.addedSubList.filter { it is Field }.map { it as Field }.forEach { added ->
+                    c.addedSubList.asSequence().filter { it is Field }.map { it as Field }.forEach { added ->
 
                         // Configure hgrow for current children
                         added.inputContainer.children.forEach { this.configureHgrow(it) }
@@ -110,7 +110,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().addListener { observable, oldValue, newValue ->
-            children.filter { it is Field }.map { it as Field }.forEach {
+            children.asSequence().filter { it is Field }.map { it as Field }.forEach {
                 it.inputContainer.children.forEach { this.configureHgrow(it) }
             }
         }
