@@ -71,7 +71,7 @@ fun <S> Pane.tableview(items: ObservableList<S>? = null, op: (TableView<S>.() ->
     return tableview
 }
 
-fun <S> Pane.treeview(root: TreeItem<S>? = null, op: (TreeView<S>.() -> Unit)?= null): TreeView<S> {
+fun <S> Pane.treeview(root: TreeItem<S>? = null, op: (TreeView<S>.() -> Unit)? = null): TreeView<S> {
     val treeview = TreeView<S>()
     if (root != null) treeview.root = root
     op?.invoke(treeview)
@@ -85,6 +85,46 @@ fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -
     op?.invoke(treetableview)
     children.add(treetableview)
     return treetableview
+}
+
+fun <T> TreeView<T>.lazyItems(
+        rootValue: T,
+        leafCheck: (LazyTreeItem<T>) -> Boolean,
+        childFactory: (LazyTreeItem<T>) -> List<T>,
+        newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null
+) {
+    fun createItem(value: T) : LazyTreeItem<T> {
+        val newItem = LazyTreeItem(value, leafCheck, { childFactory(it).map { createItem(it) }})
+        newItemProcessor?.invoke(newItem)
+        return newItem
+    }
+
+    root = createItem(rootValue)
+}
+
+class LazyTreeItem<T>(
+        value: T,
+        val leafCheck: (LazyTreeItem<T>) -> Boolean,
+        val childFactory: (LazyTreeItem<T>) -> List<TreeItem<T>>
+) : TreeItem<T>(value) {
+    var leafResult: Boolean? = null
+    var childrenChecked = false
+
+    override fun isLeaf(): Boolean {
+        if (leafResult == null)
+            leafResult = leafCheck(this)
+        return leafResult!!
+    }
+
+    override fun getChildren(): ObservableList<TreeItem<T>> {
+        if (!childrenChecked) {
+            childrenChecked = true
+            task {
+                super.getChildren().setAll(childFactory(this))
+            }
+        }
+        return super.getChildren()
+    }
 }
 
 fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
