@@ -693,8 +693,7 @@ inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["torn
  * Find all UIComponents of the specified type that owns any of this node's children
  */
 inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable
-        .filter { it is Parent }
-        .map { it as Parent }
+        .filterIsInstance<Parent>()
         .filter { it.uiComponent<UIComponent>() is T }
         .map { it.uiComponent<T>()!! }
 

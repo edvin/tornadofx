@@ -28,7 +28,7 @@ class Form : VBox() {
         get() = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-1.0) }.max() ?: 0.0
 
     val fieldsets: List<Fieldset>
-        get() = children.filter { it is Fieldset }.map { it as Fieldset }
+        get() = children.filterIsInstance<Fieldset>()
 
     override fun getUserAgentStylesheet() =
             Form::class.java.getResource("form.css").toExternalForm()!!
@@ -96,7 +96,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         children.addListener(ListChangeListener { c ->
             while (c.next()) {
                 if (c.wasAdded()) {
-                    c.addedSubList.asSequence().filter { it is Field }.map { it as Field }.forEach { added ->
+                    c.addedSubList.asSequence().filterIsInstance<Field>().forEach { added ->
 
                         // Configure hgrow for current children
                         added.inputContainer.children.forEach { this.configureHgrow(it) }
@@ -110,7 +110,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().addListener { observable, oldValue, newValue ->
-            children.asSequence().filter { it is Field }.map { it as Field }.forEach {
+            children.asSequence().filterIsInstance<Field>().forEach {
                 it.inputContainer.children.forEach { this.configureHgrow(it) }
             }
         }
@@ -158,7 +158,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     val form: Form get() = parent as Form
 
     internal val fields: List<Field>
-        get() = children.filter { it is Field }.map { it as Field }
+        get() = children.filterIsInstance<Field>()
 
     companion object {
         private val HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal")
