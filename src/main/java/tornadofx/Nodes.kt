@@ -244,6 +244,14 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
+fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boolean) {
+    items.asSequence().filter(condition)
+            .forEach {
+                selectionModel.select(it)
+                if (scrollTo) scrollTo(it)
+            }
+}
+
 val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
 
