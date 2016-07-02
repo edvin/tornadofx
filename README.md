@@ -86,7 +86,7 @@ class HelloWorld : View() {
 Start your application and show the primary `View` and add a type safe stylesheet
     
 ```kotlin
-class HelloWorldApp : App {
+class HelloWorldApp : App() {
 	override val primaryView = HelloWorld::class
 
 	init {
