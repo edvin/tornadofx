@@ -85,7 +85,7 @@ class HelloWorld : View() {
 Start your application and show the primary `View` by extending the `App` class
     
 ```kotlin
-class HelloWorldApp : App {
+class HelloWorldApp : App() {
 	override val primaryView = HelloWorld::class
 
 	init {
