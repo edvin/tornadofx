@@ -120,7 +120,9 @@ class LazyTreeItem<T>(
         if (!childrenChecked) {
             childrenChecked = true
             task {
-                super.getChildren().setAll(childFactory(this))
+                childFactory(this)
+            } success {
+                super.getChildren().setAll(it)
             }
         }
         return super.getChildren()
