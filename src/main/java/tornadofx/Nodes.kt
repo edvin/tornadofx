@@ -679,7 +679,7 @@ fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
  * a TreeItem&lt;T> to a List&lt;T>?.
  *
  * If the childFactory returns a non-empty list, each entry in the list is converted to a TreeItem&lt;T>
- * via the supplied itemFactory function. The default itemFactory from TreeTableView.populate and TreeTable.populate
+ * via the supplied itemProcessor function. The default itemProcessor from TreeTableView.populate and TreeTable.populate
  * simply wraps the given T in a TreeItem, but you can override it to add icons etc. Lastly, the populateTree
  * function is called for each of the generated child items.
  */

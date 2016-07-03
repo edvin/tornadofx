@@ -89,10 +89,10 @@ fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -
 
 fun <T> TreeView<T>.lazyPopulate(
         leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
-        itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
+        itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
         childFactory: (TreeItem<T>) -> List<T>?
 ) {
-    fun createItem(value: T) = LazyTreeItem(value, leafCheck, { childFactory(it)?.map { itemFactory(it) } })
+    fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory)
 
     if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
     val rootChildren = childFactory.invoke(root)
@@ -102,7 +102,8 @@ fun <T> TreeView<T>.lazyPopulate(
 class LazyTreeItem<T>(
         value: T,
         val leafCheck: (LazyTreeItem<T>) -> Boolean,
-        val childFactory: (LazyTreeItem<T>) -> List<TreeItem<T>>?
+        val itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
+        val childFactory: (TreeItem<T>) -> List<T>?
 ) : TreeItem<T>(value) {
     var leafResult: Boolean? = null
     var childFactoryInvoked = false
@@ -116,9 +117,8 @@ class LazyTreeItem<T>(
 
     override fun getChildren(): ObservableList<TreeItem<T>> {
         if (!childFactoryInvoked) {
-            childFactoryInvoked = true
             task {
-                childFactoryResult = childFactory(this)
+                invokeChildFactorySynchronously()
             } success {
                 if (childFactoryResult != null)
                     super.getChildren().setAll(childFactoryResult)
@@ -132,7 +132,7 @@ class LazyTreeItem<T>(
     private fun invokeChildFactorySynchronously(): List<TreeItem<T>>? {
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
-            childFactoryResult = childFactory(this)
+            childFactoryResult = childFactory(this)?.map { LazyTreeItem(it, leafCheck, itemProcessor, childFactory) }
             if (childFactoryResult != null)
                 super.getChildren().setAll(childFactoryResult)
         }
@@ -145,14 +145,14 @@ fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): 
         isSortable = false
         prefWidth = width
         this@makeIndexColumn.columns += this
-        setCellValueFactory { ReadOnlyObjectWrapper(items.indexOf(it.value) + startNumber) };
+        setCellValueFactory { ReadOnlyObjectWrapper(items.indexOf(it.value) + startNumber) }
     }
 }
 
 fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
     setCellFactory {
         TableCell<S, T>().apply {
-            val text = Text();
+            val text = Text()
             graphic = text
             prefHeight = Control.USE_COMPUTED_SIZE
             text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())))
@@ -210,7 +210,7 @@ fun <S> TableColumn<S, LocalDate?>.useDatePicker(converter: StringConverter<Loca
 inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConverter<T>? = null, noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     when (T::class) {
         String::class -> {
-            @Suppress("CAST_NEVER_SUCCEEDS")
+            @Suppress("UNCHECKED_CAST")
             val stringColumn = this as TableColumn<S, String?>
             stringColumn.cellFactory = TextFieldTableCell.forTableColumn()
         }
