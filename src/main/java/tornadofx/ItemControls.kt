@@ -94,7 +94,7 @@ fun <T> TreeView<T>.lazyItems(
         newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null
 ) {
     fun createItem(value: T) : LazyTreeItem<T> {
-        val newItem = LazyTreeItem(value, leafCheck, { childFactory(it)!!.map { createItem(it) }})
+        val newItem = LazyTreeItem(value, leafCheck, { childFactory(it)?.map { createItem(it) }})
         newItemProcessor?.invoke(newItem)
         return newItem
     }
@@ -123,7 +123,8 @@ class LazyTreeItem<T>(
             task {
                 childFactoryResult = childFactory(this)
             } success {
-                super.getChildren().setAll(childFactoryResult)
+                if (childFactoryResult != null)
+                    super.getChildren().setAll(childFactoryResult)
             }
         }
         return super.getChildren()
@@ -135,7 +136,8 @@ class LazyTreeItem<T>(
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
             childFactoryResult = childFactory(this)
-            super.getChildren().setAll(childFactoryResult)
+            if (childFactoryResult != null)
+                super.getChildren().setAll(childFactoryResult)
         }
         return childFactoryResult
     }
