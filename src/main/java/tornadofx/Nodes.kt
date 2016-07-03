@@ -299,6 +299,16 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell
     }
 }
 
+fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Unit)) {
+    val originalFactory = cellFactory
+
+    cellFactory = Callback { column: TableColumn<S, T> ->
+        val cell: TableCell<S, T> = originalFactory.call(column)
+        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue)  }
+        cell
+    }
+}
+
 inline fun <S> TreeView<S>.cellFormat(crossinline formatter: (TreeCell<S>.(S) -> Unit)) {
     cellFactory = Callback {
         object : TreeCell<S>() {
