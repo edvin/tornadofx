@@ -87,11 +87,10 @@ fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -
     return treetableview
 }
 
-fun <T> TreeView<T>.lazyItems(
-        rootValue: T,
+fun <T> TreeView<T>.lazyPopulate(
         leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
         newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
-        childFactory: (LazyTreeItem<T>) -> List<T>?
+        childFactory: (TreeItem<T>) -> List<T>?
 ) {
     fun createItem(value: T) : LazyTreeItem<T> {
         val newItem = LazyTreeItem(value, leafCheck, { childFactory(it)?.map { createItem(it) }})
@@ -99,7 +98,9 @@ fun <T> TreeView<T>.lazyItems(
         return newItem
     }
 
-    root = createItem(rootValue)
+    if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
+    val rootChildren = childFactory.invoke(root)
+    if (rootChildren != null) root.children.setAll(rootChildren.map { createItem(it) })
 }
 
 class LazyTreeItem<T>(
