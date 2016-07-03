@@ -89,9 +89,9 @@ fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -
 
 fun <T> TreeView<T>.lazyItems(
         rootValue: T,
-        childFactory: (LazyTreeItem<T>) -> List<T>?,
         leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
-        newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null
+        newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
+        childFactory: (LazyTreeItem<T>) -> List<T>?
 ) {
     fun createItem(value: T) : LazyTreeItem<T> {
         val newItem = LazyTreeItem(value, leafCheck, { childFactory(it)?.map { createItem(it) }})
