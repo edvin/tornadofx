@@ -89,12 +89,12 @@ fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -
 
 fun <T> TreeView<T>.lazyItems(
         rootValue: T,
-        leafCheck: (LazyTreeItem<T>) -> Boolean,
-        childFactory: (LazyTreeItem<T>) -> List<T>,
+        childFactory: (LazyTreeItem<T>) -> List<T>?,
+        leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
         newItemProcessor: ((LazyTreeItem<T>) -> Unit)? = null
 ) {
     fun createItem(value: T) : LazyTreeItem<T> {
-        val newItem = LazyTreeItem(value, leafCheck, { childFactory(it).map { createItem(it) }})
+        val newItem = LazyTreeItem(value, leafCheck, { childFactory(it)!!.map { createItem(it) }})
         newItemProcessor?.invoke(newItem)
         return newItem
     }
@@ -105,10 +105,11 @@ fun <T> TreeView<T>.lazyItems(
 class LazyTreeItem<T>(
         value: T,
         val leafCheck: (LazyTreeItem<T>) -> Boolean,
-        val childFactory: (LazyTreeItem<T>) -> List<TreeItem<T>>
+        val childFactory: (LazyTreeItem<T>) -> List<TreeItem<T>>?
 ) : TreeItem<T>(value) {
     var leafResult: Boolean? = null
-    var childrenChecked = false
+    var childFactoryInvoked = false
+    var childFactoryResult: List<TreeItem<T>>? = null
 
     override fun isLeaf(): Boolean {
         if (leafResult == null)
@@ -117,15 +118,26 @@ class LazyTreeItem<T>(
     }
 
     override fun getChildren(): ObservableList<TreeItem<T>> {
-        if (!childrenChecked) {
-            childrenChecked = true
+        if (!childFactoryInvoked) {
+            childFactoryInvoked = true
             task {
-                childFactory(this)
+                childFactoryResult = childFactory(this)
             } success {
-                super.getChildren().setAll(it)
+                super.getChildren().setAll(childFactoryResult)
             }
         }
         return super.getChildren()
+    }
+
+    fun childFactoryReturnedNull() = invokeChildFactorySynchronously() == null
+
+    private fun invokeChildFactorySynchronously(): List<TreeItem<T>>? {
+        if (!childFactoryInvoked) {
+            childFactoryInvoked = true
+            childFactoryResult = childFactory(this)
+            super.getChildren().setAll(childFactoryResult)
+        }
+        return childFactoryResult
     }
 }
 
