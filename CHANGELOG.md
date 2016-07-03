@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- TreeView `lazyPopulate` alternative to `populate` that lazily creates children as needed
+
 ### Changed
 
 - Builder op block made optional on many builders (https://github.com/edvin/tornadofx/issues/126)
