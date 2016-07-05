@@ -92,7 +92,7 @@ fun <T> TreeView<T>.lazyPopulate(
         itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
         childFactory: (TreeItem<T>) -> List<T>?
 ) {
-    fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory)
+    fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) }
 
     if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
     val rootChildren = childFactory.invoke(root)
