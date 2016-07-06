@@ -132,7 +132,7 @@ class LazyTreeItem<T>(
     private fun invokeChildFactorySynchronously(): List<TreeItem<T>>? {
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
-            childFactoryResult = childFactory(this)?.map { LazyTreeItem(it, leafCheck, itemProcessor, childFactory) }
+            childFactoryResult = childFactory(this)?.map { LazyTreeItem(it, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) } }
             if (childFactoryResult != null)
                 super.getChildren().setAll(childFactoryResult)
         }

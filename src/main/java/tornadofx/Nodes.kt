@@ -299,6 +299,23 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(crossinline formatter: (TableCell
     }
 }
 
+inline fun <T> ComboBox<T>.cellFormat(crossinline formatter: (ListCell<T>.(T) -> Unit)) {
+    cellFactory = Callback { listView: ListView<T> ->
+        object : ListCell<T>() {
+            override fun updateItem(item: T, empty: Boolean) {
+                super.updateItem(item, empty)
+
+                if (item == null || empty) {
+                    text = null
+                    graphic = null
+                } else {
+                    formatter(this, item)
+                }
+            }
+        }
+    }
+}
+
 fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Unit)) {
     val originalFactory = cellFactory
 
