@@ -140,6 +140,17 @@ class LazyTreeItem<T>(
     }
 }
 
+fun <T> TreeItem<T>.treeitem(value: T? = null, op: TreeItem<T>.() -> Unit = {}): TreeItem<T> {
+    val treeItem = value?.let { TreeItem<T>(it) }?:TreeItem<T>()
+    treeItem.op()
+    this += treeItem
+    return treeItem
+}
+
+operator fun <T> TreeItem<T>.plusAssign(treeItem: TreeItem<T>) {
+    this.children.add(treeItem);
+}
+
 fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
     return TableColumn<S, Number>(name).apply {
         isSortable = false

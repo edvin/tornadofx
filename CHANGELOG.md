@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- TreeItem nesting extension functions (https://github.com/edvin/tornadofx/issues/134)
 - Shape builders (https://github.com/edvin/tornadofx/issues/129)
 - Animation builders (https://github.com/edvin/tornadofx/issues/131)
 - Replace View function: `UIComponent.replaceWith`
