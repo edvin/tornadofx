@@ -320,7 +320,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Un
     val originalFactory = cellFactory
 
     cellFactory = Callback { column: TableColumn<S, T> ->
-        val cell: TableCell<S, T> = originalFactory.call(column)
+        val cell = originalFactory.call(column)
         cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue)  }
         cell
     }
