@@ -251,6 +251,24 @@ fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boo
                 if (scrollTo) scrollTo(it)
             }
 }
+fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
+    if (select) selectionModel.clearSelection()
+    backingList.asSequence().filter(predicate).toList().asSequence().forEach {
+        backingList.remove(it)
+        backingList.add(0,it)
+        if (select) selectionModel.select(it)
+    }
+}
+fun <T> TableView<T>.moveToBottomWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
+    val end = backingList.size - 1
+    if (select) selectionModel.clearSelection()
+    backingList.asSequence().filter(predicate).toList().asSequence().forEach {
+        backingList.remove(it)
+        backingList.add(end,it)
+        if (select) selectionModel.select(it)
+
+    }
+}
 
 val <T> TableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem
