@@ -169,8 +169,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         val fieldset by cssclass()
         val legend by cssclass()
         val field by cssclass()
-        val labelContainer by cssclass()
-        val inputContainer by cssclass()
+        val labelContainer by cssclass("label-container")
+        val inputContainer by cssclass("input-container")
 
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
