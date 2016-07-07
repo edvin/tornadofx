@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.beans.property.Property
 import org.junit.Assert
 import org.junit.Test
 
@@ -44,7 +43,7 @@ class PersonViewModel(person: Person) : ViewModel() {
 }
 
 class JavaPersonViewModel(person: JavaPerson) : ViewModel() {
-    val name: Property<String> = person.wrap(JavaPerson::getName, JavaPerson::setName)
+    val name = person.wrap(JavaPerson::getName, JavaPerson::setName)
 }
 
 class PersonVarViewModel(person: Person) : ViewModel() {
