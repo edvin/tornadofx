@@ -31,6 +31,26 @@ class StylesheetTests {
     val base by cssproperty<Paint>("-fx-base")
     val multiProp by cssproperty<MultiValue<Paint>>()
 
+    val lumpyElement by csselement()
+    val lumpyId by cssid()
+    val lumpyClass by cssclass()
+    val lumpyPseudoClass by csspseudoclass()
+
+    @Test
+    fun lumpySnakes() {
+        stylesheet {
+            s(lumpyElement, lumpyId, lumpyClass, lumpyPseudoClass) {
+                multiProp.value += Color.RED
+            }
+        } shouldEqual {
+            """
+            lumpy-element, #lumpy-id, .lumpy-class, :lumpy-pseudo-class {
+                multi-prop: rgba(255, 0, 0, 1);
+            }
+            """
+        }
+    }
+
     @Test
     fun multiProp() {
         stylesheet {
@@ -45,7 +65,7 @@ class StylesheetTests {
         } shouldEqual {
             """
             .label {
-                multiProp: rgba(255, 0, 0, 1), rgba(0, 128, 0, 1), rgba(0, 0, 255, 1);
+                multi-prop: rgba(255, 0, 0, 1), rgba(0, 128, 0, 1), rgba(0, 0, 255, 1);
             }
             """
         }

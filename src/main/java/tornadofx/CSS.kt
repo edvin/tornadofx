@@ -169,8 +169,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         val fieldset by cssclass()
         val legend by cssclass()
         val field by cssclass()
-        val labelContainer by cssclass("label-container")
-        val inputContainer by cssclass("input-container")
+        val labelContainer by cssclass()
+        val inputContainer by cssclass()
 
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
@@ -532,7 +532,8 @@ open class PropertyHolder {
     }
 
     @Suppress("UNCHECKED_CAST")
-    class CssProperty<T>(val name: String, val multiValue: Boolean) {
+    class CssProperty<T>(name: String, val multiValue: Boolean) {
+        val name = name.camelToSnake()
         var value: T
             get() {
                 val props = selectionScope.get().properties
@@ -645,7 +646,7 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
             = CssRuleSet(rootRule, *subRule, CssSubRule(ruleSet.rootRule, relation), *ruleSet.subRule)
 }
 
-class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
+class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
     companion object {
         fun elem(value: String) = CssRule("", value.cssValidate())
         fun id(value: String) = CssRule("#", value.cssValidate())
@@ -659,7 +660,10 @@ class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Render
         val ruleSetRegex = Regex("(\\s*$relation\\s*$prefix$name)+\\s*")
         val subRuleRegex = Regex("\\s*?($relation)\\s*($prefix)($name)")
         val splitter = Regex("\\s*,\\s*")
+        val upperCaseRegex = Regex("([A-Z])")
     }
+
+    val name = name.camelToSnake()
 
     override fun render() = "$prefix$name"
     override fun toRuleSet() = CssRuleSet(this)
@@ -790,6 +794,7 @@ val fiveDigits = DecimalFormat("#.#####", DecimalFormatSymbols.getInstance(Local
 
 val Color.css: String get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toInt()}, ${(blue * 255).toInt()}, ${fiveDigits.format(opacity)})"
 
+internal fun String.camelToSnake() = (get(0).toLowerCase() + substring(1)).replace(CssRule.upperCaseRegex, "-$1").toLowerCase()
 internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
