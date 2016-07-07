@@ -69,12 +69,12 @@ open class ViewModel {
         properties.forEach {
             it.value.value = it.key.value
         }
-        dirtyProperties.clear()
-        updateDirtyState()
+        clearDirtyState()
     }
 
     fun rollback() {
         properties.forEach { it.key.value = it.value.value }
+        clearDirtyState()
     }
 
     fun rebind() {
@@ -83,6 +83,12 @@ open class ViewModel {
             wrapper.value = prop.value
             properties[wrapper] = propertyProvider()
         }
+        clearDirtyState()
+    }
+
+    private fun clearDirtyState() {
+        dirtyProperties.clear()
+        updateDirtyState()
     }
 }
 
