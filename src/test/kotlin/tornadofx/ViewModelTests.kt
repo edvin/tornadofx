@@ -28,7 +28,7 @@ open class ViewModelTests {
 
     @Test fun var_commit_check_dirty_state() {
         val person = Person("John")
-        val viewModel = PersonVarViewModel(person)
+        val viewModel = PersonViewModel(person)
 
         Assert.assertFalse(viewModel.isDirty())
 
