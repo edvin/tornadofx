@@ -15,6 +15,18 @@ open class ViewModelTests {
         Assert.assertEquals(person.name, "Jay")
     }
 
+    @Test fun swap_source_object() {
+        val person1 = Person("Person 1")
+        val person2 = Person("Person 2")
+
+        val viewModel = PersonViewModel(person1)
+        Assert.assertEquals(viewModel.name.value, "Person 1")
+
+        viewModel.person = person2
+        viewModel.rebind()
+        Assert.assertEquals(viewModel.name.value, "Person 2")
+    }
+
     @Test fun pojo_commit() {
         val person = JavaPerson()
         person.name = "John"
@@ -45,7 +57,7 @@ open class ViewModelTests {
         val person = Person("John")
 
         val viewModel = object : ViewModel() {
-            val name = person.nameProperty().wrap()
+            val name = bind { person.nameProperty() }
         }
 
         viewModel.name.value = "Jay"
@@ -56,14 +68,14 @@ open class ViewModelTests {
 
 }
 
-class PersonViewModel(person: Person) : ViewModel() {
-    val name = person.nameProperty().wrap()
+class PersonViewModel(var person: Person) : ViewModel() {
+    val name = bind { person.nameProperty() }
 }
 
 class JavaPersonViewModel(person: JavaPerson) : ViewModel() {
-    val name = person.wrap(JavaPerson::getName, JavaPerson::setName)
+    val name = bind { person.observable(JavaPerson::getName, JavaPerson::setName) }
 }
 
 class PersonVarViewModel(person: Person) : ViewModel() {
-    val name = person.wrap(Person::name)
+    val name = bind { person.observable(Person::name) }
 }

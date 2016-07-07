@@ -6,30 +6,54 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
-import kotlin.reflect.KFunction
-import kotlin.reflect.KFunction2
-import kotlin.reflect.KMutableProperty1
 
 open class ViewModel {
     private val properties = FXCollections.observableHashMap<Property<*>, Property<*>>()
+    private val propertyProviders = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     private val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
     val dirtyProperty = SimpleBooleanProperty(false)
 
-    // Wrap Kotlin getter/setter property (var)
-    fun <S, T> S.wrap(prop: KMutableProperty1<S, T>): Property<T> =
-            observable(this, prop).wrap()
-
-    // Wrap POJO Property
-    fun <S : Any, T> S.wrap(getter: KFunction<T>, setter: KFunction2<S, T, Unit>): Property<T>
-            = observable(getter, setter).wrap()
-
-    // Wrap JavaFX Property - all the others end up here
-    fun <S : Property<T>, T> S.wrap(): Property<T> {
-        val wrapper = SimpleObjectProperty<T>(this.value)
+    /**
+     * Wrap a JavaFX property and return the ViewModel facade for this property
+     *
+     * The value is returned in a lambda so that you can swap source objects
+     * and call rebind to change the underlying source object in the mappings.
+     *
+     * You can bind a facade towards any kind of property as long as it can
+     * be converted to a JavaFX property. TornadoFX provides a way to support
+     * most property types via a consice syntax, see below for examples.
+     * ```
+     * class PersonViewModel(var person: Person) : ViewModel() {
+     *     // Bind JavaFX property
+     *     val name = bind { person.nameProperty() }
+     *
+     *     // Bind Kotlin var based property
+     *     val name = bind { person.observable(Person::name)
+     *
+     *     // Bind Java POJO getter/setter
+     *     val name = bind { person.observable(Person::getName, Person::setName)
+     *
+     *     // Bind Java POJO by property name (not type safe)
+     *     val name = bind { person.observable("name") }
+     * }
+     * ```
+     */
+    fun <S : Property<T>, T> bind(op: () -> S): Property<T> {
+        val prop = op()
+        val wrapper = SimpleObjectProperty<T>(prop.value)
         @Suppress("UNCHECKED_CAST")
         wrapper.addListener(dirtyListener as ChangeListener<in T>)
-        properties[wrapper] = this
+        properties[wrapper] = prop
+        propertyProviders[wrapper] = op
         return wrapper
+    }
+
+    fun rebind() {
+        for ((wrapper, op) in propertyProviders) {
+            val prop = op()
+            wrapper.value = prop.value
+            properties[wrapper] = op()
+        }
     }
 
     private val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->

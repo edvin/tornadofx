@@ -31,7 +31,8 @@ fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
 /**
  * Convert an owner instance and a corresponding property reference into an observable
  */
-fun <S, T> observable(owner: S, prop: KMutableProperty1<S, T>): ObjectProperty<T> {
+fun <S, T> S.observable(prop: KMutableProperty1<S, T>): ObjectProperty<T> {
+    val owner = this
     return object : SimpleObjectProperty<T>(owner, prop.name) {
         override fun get() = prop.get(owner)
         override fun set(v: T) = prop.set(owner, v)
