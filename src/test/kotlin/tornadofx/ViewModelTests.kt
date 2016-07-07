@@ -9,7 +9,7 @@ open class ViewModelTests {
         val person = Person("John")
         val viewModel = PersonViewModel(person)
 
-        viewModel.name.value = "Jay"
+        viewModel.name = "Jay"
         Assert.assertEquals(person.name, "John")
         viewModel.commit()
         Assert.assertEquals(person.name, "Jay")
@@ -20,13 +20,13 @@ open class ViewModelTests {
         val person2 = Person("Person 2")
 
         val viewModel = PersonViewModel(person1)
-        Assert.assertEquals(viewModel.name.value, "Person 1")
+        Assert.assertEquals(viewModel.name, "Person 1")
 
         viewModel.rebind {
             person = person2
         }
 
-        Assert.assertEquals(viewModel.name.value, "Person 2")
+        Assert.assertEquals(viewModel.name, "Person 2")
     }
 
     @Test fun pojo_commit() {
@@ -46,7 +46,7 @@ open class ViewModelTests {
 
         Assert.assertFalse(viewModel.isDirty())
 
-        viewModel.name.value = "Jay"
+        viewModel.name = "Jay"
         Assert.assertEquals(person.name, "John")
         Assert.assertTrue(viewModel.isDirty())
 
@@ -71,8 +71,14 @@ open class ViewModelTests {
 }
 
 // JavaFX Property
-class PersonViewModel(var person: Person) : ViewModel() {
+class JavaFXPersonViewModel(var person: Person) : ViewModel() {
     val name = bind { person.nameProperty() }
+}
+
+// JavaFX Property exposing both getter/setter as well (optional)
+class PersonViewModel(var person: Person) : ViewModel() {
+    var name : String by property { person.nameProperty() }
+    fun nameProperty() = getProperty(PersonViewModel::name)
 }
 
 // Java POJO getter/setter property

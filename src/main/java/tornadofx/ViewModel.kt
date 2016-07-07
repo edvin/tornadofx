@@ -48,6 +48,8 @@ open class ViewModel {
         return wrapper
     }
 
+    fun <S : Property<T>, T> property(op: () -> S) = PropertyDelegate(bind(op))
+
     private val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
             val sourceValue = properties[property]!!.value
