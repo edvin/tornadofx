@@ -26,9 +26,27 @@ open class ViewModelTests {
         Assert.assertEquals(person.name, "Jay")
     }
 
-    @Test fun var_commit() {
+    @Test fun var_commit_check_dirty_state() {
         val person = Person("John")
         val viewModel = PersonVarViewModel(person)
+
+        Assert.assertFalse(viewModel.isDirty())
+
+        viewModel.name.value = "Jay"
+        Assert.assertEquals(person.name, "John")
+        Assert.assertTrue(viewModel.isDirty())
+
+        viewModel.commit()
+        Assert.assertEquals(person.name, "Jay")
+        Assert.assertFalse(viewModel.isDirty())
+    }
+
+    @Test fun inline_viewmodel() {
+        val person = Person("John")
+
+        val viewModel = object : ViewModel() {
+            val name = person.nameProperty().wrap()
+        }
 
         viewModel.name.value = "Jay"
         Assert.assertEquals(person.name, "John")
