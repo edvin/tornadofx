@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 - TableView `cellDecorator` 
 - ComboBox `cellFormat` formatter function
 - TreeView `lazyPopulate` alternative to `populate` that lazily creates children as needed
+- TreeItem nesting extension functions (https://github.com/edvin/tornadofx/issues/134)
+- TableView `selectWhere()`, `moveToTopWhere()` and `BottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 
 ### Changed
 
