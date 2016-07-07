@@ -22,8 +22,10 @@ open class ViewModelTests {
         val viewModel = PersonViewModel(person1)
         Assert.assertEquals(viewModel.name.value, "Person 1")
 
-        viewModel.person = person2
-        viewModel.rebind()
+        viewModel.rebind {
+            person = person2
+        }
+
         Assert.assertEquals(viewModel.name.value, "Person 2")
     }
 
@@ -68,14 +70,17 @@ open class ViewModelTests {
 
 }
 
+// JavaFX Property
 class PersonViewModel(var person: Person) : ViewModel() {
     val name = bind { person.nameProperty() }
 }
 
+// Java POJO getter/setter property
 class JavaPersonViewModel(person: JavaPerson) : ViewModel() {
     val name = bind { person.observable(JavaPerson::getName, JavaPerson::setName) }
 }
 
+// Kotlin var property
 class PersonVarViewModel(person: Person) : ViewModel() {
     val name = bind { person.observable(Person::name) }
 }

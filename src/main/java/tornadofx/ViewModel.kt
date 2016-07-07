@@ -48,14 +48,6 @@ open class ViewModel {
         return wrapper
     }
 
-    fun rebind() {
-        for ((wrapper, op) in propertyProviders) {
-            val prop = op()
-            wrapper.value = prop.value
-            properties[wrapper] = op()
-        }
-    }
-
     private val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
             val sourceValue = properties[property]!!.value
@@ -85,4 +77,16 @@ open class ViewModel {
         properties.forEach { it.key.value = it.value.value }
     }
 
+    fun rebind() {
+        for ((wrapper, propertyProvider) in propertyProviders) {
+            val prop = propertyProvider()
+            wrapper.value = prop.value
+            properties[wrapper] = propertyProvider()
+        }
+    }
+}
+
+fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
+    op.invoke(this)
+    rebind()
 }
