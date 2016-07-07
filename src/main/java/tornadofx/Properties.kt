@@ -91,15 +91,7 @@ fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>
 inline fun <reified T : Any> Any.observable(propName: String) =
     observable(this, propName, T::class)
 
-enum class SingleAssignThreadSafetyMode {
-    SYNCHRONIZED,
-    NONE
-}
-
-fun <T> singleAssign(threadSafeyMode: SingleAssignThreadSafetyMode = SingleAssignThreadSafetyMode.SYNCHRONIZED): SingleAssign<T> =
-        if (threadSafeyMode.equals(SingleAssignThreadSafetyMode.SYNCHRONIZED)) SynchronizedSingleAssign<T>() else UnsynchronizedSingleAssign<T>()
-
-private object UNINITIALIZED_VALUE
+fun <T> singleAssign(threadSafeMode: Boolean = false): SingleAssign<T> = if (threadSafeMode) SafeSingleAssign() else UnsafeSingleAssign()
 
 interface SingleAssign<T> {
     fun isInitialized(): Boolean
@@ -107,51 +99,39 @@ interface SingleAssign<T> {
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
 
-private class SynchronizedSingleAssign<T>: SingleAssign<T> {
-
+private class SafeSingleAssign<T> : SingleAssign<T> {
     @Volatile
-    private var initialized = false
-
-    @Volatile
-    private var _value: Any? = UNINITIALIZED_VALUE
+    private var _value: Any? = null
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        if (!initialized)
-            throw Exception("Value has not been assigned yet!")
+        if (!isInitialized()) throw Exception("Value has not been assigned yet!")
         @Suppress("UNCHECKED_CAST")
         return _value as T
     }
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        synchronized(this) {
-            if (initialized) {
-                throw Exception("Value has already been assigned!")
-            }
-            _value = value
-            initialized = true
-        }
+        if (isInitialized()) throw Exception("Value has already been assigned!")
+        _value = value
     }
-    override fun isInitialized() = initialized
+
+    override fun isInitialized() = _value != null
 }
 
-private class UnsynchronizedSingleAssign<T>: SingleAssign<T> {
+private class UnsafeSingleAssign<T> : SingleAssign<T> {
 
-    private var initialized = false
-    private var _value: Any? = UNINITIALIZED_VALUE
+    private var _value: Any? = null
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        if (!initialized)
-            throw Exception("Value has not been assigned yet!")
+        if (!isInitialized()) throw Exception("Value has not been assigned yet!")
         @Suppress("UNCHECKED_CAST")
         return _value as T
     }
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        if (initialized) {
-            throw Exception("Value has already been assigned!")
-        }
+        if (isInitialized()) throw Exception("Value has already been assigned!")
+
         _value = value
-        initialized = true
     }
-    override fun isInitialized() = initialized
+
+    override fun isInitialized() = _value != null
 }
