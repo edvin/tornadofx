@@ -6,6 +6,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.layout.Pane
@@ -260,9 +261,33 @@ fun <S> TableColumn<S, Double?>.useProgressBar(afterCommit: ((TableColumn.CellEd
     return this
 }
 
-fun <S> TableColumn<S, Boolean?>.useCheckbox(): TableColumn<S, Boolean?> {
-    cellFactory = CheckBoxTableCell.forTableColumn(this)
+fun <S> TableColumn<S, Boolean>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean> {
+    setCellFactory { CheckBoxCell(editable) }
     return this
+}
+
+class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean>() {
+    override fun updateItem(item: Boolean?, empty: Boolean) {
+        super.updateItem(item, empty)
+        style { alignment = Pos.CENTER }
+
+        if (empty || item == null) {
+            graphic = null
+        } else {
+            graphic = CheckBox().apply {
+                val model = tableView.items[index]
+                val prop = tableColumn.cellValueFactory.call(TableColumn.CellDataFeatures(tableView, tableColumn, model)) as ObjectProperty
+                isEditable = editable
+
+                if (editable) {
+                    selectedProperty().bindBidirectional(prop)
+                } else {
+                    disableProperty().set(true)
+                    selectedProperty().bind(prop)
+                }
+            }
+        }
+    }
 }
 
 /**
