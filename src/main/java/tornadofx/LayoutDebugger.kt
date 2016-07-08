@@ -1,19 +1,16 @@
 package tornadofx
 
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.SnapshotParameters
 import javafx.scene.control.Labeled
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
-import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Region
 import javafx.scene.text.Text
 import javafx.stage.Modality
 import tornadofx.LayoutDebugger.DebugStyles.Companion.debugNode
@@ -26,7 +23,6 @@ class LayoutDebugger : View() {
     val selectedNode = SimpleObjectProperty<Node>()
     val selectedScene = SimpleObjectProperty<Scene>()
     var nodeTree: TreeView<Node> by singleAssign()
-    var preview: ImageView by singleAssign()
     val pickerActive = SimpleBooleanProperty(true)
 
     init {
@@ -106,11 +102,10 @@ class LayoutDebugger : View() {
     private fun setSelectedNode(node: Node) {
         selectedNode.value = node
 //        node.removeClass(debugNode)
-        preview.image = selectedNode.value.snapshot(SnapshotParameters(), null)
 //        node.addClass(debugNode)
         val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"] as TreeItem<Node>?
         if (treeItem != null) nodeTree.selectionModel.select(treeItem)
-        root.right = NodePropertyView(node)
+        root.center = NodePropertyView(node)
     }
 
     companion object {
@@ -160,20 +155,53 @@ class LayoutDebugger : View() {
                     text(node.styleClass.joinToString(", "))
                 }
             }
-            fieldset("Properties") {
-                for (method in node.javaClass.methods.filter { it.name.endsWith("Property") && it.parameterCount == 0 && Property::class.java.isAssignableFrom(it.returnType) }) {
-                    field(method.name) {
-                        textfield() {
-                            val prop = method.invoke(node) as Property<Any>?
+            fieldset("Dimensions") {
 
-                            if (prop != null) {
-                                text = prop.toString()
-                            }
-                        }
+            }
+            fieldset("Properties") {
+                if (node is Region) {
+                    field("Color") {
+
+                    }
+                    field("Background color") {
 
                     }
                 }
+                for (method in node.javaClass.methods.filter { it.name.endsWith("Property") && it.parameterCount == 0 && Property::class.java.isAssignableFrom(it.returnType) }) {
+                    val prop = method.invoke(node) as Property<Any>?
+                    val propertyType = getPropertyType(prop, node)
+
+                    if (propertyType != null) {
+                            when (propertyType) {
+                                StringProperty::class.java -> {
+                                    field(prop!!.name) {
+                                        textfield().bind(prop as StringProperty)
+                                    }
+                                }
+                                DoubleProperty::class.java -> {
+                                    field(prop!!.name) {
+                                        textfield().bind(prop as DoubleProperty)
+                                    }
+                                }
+                                IntegerProperty::class.java -> {
+                                    field(prop!!.name) {
+                                        textfield().bind(prop as IntegerProperty)
+                                    }
+                                }
+                            }
+                    }
+                }
+
             }
         }
+    }
+
+    private fun getPropertyType(prop: Property<Any>?, node: Node) : Class<*>? {
+        if (prop == null) return null
+        if (prop.name == null) return null
+        val cl = node.javaClass
+        cl.methods.find { it.name == "${prop.name}Property" && it.parameterCount == 0 }?.apply { return returnType }
+        cl.declaredMethods.find { it.name == "${prop.name}Property" && it.parameterCount == 0 }?.apply { return returnType }
+        return null
     }
 }
