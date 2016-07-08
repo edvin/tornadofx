@@ -261,12 +261,12 @@ fun <S> TableColumn<S, Double?>.useProgressBar(afterCommit: ((TableColumn.CellEd
     return this
 }
 
-fun <S> TableColumn<S, Boolean>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean> {
+fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean?> {
     setCellFactory { CheckBoxCell(editable) }
     return this
 }
 
-class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean>() {
+class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
     override fun updateItem(item: Boolean?, empty: Boolean) {
         super.updateItem(item, empty)
         style { alignment = Pos.CENTER }
