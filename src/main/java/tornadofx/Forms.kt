@@ -18,7 +18,7 @@ import java.util.concurrent.Callable
 
 fun Pane.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
 
-class Form : VBox() {
+open class Form : VBox() {
 
     init {
         addClass(Stylesheet.form)

@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
 import javafx.scene.Node
@@ -12,7 +14,6 @@ import javafx.scene.control.TreeView
 import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.BorderPane
-import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.stage.Modality
 import tornadofx.LayoutDebugger.DebugStyles.Companion.debugNode
@@ -26,12 +27,13 @@ class LayoutDebugger : View() {
     val selectedScene = SimpleObjectProperty<Scene>()
     var nodeTree: TreeView<Node> by singleAssign()
     var preview: ImageView by singleAssign()
+    val pickerActive = SimpleBooleanProperty(true)
 
     init {
         title = "Layout Debugger"
 
         with(root) {
-            setPrefSize(800.0, 600.0)
+            setPrefSize(1024.0, 768.0)
 
             left {
                 treeview<Node> {
@@ -40,11 +42,6 @@ class LayoutDebugger : View() {
                         graphic = null
                         text = it.javaClass.simpleName
                     }
-                }
-            }
-            center {
-                imageview {
-                    preview = this
                 }
             }
         }
@@ -63,6 +60,7 @@ class LayoutDebugger : View() {
                 oldItem.value.removeClass(debugNode)
 
             hoveredNode.value = null
+            pickerActive.value = false
         }
 
         selectedScene.addListener { observableValue, oldScene, newScene ->
@@ -79,7 +77,7 @@ class LayoutDebugger : View() {
         }
 
         hoveredNode.addListener { observableValue, oldNode, newNode ->
-            if (oldNode != newNode) {
+            if (pickerActive.value && oldNode != newNode) {
                 oldNode?.removeClass(debugNode)
                 newNode?.addClass(debugNode)
             }
@@ -112,6 +110,7 @@ class LayoutDebugger : View() {
 //        node.addClass(debugNode)
         val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"] as TreeItem<Node>?
         if (treeItem != null) nodeTree.selectionModel.select(treeItem)
+        root.right = NodePropertyView(node)
     }
 
     companion object {
@@ -140,8 +139,7 @@ class LayoutDebugger : View() {
 
         init {
             s(debugNode) {
-                textFill = Color.GREEN
-                backgroundColor = multi(c("#ceceff", 0.7))
+                backgroundColor = multi(c("#cecece", 0.6))
             }
         }
     }
@@ -149,6 +147,33 @@ class LayoutDebugger : View() {
     class NodeTreeItem(node: Node) : TreeItem<Node>(node) {
         init {
             value.properties["tornadofx.layoutdebugger.treeitem"] = this
+        }
+    }
+
+    inner class NodePropertyView(val node: Node) : Form() {
+        init {
+            fieldset {
+                field("className") {
+                    text(node.javaClass.name)
+                }
+                field("styleClass") {
+                    text(node.styleClass.joinToString(", "))
+                }
+            }
+            fieldset("Properties") {
+                for (method in node.javaClass.methods.filter { it.name.endsWith("Property") && it.parameterCount == 0 && Property::class.java.isAssignableFrom(it.returnType) }) {
+                    field(method.name) {
+                        textfield() {
+                            val prop = method.invoke(node) as Property<Any>?
+
+                            if (prop != null) {
+                                text = prop.toString()
+                            }
+                        }
+
+                    }
+                }
+            }
         }
     }
 }
