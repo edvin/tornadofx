@@ -1,43 +1,51 @@
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
+import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Labeled
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Background
+import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.stage.Modality
+import javafx.util.StringConverter
 import tornadofx.LayoutDebugger.DebugStyles.Companion.debugNode
 
 @Suppress("UNCHECKED_CAST")
 class LayoutDebugger : View() {
-    override val root = BorderPane()
+    override val root = SplitPane()
 
     val hoveredNode = SimpleObjectProperty<Node>()
     val selectedNode = SimpleObjectProperty<Node>()
     val selectedScene = SimpleObjectProperty<Scene>()
     var nodeTree: TreeView<Node> by singleAssign()
     val pickerActive = SimpleBooleanProperty(true)
+    val propertyContainer = ScrollPane()
 
     init {
         title = "Layout Debugger"
 
         with(root) {
-            setPrefSize(1024.0, 768.0)
+            setPrefSize(800.0, 600.0)
+            setDividerPosition(0, 0.3)
 
-            left {
+            items {
                 treeview<Node> {
                     nodeTree = this
                     cellFormat {
                         graphic = null
                         text = it.javaClass.simpleName
                     }
+                }
+                this += propertyContainer.apply {
+                    padding = Insets(10.0)
                 }
             }
         }
@@ -101,11 +109,9 @@ class LayoutDebugger : View() {
 
     private fun setSelectedNode(node: Node) {
         selectedNode.value = node
-//        node.removeClass(debugNode)
-//        node.addClass(debugNode)
         val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"] as TreeItem<Node>?
         if (treeItem != null) nodeTree.selectionModel.select(treeItem)
-        root.center = NodePropertyView(node)
+        propertyContainer.content = NodePropertyView(node)
     }
 
     companion object {
@@ -134,7 +140,8 @@ class LayoutDebugger : View() {
 
         init {
             s(debugNode) {
-                backgroundColor = multi(c("#cecece", 0.6))
+                borderColor += box(Color.YELLOW)
+                borderWidth += box(1.px)
             }
         }
     }
@@ -145,65 +152,124 @@ class LayoutDebugger : View() {
         }
     }
 
-    inner class NodePropertyView(val node: Node) : Form() {
+    /**
+     * Property editor for node. We can't bind directly to these properties as
+     * they might have app bindings already, so we have to jump through some hoops
+     * to synchronize values between this editor and the Node properties.
+     */
+    inner class NodePropertyView(node: Node) : Form() {
         init {
-            fieldset {
-                field("className") {
+            fieldset("Node info") {
+                field("ClassName") {
                     text(node.javaClass.name)
                 }
-                field("styleClass") {
-                    text(node.styleClass.joinToString(", "))
+                field("StyleClass") {
+                    text(node.styleClass.map { ".$it" }.joinToString(", "))
                 }
             }
             fieldset("Dimensions") {
 
             }
             fieldset("Properties") {
-                if (node is Region) {
-                    field("Color") {
+                if (node is Labeled) {
+                    field("Text") {
+                        textfield() {
+                            if (node.textProperty().isBound) {
+                                textProperty().bind(node.textProperty())
+                                isEditable = false
+                                tooltip = Tooltip("The value is bound in the app, mounted read only")
+                            } else {
+                                textProperty().bindBidirectional(object : SimpleObjectProperty<String>(node.text) {
+                                    override fun set(newValue: String?) {
+                                        super.set(newValue)
+                                        node.text = newValue
+                                    }
+                                })
+                            }
 
-                    }
-                    field("Background color") {
-                        for (fill in node.background.fills) {
-//                            colorpicker().valueProperty().bind(Simple)
+                            prefColumnCount = 30
                         }
                     }
                 }
-                for (method in node.javaClass.methods.filter { it.name.endsWith("Property") && it.parameterCount == 0 && Property::class.java.isAssignableFrom(it.returnType) }) {
-                    val prop = method.invoke(node) as Property<Any>?
-                    val propertyType = getPropertyType(prop, node)
-
-                    if (propertyType != null) {
-                            when (propertyType) {
-                                StringProperty::class.java -> {
-                                    field(prop!!.name) {
-                                        textfield().bind(prop as StringProperty)
-                                    }
-                                }
-                                DoubleProperty::class.java -> {
-                                    field(prop!!.name) {
-                                        textfield().bind(prop as DoubleProperty)
-                                    }
-                                }
-                                IntegerProperty::class.java -> {
-                                    field(prop!!.name) {
-                                        textfield().bind(prop as IntegerProperty)
+                if (node is TextInputControl) {
+                    field("Text") {
+                        textfield(node.text) {
+                            prefColumnCount = 30
+                            textProperty().addListener { observableValue, oldValue, newValue ->
+                                node.text = newValue
+                            }
+                        }
+                    }
+                }
+                if (node is Region) {
+                    // Background/fills is immutable, so a new background object must be created with the augmented fill
+                    if (node.background?.fills?.isNotEmpty() ?: false) {
+                        field("Background fill") {
+                            node.background.fills.forEachIndexed { i, backgroundFill ->
+                                val initialColor: Color? = if (backgroundFill.fill is Color) backgroundFill.fill as Color else null
+                                colorpicker(initialColor) {
+                                    isEditable = true
+                                    valueProperty().addListener { observableValue, oldColor, newColor ->
+                                        val newFills = node.background.fills.mapIndexed { ix, fill ->
+                                            if (ix == i) BackgroundFill(newColor, fill.radii, fill.insets)
+                                            else fill
+                                        }
+                                        node.background = Background(newFills, node.background.images)
                                     }
                                 }
                             }
+                        }
+                    } else {
+                        // Add one background color if none present
+                        field("Background fill") {
+                            colorpicker() {
+                                isEditable = true
+                                valueProperty().addListener { observableValue, oldColor, newColor ->
+                                    node.background = Background(BackgroundFill(newColor, null, null))
+                                }
+                            }
+                        }
+                    }
+
+                    // Padding
+                    field("Padding") {
+                        val value = object : SimpleObjectProperty<Insets>(node.padding) {
+                            override fun set(newValue: Insets?) {
+                                super.set(newValue)
+                                node.padding = newValue
+                            }
+                        }
+                        textfield(value, InsetsConverter()) {
+                            prefColumnCount = 20
+                        }
                     }
                 }
-
             }
+
         }
     }
 
-    private fun getPropertyType(prop: Property<Any>?, node: Node) : Class<*>? {
-        if (prop == null) return null
-        if (prop.name == null) return null
-        val cl = node.javaClass
-        cl.methods.find { it.name == "${prop.name}Property" && it.parameterCount == 0 }?.apply { return returnType }
-        cl.declaredMethods.find { it.name == "${prop.name}Property" && it.parameterCount == 0 }?.apply { return returnType }
-        return null
+    class InsetsConverter : StringConverter<Insets>() {
+        override fun toString(v: Insets?) = if (v == null) "" else "${v.top.s()} ${v.right.s()} ${v.bottom.s()} ${v.left.s()}"
+        override fun fromString(s: String?) : Insets {
+            try {
+                if (s == null || s.isEmpty()) return Insets.EMPTY
+                val parts = s.split(" ")
+                if (parts.size == 1) return Insets(s.toDouble())
+                if (parts.size == 2) return Insets(parts[0].toDouble(), parts[1].toDouble(), parts[0].toDouble(), parts[1].toDouble())
+                if (parts.size == 4) return Insets(parts[0].toDouble(), parts[1].toDouble(), parts[2].toDouble(), parts[3].toDouble())
+            } catch (ignored: Exception) {
+            }
+            return Insets.EMPTY
+        }
+
+        private fun Double.s(): String {
+            if (this == 0.0) return "0"
+            val s = toString()
+            if (s.endsWith(".0")) return s.substringBefore(".")
+            return s
+        }
     }
+
+
 }
