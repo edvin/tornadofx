@@ -164,7 +164,9 @@ class LayoutDebugger : View() {
 
                     }
                     field("Background color") {
-
+                        for (fill in node.background.fills) {
+//                            colorpicker().valueProperty().bind(Simple)
+                        }
                     }
                 }
                 for (method in node.javaClass.methods.filter { it.name.endsWith("Property") && it.parameterCount == 0 && Property::class.java.isAssignableFrom(it.returnType) }) {
