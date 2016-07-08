@@ -11,16 +11,18 @@ import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.stage.Modality
 import javafx.util.StringConverter
+import javafx.util.converter.DoubleStringConverter
 import tornadofx.LayoutDebugger.DebugStyles.Companion.debugNode
 
 @Suppress("UNCHECKED_CAST")
 class LayoutDebugger : View() {
-    override val root = SplitPane()
+    override val root = BorderPane()
 
     val hoveredNode = SimpleObjectProperty<Node>()
     val selectedNode = SimpleObjectProperty<Node>()
@@ -34,18 +36,31 @@ class LayoutDebugger : View() {
 
         with(root) {
             setPrefSize(800.0, 600.0)
-            setDividerPosition(0, 0.3)
 
-            items {
-                treeview<Node> {
-                    nodeTree = this
-                    cellFormat {
-                        graphic = null
-                        text = it.javaClass.simpleName
+            center {
+                splitpane {
+                    setDividerPosition(0, 0.3)
+                    items {
+                        treeview<Node> {
+                            nodeTree = this
+                            cellFormat {
+                                graphic = null
+                                text = it.javaClass.simpleName
+                            }
+                        }
+                        this += propertyContainer.apply {
+                            padding = Insets(10.0)
+                        }
                     }
+
                 }
-                this += propertyContainer.apply {
-                    padding = Insets(10.0)
+            }
+
+            bottom {
+                hbox(10.0) {
+                    togglebutton("Pick") {
+                        selectedProperty().bindBidirectional(pickerActive)
+                    }
                 }
             }
         }
@@ -102,6 +117,7 @@ class LayoutDebugger : View() {
     }
 
     val clickHandler = EventHandler<MouseEvent> { event ->
+        if (!pickerActive.value) return@EventHandler
         val clickedTarget = event.target
         if (clickedTarget is Node) setSelectedNode(clickedTarget)
         event.consume()
@@ -139,9 +155,8 @@ class LayoutDebugger : View() {
         }
 
         init {
-            s(debugNode) {
-                borderColor += box(Color.YELLOW)
-                borderWidth += box(1.px)
+            debugNode {
+                backgroundColor += c("ffff00", 0.2)
             }
         }
     }
@@ -168,7 +183,12 @@ class LayoutDebugger : View() {
                 }
             }
             fieldset("Dimensions") {
-
+                field("Bounds in parent") {
+                    label("${node.boundsInParent.width} x ${node.boundsInParent.height}")
+                }
+                field("Bounds in local") {
+                    label("${node.boundsInLocal.width} x ${node.boundsInLocal.height}")
+                }
             }
             fieldset("Properties") {
                 if (node is Labeled) {
@@ -233,16 +253,43 @@ class LayoutDebugger : View() {
 
                     // Padding
                     field("Padding") {
-                        val value = object : SimpleObjectProperty<Insets>(node.padding) {
-                            override fun set(newValue: Insets?) {
-                                super.set(newValue)
-                                node.padding = newValue
-                            }
-                        }
-                        textfield(value, InsetsConverter()) {
+                        textfield() {
+                            textProperty().bindBidirectional(object : SimpleObjectProperty<Insets>(node.padding) {
+                                override fun set(newValue: Insets?) {
+                                    super.set(newValue)
+                                    node.padding = newValue
+                                }
+                            }, InsetsConverter())
                             prefColumnCount = 20
                         }
                     }
+
+                    field("Pref width") {
+                        textfield() {
+                            textProperty().bindBidirectional(object : SimpleObjectProperty<Double>(node.prefWidth) {
+                                override fun set(newValue: Double) {
+                                    super.set(newValue)
+                                    node.prefWidth = newValue
+                                }
+                            }, DoubleStringConverter())
+                            prefColumnCount = 20
+                        }
+                    }
+
+                    field("Pref height") {
+                        textfield() {
+                            textProperty().bindBidirectional(object : SimpleObjectProperty<Double>(node.prefHeight) {
+                                override fun set(newValue: Double) {
+                                    super.set(newValue)
+                                    node.prefHeight = newValue
+                                }
+                            }, DoubleStringConverter())
+                            prefColumnCount = 20
+                        }
+                    }
+
+
+
                 }
             }
 
