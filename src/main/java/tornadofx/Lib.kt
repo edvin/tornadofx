@@ -88,6 +88,7 @@ class SortedFilteredList<T>(
 }
 
 fun <T> List<T>.observable() = FXCollections.observableList(this)
+fun <T> Set<T>.observable() = FXCollections.observableSet(this)
 
 fun <T> task(func: () -> T) = object : Task<T>() {
     override fun call(): T {

@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.*
 import org.junit.Assert
 import org.junit.Test
 
@@ -59,7 +60,8 @@ open class ViewModelTests {
         val person = Person("John")
 
         val viewModel = object : ViewModel() {
-            val name = bind { person.nameProperty() }
+            val name = bind { person.nameProperty() } as SimpleStringProperty
+            val age = bind { person.ageProperty() } as SimpleIntegerProperty
         }
 
         viewModel.name.value = "Jay"

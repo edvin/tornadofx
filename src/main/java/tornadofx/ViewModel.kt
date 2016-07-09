@@ -1,15 +1,15 @@
 package tornadofx
 
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
+import javafx.collections.ObservableSet
 
 open class ViewModel {
-    private val properties = FXCollections.observableHashMap<Property<*>, Property<*>>()
-    private val propertyProviders = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
+    val properties = FXCollections.observableHashMap<Property<*>, Property<*>>()
+    val propertyProviders = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     private val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
     val dirtyProperty = SimpleBooleanProperty(false)
 
@@ -38,19 +38,35 @@ open class ViewModel {
      * }
      * ```
      */
-    fun <S : Property<T>, T> bind(op: () -> S): Property<T> {
+    @Suppress("UNCHECKED_CAST")
+    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(noinline op: () -> PropertyType): ResultType {
         val prop = op()
-        val wrapper = SimpleObjectProperty<T>(prop.value)
-        @Suppress("UNCHECKED_CAST")
-        wrapper.addListener(dirtyListener as ChangeListener<in T>)
+        val value = prop.value
+
+        val wrapper = when (T::class.javaPrimitiveType ?: T::class) {
+            Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(value as Int) else SimpleIntegerProperty()
+            Long::class.javaPrimitiveType -> if (value != null)  SimpleLongProperty(value as Long) else SimpleLongProperty()
+            Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(value as Double) else SimpleDoubleProperty()
+            Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(value as Float) else SimpleFloatProperty()
+            Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(value as Boolean) else SimpleBooleanProperty()
+            String::class -> if (value != null) SimpleStringProperty(value as String) else SimpleStringProperty()
+            is ObservableList<*> -> if (value != null) SimpleListProperty(value as ObservableList<T>) else SimpleListProperty()
+            is ObservableSet<*> -> if (value != null) SimpleSetProperty(value as ObservableSet<T>) else SimpleSetProperty()
+            is List<*> -> if (value != null) SimpleListProperty((value as List<T>).observable()) else SimpleListProperty()
+            is Set<*> -> if (value != null) SimpleSetProperty((value as Set<T>).observable()) else SimpleSetProperty()
+            else -> if (value != null) SimpleObjectProperty(value) else SimpleObjectProperty()
+        }
+
+        wrapper.addListener(dirtyListener)
         properties[wrapper] = prop
         propertyProviders[wrapper] = op
-        return wrapper
+
+        return wrapper as ResultType
     }
 
-    fun <S : Property<T>, T> property(op: () -> S) = PropertyDelegate(bind(op))
+    inline fun <S : Property<T>, reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
 
-    private val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
+    val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
             val sourceValue = properties[property]!!.value
             if (sourceValue == newValue) dirtyProperties.remove(property)

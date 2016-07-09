@@ -83,6 +83,7 @@ inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
         Int::class.javaPrimitiveType -> IntegerStringConverter()
         Long::class.javaPrimitiveType -> LongStringConverter()
         Double::class.javaPrimitiveType -> DoubleStringConverter()
+        Float::class.javaPrimitiveType -> FloatStringConverter()
         Date::class -> DateStringConverter()
         BigDecimal::class -> BigDecimalStringConverter()
         BigInteger::class -> BigIntegerStringConverter()
