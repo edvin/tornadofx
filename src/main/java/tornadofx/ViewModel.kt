@@ -8,10 +8,9 @@ import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
 
 open class ViewModel {
-    val properties = FXCollections.observableHashMap<Property<*>, Property<*>>()
-    val propertyProviders = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
-    private val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
-    val dirtyProperty = SimpleBooleanProperty(false)
+    val properties = FXCollections.observableHashMap<Property<*>, Pair<Property<*>, () -> Property<*>>>()
+    val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
+    val dirtyStateProperty = SimpleBooleanProperty(false)
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -58,8 +57,7 @@ open class ViewModel {
         }
 
         wrapper.addListener(dirtyListener)
-        properties[wrapper] = prop
-        propertyProviders[wrapper] = op
+        properties[wrapper] = prop to op
 
         return wrapper as ResultType
     }
@@ -68,7 +66,7 @@ open class ViewModel {
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
-            val sourceValue = properties[property]!!.value
+            val sourceValue = properties[property]!!.first.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
@@ -78,28 +76,29 @@ open class ViewModel {
 
     private fun updateDirtyState() {
         val dirtyState = dirtyProperties.isNotEmpty()
-        if (dirtyState != dirtyProperty.value) dirtyProperty.value = dirtyState
+        if (dirtyState != dirtyStateProperty.value) dirtyStateProperty.value = dirtyState
     }
 
-    fun isDirty(): Boolean = dirtyProperty.value
+    fun isDirty(): Boolean = dirtyStateProperty.value
 
     fun commit() {
         properties.forEach {
-            it.value.value = it.key.value
+            it.value.first.value = it.key.value
         }
         clearDirtyState()
     }
 
     fun rollback() {
-        properties.forEach { it.key.value = it.value.value }
+        properties.forEach { it.key.value = it.value.first.value }
         clearDirtyState()
     }
 
     fun rebind() {
-        for ((wrapper, propertyProvider) in propertyProviders) {
-            val prop = propertyProvider()
+        for ((wrapper, propAndOp) in properties) {
+            val op = propAndOp.second
+            val prop = op()
             wrapper.value = prop.value
-            properties[wrapper] = propertyProvider()
+            properties[wrapper] = prop to op
         }
         clearDirtyState()
     }
