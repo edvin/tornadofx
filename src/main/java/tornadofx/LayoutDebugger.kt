@@ -1,24 +1,22 @@
 package tornadofx
 
-import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
+import javafx.geometry.Bounds
 import javafx.geometry.Insets
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.Background
-import javafx.scene.layout.BackgroundFill
-import javafx.scene.layout.BorderPane
-import javafx.scene.layout.Region
+import javafx.scene.layout.*
 import javafx.scene.paint.Color
-import javafx.scene.text.Text
+import javafx.scene.shape.Shape
 import javafx.stage.Modality
 import javafx.util.StringConverter
 import javafx.util.converter.DoubleStringConverter
-import tornadofx.LayoutDebugger.DebugStyles.Companion.debugNode
 
 @Suppress("UNCHECKED_CAST")
 class LayoutDebugger : View() {
@@ -28,11 +26,17 @@ class LayoutDebugger : View() {
     val selectedNode = SimpleObjectProperty<Node>()
     val selectedScene = SimpleObjectProperty<Scene>()
     var nodeTree: TreeView<Node> by singleAssign()
-    val pickerActive = SimpleBooleanProperty(true)
     val propertyContainer = ScrollPane()
+    val stackpane = StackPane()
+    val overlay = Canvas()
+    val gc = overlay.graphicsContext2D
 
     init {
         title = "Layout Debugger"
+
+        overlay.isMouseTransparent = true
+        stackpane.add(overlay)
+        gc.fill = c("#99bbbb", 0.4)
 
         with(root) {
             setPrefSize(800.0, 600.0)
@@ -42,25 +46,14 @@ class LayoutDebugger : View() {
                     setDividerPosition(0, 0.3)
                     items {
                         treeview<Node> {
+                            isShowRoot = false
                             nodeTree = this
-                            cellFormat {
-                                graphic = null
-                                text = it.javaClass.simpleName
-                            }
                         }
                         this += propertyContainer.apply {
                             padding = Insets(10.0)
                         }
                     }
 
-                }
-            }
-
-            bottom {
-                hbox(10.0) {
-                    togglebutton("Pick") {
-                        selectedProperty().bindBidirectional(pickerActive)
-                    }
                 }
             }
         }
@@ -70,54 +63,98 @@ class LayoutDebugger : View() {
 
     private fun hookListeners() {
         nodeTree.selectionModel.selectedItemProperty().addListener { observableValue, oldItem, newItem ->
-            if (newItem != null) {
+            if (newItem != null)
                 setSelectedNode(newItem.value)
-                newItem.value.addClass(debugNode)
-            }
-
-            if (oldItem != null)
-                oldItem.value.removeClass(debugNode)
-
-            hoveredNode.value = null
-            pickerActive.value = false
         }
 
         selectedScene.addListener { observableValue, oldScene, newScene ->
-            nodeTree.root = NodeTreeItem(newScene.root)
-            nodeTree.populate(
-                    itemFactory = {
-                        NodeTreeItem(it)
-                    },
-                    childFactory = {
-                        val value = it.value
-                        if (value is Parent) value.childrenUnmodifiable else null
-                    }
-            )
-        }
+            // Overlay has same size as new scene
+            overlay.widthProperty().unbind()
+            overlay.widthProperty().bind(newScene.widthProperty())
+            overlay.heightProperty().bind(newScene.heightProperty())
 
-        hoveredNode.addListener { observableValue, oldNode, newNode ->
-            if (pickerActive.value && oldNode != newNode) {
-                oldNode?.removeClass(debugNode)
-                newNode?.addClass(debugNode)
+            // Stackpane becomes the new scene root and contains the newScene.root and our overlay
+            stackpane.scene?.root = null
+            val newSceneRoot = newScene.root
+            newScene.root = stackpane
+            stackpane.add(newSceneRoot)
+            overlay.toFront()
+
+            // Populate the node tree
+            with (nodeTree) {
+                root = NodeTreeItem(newSceneRoot)
+                populate(
+                        itemFactory = {
+                            NodeTreeItem(it)
+                        },
+                        childFactory = {
+                            val value = it.value
+                            if (value is Parent) value.childrenUnmodifiable else null
+                        }
+                )
+
+                // Hover on a node in the tree should visualize in the scene graph
+                setCellFactory {
+                    object : TreeCell<Node>() {
+                        init {
+                            addEventFilter(MouseEvent.MOUSE_ENTERED) {
+                                hoveredNode.value = item
+                                style {
+                                    backgroundColor += gc.fill
+                                }
+                            }
+                            addEventFilter(MouseEvent.MOUSE_EXITED) {
+                                hoveredNode.value = null
+                                style {
+                                    backgroundColor = multi()
+                                }
+                            }
+                        }
+
+                        override fun updateItem(item: Node?, empty: Boolean) {
+                            super.updateItem(item, empty)
+
+                            graphic = null
+                            text = null
+
+                            if (!empty && item != null)
+                                text = item.javaClass.simpleName
+                        }
+                    }
+                }
             }
         }
+
+        // Position overlay over hovered node
+        hoveredNode.addListener { observableValue, oldNode, newNode ->
+            if (oldNode != newNode && newNode != null)
+                positionOverlayOver(newNode)
+            else if (newNode == null && oldNode != null)
+                clearOverlay()
+        }
+    }
+
+    private fun positionOverlayOver(node: Node) {
+        val p = node.localToScene(node.boundsInLocal)
+        clearOverlay()
+        gc.fillRect(p.minX, p.minY, p.width, p.height)
+    }
+
+    private fun clearOverlay() {
+        gc.clearRect(0.0, 0.0, overlay.width, overlay.height)
     }
 
     val hoverHandler = EventHandler<MouseEvent> { event ->
-        val currentHover = hoveredNode.value
-        var newHover = event.target
-        if (newHover is Node) {
-            // Select labeled parent instead of text node
-            if (newHover is Text && newHover.parent is Labeled) newHover = newHover.parent
+        val newHover = event.target
+        if (newHover is Node && hoveredNode.value != newHover)
+            hoveredNode.value = newHover
+    }
 
-            if (currentHover != newHover)
-                hoveredNode.value = newHover as Node
-        }
-
+    val sceneExitedHandler = EventHandler<MouseEvent> { event ->
+        hoveredNode.value = null
     }
 
     val clickHandler = EventHandler<MouseEvent> { event ->
-        if (!pickerActive.value) return@EventHandler
         val clickedTarget = event.target
         if (clickedTarget is Node) setSelectedNode(clickedTarget)
         event.consume()
@@ -133,9 +170,9 @@ class LayoutDebugger : View() {
     companion object {
         fun startDebugging(scene: Scene) {
             val debugger = find(LayoutDebugger::class)
+            scene.addEventFilter(MouseEvent.MOUSE_EXITED, debugger.sceneExitedHandler)
             scene.addEventFilter(MouseEvent.MOUSE_MOVED, debugger.hoverHandler)
             scene.addEventFilter(MouseEvent.MOUSE_CLICKED, debugger.clickHandler)
-            scene.stylesheets.add(DebugStyles().base64URL.toExternalForm())
             debugger.selectedScene.value = scene
             debugger.openModal(modality = Modality.NONE)
         }
@@ -144,24 +181,11 @@ class LayoutDebugger : View() {
             val debugger = find(LayoutDebugger::class)
             scene.removeEventFilter(MouseEvent.MOUSE_MOVED, debugger.hoverHandler)
             scene.removeEventFilter(MouseEvent.MOUSE_CLICKED, debugger.clickHandler)
-            scene.stylesheets.remove(DebugStyles().base64URL.toExternalForm())
             debugger.selectedScene.value = null
         }
     }
 
-    class DebugStyles : Stylesheet() {
-        companion object {
-            val debugNode by cssclass()
-        }
-
-        init {
-            debugNode {
-                backgroundColor += c("ffff00", 0.2)
-            }
-        }
-    }
-
-    class NodeTreeItem(node: Node) : TreeItem<Node>(node) {
+    inner class NodeTreeItem(node: Node) : TreeItem<Node>(node) {
         init {
             value.properties["tornadofx.layoutdebugger.treeitem"] = this
         }
@@ -183,30 +207,22 @@ class LayoutDebugger : View() {
                 }
             }
             fieldset("Dimensions") {
+                fun Bounds.describe() = "(${minX.toInt()}, ${width.toInt()}), (${minY.toInt()}, ${height.toInt()})"
+                field("Layout bounds") {
+                    label(node.layoutBounds.describe())
+                }
                 field("Bounds in parent") {
-                    label("${node.boundsInParent.width} x ${node.boundsInParent.height}")
+                    label(node.boundsInParent.describe())
                 }
                 field("Bounds in local") {
-                    label("${node.boundsInLocal.width} x ${node.boundsInLocal.height}")
+                    label(node.boundsInLocal.describe())
                 }
             }
             fieldset("Properties") {
                 if (node is Labeled) {
                     field("Text") {
                         textfield() {
-                            if (node.textProperty().isBound) {
-                                textProperty().bind(node.textProperty())
-                                isEditable = false
-                                tooltip = Tooltip("The value is bound in the app, mounted read only")
-                            } else {
-                                textProperty().bindBidirectional(object : SimpleObjectProperty<String>(node.text) {
-                                    override fun set(newValue: String?) {
-                                        super.set(newValue)
-                                        node.text = newValue
-                                    }
-                                })
-                            }
-
+                            textProperty() shadowBindTo node.textProperty()
                             prefColumnCount = 30
                         }
                     }
@@ -215,8 +231,16 @@ class LayoutDebugger : View() {
                     field("Text") {
                         textfield(node.text) {
                             prefColumnCount = 30
-                            textProperty().addListener { observableValue, oldValue, newValue ->
-                                node.text = newValue
+                            textProperty() shadowBindTo node.textProperty()
+                        }
+                    }
+                }
+                if (node is Shape) {
+                    field("Fill") {
+                        colorpicker(if (node.fill is Color) node.fill as Color else null) {
+                            valueProperty().addListener { observableValue, oldValue, newValue ->
+                                node.fillProperty().unbind()
+                                node.fill = newValue
                             }
                         }
                     }
@@ -234,6 +258,7 @@ class LayoutDebugger : View() {
                                             if (ix == i) BackgroundFill(newColor, fill.radii, fill.insets)
                                             else fill
                                         }
+                                        node.backgroundProperty().unbind()
                                         node.background = Background(newFills, node.background.images)
                                     }
                                 }
@@ -289,7 +314,6 @@ class LayoutDebugger : View() {
                     }
 
 
-
                 }
             }
 
@@ -298,7 +322,7 @@ class LayoutDebugger : View() {
 
     class InsetsConverter : StringConverter<Insets>() {
         override fun toString(v: Insets?) = if (v == null) "" else "${v.top.s()} ${v.right.s()} ${v.bottom.s()} ${v.left.s()}"
-        override fun fromString(s: String?) : Insets {
+        override fun fromString(s: String?): Insets {
             try {
                 if (s == null || s.isEmpty()) return Insets.EMPTY
                 val parts = s.split(" ")
@@ -318,5 +342,15 @@ class LayoutDebugger : View() {
         }
     }
 
+
+    infix fun <T> Property<T>.shadowBindTo(nodeProperty: Property<T>) {
+        bindBidirectional(object : SimpleObjectProperty<T>(nodeProperty.value) {
+            override fun set(newValue: T?) {
+                super.set(newValue)
+                nodeProperty.unbind()
+                nodeProperty.value = newValue
+            }
+        })
+    }
 
 }
