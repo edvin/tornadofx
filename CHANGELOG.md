@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- LayoutDebugger (https://github.com/edvin/tornadofx/wiki/Layout-Debugger)
+- ViewModel (https://github.com/edvin/tornadofx/wiki/ViewModel)
 - TableView `cellDecorator` 
 - ComboBox `cellFormat` formatter function
 - TreeView `lazyPopulate` alternative to `populate` that lazily creates children as needed

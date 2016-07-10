@@ -74,9 +74,11 @@ fun Scene.reloadStylesheets() {
 }
 
 fun Scene.reloadViews() {
-    findUIComponents().forEach {
-        if (it.reloadInit) FX.replaceComponent(it)
-        it.reloadInit = true
+    if (properties["javafx.layoutdebugger"] == null) {
+        findUIComponents().forEach {
+            if (it.reloadInit) FX.replaceComponent(it)
+            it.reloadInit = true
+        }
     }
 }
 
@@ -120,6 +122,14 @@ fun Stage.reloadStylesheetsOnFocus() {
     }
 }
 
+fun Stage.hookLayoutDebuggerShortcut() {
+    if (FX.layoutDebuggerShortcut != null) {
+        addEventFilter(KeyEvent.KEY_PRESSED) {
+            if (FX.layoutDebuggerShortcut?.match(it) ?: false)
+                LayoutDebugger.debug(scene)
+        }
+    }
+}
 fun Stage.reloadViewsOnFocus() {
     focusedProperty().addListener { obs, old, focused ->
         if (focused && FX.initialized.value) scene?.reloadViews()

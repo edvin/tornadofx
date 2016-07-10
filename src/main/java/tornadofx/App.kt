@@ -26,6 +26,7 @@ open class App : Application() {
                 view.properties["tornadofx.scene"] = scene
                 scene.stylesheets.addAll(FX.stylesheets)
                 titleProperty().bind(view.titleProperty)
+                hookLayoutDebuggerShortcut()
                 show()
             }
 

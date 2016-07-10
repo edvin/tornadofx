@@ -195,6 +195,7 @@ abstract class UIComponent : Component() {
                         show()
                         configureReloading()
                     }
+                    hookLayoutDebuggerShortcut()
                 }
 
                 modalStage!!.showingProperty().addListener { obs, old, showing ->

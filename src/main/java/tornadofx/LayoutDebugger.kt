@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -19,12 +20,12 @@ import javafx.util.StringConverter
 import javafx.util.converter.DoubleStringConverter
 
 @Suppress("UNCHECKED_CAST")
-class LayoutDebugger : View() {
+class LayoutDebugger : Fragment() {
     override val root = BorderPane()
 
+    lateinit var currentScene: Scene
     val hoveredNode = SimpleObjectProperty<Node>()
     val selectedNode = SimpleObjectProperty<Node>()
-    val selectedScene = SimpleObjectProperty<Scene>()
     var nodeTree: TreeView<Node> by singleAssign()
     val propertyContainer = ScrollPane()
     val stackpane = StackPane()
@@ -32,8 +33,6 @@ class LayoutDebugger : View() {
     val gc = overlay.graphicsContext2D
 
     init {
-        title = "Layout Debugger"
-
         overlay.isMouseTransparent = true
         stackpane.add(overlay)
         gc.fill = c("#99bbbb", 0.4)
@@ -65,64 +64,6 @@ class LayoutDebugger : View() {
         nodeTree.selectionModel.selectedItemProperty().addListener { observableValue, oldItem, newItem ->
             if (newItem != null)
                 setSelectedNode(newItem.value)
-        }
-
-        selectedScene.addListener { observableValue, oldScene, newScene ->
-            // Overlay has same size as new scene
-            overlay.widthProperty().unbind()
-            overlay.widthProperty().bind(newScene.widthProperty())
-            overlay.heightProperty().bind(newScene.heightProperty())
-
-            // Stackpane becomes the new scene root and contains the newScene.root and our overlay
-            stackpane.scene?.root = null
-            val newSceneRoot = newScene.root
-            newScene.root = stackpane
-            stackpane.add(newSceneRoot)
-            overlay.toFront()
-
-            // Populate the node tree
-            with (nodeTree) {
-                root = NodeTreeItem(newSceneRoot)
-                populate(
-                        itemFactory = {
-                            NodeTreeItem(it)
-                        },
-                        childFactory = {
-                            val value = it.value
-                            if (value is Parent) value.childrenUnmodifiable else null
-                        }
-                )
-
-                // Hover on a node in the tree should visualize in the scene graph
-                setCellFactory {
-                    object : TreeCell<Node>() {
-                        init {
-                            addEventFilter(MouseEvent.MOUSE_ENTERED) {
-                                hoveredNode.value = item
-                                style {
-                                    backgroundColor += gc.fill
-                                }
-                            }
-                            addEventFilter(MouseEvent.MOUSE_EXITED) {
-                                hoveredNode.value = null
-                                style {
-                                    backgroundColor = multi()
-                                }
-                            }
-                        }
-
-                        override fun updateItem(item: Node?, empty: Boolean) {
-                            super.updateItem(item, empty)
-
-                            graphic = null
-                            text = null
-
-                            if (!empty && item != null)
-                                text = item.javaClass.simpleName
-                        }
-                    }
-                }
-            }
         }
 
         // Position overlay over hovered node
@@ -167,21 +108,93 @@ class LayoutDebugger : View() {
         propertyContainer.content = NodePropertyView(node)
     }
 
-    companion object {
-        fun startDebugging(scene: Scene) {
-            val debugger = find(LayoutDebugger::class)
-            scene.addEventFilter(MouseEvent.MOUSE_EXITED, debugger.sceneExitedHandler)
-            scene.addEventFilter(MouseEvent.MOUSE_MOVED, debugger.hoverHandler)
-            scene.addEventFilter(MouseEvent.MOUSE_CLICKED, debugger.clickHandler)
-            debugger.selectedScene.value = scene
-            debugger.openModal(modality = Modality.NONE)
+    fun stopDebugging() {
+        currentScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
+        currentScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
+    }
+
+    override fun onDock() {
+        // Prevent the debugger from being reloaded
+        Platform.runLater {
+            modalStage!!.scene.properties["javafx.layoutdebugger"] = this
         }
 
-        fun stopDebugging(scene: Scene) {
-            val debugger = find(LayoutDebugger::class)
-            scene.removeEventFilter(MouseEvent.MOUSE_MOVED, debugger.hoverHandler)
-            scene.removeEventFilter(MouseEvent.MOUSE_CLICKED, debugger.clickHandler)
-            debugger.selectedScene.value = null
+        with(currentScene) {
+            title = "Layout Debugger [%s]".format(this)
+            // Prevent the scene from being reloaded while the debugger is running
+            properties["javafx.layoutdebugger"] = this@LayoutDebugger
+            addEventFilter(MouseEvent.MOUSE_EXITED, sceneExitedHandler)
+            addEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
+            addEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
+        }
+
+        // Overlay has same size as scene
+        overlay.widthProperty().unbind()
+        overlay.widthProperty().bind(currentScene.widthProperty())
+        overlay.heightProperty().bind(currentScene.heightProperty())
+
+        // Stackpane becomes the new scene root and contains the currentScene.root and our overlay
+        stackpane.scene?.root = null
+        val newSceneRoot = currentScene.root
+        currentScene.root = stackpane
+        stackpane.add(newSceneRoot)
+        overlay.toFront()
+
+        // Populate the node tree
+        with(nodeTree) {
+            root = NodeTreeItem(newSceneRoot)
+            populate(
+                    itemFactory = {
+                        NodeTreeItem(it)
+                    },
+                    childFactory = {
+                        val value = it.value
+                        if (value is Parent) value.childrenUnmodifiable else null
+                    }
+            )
+
+            // Hover on a node in the tree should visualize in the scene graph
+            setCellFactory {
+                object : TreeCell<Node>() {
+                    init {
+                        addEventFilter(MouseEvent.MOUSE_ENTERED) {
+                            hoveredNode.value = item
+                            style {
+                                backgroundColor += gc.fill
+                            }
+                        }
+                        addEventFilter(MouseEvent.MOUSE_EXITED) {
+                            hoveredNode.value = null
+                            style {
+                                backgroundColor = multi()
+                            }
+                        }
+                    }
+
+                    override fun updateItem(item: Node?, empty: Boolean) {
+                        super.updateItem(item, empty)
+
+                        graphic = null
+                        text = null
+
+                        if (!empty && item != null)
+                            text = item.javaClass.simpleName
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onUndock() {
+        val originalSceneRoot = stackpane.children.removeAt(0)
+        currentScene.root = originalSceneRoot as Parent
+        currentScene.properties["javafx.layoutdebugger"] = null
+    }
+
+    companion object {
+        fun debug(scene: Scene) = with(findFragment<LayoutDebugger>()) {
+            currentScene = scene
+            openModal(modality = Modality.NONE)
         }
     }
 

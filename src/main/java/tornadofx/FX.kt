@@ -10,6 +10,8 @@ import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.image.Image
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import java.util.*
@@ -31,6 +33,7 @@ class FX {
         var reloadStylesheetsOnFocus = false
         var reloadViewsOnFocus = false
         var dumpStylesheets = false
+        var layoutDebuggerShortcut: KeyCodeCombination? = KeyCodeCombination(KeyCode.J, KeyCodeCombination.META_DOWN, KeyCodeCombination.ALT_DOWN)
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
