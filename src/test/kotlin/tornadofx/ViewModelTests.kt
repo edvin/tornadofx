@@ -13,78 +13,78 @@ open class ViewModelTests {
 
     @Test fun simple_commit() {
         val person = Person("John", 37)
-        val viewModel = PersonViewModel(person)
+        val model = PersonModel(person)
 
-        viewModel.name = "Jay"
+        model.name = "Jay"
         assertEquals(person.name, "John")
-        viewModel.commit()
+        model.commit()
         assertEquals(person.name, "Jay")
     }
 
-    @Test fun swap_source_object() {
-        val person1 = Person("Person 1", 37)
-        val person2 = Person("Person 2", 33)
+@Test fun swap_source_object() {
+    val person1 = Person("Person 1", 37)
+    val person2 = Person("Person 2", 33)
 
-        val viewModel = PersonViewModel(person1)
-        assertEquals(viewModel.name, "Person 1")
+    val model = PersonModel(person1)
+    assertEquals(model.name, "Person 1")
 
-        viewModel.rebind {
-            person = person2
-        }
-
-        assertEquals(viewModel.name, "Person 2")
+    model.rebind {
+        person = person2
     }
+
+    assertEquals(model.name, "Person 2")
+}
 
     @Test fun pojo_commit() {
         val person = JavaPerson()
         person.name = "John"
-        val viewModel = JavaPersonViewModel(person)
+        val model = JavaPersonModel(person)
 
-        viewModel.name.value = "Jay"
+        model.name.value = "Jay"
         assertEquals(person.name, "John")
-        viewModel.commit()
+        model.commit()
         assertEquals(person.name, "Jay")
     }
 
     @Test fun var_commit_check_dirty_state() {
         val person = Person("John", 37)
-        val viewModel = PersonViewModel(person)
+        val model = PersonModel(person)
 
-        assertFalse(viewModel.isDirty())
+        assertFalse(model.isDirty())
 
-        viewModel.name = "Jay"
+        model.name = "Jay"
         assertEquals(person.name, "John")
-        assertTrue(viewModel.isDirty())
+        assertTrue(model.isDirty())
 
-        viewModel.commit()
+        model.commit()
         assertEquals(person.name, "Jay")
-        assertFalse(viewModel.isDirty())
+        assertFalse(model.isDirty())
     }
 
     @Test fun inline_viewmodel() {
         val person = Person("John", 37)
 
-        val viewModel = object : ViewModel() {
+        val model = object : ViewModel() {
             val name = bind { person.nameProperty() } as SimpleStringProperty
             val age = bind { person.ageProperty() } as SimpleIntegerProperty
         }
 
-        viewModel.name.value = "Jay"
+        model.name.value = "Jay"
         assertEquals(person.name, "John")
-        viewModel.commit()
+        model.commit()
         assertEquals(person.name, "Jay")
     }
 
     @Test fun tableview_master_detail() {
         val tableview = TableView<Person>()
         tableview.items.addAll(Person("John", 37), Person("Jay", 33))
-        val viewModel = JavaFXPersonViewModel(tableview.items.first())
-        assertEquals(viewModel.name.value, "John")
-        viewModel.rebindOnChange(tableview) {
+        val model = JavaFXPersonViewModel(tableview.items.first())
+        assertEquals(model.name.value, "John")
+        model.rebindOnChange(tableview) {
             person = it ?: Person()
         }
         tableview.selectionModel.select(1)
-        assertEquals(viewModel.name.value, "Jay")
+        assertEquals(model.name.value, "Jay")
     }
 }
 
@@ -94,17 +94,17 @@ class JavaFXPersonViewModel(var person: Person) : ViewModel() {
 }
 
 // JavaFX Property exposing both getter/setter as well (optional)
-class PersonViewModel(var person: Person) : ViewModel() {
+class PersonModel(var person: Person) : ViewModel() {
     var name : String by property { person.nameProperty() }
-    fun nameProperty() = getProperty(PersonViewModel::name)
+    fun nameProperty() = getProperty(PersonModel::name)
 }
 
 // Java POJO getter/setter property
-class JavaPersonViewModel(person: JavaPerson) : ViewModel() {
+class JavaPersonModel(person: JavaPerson) : ViewModel() {
     val name = bind { person.observable(JavaPerson::getName, JavaPerson::setName) }
 }
 
 // Kotlin var property
-class PersonVarViewModel(person: Person) : ViewModel() {
+class PersonVarModel(person: Person) : ViewModel() {
     val name = bind { person.observable(Person::name) }
 }

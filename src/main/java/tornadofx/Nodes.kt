@@ -123,11 +123,9 @@ fun Stage.reloadStylesheetsOnFocus() {
 }
 
 fun Stage.hookLayoutDebuggerShortcut() {
-    if (FX.layoutDebuggerShortcut != null) {
-        addEventFilter(KeyEvent.KEY_PRESSED) {
-            if (FX.layoutDebuggerShortcut?.match(it) ?: false)
-                LayoutDebugger.debug(scene)
-        }
+    addEventFilter(KeyEvent.KEY_PRESSED) {
+        if (FX.layoutDebuggerShortcut?.match(it) ?: false)
+            LayoutDebugger.debug(scene)
     }
 }
 fun Stage.reloadViewsOnFocus() {

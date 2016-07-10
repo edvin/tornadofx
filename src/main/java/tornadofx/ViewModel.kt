@@ -12,7 +12,8 @@ import javafx.scene.control.TableView
 open class ViewModel {
     val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
-    val dirtyStateProperty = SimpleBooleanProperty(false)
+    private val dirtyStateProperty = SimpleBooleanProperty(false)
+    fun dirtyStateProperty() = dirtyStateProperty
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property

@@ -327,7 +327,8 @@ fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeT
 }
 
 /**
- * Create a column with a value factory that extracts the value from the given ObservableValue property
+ * Create a column with a value factory that extracts the value from the given ObservableValue property.
+ * Note that this function requires you to have "kotlin-reflect.jar" in your classpath.
  */
 @JvmName(name = "columnForObservableProperty")
 fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {

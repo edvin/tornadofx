@@ -9,9 +9,15 @@ import javafx.scene.layout.VBox
 
 import java.io.ByteArrayOutputStream
 import java.io.PrintWriter
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
+    val log = Logger.getLogger("ErrorHandler")
+
     override fun uncaughtException(t: Thread, error: Throwable) {
+        log.log(Level.SEVERE, "Uncaught error", error)
+
         Platform.runLater {
             val cause = Label(if (error.cause != null) error.cause?.message else "").apply {
                 style = "-fx-font-weight: bold"
