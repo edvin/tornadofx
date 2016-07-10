@@ -8,7 +8,7 @@ import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
 
 open class ViewModel {
-    val properties = FXCollections.observableHashMap<Property<*>, Pair<Property<*>, () -> Property<*>>>()
+    val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
     val dirtyStateProperty = SimpleBooleanProperty(false)
 
@@ -42,7 +42,7 @@ open class ViewModel {
         val prop = op()
         val value = prop.value
 
-        val wrapper = when (T::class.javaPrimitiveType ?: T::class) {
+        val facade = when (T::class.javaPrimitiveType ?: T::class) {
             Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(value as Int) else SimpleIntegerProperty()
             Long::class.javaPrimitiveType -> if (value != null)  SimpleLongProperty(value as Long) else SimpleLongProperty()
             Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(value as Double) else SimpleDoubleProperty()
@@ -56,17 +56,17 @@ open class ViewModel {
             else -> if (value != null) SimpleObjectProperty(value) else SimpleObjectProperty()
         }
 
-        wrapper.addListener(dirtyListener)
-        properties[wrapper] = prop to op
+        facade.addListener(dirtyListener)
+        properties[facade] = op
 
-        return wrapper as ResultType
+        return facade as ResultType
     }
 
     inline fun <S : Property<T>, reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
-            val sourceValue = properties[property]!!.first.value
+            val sourceValue = properties[property]!!.invoke().value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
@@ -83,22 +83,21 @@ open class ViewModel {
 
     fun commit() {
         properties.forEach {
-            it.value.first.value = it.key.value
+            it.value.invoke().value = it.key.value
         }
         clearDirtyState()
     }
 
     fun rollback() {
-        properties.forEach { it.key.value = it.value.first.value }
+        properties.forEach { it.key.value = it.value.invoke().value }
         clearDirtyState()
     }
 
     fun rebind() {
-        for ((wrapper, propAndOp) in properties) {
-            val op = propAndOp.second
-            val prop = op()
-            wrapper.value = prop.value
-            properties[wrapper] = prop to op
+        for ((facade, propExtractor) in properties) {
+            val prop = propExtractor()
+            facade.value = prop.value
+            properties[facade] = propExtractor
         }
         clearDirtyState()
     }

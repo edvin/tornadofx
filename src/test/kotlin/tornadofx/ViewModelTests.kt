@@ -77,7 +77,7 @@ open class ViewModelTests {
     @Test fun tableview_master_detail() {
         val tableview = TableView<Person>()
         tableview.items.addAll(Person("John", 37), Person("Jay", 33))
-        val viewModel = MasterDetailViewModel(tableview.items.first())
+        val viewModel = JavaFXPersonViewModel(tableview.items.first())
         Assert.assertEquals(viewModel.name.value, "John")
         viewModel.rebindOnChange(tableview.selectionModel.selectedItemProperty()) {
             person = it ?: tableview.items.first()
@@ -106,8 +106,4 @@ class JavaPersonViewModel(person: JavaPerson) : ViewModel() {
 // Kotlin var property
 class PersonVarViewModel(person: Person) : ViewModel() {
     val name = bind { person.observable(Person::name) }
-}
-
-class MasterDetailViewModel(var person: Person) : ViewModel() {
-    val name = bind { person.nameProperty() }
 }
