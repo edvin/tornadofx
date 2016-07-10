@@ -6,6 +6,8 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
+import javafx.scene.control.ListView
+import javafx.scene.control.TableView
 
 open class ViewModel {
     val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -44,7 +46,7 @@ open class ViewModel {
 
         val facade = when (T::class.javaPrimitiveType ?: T::class) {
             Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(value as Int) else SimpleIntegerProperty()
-            Long::class.javaPrimitiveType -> if (value != null)  SimpleLongProperty(value as Long) else SimpleLongProperty()
+            Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(value as Long) else SimpleLongProperty()
             Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(value as Double) else SimpleDoubleProperty()
             Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(value as Float) else SimpleFloatProperty()
             Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(value as Boolean) else SimpleBooleanProperty()
@@ -116,6 +118,11 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T
     }
 }
 
+fun <V : ViewModel, T> V.rebindOnChange(tableview: TableView<T>, op: V.(T?) -> Unit)
+        = rebindOnChange(tableview.selectionModel.selectedItemProperty(), op)
+
+fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Unit)
+        = rebindOnChange(listview.selectionModel.selectedItemProperty(), op)
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op.invoke(this)

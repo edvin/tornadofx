@@ -1,9 +1,10 @@
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
 import javafx.stage.Stage
-import org.junit.Assert
+import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
 
@@ -15,9 +16,9 @@ open class ViewModelTests {
         val viewModel = PersonViewModel(person)
 
         viewModel.name = "Jay"
-        Assert.assertEquals(person.name, "John")
+        assertEquals(person.name, "John")
         viewModel.commit()
-        Assert.assertEquals(person.name, "Jay")
+        assertEquals(person.name, "Jay")
     }
 
     @Test fun swap_source_object() {
@@ -25,13 +26,13 @@ open class ViewModelTests {
         val person2 = Person("Person 2", 33)
 
         val viewModel = PersonViewModel(person1)
-        Assert.assertEquals(viewModel.name, "Person 1")
+        assertEquals(viewModel.name, "Person 1")
 
         viewModel.rebind {
             person = person2
         }
 
-        Assert.assertEquals(viewModel.name, "Person 2")
+        assertEquals(viewModel.name, "Person 2")
     }
 
     @Test fun pojo_commit() {
@@ -40,24 +41,24 @@ open class ViewModelTests {
         val viewModel = JavaPersonViewModel(person)
 
         viewModel.name.value = "Jay"
-        Assert.assertEquals(person.name, "John")
+        assertEquals(person.name, "John")
         viewModel.commit()
-        Assert.assertEquals(person.name, "Jay")
+        assertEquals(person.name, "Jay")
     }
 
     @Test fun var_commit_check_dirty_state() {
         val person = Person("John", 37)
         val viewModel = PersonViewModel(person)
 
-        Assert.assertFalse(viewModel.isDirty())
+        assertFalse(viewModel.isDirty())
 
         viewModel.name = "Jay"
-        Assert.assertEquals(person.name, "John")
-        Assert.assertTrue(viewModel.isDirty())
+        assertEquals(person.name, "John")
+        assertTrue(viewModel.isDirty())
 
         viewModel.commit()
-        Assert.assertEquals(person.name, "Jay")
-        Assert.assertFalse(viewModel.isDirty())
+        assertEquals(person.name, "Jay")
+        assertFalse(viewModel.isDirty())
     }
 
     @Test fun inline_viewmodel() {
@@ -69,21 +70,21 @@ open class ViewModelTests {
         }
 
         viewModel.name.value = "Jay"
-        Assert.assertEquals(person.name, "John")
+        assertEquals(person.name, "John")
         viewModel.commit()
-        Assert.assertEquals(person.name, "Jay")
+        assertEquals(person.name, "Jay")
     }
 
     @Test fun tableview_master_detail() {
         val tableview = TableView<Person>()
         tableview.items.addAll(Person("John", 37), Person("Jay", 33))
         val viewModel = JavaFXPersonViewModel(tableview.items.first())
-        Assert.assertEquals(viewModel.name.value, "John")
-        viewModel.rebindOnChange(tableview.selectionModel.selectedItemProperty()) {
-            person = it ?: tableview.items.first()
+        assertEquals(viewModel.name.value, "John")
+        viewModel.rebindOnChange(tableview) {
+            person = it ?: Person()
         }
         tableview.selectionModel.select(1)
-        Assert.assertEquals(viewModel.name.value, "Jay")
+        assertEquals(viewModel.name.value, "Jay")
     }
 }
 
