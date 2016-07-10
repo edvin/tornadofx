@@ -94,11 +94,8 @@ open class ViewModel {
     }
 
     fun rebind() {
-        for ((facade, propExtractor) in properties) {
-            val prop = propExtractor()
-            facade.value = prop.value
-            properties[facade] = propExtractor
-        }
+        for ((facade, propExtractor) in properties)
+            facade.value = propExtractor().value
         clearDirtyState()
     }
 
