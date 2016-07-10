@@ -109,6 +109,18 @@ open class ViewModel {
     }
 }
 
+/**
+ * Listen to changes in the given observable and call the op with the new value on change.
+ * After each change the rebind() function is called.
+ */
+fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T?) -> Unit) {
+    observable.addListener { observableValue, oldValue, newValue ->
+        op(newValue)
+        rebind()
+    }
+}
+
+
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op.invoke(this)
     rebind()
