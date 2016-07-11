@@ -42,9 +42,15 @@ fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter
     chooser.extensionFilters.addAll(filters)
     op?.invoke(chooser)
     return when (mode) {
-        Single -> listOf(chooser.showOpenDialog(owner))
+        Single -> {
+            val result = chooser.showOpenDialog(owner)
+            if (result == null) emptyList() else listOf(result)
+        }
         Multi -> chooser.showOpenMultipleDialog(owner)
-        Save -> listOf(chooser.showSaveDialog(owner))
+        Save -> {
+            val result = chooser.showSaveDialog(owner)
+            if (result == null) emptyList() else listOf(result)
+        }
         else -> emptyList()
     }
 }
