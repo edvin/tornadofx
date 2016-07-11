@@ -102,7 +102,12 @@ open class ViewModel {
         clearDirtyState()
     }
 
+    /**
+     * Extract the value of the corresponding source property
+     */
     fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
+    fun <T> isDirty(property: Property<T>) = backingValue(property) == property.value
+    fun <T> isNotDirty(property: Property<T>) = !isDirty()
 
     private fun clearDirtyState() {
         dirtyProperties.clear()
