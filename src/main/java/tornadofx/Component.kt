@@ -26,6 +26,7 @@ import java.util.logging.Logger
 import java.util.prefs.Preferences
 import kotlin.concurrent.thread
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 interface Injectable
@@ -121,6 +122,12 @@ abstract class Component {
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: () -> T) = task(func)
 
+    /**
+     * Perform the given operation on an Injectable of the specified type, for example:
+     *
+     * MyController::class.runAsync { functionOnMyController() } ui { processResult(it) }
+     */
+    inline fun <reified T : Injectable, R> KClass<T>.runAsync(noinline op: T.() -> R) = task { op(find(T::class)) }
     fun <T> runAsync(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
