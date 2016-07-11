@@ -1,6 +1,8 @@
 package tornadofx
 
+import javafx.beans.property.SimpleStringProperty
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -101,5 +103,13 @@ class PropertiesTest {
         person.id = 5
         idObservable.refresh()
         Assert.assertEquals(5, idObservable.value)
+    }
+
+    @Test fun property_on_change() {
+        var called = false
+        val property = SimpleStringProperty("Hello World")
+        property.onChange { called = true }
+        property.value = "Changed"
+        assertTrue(called)
     }
 }
