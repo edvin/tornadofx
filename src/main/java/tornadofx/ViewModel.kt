@@ -107,7 +107,7 @@ open class ViewModel {
      */
     fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
     fun <T> isDirty(property: Property<T>) = backingValue(property) != property.value
-    fun <T> isNotDirty(property: Property<T>) = !isDirty()
+    fun <T> isNotDirty(property: Property<T>) = !isDirty(property)
 
     private fun clearDirtyState() {
         dirtyProperties.clear()
