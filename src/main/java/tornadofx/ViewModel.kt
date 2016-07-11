@@ -116,6 +116,19 @@ open class ViewModel {
 }
 
 /**
+ * Check if a given property from the ViewModel is dirty. This is a shorthand form of:
+ *
+ * `model.isDirty(model.property)`
+ *
+ * With this you can write:
+ *
+ * `model.isDirty { property }
+ *
+ */
+fun <V : ViewModel, T> V.isDirty(op: V.() -> Property<T>) = isDirty(op())
+fun <V : ViewModel, T> V.isNotDirty(op: V.() -> Property<T>) = isNotDirty(op())
+
+/**
  * Listen to changes in the given observable and call the op with the new value on change.
  * After each change the rebind() function is called.
  */
