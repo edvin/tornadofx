@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - Uncaught exceptions will now be logged to the console to ensure error message delivery even when UI is not initialized
 - Fixed CheckBoxCell binding (https://github.com/edvin/tornadofx/issues/140)
 - Builder op block made optional on many builders (https://github.com/edvin/tornadofx/issues/126)
+- Fixed bug in chooseFile (returned list with null instead of empty list when nothing was selected
 
 ## [1.5.1] - 2016-06-29
 
