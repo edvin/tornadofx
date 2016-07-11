@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `ObservableValue.onChange` listener
 - LayoutDebugger (https://github.com/edvin/tornadofx/wiki/Layout-Debugger)
 - ViewModel (https://github.com/edvin/tornadofx/wiki/ViewModel)
 - TableView `cellDecorator` 
