@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -115,3 +116,8 @@ fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
 fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
+
+inline fun <T> ObservableValue<T>.onChange(crossinline op: (T?) -> Unit) : ObservableValue<T> {
+    addListener { observable, oldValue, newValue -> op(newValue) }
+    return this
+}
