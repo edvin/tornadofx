@@ -7,7 +7,9 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
@@ -212,8 +214,12 @@ interface DIContainer {
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-fun <T : Node> opcr(pane: Pane, node: T, op: (T.() -> Unit)? = null): T {
-    pane.children.add(node)
+fun <T : Node> opcr(parent: Parent, node: T, op: (T.() -> Unit)? = null): T {
+    if (parent is Pane) {
+        parent.children.add(node)
+    } else if (parent is Group) {
+        parent.children.add(node)
+    } else throw IllegalArgumentException("Don't know how to add this node to a parent of type ${parent.javaClass}")
     op?.invoke(node)
     return node
 }
