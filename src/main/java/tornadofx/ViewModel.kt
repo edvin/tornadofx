@@ -102,6 +102,8 @@ open class ViewModel {
         clearDirtyState()
     }
 
+    fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
+
     private fun clearDirtyState() {
         dirtyProperties.clear()
         updateDirtyState()
