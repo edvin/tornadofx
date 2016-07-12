@@ -8,14 +8,12 @@ import kotlin.concurrent.thread
 enum class ValidationSeverity { Warning, Error }
 
 sealed class ValidationTrigger {
-    companion object {
-        val onchange = OnChange()
-        val onblur = OnBlur()
-        val none = None()
-    }
-    class OnBlur : ValidationTrigger()
+    object OnBlur : ValidationTrigger()
     class OnChange(val delay: Long = 0) : ValidationTrigger()
-    class None : ValidationTrigger()
+    object None : ValidationTrigger()
+    companion object {
+        val OnChangeImmediate = OnChange()
+    }
 }
 
 class ValidationMessage(val message: String, val severity: ValidationSeverity)
@@ -26,7 +24,7 @@ class ValidationContext {
     /**
      * A read only view of the validators in this context
      */
-    private val validators : List<Validator<*>> get() = _validators
+    private val validators: List<Validator<*>> get() = _validators
 
     /**
      * The decoration provider decides what kind of decoration should be applied to
@@ -48,7 +46,7 @@ class ValidationContext {
     inline fun <reified T> addValidator(
             node: Node,
             property: ObservableValue<T>,
-            trigger: ValidationTrigger = ValidationTrigger.onchange,
+            trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
             noinline validator: ValidationContext.(T) -> ValidationMessage?) {
 
         addValidator(Validator(node, property, trigger, validator))
@@ -104,8 +102,8 @@ class ValidationContext {
      * Add validator for a TextInputControl and validate the control's textProperty. Useful when
      * you don't bind against a ViewModel or other backing property.
      */
-    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.onchange, validator: ValidationContext.(String) -> ValidationMessage?) =
-        addValidator<String>(node, node.textProperty(), trigger, validator)
+    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String) -> ValidationMessage?) =
+            addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
     fun error(message: String) = ValidationMessage(message, ValidationSeverity.Error)
@@ -114,13 +112,13 @@ class ValidationContext {
     inner class Validator<T>(
             val node: Node,
             val property: ObservableValue<T>,
-            val trigger: ValidationTrigger = ValidationTrigger.onchange,
+            val trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
             val validator: ValidationContext.(T) -> ValidationMessage?) {
 
-        var result : ValidationMessage? = null
-        var decorator : Decorator? = null
+        var result: ValidationMessage? = null
+        var decorator: Decorator? = null
 
-        fun validate() : Boolean {
+        fun validate(): Boolean {
             result = validator(this@ValidationContext, property.value)
 
             if (result == null) {
@@ -134,7 +132,7 @@ class ValidationContext {
             return isValid
         }
 
-        val isValid : Boolean get() = result == null || result!!.severity != ValidationSeverity.Error
+        val isValid: Boolean get() = result == null || result!!.severity != ValidationSeverity.Error
     }
 
 }

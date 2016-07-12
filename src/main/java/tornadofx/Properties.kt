@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.*
+import java.lang.reflect.Field
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 
@@ -21,11 +22,20 @@ class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, 
 
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
-    val field = this.javaClass.getDeclaredField("${prop.name}\$delegate")
+    val field = javaClass.findFieldByName("${prop.name}\$delegate")
+            ?: throw IllegalArgumentException("No delegate field with name '${prop.name}' found")
+
     field.isAccessible = true
     @Suppress("UNCHECKED_CAST")
     val delegate = field.get(this) as PropertyDelegate<T>
     return delegate.fxProperty as ObjectProperty<T>
+}
+
+fun Class<*>.findFieldByName(name: String): Field? {
+    val field = (declaredFields + fields).find { it.name == name }
+    if (field != null) return field
+    if (superclass == java.lang.Object::class.java) return null
+    return superclass.findFieldByName(name)
 }
 
 /**
@@ -83,14 +93,16 @@ fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>
 
     return object : PojoProperty<T>(bean, propName) {
         override fun get() = getter.invoke(bean) as T
-        override fun set(newValue: T) { setter.invoke(bean, newValue) }
+        override fun set(newValue: T) {
+            setter.invoke(bean, newValue)
+        }
     }
 
 }
 
 @JvmName("pojoObservable")
 inline fun <reified T : Any> Any.observable(propName: String) =
-    observable(this, propName, T::class)
+        observable(this, propName, T::class)
 
 enum class SingleAssignThreadSafetyMode {
     SYNCHRONIZED,
@@ -108,7 +120,7 @@ interface SingleAssign<T> {
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
 
-private class SynchronizedSingleAssign<T>: SingleAssign<T> {
+private class SynchronizedSingleAssign<T> : SingleAssign<T> {
 
     @Volatile
     private var initialized = false
@@ -132,10 +144,11 @@ private class SynchronizedSingleAssign<T>: SingleAssign<T> {
             initialized = true
         }
     }
+
     override fun isInitialized() = initialized
 }
 
-private class UnsynchronizedSingleAssign<T>: SingleAssign<T> {
+private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
     private var initialized = false
     private var _value: Any? = UNINITIALIZED_VALUE
@@ -154,5 +167,6 @@ private class UnsynchronizedSingleAssign<T>: SingleAssign<T> {
         _value = value
         initialized = true
     }
+
     override fun isInitialized() = initialized
 }
