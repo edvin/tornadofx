@@ -19,15 +19,6 @@ sealed class ValidationTrigger {
 
 class ValidationMessage(val message: String, val severity: ValidationSeverity)
 
-class ValidationResult(val node: Node, val message: ValidationMessage)
-
-class Validator<T>(
-        val node: Node,
-        val property: ObservableValue<T>,
-        val trigger: ValidationTrigger = ValidationTrigger.onchange,
-        val validator: ValidationContext.(T) -> ValidationMessage?) {
-}
-
 class ValidationContext {
     private val _validators = mutableListOf<Validator<*>>()
 
@@ -65,29 +56,65 @@ class ValidationContext {
     fun <T> addValidator(validator: Validator<T>) {
         when (validator.trigger) {
             is ValidationTrigger.OnChange -> {
-
+                validator.property.onChange { validator.validate() }
             }
             is ValidationTrigger.OnBlur -> {
-
+                validator.node.focusedProperty().onChange { if (it == true) validator.validate() }
             }
         }
         _validators.add(validator)
     }
 
-//    fun isValid() = validate().isEmpty()
+    /**
+     * A boolean indicating the current validation status.
+     */
+    val isValid: Boolean get() = _validators.find { !it.isValid } != null
 
-//    fun validate(): List<ValidationResult> {
-//
-//    }
+    /**
+     * Rerun all validators and return a boolean indicating if validation passes.
+     */
+    fun validate(): Boolean {
+        for (validator in _validators)
+            validator.validate()
+
+        return isValid
+    }
 
     /**
      * Add validator for a TextInputControl and validate the control's textProperty. Useful when
      * you don't bind against a ViewModel or other backing property.
      */
-    inline fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.onchange, noinline validator: ValidationContext.(String) -> ValidationMessage?) =
+    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.onchange, validator: ValidationContext.(String) -> ValidationMessage?) =
         addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
     fun error(message: String) = ValidationMessage(message, ValidationSeverity.Error)
     fun warning(message: String) = ValidationMessage(message, ValidationSeverity.Warning)
+
+    inner class Validator<T>(
+            val node: Node,
+            val property: ObservableValue<T>,
+            val trigger: ValidationTrigger = ValidationTrigger.onchange,
+            val validator: ValidationContext.(T) -> ValidationMessage?) {
+
+        var result : ValidationMessage? = null
+        var decorator : Decorator? = null
+
+        fun validate() : Boolean {
+            result = validator(this@ValidationContext, property.value)
+            val valid = isValid
+            if (valid) {
+                decorator?.apply { undecorate(node) }
+                decorator = null
+            } else {
+                decorator = decorationProvider(result!!)
+                decorator!!.decorate(node)
+            }
+
+            return valid
+        }
+
+        val isValid : Boolean get() = result == null
+    }
+
 }
