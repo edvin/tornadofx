@@ -1,12 +1,11 @@
 package tornadofx
 
+import javafx.beans.Observable
 import javafx.beans.property.*
+import javafx.beans.value.ObservableValue
 import java.lang.reflect.Field
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
-
-fun <T> Property<T>.getValue() = value
-fun <T> Property<T>.setValue(v: T?) = { value = v }
 
 @Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
@@ -181,6 +180,16 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
     }
 
     override fun isInitialized() = initialized
+}
+
+fun <T> Property<T>.getObservableValue(): ObservableValue<T>? {
+    val field = javaClass.findFieldByName("observable")
+    if (field != null) {
+        field.isAccessible = true
+        val observableValue = field.get(this)
+        if (observableValue is ObservableValue<*>) return observableValue as ObservableValue<T>
+    }
+    return null
 }
 
 operator fun <T> Property<T>.getValue(thisRef: Any?, property: KProperty<*>): T = value

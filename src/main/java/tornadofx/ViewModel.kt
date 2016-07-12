@@ -9,6 +9,7 @@ import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
+import javafx.scene.control.TextInputControl
 
 open class ViewModel {
     val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -88,7 +89,7 @@ open class ViewModel {
 
     fun validate(): Boolean = validationContext.validate()
 
-    fun commit() : Boolean {
+    fun commit(): Boolean {
         if (!validate()) return false
 
         properties.forEach {
@@ -122,12 +123,13 @@ open class ViewModel {
         validationContext.decorationProvider = decorationProvider
     }
 
-    val isValid : Boolean get() = validationContext.isValid
+    val isValid: Boolean get() = validationContext.isValid
 
     /**
      * Extract the value of the corresponding source property
      */
     fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
+
     fun <T> isDirty(property: Property<T>) = backingValue(property) != property.value
     fun <T> isNotDirty(property: Property<T>) = !isDirty(property)
 
@@ -148,6 +150,7 @@ open class ViewModel {
  *
  */
 fun <V : ViewModel, T> V.isDirty(op: V.() -> Property<T>) = isDirty(op())
+
 fun <V : ViewModel, T> V.isNotDirty(op: V.() -> Property<T>) = isNotDirty(op())
 
 /**
@@ -193,5 +196,22 @@ inline fun <reified T> Property<T>.addValidator(
         model.addValidator(node, this, trigger, validator)
     } else {
         throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
+    }
+}
+
+/**
+ * Add a validator to a TextInputControl that is already bound to a model property.
+ * Trying to bind to a Control that is not bound to a model property will result in an exception.
+ */
+@Suppress("UNCHECKED_CAST")
+fun TextInputControl.addValidator(
+        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+        validator: ValidationContext.(String?) -> ValidationMessage?) {
+    val observableValue = textProperty().getObservableValue()
+    if (observableValue is Property<*> && observableValue.bean is ViewModel) {
+        val model = observableValue.bean as ViewModel
+        model.addValidator(this, observableValue as ObservableValue<String>, trigger, validator)
+    } else {
+        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are alread bound to a property in a Viewmodel. Use validator.addValidator() instead.")
     }
 }

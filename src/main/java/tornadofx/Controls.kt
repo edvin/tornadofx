@@ -39,33 +39,39 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
 }
 
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
-fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text(op = op).apply {
+fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text().apply {
     textProperty().bindBidirectional(property)
+    op?.invoke(this)
 }
 
 fun Pane.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
-fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
+fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     bind(property)
+    op?.invoke(this)
 }
 
 fun Pane.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
 
-fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield(op = op).apply {
+fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     textProperty().bindBidirectional(property, converter)
+    op?.invoke(this)
 }
 
 fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
-fun Pane.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> Unit)? = null) = datepicker(op = op).apply {
+fun Pane.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> Unit)? = null) = datepicker().apply {
     valueProperty().bindBidirectional(property)
+    op?.invoke(this)
 }
 
 fun Pane.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
-fun Pane.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
+fun Pane.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
     textProperty().bindBidirectional(property)
+    op?.invoke(this)
 }
 
-fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea(op = op).apply {
+fun <T> Pane.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
     textProperty().bindBidirectional(property, converter)
+    op?.invoke(this)
 }
 
 fun Pane.buttonbar(buttonOrder: String? = null, op: (ButtonBar.() -> Unit)): ButtonBar {
@@ -81,13 +87,15 @@ fun Pane.checkbox(text: String? = null, property: Property<Boolean>? = null, op:
 }, op)
 
 fun Pane.progressindicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
-fun Pane.progressindicator(property: Property<Double>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator(op = op).apply {
+fun Pane.progressindicator(property: Property<Double>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator().apply {
     progressProperty().bind(property)
+    op?.invoke(this)
 }
 
 fun Pane.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
-fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar(op = op).apply {
+fun Pane.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
     progressProperty().bind(property)
+    op?.invoke(this)
 }
 
 fun Pane.slider(min: Double? = null, max: Double? = null, value: Double? = null, orientation: Orientation? = null, op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
@@ -136,13 +144,15 @@ fun Pane.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), 
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
-fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label(op = op).apply {
+fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label().apply {
     textProperty().bind(property)
+    op?.invoke(this)
 }
 
 fun Pane.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
-fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink(op = op).apply {
+fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink().apply {
     textProperty().bind(property)
+    op?.invoke(this)
 }
 
 fun Pane.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar(), op)
