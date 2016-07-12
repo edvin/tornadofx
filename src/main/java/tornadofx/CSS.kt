@@ -197,6 +197,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
         return URL("css://$content:64")
     }
+
+    val externalForm: String get() = base64URL.toExternalForm()
 }
 
 open class PropertyHolder {
