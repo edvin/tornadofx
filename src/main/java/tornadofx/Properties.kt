@@ -8,21 +8,28 @@ import kotlin.reflect.*
 fun <T> Property<T>.getValue() = value
 fun <T> Property<T>.setValue(v: T?) = { value = v }
 
+@Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
+
+@Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
 
+@Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
 class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, T> {
 
+    @Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
     override fun getValue(thisRef: Any, property: KProperty<*>): T {
         return fxProperty.value
     }
 
+    @Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
     override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
         fxProperty.value = value
     }
 
 }
 
+@Deprecated("Properties can now be delegated to directly", level = DeprecationLevel.WARNING)
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
     val field = javaClass.findFieldByName("${prop.name}\$delegate")
@@ -34,9 +41,11 @@ fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     return delegate.fxProperty as ObjectProperty<T>
 }
 
+// TODO: Is this needed after the change to property delegation?
 fun Class<*>.findFieldByName(name: String): Field? {
     val field = (declaredFields + fields).find { it.name == name }
     if (field != null) return field
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     if (superclass == java.lang.Object::class.java) return null
     return superclass.findFieldByName(name)
 }
