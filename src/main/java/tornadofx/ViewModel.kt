@@ -113,8 +113,17 @@ open class ViewModel {
     * you don't bind against a ViewModel or other backing property.
     */
     fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String) -> ValidationMessage?) {
-        if (validationContext == null) validationContext = ValidationContext()
+        ensureValidationContext()
         validationContext!!.addValidator<String>(node, node.textProperty(), trigger, validator)
+    }
+
+    private fun ensureValidationContext() {
+        if (validationContext == null) validationContext = ValidationContext()
+    }
+
+    fun setDecorationProvider(decorationProvider: (ValidationMessage) -> Decorator?) {
+        ensureValidationContext()
+        validationContext!!.decorationProvider = decorationProvider
     }
 
     val isValid : Boolean get() = validationContext == null || validationContext!!.isValid
