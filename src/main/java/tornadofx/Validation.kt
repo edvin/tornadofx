@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.TextInputControl
+import kotlin.concurrent.thread
 
 enum class ValidationSeverity { Warning, Error }
 
@@ -56,10 +57,29 @@ class ValidationContext {
     fun <T> addValidator(validator: Validator<T>) {
         when (validator.trigger) {
             is ValidationTrigger.OnChange -> {
-                validator.property.onChange { validator.validate() }
+                var delayActive = false
+
+                validator.property.onChange {
+                    if (validator.trigger.delay == 0L) {
+                        validator.validate()
+                    } else {
+                        if (!delayActive) {
+                            delayActive = true
+                            thread(true) {
+                                Thread.sleep(validator.trigger.delay)
+                                FX.runAndWait {
+                                    validator.validate()
+                                }
+                                delayActive = false
+                            }
+                        }
+                    }
+                }
             }
             is ValidationTrigger.OnBlur -> {
-                validator.node.focusedProperty().onChange { if (it == true) validator.validate() }
+                validator.node.focusedProperty().onChange {
+                    if (it == false) validator.validate()
+                }
             }
         }
         _validators.add(validator)
@@ -102,8 +122,8 @@ class ValidationContext {
 
         fun validate() : Boolean {
             result = validator(this@ValidationContext, property.value)
-            val valid = isValid
-            if (valid) {
+
+            if (result == null) {
                 decorator?.apply { undecorate(node) }
                 decorator = null
             } else {
@@ -111,10 +131,10 @@ class ValidationContext {
                 decorator!!.decorate(node)
             }
 
-            return valid
+            return isValid
         }
 
-        val isValid : Boolean get() = result == null
+        val isValid : Boolean get() = result == null || result!!.severity != ValidationSeverity.Error
     }
 
 }
