@@ -19,12 +19,7 @@ sealed class ValidationTrigger {
 class ValidationMessage(val message: String, val severity: ValidationSeverity)
 
 class ValidationContext {
-    private val _validators = mutableListOf<Validator<*>>()
-
-    /**
-     * A read only view of the validators in this context
-     */
-    private val validators: List<Validator<*>> get() = _validators
+    val validators = mutableListOf<Validator<*>>()
 
     /**
      * The decoration provider decides what kind of decoration should be applied to
@@ -47,7 +42,7 @@ class ValidationContext {
             node: Node,
             property: ObservableValue<T>,
             trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
-            noinline validator: ValidationContext.(T) -> ValidationMessage?) {
+            noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         addValidator(Validator(node, property, trigger, validator))
     }
@@ -80,19 +75,19 @@ class ValidationContext {
                 }
             }
         }
-        _validators.add(validator)
+        validators.add(validator)
     }
 
     /**
      * A boolean indicating the current validation status.
      */
-    val isValid: Boolean get() = _validators.find { !it.isValid } == null
+    val isValid: Boolean get() = validators.find { !it.isValid } == null
 
     /**
      * Rerun all validators and return a boolean indicating if validation passes.
      */
     fun validate(): Boolean {
-        for (validator in _validators)
+        for (validator in validators)
             validator.validate()
 
         return isValid
@@ -102,7 +97,7 @@ class ValidationContext {
      * Add validator for a TextInputControl and validate the control's textProperty. Useful when
      * you don't bind against a ViewModel or other backing property.
      */
-    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String) -> ValidationMessage?) =
+    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String?) -> ValidationMessage?) =
             addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
@@ -114,7 +109,7 @@ class ValidationContext {
             val node: Node,
             val property: ObservableValue<T>,
             val trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
-            val validator: ValidationContext.(T) -> ValidationMessage?) {
+            val validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         var result: ValidationMessage? = null
         var decorator: Decorator? = null

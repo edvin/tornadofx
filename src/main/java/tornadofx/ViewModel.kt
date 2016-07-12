@@ -9,14 +9,13 @@ import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
-import javafx.scene.control.TextInputControl
 
 open class ViewModel {
     val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
     private val dirtyStateProperty = SimpleBooleanProperty(false)
     fun dirtyStateProperty() = dirtyStateProperty
-    var validationContext : ValidationContext? = null
+    val validationContext = ValidationContext()
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -49,17 +48,17 @@ open class ViewModel {
         val value = prop.value
 
         val facade = when (T::class.javaPrimitiveType ?: T::class) {
-            Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(value as Int) else SimpleIntegerProperty()
-            Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(value as Long) else SimpleLongProperty()
-            Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(value as Double) else SimpleDoubleProperty()
-            Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(value as Float) else SimpleFloatProperty()
-            Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(value as Boolean) else SimpleBooleanProperty()
-            String::class -> if (value != null) SimpleStringProperty(value as String) else SimpleStringProperty()
-            is ObservableList<*> -> if (value != null) SimpleListProperty(value as ObservableList<T>) else SimpleListProperty()
-            is ObservableSet<*> -> if (value != null) SimpleSetProperty(value as ObservableSet<T>) else SimpleSetProperty()
-            is List<*> -> if (value != null) SimpleListProperty((value as List<T>).observable()) else SimpleListProperty()
-            is Set<*> -> if (value != null) SimpleSetProperty((value as Set<T>).observable()) else SimpleSetProperty()
-            else -> if (value != null) SimpleObjectProperty(value) else SimpleObjectProperty()
+            Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop.name)
+            Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop.name)
+            Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop.name)
+            Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop.name)
+            Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop.name)
+            String::class -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop.name)
+            is ObservableList<*> -> if (value != null) SimpleListProperty(this, prop.name, value as ObservableList<T>) else SimpleListProperty(this, prop.name)
+            is ObservableSet<*> -> if (value != null) SimpleSetProperty(this, prop.name, value as ObservableSet<T>) else SimpleSetProperty(this, prop.name)
+            is List<*> -> if (value != null) SimpleListProperty(this, prop.name, (value as List<T>).observable()) else SimpleListProperty(this, prop.name)
+            is Set<*> -> if (value != null) SimpleSetProperty(this, prop.name, (value as Set<T>).observable()) else SimpleSetProperty(this, prop.name)
+            else -> if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop.name)
         }
 
         facade.addListener(dirtyListener)
@@ -87,8 +86,10 @@ open class ViewModel {
 
     fun isDirty(): Boolean = dirtyStateProperty.value
 
+    fun validate(): Boolean = validationContext.validate()
+
     fun commit() : Boolean {
-        if (validationContext != null && !validationContext!!.validate()) return false
+        if (!validate()) return false
 
         properties.forEach {
             it.value.invoke().value = it.key.value
@@ -112,31 +113,16 @@ open class ViewModel {
             node: Node,
             property: ObservableValue<T>,
             trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
-            noinline validator: ValidationContext.(T) -> ValidationMessage?) {
+            noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
-        ensureValidationContext()
-        validationContext!!.addValidator(node, property, trigger, validator)
-    }
-
-    /*
-    * Add validator for a TextInputControl and validate the control's textProperty. Useful when
-    * you don't bind against a ViewModel or other backing property.
-    */
-    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String) -> ValidationMessage?) {
-        ensureValidationContext()
-        validationContext!!.addValidator<String>(node, node.textProperty(), trigger, validator)
-    }
-
-    fun ensureValidationContext() {
-        if (validationContext == null) validationContext = ValidationContext()
+        validationContext.addValidator(node, property, trigger, validator)
     }
 
     fun setDecorationProvider(decorationProvider: (ValidationMessage) -> Decorator?) {
-        ensureValidationContext()
-        validationContext!!.decorationProvider = decorationProvider
+        validationContext.decorationProvider = decorationProvider
     }
 
-    val isValid : Boolean get() = validationContext == null || validationContext!!.isValid
+    val isValid : Boolean get() = validationContext.isValid
 
     /**
      * Extract the value of the corresponding source property
@@ -184,4 +170,28 @@ fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Uni
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op.invoke(this)
     rebind()
+}
+
+/**
+ * Add the given validator to a property that recides inside a ViewModel. The supplied node will be
+ * decorated by the current decorationProvider for this context inside the ViewModel of the property
+ * if validation fails.
+ *
+ * The validator function is executed in the scope of this ValidationContex to give
+ * access to other fields and shortcuts like the error and warning functions.
+ *
+ * The validation trigger decides when the validation is applied. ValidationTrigger.OnBlur
+ * tracks focus on the supplied node while OnChange tracks changes to the property itself.
+ */
+inline fun <reified T> Property<T>.addValidator(
+        node: Node,
+        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+        noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
+
+    if (bean is ViewModel) {
+        val model = bean as ViewModel
+        model.addValidator(node, this, trigger, validator)
+    } else {
+        throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
+    }
 }
