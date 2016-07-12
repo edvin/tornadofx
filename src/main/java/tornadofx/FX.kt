@@ -11,6 +11,8 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.Control
+import javafx.scene.control.SkinBase
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
@@ -99,7 +101,7 @@ class FX {
             FX.application = application
 
             if (application.parameters?.unnamed != null) {
-                with (application.parameters.unnamed) {
+                with(application.parameters.unnamed) {
                     if (contains("--dev-mode")) {
                         reloadStylesheetsOnFocus = true
                         dumpStylesheets = true
@@ -116,8 +118,8 @@ class FX {
         }
 
         @JvmStatic
-        fun <T: Injectable> find(componentType: Class<T>) =
-            find(componentType.kotlin)
+        fun <T : Injectable> find(componentType: Class<T>) =
+                find(componentType.kotlin)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
@@ -215,11 +217,23 @@ interface DIContainer {
  * Add the given node to the pane, invoke the node operation and return the node
  */
 fun <T : Node> opcr(parent: Parent, node: T, op: (T.() -> Unit)? = null): T {
-    if (parent is Pane) {
-        parent.children.add(node)
-    } else if (parent is Group) {
-        parent.children.add(node)
-    } else throw IllegalArgumentException("Don't know how to add this node to a parent of type ${parent.javaClass}")
+    parent.getChildList().add(node)
     op?.invoke(node)
     return node
 }
+
+/**
+ * Find the list of children from a Parent node. Gleaned code from ControlsFX for this.
+ */
+fun Parent.getChildList(): MutableList<Node> = when (this) {
+    is Pane -> children
+    is Group -> children
+    is Control -> if (skin is SkinBase<*>) (skin as SkinBase<*>).children else getChildrenReflectively()
+    else -> getChildrenReflectively()
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun Parent.getChildrenReflectively() = Parent::class.java.getDeclaredMethod("getChildren")?.let {
+    it.isAccessible = true
+    it.invoke(this) as MutableList<Node>
+} ?: throw RuntimeException("Unable to get children for Parent of type " + javaClass)

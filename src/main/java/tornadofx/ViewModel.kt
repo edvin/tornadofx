@@ -113,6 +113,13 @@ open class ViewModel {
         dirtyProperties.clear()
         updateDirtyState()
     }
+
+    class PropertyContainer(val propExtractor: () -> Property<*>) {
+        val property : Property<*> get() = propExtractor()
+        val validators = mutableListOf<ValidatorContainer<*>>()
+    }
+
+    class ValidatorContainer<in T>(val validator: (T) -> String?, delay: Long = 0)
 }
 
 /**
