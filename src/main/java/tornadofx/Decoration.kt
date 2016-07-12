@@ -39,11 +39,9 @@ class SimpleMessageDecorator(val message: String, severity: ValidationSeverity) 
         }
 
         if (message.isNotBlank()) {
-            Platform.runLater {
-                tooltip = node.tooltip(message) {
-                    val b = node.localToScreen(node.boundsInLocal)
-                    show(node, b.minX, b.maxY)
-                }
+            tooltip = node.tooltip(message) {
+                val b = node.localToScreen(node.boundsInLocal)
+                show(node, b.minX, b.maxY)
             }
         }
     }

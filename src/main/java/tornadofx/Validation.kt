@@ -86,7 +86,7 @@ class ValidationContext {
     /**
      * A boolean indicating the current validation status.
      */
-    val isValid: Boolean get() = _validators.find { !it.isValid } != null
+    val isValid: Boolean get() = _validators.find { !it.isValid } == null
 
     /**
      * Rerun all validators and return a boolean indicating if validation passes.
@@ -120,13 +120,13 @@ class ValidationContext {
         var decorator: Decorator? = null
 
         fun validate(): Boolean {
+            decorator?.apply { undecorate(node) }
+            decorator = null
+
             result = validator(this@ValidationContext, property.value)
 
-            if (result == null) {
-                decorator?.apply { undecorate(node) }
-                decorator = null
-            } else {
-                decorator = decorationProvider(result!!)
+            result?.apply {
+                decorator = decorationProvider(this)
                 decorator!!.decorate(node)
             }
 

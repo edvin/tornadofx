@@ -108,6 +108,16 @@ open class ViewModel {
         clearDirtyState()
     }
 
+    inline fun <reified T> addValidator(
+            node: Node,
+            property: ObservableValue<T>,
+            trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+            noinline validator: ValidationContext.(T) -> ValidationMessage?) {
+
+        ensureValidationContext()
+        validationContext!!.addValidator(node, property, trigger, validator)
+    }
+
     /*
     * Add validator for a TextInputControl and validate the control's textProperty. Useful when
     * you don't bind against a ViewModel or other backing property.
@@ -117,7 +127,7 @@ open class ViewModel {
         validationContext!!.addValidator<String>(node, node.textProperty(), trigger, validator)
     }
 
-    private fun ensureValidationContext() {
+    fun ensureValidationContext() {
         if (validationContext == null) validationContext = ValidationContext()
     }
 
@@ -139,13 +149,6 @@ open class ViewModel {
         dirtyProperties.clear()
         updateDirtyState()
     }
-
-    class PropertyContainer(val propExtractor: () -> Property<*>) {
-        val property : Property<*> get() = propExtractor()
-        val validators = mutableListOf<ValidatorContainer<*>>()
-    }
-
-    class ValidatorContainer<in T>(val validator: (T) -> String?, delay: Long = 0)
 }
 
 /**
