@@ -173,3 +173,33 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
     override fun isInitialized() = initialized
 }
+
+operator fun <T> Property<T>.getValue(thisRef: Any?, property: KProperty<*>): T = value
+operator fun <T> Property<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+    this.value = value
+}
+
+operator fun DoubleProperty.getValue(thisRef: Any?, property: KProperty<*>) = value!!
+operator fun DoubleProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Double) {
+    this.value = value
+}
+
+operator fun FloatProperty.getValue(thisRef: Any?, property: KProperty<*>) = value!!
+operator fun FloatProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Float) {
+    this.value = value
+}
+
+operator fun LongProperty.getValue(thisRef: Any?, property: KProperty<*>) = value!!
+operator fun LongProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Long) {
+    this.value = value
+}
+
+operator fun IntegerProperty.getValue(thisRef: Any?, property: KProperty<*>) = value!!
+operator fun IntegerProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+    this.value = value
+}
+
+operator fun BooleanProperty.getValue(thisRef: Any?, property: KProperty<*>) = value!!
+operator fun BooleanProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
+    this.value = value
+}

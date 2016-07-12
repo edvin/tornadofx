@@ -1,13 +1,53 @@
 package tornadofx
 
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleStringProperty
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class PropertiesTest {
+    @Test
+    fun property_delegation() {
+        // given:
+        val fixture = object {
+            val nameProperty = SimpleStringProperty("Alice")
+            var name by nameProperty
+
+            val ageProperty = SimpleDoubleProperty(1.0)
+            var age by ageProperty
+
+            val dirtyProperty = SimpleBooleanProperty(false)
+            var dirty by dirtyProperty
+        }
+        // expect:
+        assertEquals("Alice", fixture.name)
+        assertEquals("Alice", fixture.nameProperty.value)
+
+        assertEquals(1.0, fixture.age)
+        assertEquals(1.0, fixture.ageProperty.value)
+
+        assertEquals(false, fixture.dirty)
+        assertEquals(false, fixture.dirtyProperty.value)
+
+        // when:
+        fixture.name = "Bob"
+        fixture.age = 100.0
+        fixture.dirty = true
+
+        // expect:
+        assertEquals("Bob", fixture.name)
+        assertEquals("Bob", fixture.nameProperty.value)
+
+        assertEquals(100.0, fixture.age)
+        assertEquals(100.0, fixture.ageProperty.value)
+
+        assertEquals(true, fixture.dirty)
+        assertEquals(true, fixture.dirtyProperty.value)
+    }
+
     @Test
     fun property_get_should_read_value() {
         // given:
