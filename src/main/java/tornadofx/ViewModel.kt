@@ -6,14 +6,17 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
+import javafx.scene.Node
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
+import javafx.scene.control.TextInputControl
 
 open class ViewModel {
     val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
     val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
     private val dirtyStateProperty = SimpleBooleanProperty(false)
     fun dirtyStateProperty() = dirtyStateProperty
+    var validationContext : ValidationContext? = null
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -84,11 +87,14 @@ open class ViewModel {
 
     fun isDirty(): Boolean = dirtyStateProperty.value
 
-    fun commit() {
+    fun commit() : Boolean {
+        if (validationContext != null && !validationContext!!.validate()) return false
+
         properties.forEach {
             it.value.invoke().value = it.key.value
         }
         clearDirtyState()
+        return true
     }
 
     fun rollback() {
@@ -101,6 +107,26 @@ open class ViewModel {
             facade.value = propExtractor().value
         clearDirtyState()
     }
+
+    /*
+    * Add validator for a TextInputControl and validate the control's textProperty. Useful when
+    * you don't bind against a ViewModel or other backing property.
+    */
+    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String) -> ValidationMessage?) {
+        ensureValidationContext()
+        validationContext!!.addValidator<String>(node, node.textProperty(), trigger, validator)
+    }
+
+    private fun ensureValidationContext() {
+        if (validationContext == null) validationContext = ValidationContext()
+    }
+
+    fun setDecorationProvider(decorationProvider: (ValidationMessage) -> Decorator?) {
+        ensureValidationContext()
+        validationContext!!.decorationProvider = decorationProvider
+    }
+
+    val isValid : Boolean get() = validationContext == null || validationContext!!.isValid
 
     /**
      * Extract the value of the corresponding source property
