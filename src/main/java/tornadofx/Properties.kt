@@ -5,9 +5,6 @@ import java.lang.reflect.Field
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 
-fun <T> Property<T>.getValue() = value
-fun <T> Property<T>.setValue(v: T?) = { value = v }
-
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
 
