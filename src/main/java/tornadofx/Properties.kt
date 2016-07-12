@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.beans.Observable
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import java.lang.reflect.Field
