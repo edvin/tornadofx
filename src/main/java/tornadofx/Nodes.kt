@@ -60,11 +60,12 @@ fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
-fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null) {
+fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null): Tooltip {
     val newToolTip = Tooltip(text)
     graphic?.apply { newToolTip.graphic = this }
     if (op != null) newToolTip.op()
     if (this is Control) tooltip = newToolTip else Tooltip.install(this, newToolTip)
+    return newToolTip
 }
 
 fun Scene.reloadStylesheets() {
@@ -772,3 +773,5 @@ inline fun <reified T : UIComponent> Parent.find(): T? = findAll<T>().getOrNull(
  * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
  */
 inline fun <reified T : UIComponent> UIComponent.find(): T? = findAll<T>().getOrNull(0)
+
+fun Node.removeFromParent() = parent.getChildList().remove(this)
