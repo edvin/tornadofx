@@ -212,18 +212,18 @@ class Styles : Stylesheet() {
     }
 
     init {
-		s(heading) {
+		heading {
 		    textFill = mainColor
 		    fontSize = 20.px
 		    fontWeight = BOLD
 		}
 
         val flat = mixin {
-            backgroundInsets = box(0.px)
-            borderColor = box(Color.DARKGRAY)
+            backgroundInsets += box(0.px)
+            borderColor += box(Color.DARKGRAY)
         }
         
-        s(button) {
+        button {
             padding = box(10.px, 20.px)
             fontWeight = BOLD
         }
