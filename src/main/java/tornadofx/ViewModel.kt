@@ -212,33 +212,56 @@ fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnC
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
 /**
- * Add a validator to a Control that is already bound to a model property.
- * Trying to add to a Control that is not bound to a model property will result in an exception.
+ * Add a validator to a ComboBox that is already bound to a model property.
  */
 inline fun <reified T> ComboBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
+/**
+ * Add a validator to a ChoiceBox that is already bound to a model property.
+ */
 inline fun <reified T> ChoiceBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
+/**
+ * Add a validator to a TextInputControl that is already bound to a model property.
+ */
 fun TextInputControl.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
         = validator(this, textProperty(), trigger, validator)
 
+/**
+ * Add a validator to a Labeled Control that is already bound to a model property.
+ */
 fun Labeled.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
         = validator(this, textProperty(), trigger, validator)
 
+/**
+ * Add a validator to a ColorPicker that is already bound to a model property.
+ */
 fun ColorPicker.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Paint?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
+/**
+ * Add a validator to a DatePicker that is already bound to a model property.
+ */
 fun DatePicker.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(LocalDate?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
+/**
+ * Add a validator to a CheckBox that is already bound to a model property.
+ */
 fun CheckBox.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
         = validator(this, selectedProperty(), trigger, validator)
 
+/**
+ * Add a validator to a RadioButton that is already bound to a model property.
+ */
 fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
         = validator(this, selectedProperty(), trigger, validator)
 
+/**
+ * Add a validator to the given Control for the given model property.
+ */
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
     val model = property.getViewModel()
 
