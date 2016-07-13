@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tornadofx
 
 import javafx.beans.value.ObservableValue
@@ -11,9 +13,6 @@ sealed class ValidationTrigger {
     object OnBlur : ValidationTrigger()
     class OnChange(val delay: Long = 0) : ValidationTrigger()
     object None : ValidationTrigger()
-    companion object {
-        val OnChangeImmediate = OnChange()
-    }
 }
 
 class ValidationMessage(val message: String?, val severity: ValidationSeverity)
@@ -41,7 +40,7 @@ class ValidationContext {
     inline fun <reified T> addValidator(
             node: Node,
             property: ObservableValue<T>,
-            trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+            trigger: ValidationTrigger = ValidationTrigger.OnChange(),
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         addValidator(Validator(node, property, trigger, validator))
@@ -97,7 +96,7 @@ class ValidationContext {
      * Add validator for a TextInputControl and validate the control's textProperty. Useful when
      * you don't bind against a ViewModel or other backing property.
      */
-    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate, validator: ValidationContext.(String?) -> ValidationMessage?) =
+    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?) =
             addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
@@ -109,7 +108,7 @@ class ValidationContext {
     inner class Validator<T>(
             val node: Node,
             val property: ObservableValue<T>,
-            val trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+            val trigger: ValidationTrigger = ValidationTrigger.OnChange(),
             val validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         var result: ValidationMessage? = null
