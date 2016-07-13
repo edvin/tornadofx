@@ -13,6 +13,8 @@ import javafx.collections.ObservableMap
 import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.paint.Paint
+import java.time.LocalDate
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -207,30 +209,41 @@ inline fun <reified T> Property<T>.addValidator(
 }
 
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
-        = addValidator<String>(trigger) { if (it.isNullOrBlank()) error(message) else null }
+        = addValidator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
 /**
  * Add a validator to a Control that is already bound to a model property.
- * Trying to bind to a Control that is not bound to a model property will result in an exception.
+ * Trying to add to a Control that is not bound to a model property will result in an exception.
  */
-@Suppress("UNCHECKED_CAST")
-inline fun <reified T> Control.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
-    val property: Property<*> = when (this) {
-        is TextInputControl -> textProperty()
-        is ComboBox<*> -> valueProperty()
-        is RadioButton -> selectedProperty()
-        is CheckBox -> selectedProperty()
-        is ChoiceBox<*> -> valueProperty()
-        is ColorPicker -> valueProperty()
-        is DatePicker -> valueProperty()
-        is Labeled -> textProperty()
-        else -> throw IllegalArgumentException("Don't know how to extract the value-property from control of type $javaClass. Use model.addValidator or report an issue to get your control supported.")
-    }
+inline fun <reified T> ComboBox<T>.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = addValidator(this, valueProperty(), trigger, validator)
 
+inline fun <reified T> ChoiceBox<T>.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = addValidator(this, valueProperty(), trigger, validator)
+
+fun TextInputControl.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
+        = addValidator(this, textProperty(), trigger, validator)
+
+fun Labeled.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
+        = addValidator(this, textProperty(), trigger, validator)
+
+fun ColorPicker.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Paint?) -> ValidationMessage?)
+        = addValidator(this, valueProperty(), trigger, validator)
+
+fun DatePicker.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(LocalDate?) -> ValidationMessage?)
+        = addValidator(this, valueProperty(), trigger, validator)
+
+fun CheckBox.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
+        = addValidator(this, selectedProperty(), trigger, validator)
+
+fun RadioButton.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
+        = addValidator(this, selectedProperty(), trigger, validator)
+
+inline fun <reified T> addValidator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
     val model = property.getViewModel()
 
     if (model != null)
-        model.addValidator(this, property as Property<T>, trigger, validator)
+        model.addValidator(control, property, trigger, validator)
     else
         throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
 }
@@ -240,22 +253,28 @@ inline fun <reified T> Control.addValidator(trigger: ValidationTrigger = Validat
  */
 @Suppress("UNCHECKED_CAST")
 fun Property<*>.getViewModel(): ViewModel? {
-    val helperField = javaClass.getDeclaredField("helper")
-    helperField.isAccessible = true
-    val helper = helperField.get(this) as ExpressionHelper<String>
+    val helperField = javaClass.findFieldByName("helper")
+    if (helperField != null) {
+        helperField.isAccessible = true
+        val helper = helperField.get(this) as ExpressionHelper<String>
 
-    val clField = helper.javaClass.getDeclaredField("changeListeners")
-    clField.isAccessible = true
-    val bindings = clField.get(helper) as Array<*>?
-    if (bindings != null) {
-        val binding = bindings[0] as BidirectionalBinding<String>
+        val clField = helper.javaClass.findFieldByName("changeListeners")
+        if (clField != null) {
+            clField.isAccessible = true
+            val bindings = clField.get(helper)
+            if (bindings is Array<*>) {
+                val binding = bindings.find { it is BidirectionalBinding<*> }
 
-        val propField = binding.javaClass.getDeclaredMethod("getProperty2")
-        propField.isAccessible = true
-        val modelProp = propField.invoke(binding) as Property<String>
+                if (binding != null) {
+                    val propField = binding.javaClass.getDeclaredMethod("getProperty2")
+                    propField.isAccessible = true
+                    val modelProp = propField.invoke(binding) as Property<String>
 
-        if (modelProp is Property<*> && modelProp.bean is ViewModel)
-            return modelProp.bean as ViewModel
+                    if (modelProp is Property<*> && modelProp.bean is ViewModel)
+                        return modelProp.bean as ViewModel
+                }
+            }
+        }
     }
 
     return null
