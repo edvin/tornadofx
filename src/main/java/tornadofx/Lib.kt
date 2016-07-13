@@ -1,10 +1,10 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
@@ -88,8 +88,8 @@ class SortedFilteredList<T>(
     }
 }
 
-fun <T> List<T>.observable() = FXCollections.observableList(this)
-fun <T> Set<T>.observable() = FXCollections.observableSet(this)
+fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
+fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
 
 fun <T> task(func: () -> T) = object : Task<T>() {
     override fun call(): T {

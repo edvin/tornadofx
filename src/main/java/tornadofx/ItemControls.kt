@@ -50,8 +50,8 @@ fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = f
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.combobox(property: Property<T>? = null, values: ObservableList<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
-    if (values != null) items = values
+fun <T> Pane.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
+    if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
