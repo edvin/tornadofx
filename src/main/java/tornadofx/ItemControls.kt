@@ -352,14 +352,14 @@ fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, Observable
  */
 inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
-    column.cellValueFactory = ReflectionHelper.TableCellValueFunctionRefCallback(observableFn)
+    column.cellValueFactory = Callback { observableFn.call(it.value) }
     columns.add(column)
     return column
 }
 
 inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
-    column.cellValueFactory = ReflectionHelper.TreeTableCellValueFunctionRefCallback(observableFn)
+    column.cellValueFactory = Callback { observableFn.call(it.value) }
     columns.add(column)
     return column
 }

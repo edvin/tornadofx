@@ -269,7 +269,7 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
  * Add a validator to the given Control for the given model property.
  */
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
-    val model = property.getViewModel()
+    val model = property.viewModel
 
     if (model != null)
         model.addValidator(control, property, trigger, validator)
@@ -281,7 +281,7 @@ inline fun <reified T> validator(control: Control, property: Property<T>, trigge
  * Extract the ViewModel from a bound ViewModel property
  */
 @Suppress("UNCHECKED_CAST")
-fun Property<*>.getViewModel(): ViewModel? {
+val Property<*>.viewModel: ViewModel? get() {
     val helperField = javaClass.findFieldByName("helper")
     if (helperField != null) {
         helperField.isAccessible = true

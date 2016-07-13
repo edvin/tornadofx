@@ -22,7 +22,8 @@ All notable changes to this project will be documented in this file.
 - TableView `selectWhere()`, `moveToTopWhere()` and `moveToBottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 - Group builder `group`
 - New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty` (https://github.com/edvin/tornadofx/pull/143)
-
+- `kotlin-reflect.jar` is now a default dependency. It can be removed if you don't use any of the TableView.`column` functions. Over time, more features will probably require it.
+ 
 ### Changed
 
 - Fixed bug: Inherited properties cannot be accessed via getProperty - NoSuchFieldException (https://github.com/edvin/tornadofx/issues/141)
