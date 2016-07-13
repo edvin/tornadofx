@@ -1,19 +1,24 @@
+@file:Suppress("unused")
+
 package tornadofx
 
+import com.sun.javafx.binding.BidirectionalBinding
+import com.sun.javafx.binding.ExpressionHelper
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.ObservableMap
 import javafx.collections.ObservableSet
 import javafx.scene.Node
-import javafx.scene.control.ListView
-import javafx.scene.control.TableView
-import javafx.scene.control.TextInputControl
+import javafx.scene.control.*
+import javafx.scene.paint.Paint
+import java.time.LocalDate
 
 open class ViewModel {
-    val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
-    val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
+    val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
+    val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
     private val dirtyStateProperty = SimpleBooleanProperty(false)
     fun dirtyStateProperty() = dirtyStateProperty
     val validationContext = ValidationContext()
@@ -68,7 +73,7 @@ open class ViewModel {
         return facade as ResultType
     }
 
-    inline fun <S : Property<T>, reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
+    inline fun <reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
@@ -85,12 +90,17 @@ open class ViewModel {
         if (dirtyState != dirtyStateProperty.value) dirtyStateProperty.value = dirtyState
     }
 
-    fun isDirty(): Boolean = dirtyStateProperty.value
+    val isDirty: Boolean get() = dirtyStateProperty.value
+    val isNotDirty: Boolean get() = !isDirty
 
     fun validate(): Boolean = validationContext.validate()
 
-    fun commit(): Boolean {
-        if (!validate()) return false
+    /**
+     * Perform validation and flush the values into the source object if validation passes.
+     * @param force Force flush even if validation fails
+     */
+    fun commit(force: Boolean = false): Boolean {
+        if (!validate() && !force) return false
 
         properties.forEach {
             it.value.invoke().value = it.key.value
@@ -113,7 +123,7 @@ open class ViewModel {
     inline fun <reified T> addValidator(
             node: Node,
             property: ObservableValue<T>,
-            trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+            trigger: ValidationTrigger = ValidationTrigger.OnChange(),
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         validationContext.addValidator(node, property, trigger, validator)
@@ -146,12 +156,11 @@ open class ViewModel {
  *
  * With this you can write:
  *
- * `model.isDirty { property }
+ * `model.property.isDirty`
  *
  */
-fun <V : ViewModel, T> V.isDirty(op: V.() -> Property<T>) = isDirty(op())
-
-fun <V : ViewModel, T> V.isNotDirty(op: V.() -> Property<T>) = isNotDirty(op())
+val <T> Property<T>.isDirty: Boolean get() = if (bean is ViewModel) (bean as ViewModel).isDirty(this) else false
+val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
 
 /**
  * Listen to changes in the given observable and call the op with the new value on change.
@@ -188,7 +197,7 @@ fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
  */
 inline fun <reified T> Property<T>.addValidator(
         node: Node,
-        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
         noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
     if (bean is ViewModel) {
@@ -199,19 +208,74 @@ inline fun <reified T> Property<T>.addValidator(
     }
 }
 
+fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+        = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
+
 /**
- * Add a validator to a TextInputControl that is already bound to a model property.
- * Trying to bind to a Control that is not bound to a model property will result in an exception.
+ * Add a validator to a Control that is already bound to a model property.
+ * Trying to add to a Control that is not bound to a model property will result in an exception.
+ */
+inline fun <reified T> ComboBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = validator(this, valueProperty(), trigger, validator)
+
+inline fun <reified T> ChoiceBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = validator(this, valueProperty(), trigger, validator)
+
+fun TextInputControl.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
+        = validator(this, textProperty(), trigger, validator)
+
+fun Labeled.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
+        = validator(this, textProperty(), trigger, validator)
+
+fun ColorPicker.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Paint?) -> ValidationMessage?)
+        = validator(this, valueProperty(), trigger, validator)
+
+fun DatePicker.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(LocalDate?) -> ValidationMessage?)
+        = validator(this, valueProperty(), trigger, validator)
+
+fun CheckBox.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
+        = validator(this, selectedProperty(), trigger, validator)
+
+fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Boolean?) -> ValidationMessage?)
+        = validator(this, selectedProperty(), trigger, validator)
+
+inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
+    val model = property.getViewModel()
+
+    if (model != null)
+        model.addValidator(control, property, trigger, validator)
+    else
+        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
+ * Extract the ViewModel from a bound ViewModel property
  */
 @Suppress("UNCHECKED_CAST")
-fun TextInputControl.addValidator(
-        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
-        validator: ValidationContext.(String?) -> ValidationMessage?) {
-    val observableValue = textProperty().getObservableValue()
-    if (observableValue is Property<*> && observableValue.bean is ViewModel) {
-        val model = observableValue.bean as ViewModel
-        model.addValidator(this, observableValue as ObservableValue<String>, trigger, validator)
-    } else {
-        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are alread bound to a property in a Viewmodel. Use validator.addValidator() instead.")
+fun Property<*>.getViewModel(): ViewModel? {
+    val helperField = javaClass.findFieldByName("helper")
+    if (helperField != null) {
+        helperField.isAccessible = true
+        val helper = helperField.get(this) as ExpressionHelper<String>
+
+        val clField = helper.javaClass.findFieldByName("changeListeners")
+        if (clField != null) {
+            clField.isAccessible = true
+            val bindings = clField.get(helper)
+            if (bindings is Array<*>) {
+                val binding = bindings.find { it is BidirectionalBinding<*> }
+
+                if (binding != null) {
+                    val propField = binding.javaClass.getDeclaredMethod("getProperty2")
+                    propField.isAccessible = true
+                    val modelProp = propField.invoke(binding) as Property<String>
+
+                    if (modelProp is Property<*> && modelProp.bean is ViewModel)
+                        return modelProp.bean as ViewModel
+                }
+            }
+        }
     }
+
+    return null
 }

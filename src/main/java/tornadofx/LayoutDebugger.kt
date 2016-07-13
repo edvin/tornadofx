@@ -3,6 +3,7 @@ package tornadofx
 import javafx.application.Platform
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.StringProperty
 import javafx.event.EventHandler
 import javafx.geometry.Bounds
 import javafx.geometry.Insets
@@ -45,7 +46,6 @@ class LayoutDebugger : Fragment() {
                     setDividerPosition(0, 0.3)
                     items {
                         treeview<Node> {
-                            isShowRoot = false
                             nodeTree = this
                         }
                         this += propertyContainer.apply {
@@ -106,11 +106,6 @@ class LayoutDebugger : Fragment() {
         val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"] as TreeItem<Node>?
         if (treeItem != null) nodeTree.selectionModel.select(treeItem)
         propertyContainer.content = NodePropertyView(node)
-    }
-
-    fun stopDebugging() {
-        currentScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
-        currentScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
     }
 
     override fun onDock() {
@@ -178,7 +173,8 @@ class LayoutDebugger : Fragment() {
                         text = null
 
                         if (!empty && item != null)
-                            text = item.javaClass.simpleName
+
+                            text = if (item.javaClass.simpleName.isNotBlank()) item.javaClass.simpleName else item.javaClass.name.substringBeforeLast("\\$").substringAfter(".")
                     }
                 }
             }
@@ -189,6 +185,8 @@ class LayoutDebugger : Fragment() {
         val originalSceneRoot = stackpane.children.removeAt(0)
         currentScene.root = originalSceneRoot as Parent
         currentScene.properties["javafx.layoutdebugger"] = null
+        currentScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
+        currentScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
     }
 
     companion object {
@@ -235,7 +233,7 @@ class LayoutDebugger : Fragment() {
                 if (node is Labeled) {
                     field("Text") {
                         textfield() {
-                            textProperty() shadowBindTo node.textProperty()
+                            textProperty().shadowBindTo(node.textProperty())
                             prefColumnCount = 30
                         }
                     }
@@ -244,14 +242,14 @@ class LayoutDebugger : Fragment() {
                     field("Text") {
                         textfield(node.text) {
                             prefColumnCount = 30
-                            textProperty() shadowBindTo node.textProperty()
+                            textProperty().shadowBindTo(node.textProperty())
                         }
                     }
                 }
                 if (node is Shape) {
                     field("Fill") {
                         colorpicker(if (node.fill is Color) node.fill as Color else null) {
-                            valueProperty().addListener { observableValue, oldValue, newValue ->
+                            valueProperty().onChange { newValue ->
                                 node.fillProperty().unbind()
                                 node.fill = newValue
                             }
@@ -262,17 +260,19 @@ class LayoutDebugger : Fragment() {
                     // Background/fills is immutable, so a new background object must be created with the augmented fill
                     if (node.background?.fills?.isNotEmpty() ?: false) {
                         field("Background fill") {
-                            node.background.fills.forEachIndexed { i, backgroundFill ->
-                                val initialColor: Color? = if (backgroundFill.fill is Color) backgroundFill.fill as Color else null
-                                colorpicker(initialColor) {
-                                    isEditable = true
-                                    valueProperty().addListener { observableValue, oldColor, newColor ->
-                                        val newFills = node.background.fills.mapIndexed { ix, fill ->
-                                            if (ix == i) BackgroundFill(newColor, fill.radii, fill.insets)
-                                            else fill
+                            vbox(3.0) {
+                                node.background.fills.forEachIndexed { i, backgroundFill ->
+                                    val initialColor: Color? = if (backgroundFill.fill is Color) backgroundFill.fill as Color else null
+                                    colorpicker(initialColor) {
+                                        isEditable = true
+                                        valueProperty().onChange { newColor ->
+                                            val newFills = node.background.fills.mapIndexed { ix, fill ->
+                                                if (ix == i) BackgroundFill(newColor, fill.radii, fill.insets)
+                                                else fill
+                                            }
+                                            node.backgroundProperty().unbind()
+                                            node.background = Background(newFills, node.background.images)
                                         }
-                                        node.backgroundProperty().unbind()
-                                        node.background = Background(newFills, node.background.images)
                                     }
                                 }
                             }
@@ -292,40 +292,24 @@ class LayoutDebugger : Fragment() {
                     // Padding
                     field("Padding") {
                         textfield() {
-                            textProperty().bindBidirectional(object : SimpleObjectProperty<Insets>(node.padding) {
-                                override fun set(newValue: Insets?) {
-                                    super.set(newValue)
-                                    node.padding = newValue
-                                }
-                            }, InsetsConverter())
+                            textProperty().shadowBindTo(node.paddingProperty(), InsetsConverter())
                             prefColumnCount = 20
                         }
                     }
 
                     field("Pref width") {
                         textfield() {
-                            textProperty().bindBidirectional(object : SimpleObjectProperty<Double>(node.prefWidth) {
-                                override fun set(newValue: Double) {
-                                    super.set(newValue)
-                                    node.prefWidth = newValue
-                                }
-                            }, DoubleStringConverter())
+                            textProperty().shadowBindTo(node.prefWidthProperty(), DoubleStringConverter())
                             prefColumnCount = 20
                         }
                     }
 
                     field("Pref height") {
                         textfield() {
-                            textProperty().bindBidirectional(object : SimpleObjectProperty<Double>(node.prefHeight) {
-                                override fun set(newValue: Double) {
-                                    super.set(newValue)
-                                    node.prefHeight = newValue
-                                }
-                            }, DoubleStringConverter())
+                            textProperty().shadowBindTo(node.prefHeightProperty(), DoubleStringConverter())
                             prefColumnCount = 20
                         }
                     }
-
 
                 }
             }
@@ -356,7 +340,7 @@ class LayoutDebugger : Fragment() {
     }
 
 
-    infix fun <T> Property<T>.shadowBindTo(nodeProperty: Property<T>) {
+    fun <T> Property<T>.shadowBindTo(nodeProperty: Property<T>) {
         bindBidirectional(object : SimpleObjectProperty<T>(nodeProperty.value) {
             override fun set(newValue: T?) {
                 super.set(newValue)
@@ -364,6 +348,16 @@ class LayoutDebugger : Fragment() {
                 nodeProperty.value = newValue
             }
         })
+    }
+
+    inline fun <reified T, reified C : StringConverter<out T>> StringProperty.shadowBindTo(nodeProperty: Property<T>, converter: C) {
+        bindBidirectional(object : SimpleObjectProperty<T>(nodeProperty.value) {
+            override fun set(newValue: T?) {
+                super.set(newValue)
+                nodeProperty.unbind()
+                nodeProperty.value = newValue
+            }
+        }, converter as StringConverter<T>)
     }
 
 }

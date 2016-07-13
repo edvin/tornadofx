@@ -155,18 +155,20 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     internal var reloadInit = false
     abstract val root: Parent
-
+    var onDockListeners : MutableList<(UIComponent) -> Unit>? = null
+    var onUndockListeners : MutableList<(UIComponent) -> Unit>? = null
+    
     fun init() {
         root.properties["tornadofx.uicomponent"] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
-            if (newParent == null && oldParent != null) onUndock()
-            if (newParent != null && newParent != oldParent) onDock()
+            if (newParent == null && oldParent != null) callOnUndock()
+            if (newParent != null && newParent != oldParent) callOnDock()
         })
         root.sceneProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
-            if (newParent == null && oldParent != null) onUndock()
-            if (newParent != null && newParent != oldParent) onDock()
+            if (newParent == null && oldParent != null) callOnUndock()
+            if (newParent != null && newParent != oldParent) callOnDock()
         })
     }
 
@@ -174,6 +176,16 @@ abstract class UIComponent : Component() {
     }
 
     open fun onDock() {
+    }
+    
+    internal fun callOnDock() {
+        onDock()
+        onDockListeners?.forEach { it.invoke(this) }
+    }
+
+    internal fun callOnUndock() {
+        onUndock()
+        onUndockListeners?.forEach { it.invoke(this) }
     }
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
@@ -222,7 +234,7 @@ abstract class UIComponent : Component() {
                 }
 
                 modalStage!!.showingProperty().addListener { obs, old, showing ->
-                    if (showing) onDock() else onUndock()
+                    if (showing) callOnDock() else callOnUndock()
                 }
             }
         }
@@ -329,6 +341,18 @@ abstract class UIComponent : Component() {
         if (replacement.root.parent is Pane) (replacement.root.parent as Pane).children.remove(replacement.root)
     }
 
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <U : UIComponent> U.addOnDockListener(listener: (U) -> Unit) {
+    if (onDockListeners == null) onDockListeners = mutableListOf()
+    onDockListeners!!.add(listener as (UIComponent) -> Unit)
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <U : UIComponent> U.addOnUndockListener(listener: (U) -> Unit) {
+    if (onUndockListeners == null) onUndockListeners = mutableListOf()
+    onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
 abstract class Fragment : UIComponent()

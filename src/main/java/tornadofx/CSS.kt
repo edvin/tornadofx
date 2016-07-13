@@ -556,6 +556,7 @@ open class PropertyHolder {
     }
 }
 
+@Suppress("NAME_SHADOWING")
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
     val block = CssSelectionBlock(op)
 

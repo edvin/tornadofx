@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 
 //noinspection unchecked
 public class ReflectionHelper {
+	@SuppressWarnings("Duplicates")
 	public static class TableCellValueFunctionRefCallback<S, T> implements Callback<TableColumn.CellDataFeatures<S, T>, ObservableValue<T>> {
 		private final KFunction<ObservableValue<T>> observableFn;
 		private Method method;
