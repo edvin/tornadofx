@@ -119,7 +119,7 @@ open class ViewModel {
     inline fun <reified T> addValidator(
             node: Node,
             property: ObservableValue<T>,
-            trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+            trigger: ValidationTrigger = ValidationTrigger.OnChange(),
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         validationContext.addValidator(node, property, trigger, validator)
@@ -193,7 +193,7 @@ fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
  */
 inline fun <reified T> Property<T>.addValidator(
         node: Node,
-        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
         noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
     if (bean is ViewModel) {
@@ -210,7 +210,7 @@ inline fun <reified T> Property<T>.addValidator(
  */
 @Suppress("UNCHECKED_CAST")
 fun TextInputControl.addValidator(
-        trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
+        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
         validator: ValidationContext.(String?) -> ValidationMessage?) {
 
     val stringProperty = textProperty()
