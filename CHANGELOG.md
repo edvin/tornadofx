@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - TreeItem nesting extension functions (https://github.com/edvin/tornadofx/issues/134)
 - TableView `selectWhere()`, `moveToTopWhere()` and `moveToBottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 - Group builder `group`
+- New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty`
 
 ### Changed
 
