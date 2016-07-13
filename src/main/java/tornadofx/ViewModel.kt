@@ -224,6 +224,12 @@ inline fun <reified T> ChoiceBox<T>.validator(trigger: ValidationTrigger = Valid
         = validator(this, valueProperty(), trigger, validator)
 
 /**
+ * Add a validator to a Spinner that is already bound to a model property.
+ */
+inline fun <reified T> Spinner<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = validator(this, valueFactory.valueProperty(), trigger, validator)
+
+/**
  * Add a validator to a TextInputControl that is already bound to a model property.
  */
 fun TextInputControl.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
