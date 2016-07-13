@@ -211,18 +211,18 @@ fun TextInputControl.addValidator(
         validator: ValidationContext.(String?) -> ValidationMessage?) {
 
     val stringProperty = textProperty()
-    val field = stringProperty.javaClass.getDeclaredField("helper")
-    field.isAccessible = true
-    val helper = field.get(stringProperty) as ExpressionHelper<String>
+    val helperField = stringProperty.javaClass.getDeclaredField("helper")
+    helperField.isAccessible = true
+    val helper = helperField.get(stringProperty) as ExpressionHelper<String>
 
-    val field2 = helper.javaClass.getDeclaredField("changeListeners")
-    field2.isAccessible = true
-    val bindings = field2.get(helper) as Array<*>
+    val clField = helper.javaClass.getDeclaredField("changeListeners")
+    clField.isAccessible = true
+    val bindings = clField.get(helper) as Array<*>
     val binding = bindings[0] as BidirectionalBinding<String>
 
-    val field3 = binding.javaClass.getDeclaredMethod("getProperty2")
-    field3.isAccessible = true
-    val prop = field3.invoke(binding) as Property<String>
+    val propField = binding.javaClass.getDeclaredMethod("getProperty2")
+    propField.isAccessible = true
+    val prop = propField.invoke(binding) as Property<String>
 
     if (prop is Property<*> && prop.bean is ViewModel) {
         val model = prop.bean as ViewModel
