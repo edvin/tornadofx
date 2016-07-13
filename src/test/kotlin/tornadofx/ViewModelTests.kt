@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
 import javafx.stage.Stage
@@ -21,19 +20,19 @@ open class ViewModelTests {
         assertEquals(person.name, "Jay")
     }
 
-@Test fun swap_source_object() {
-    val person1 = Person("Person 1", 37)
-    val person2 = Person("Person 2", 33)
+    @Test fun swap_source_object() {
+        val person1 = Person("Person 1", 37)
+        val person2 = Person("Person 2", 33)
 
-    val model = PersonModel(person1)
-    assertEquals(model.name.value, "Person 1")
+        val model = PersonModel(person1)
+        assertEquals(model.name.value, "Person 1")
 
-    model.rebind {
-        person = person2
+        model.rebind {
+            person = person2
+        }
+
+        assertEquals(model.name.value, "Person 2")
     }
-
-    assertEquals(model.name.value, "Person 2")
-}
 
     @Test fun pojo_commit() {
         val person = JavaPerson()
@@ -50,15 +49,17 @@ open class ViewModelTests {
         val person = Person("John", 37)
         val model = PersonModel(person)
 
-        assertFalse(model.isDirty())
+        assertFalse(model.isDirty)
 
         model.name.value = "Jay"
         assertEquals(person.name, "John")
-        assertTrue(model.isDirty())
+        assertTrue(model.name.isDirty)
+        assertTrue(model.isDirty)
 
         model.commit()
         assertEquals(person.name, "Jay")
-        assertFalse(model.isDirty())
+        assertFalse(model.name.isDirty)
+        assertFalse(model.isDirty)
     }
 
     @Test fun inline_viewmodel() {
@@ -66,7 +67,6 @@ open class ViewModelTests {
 
         val model = object : ViewModel() {
             val name = bind { person.nameProperty() } as SimpleStringProperty
-            val age = bind { person.ageProperty() } as SimpleIntegerProperty
         }
 
         model.name.value = "Jay"

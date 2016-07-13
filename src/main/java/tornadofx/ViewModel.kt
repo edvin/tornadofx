@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tornadofx
 
 import com.sun.javafx.binding.BidirectionalBinding
@@ -7,6 +9,7 @@ import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.ObservableMap
 import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.ListView
@@ -14,8 +17,8 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TextInputControl
 
 open class ViewModel {
-    val properties = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
-    val dirtyProperties = FXCollections.observableArrayList<ObservableValue<*>>()
+    val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
+    val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
     private val dirtyStateProperty = SimpleBooleanProperty(false)
     fun dirtyStateProperty() = dirtyStateProperty
     val validationContext = ValidationContext()
@@ -70,7 +73,7 @@ open class ViewModel {
         return facade as ResultType
     }
 
-    inline fun <S : Property<T>, reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
+    inline fun <reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
