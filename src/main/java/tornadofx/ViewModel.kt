@@ -87,7 +87,8 @@ open class ViewModel {
         if (dirtyState != dirtyStateProperty.value) dirtyStateProperty.value = dirtyState
     }
 
-    fun isDirty(): Boolean = dirtyStateProperty.value
+    val isDirty: Boolean get() = dirtyStateProperty.value
+    val isNotDirty: Boolean get() = !isDirty
 
     fun validate(): Boolean = validationContext.validate()
 
@@ -148,12 +149,11 @@ open class ViewModel {
  *
  * With this you can write:
  *
- * `model.isDirty { property }
+ * `model.property.isDirty`
  *
  */
-fun <V : ViewModel, T> V.isDirty(op: V.() -> Property<T>) = isDirty(op())
-
-fun <V : ViewModel, T> V.isNotDirty(op: V.() -> Property<T>) = isNotDirty(op())
+val <T> Property<T>.isDirty: Boolean get() = if (bean is ViewModel) (bean as ViewModel).isDirty(this) else false
+val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
 
 /**
  * Listen to changes in the given observable and call the op with the new value on change.
