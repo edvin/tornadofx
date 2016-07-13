@@ -12,10 +12,7 @@ import javafx.collections.ObservableList
 import javafx.collections.ObservableMap
 import javafx.collections.ObservableSet
 import javafx.scene.Node
-import javafx.scene.control.Control
-import javafx.scene.control.ListView
-import javafx.scene.control.TableView
-import javafx.scene.control.TextInputControl
+import javafx.scene.control.*
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -209,33 +206,40 @@ inline fun <reified T> Property<T>.addValidator(
     }
 }
 
-fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required") {
-    addValidator(trigger) {
-        if (it.isNullOrBlank()) error(message) else null
-    }
-}
+fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+        = addValidator<String>(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
 /**
- * Add a validator to a TextInputControl that is already bound to a model property.
+ * Add a validator to a Control that is already bound to a model property.
  * Trying to bind to a Control that is not bound to a model property will result in an exception.
  */
 @Suppress("UNCHECKED_CAST")
-fun TextInputControl.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?) {
-    val model = textProperty().getViewModel()
-
-    if (model != null) {
-        model.addValidator(this, textProperty(), trigger, validator)
-        return
+inline fun <reified T> Control.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
+    val property: Property<*> = when (this) {
+        is TextInputControl -> textProperty()
+        is ComboBox<*> -> valueProperty()
+        is RadioButton -> selectedProperty()
+        is CheckBox -> selectedProperty()
+        is ChoiceBox<*> -> valueProperty()
+        is ColorPicker -> valueProperty()
+        is DatePicker -> valueProperty()
+        is Labeled -> textProperty()
+        else -> throw IllegalArgumentException("Don't know how to extract the value-property from control of type $javaClass. Use model.addValidator or report an issue to get your control supported.")
     }
 
-    throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+    val model = property.getViewModel()
+
+    if (model != null)
+        model.addValidator(this, property as Property<T>, trigger, validator)
+    else
+        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
 }
 
 /**
  * Extract the ViewModel from a bound ViewModel property
  */
 @Suppress("UNCHECKED_CAST")
-fun Property<*>.getViewModel() : ViewModel? {
+fun Property<*>.getViewModel(): ViewModel? {
     val helperField = javaClass.getDeclaredField("helper")
     helperField.isAccessible = true
     val helper = helperField.get(this) as ExpressionHelper<String>
