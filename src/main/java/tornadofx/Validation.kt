@@ -5,7 +5,7 @@ import javafx.scene.Node
 import javafx.scene.control.TextInputControl
 import kotlin.concurrent.thread
 
-enum class ValidationSeverity { Error, Warning, Info }
+enum class ValidationSeverity { Error, Warning, Info, Success }
 
 sealed class ValidationTrigger {
     object OnBlur : ValidationTrigger()
@@ -16,7 +16,7 @@ sealed class ValidationTrigger {
     }
 }
 
-class ValidationMessage(val message: String, val severity: ValidationSeverity)
+class ValidationMessage(val message: String?, val severity: ValidationSeverity)
 
 class ValidationContext {
     val validators = mutableListOf<Validator<*>>()
@@ -101,9 +101,10 @@ class ValidationContext {
             addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
-    fun error(message: String) = ValidationMessage(message, ValidationSeverity.Error)
-    fun info(message: String) = ValidationMessage(message, ValidationSeverity.Info)
-    fun warning(message: String) = ValidationMessage(message, ValidationSeverity.Warning)
+    fun error(message: String? = null) = ValidationMessage(message, ValidationSeverity.Error)
+    fun info(message: String? = null) = ValidationMessage(message, ValidationSeverity.Info)
+    fun warning(message: String? = null) = ValidationMessage(message, ValidationSeverity.Warning)
+    fun success(message: String? = null) = ValidationMessage(message, ValidationSeverity.Success)
 
     inner class Validator<T>(
             val node: Node,

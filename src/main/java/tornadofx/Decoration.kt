@@ -24,8 +24,13 @@ fun Node.removeDecorator(decorator: Decorator) {
 @Suppress("UNCHECKED_CAST")
 val Node.decorators: MutableList<Decorator> get() = properties.getOrPut("tornadofx.decorators", { mutableListOf<Decorator>() }) as MutableList<Decorator>
 
-class SimpleMessageDecorator(val message: String, severity: ValidationSeverity) : Decorator {
-    val color = if (severity == ValidationSeverity.Error) Color.RED else if (severity == ValidationSeverity.Warning) Color.ORANGE else Color.BLUE
+class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity) : Decorator {
+    val color: Color = when (severity) {
+        ValidationSeverity.Error -> Color.RED
+        ValidationSeverity.Warning -> Color.ORANGE
+        ValidationSeverity.Success -> Color.GREEN
+        else -> Color.BLUE
+    }
     var tag: Polygon? = null
     var tooltip: Tooltip? = null
 
@@ -37,7 +42,7 @@ class SimpleMessageDecorator(val message: String, severity: ValidationSeverity) 
             }
         }
 
-        if (message.isNotBlank()) {
+        if (message?.isNotBlank() ?: false) {
             tooltip = node.tooltip(message) {
                 val b = node.localToScreen(node.boundsInLocal)
                 show(node, b.minX, b.maxY)

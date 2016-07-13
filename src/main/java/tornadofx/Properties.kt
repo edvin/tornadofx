@@ -34,6 +34,7 @@ fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
 fun Class<*>.findFieldByName(name: String): Field? {
     val field = (declaredFields + fields).find { it.name == name }
     if (field != null) return field
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     if (superclass == java.lang.Object::class.java) return null
     return superclass.findFieldByName(name)
 }

@@ -220,18 +220,20 @@ fun TextInputControl.addValidator(
 
     val clField = helper.javaClass.getDeclaredField("changeListeners")
     clField.isAccessible = true
-    val bindings = clField.get(helper) as Array<*>
-    val binding = bindings[0] as BidirectionalBinding<String>
+    val bindings = clField.get(helper) as Array<*>?
+    if (bindings != null) {
+        val binding = bindings[0] as BidirectionalBinding<String>
 
-    val propField = binding.javaClass.getDeclaredMethod("getProperty2")
-    propField.isAccessible = true
-    val prop = propField.invoke(binding) as Property<String>
+        val propField = binding.javaClass.getDeclaredMethod("getProperty2")
+        propField.isAccessible = true
+        val prop = propField.invoke(binding) as Property<String>
 
-    if (prop is Property<*> && prop.bean is ViewModel) {
-        val model = prop.bean as ViewModel
-        model.addValidator(this, textProperty(), trigger, validator)
-    } else {
-        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead.")
+        if (prop is Property<*> && prop.bean is ViewModel) {
+            val model = prop.bean as ViewModel
+            model.addValidator(this, textProperty(), trigger, validator)
+            return
+        }
     }
 
+    throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
 }

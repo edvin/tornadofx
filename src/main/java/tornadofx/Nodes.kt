@@ -705,7 +705,7 @@ abstract class MarginableConstraints {
     }
 }
 
-@Suppress("CAST_NEVER_SUCCEEDS")
+@Suppress("CAST_NEVER_SUCCEEDS", "UNCHECKED_CAST")
 inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     isEditable = true
     when (S::class.javaPrimitiveType ?: S::class) {
