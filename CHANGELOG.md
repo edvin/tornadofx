@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - `runAsync` on Injectable class references (`CustomerController::class.runAsync { listContacts(customerId) }`)
 - `runAsync` on Injectable class function references (`CustomerController::listContacts.runAsync(customerId)`)
 - `ObservableValue.onChange` listener
+- `UIComponent.addOnDockListener` and `UIComponent.addOnUndockListener`
 - LayoutDebugger (https://github.com/edvin/tornadofx/wiki/Layout-Debugger)
 - ViewModel (https://github.com/edvin/tornadofx/wiki/ViewModel)
 - TableView `cellDecorator` 

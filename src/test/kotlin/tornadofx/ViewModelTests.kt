@@ -56,7 +56,6 @@ open class ViewModelTests {
         assertTrue(model.name.isDirty)
         assertTrue(model.isDirty)
 
-
         model.commit()
         assertEquals(person.name, "Jay")
         assertFalse(model.name.isDirty)

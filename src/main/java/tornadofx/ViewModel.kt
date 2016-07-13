@@ -96,8 +96,12 @@ open class ViewModel {
 
     fun validate(): Boolean = validationContext.validate()
 
-    fun commit(): Boolean {
-        if (!validate()) return false
+    /**
+     * Perform validation and flush the values into the source object if validation passes.
+     * @param force Force flush even if validation fails
+     */
+    fun commit(force: Boolean = false): Boolean {
+        if (!validate() && !force) return false
 
         properties.forEach {
             it.value.invoke().value = it.key.value
