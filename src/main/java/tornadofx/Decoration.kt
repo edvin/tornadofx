@@ -45,7 +45,7 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
         if (message?.isNotBlank() ?: false) {
             tooltip = node.tooltip(message) {
                 val b = node.localToScreen(node.boundsInLocal)
-                show(node, b.minX, b.maxY)
+                if (b != null) show(node, b.minX, b.maxY)
             }
         }
     }

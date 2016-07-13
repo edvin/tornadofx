@@ -12,6 +12,7 @@ import javafx.collections.ObservableList
 import javafx.collections.ObservableMap
 import javafx.collections.ObservableSet
 import javafx.scene.Node
+import javafx.scene.control.Control
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
 import javafx.scene.control.TextInputControl
@@ -204,19 +205,36 @@ inline fun <reified T> Property<T>.addValidator(
     }
 }
 
+fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required") {
+    addValidator(trigger) {
+        if (it.isNullOrBlank()) error(message) else null
+    }
+}
+
 /**
  * Add a validator to a TextInputControl that is already bound to a model property.
  * Trying to bind to a Control that is not bound to a model property will result in an exception.
  */
 @Suppress("UNCHECKED_CAST")
-fun TextInputControl.addValidator(
-        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
-        validator: ValidationContext.(String?) -> ValidationMessage?) {
+fun TextInputControl.addValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?) {
+    val model = textProperty().getViewModel()
 
-    val stringProperty = textProperty()
-    val helperField = stringProperty.javaClass.getDeclaredField("helper")
+    if (model != null) {
+        model.addValidator(this, textProperty(), trigger, validator)
+        return
+    }
+
+    throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
+ * Extract the ViewModel from a bound ViewModel property
+ */
+@Suppress("UNCHECKED_CAST")
+fun Property<*>.getViewModel() : ViewModel? {
+    val helperField = javaClass.getDeclaredField("helper")
     helperField.isAccessible = true
-    val helper = helperField.get(stringProperty) as ExpressionHelper<String>
+    val helper = helperField.get(this) as ExpressionHelper<String>
 
     val clField = helper.javaClass.getDeclaredField("changeListeners")
     clField.isAccessible = true
@@ -226,14 +244,11 @@ fun TextInputControl.addValidator(
 
         val propField = binding.javaClass.getDeclaredMethod("getProperty2")
         propField.isAccessible = true
-        val prop = propField.invoke(binding) as Property<String>
+        val modelProp = propField.invoke(binding) as Property<String>
 
-        if (prop is Property<*> && prop.bean is ViewModel) {
-            val model = prop.bean as ViewModel
-            model.addValidator(this, textProperty(), trigger, validator)
-            return
-        }
+        if (modelProp is Property<*> && modelProp.bean is ViewModel)
+            return modelProp.bean as ViewModel
     }
 
-    throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+    return null
 }

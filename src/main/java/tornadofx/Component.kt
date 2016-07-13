@@ -155,6 +155,7 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     internal var reloadInit = false
     abstract val root: Parent
+//    open val model: ViewModel? = null
 
     fun init() {
         root.properties["tornadofx.uicomponent"] = this
