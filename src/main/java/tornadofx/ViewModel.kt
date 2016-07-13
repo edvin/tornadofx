@@ -1,5 +1,7 @@
 package tornadofx
 
+import com.sun.javafx.binding.BidirectionalBinding
+import com.sun.javafx.binding.ExpressionHelper
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -207,11 +209,26 @@ inline fun <reified T> Property<T>.addValidator(
 fun TextInputControl.addValidator(
         trigger: ValidationTrigger = ValidationTrigger.OnChangeImmediate,
         validator: ValidationContext.(String?) -> ValidationMessage?) {
-    val observableValue = textProperty().getObservableValue()
-    if (observableValue is Property<*> && observableValue.bean is ViewModel) {
-        val model = observableValue.bean as ViewModel
-        model.addValidator(this, observableValue as ObservableValue<String>, trigger, validator)
+
+    val stringProperty = textProperty()
+    val field = stringProperty.javaClass.getDeclaredField("helper")
+    field.isAccessible = true
+    val helper = field.get(stringProperty) as ExpressionHelper<String>
+
+    val field2 = helper.javaClass.getDeclaredField("changeListeners")
+    field2.isAccessible = true
+    val bindings = field2.get(helper) as Array<*>
+    val binding = bindings[0] as BidirectionalBinding<String>
+
+    val field3 = binding.javaClass.getDeclaredMethod("getProperty2")
+    field3.isAccessible = true
+    val prop = field3.invoke(binding) as Property<String>
+
+    if (prop is Property<*> && prop.bean is ViewModel) {
+        val model = prop.bean as ViewModel
+        model.addValidator(this, textProperty(), trigger, validator)
     } else {
-        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are alread bound to a property in a Viewmodel. Use validator.addValidator() instead.")
+        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead.")
     }
+
 }
