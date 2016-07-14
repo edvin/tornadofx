@@ -149,7 +149,7 @@ fun <T> TreeItem<T>.treeitem(value: T? = null, op: TreeItem<T>.() -> Unit = {}):
 }
 
 operator fun <T> TreeItem<T>.plusAssign(treeItem: TreeItem<T>) {
-    this.children.add(treeItem);
+    this.children.add(treeItem)
 }
 
 fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): TableColumn<S, Number> {
@@ -294,14 +294,14 @@ class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
  * Create a column with a value factory that extracts the value from the given mutable
  * property and converts the property to an observable value.
  */
-fun <S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
     columns.add(column)
     return column
 }
 
-fun <S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
     columns.add(column)
@@ -312,14 +312,14 @@ fun <S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>)
  * Create a column with a value factory that extracts the value from the given property and
  * converts the property to an observable value.
  */
-fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
     columns.add(column)
     return column
 }
 
-fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
     columns.add(column)
@@ -328,10 +328,9 @@ fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeT
 
 /**
  * Create a column with a value factory that extracts the value from the given ObservableValue property.
- * Note that this function requires you to have "kotlin-reflect.jar" in your classpath.
  */
 @JvmName(name = "columnForObservableProperty")
-fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value) }
     columns.add(column)
@@ -339,7 +338,7 @@ fun <S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValu
 }
 
 @JvmName(name = "columnForObservableProperty")
-fun <S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value.value) }
     columns.add(column)
@@ -367,7 +366,7 @@ inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: K
 /**
  * Create a column with a value factory that extracts the value from the given callback.
  */
-fun <S, T> TreeTableView<S>.column(title: String, valueProvider: (TreeTableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, crossinline valueProvider: (TreeTableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)
