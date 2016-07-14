@@ -124,25 +124,29 @@ abstract class Component {
     /**
      * Perform the given operation on an Injectable of the specified type asynchronousyly.
      *
-     * MyController::class.runAsync { functionOnMyController() } ui { processResult(it) }
+     * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
     inline fun <reified T : Injectable, R> KClass<T>.runAsync(noinline op: T.() -> R) = task { op(find(T::class)) }
 
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
      *
-     * CustomerController::listContacts.runAsync(customerId).ui { processResult(it) }
+     * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType : Injectable, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync() = task { invoke(find(InjectableType::class)) }
+    inline fun <reified InjectableType : Injectable, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null) : Task<ReturnType> {
+        val t = task { invoke(find(InjectableType::class)) }
+        if (doOnUi != null) t.ui(doOnUi)
+        return t
+    }
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
      *
-     * CustomerController::listCustomers.runAsync().ui { processResult(it) }
+     * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType : Injectable, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1) = task { invoke(find(InjectableType::class), p1) }
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2) = task { invoke(find(InjectableType::class), p1, p2) }
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3) = task { invoke(find(InjectableType::class), p1, p2, p3) }
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }
+    inline fun <reified InjectableType : Injectable, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     fun <T> runAsync(func: () -> T) = task(func)
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
