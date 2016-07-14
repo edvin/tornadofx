@@ -110,11 +110,6 @@ open class ViewModel {
     }
 
     fun rollback() {
-        properties.forEach { it.key.value = it.value.invoke().value }
-        clearDirtyState()
-    }
-
-    fun rebind() {
         for ((facade, propExtractor) in properties)
             facade.value = propExtractor().value
         clearDirtyState()
@@ -164,12 +159,12 @@ val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
 
 /**
  * Listen to changes in the given observable and call the op with the new value on change.
- * After each change the rebind() function is called.
+ * After each change the viewmodel is rolled back to reflect the values in the new source object or objects.
  */
 fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T?) -> Unit) {
     observable.addListener { observableValue, oldValue, newValue ->
         op(newValue)
-        rebind()
+        rollback()
     }
 }
 
@@ -181,7 +176,7 @@ fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Uni
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op.invoke(this)
-    rebind()
+    rollback()
 }
 
 /**
