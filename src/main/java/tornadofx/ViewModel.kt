@@ -31,7 +31,7 @@ open class ViewModel {
      *
      * You can bind a facade towards any kind of property as long as it can
      * be converted to a JavaFX property. TornadoFX provides a way to support
-     * most property types via a consice syntax, see below for examples.
+     * most property types via a concise syntax, see below for examples.
      * ```
      * class PersonViewModel(var person: Person) : ViewModel() {
      *     // Bind JavaFX property
@@ -180,11 +180,11 @@ fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
 }
 
 /**
- * Add the given validator to a property that recides inside a ViewModel. The supplied node will be
+ * Add the given validator to a property that resides inside a ViewModel. The supplied node will be
  * decorated by the current decorationProvider for this context inside the ViewModel of the property
  * if validation fails.
  *
- * The validator function is executed in the scope of this ValidationContex to give
+ * The validator function is executed in the scope of this ValidationContext to give
  * access to other fields and shortcuts like the error and warning functions.
  *
  * The validation trigger decides when the validation is applied. ValidationTrigger.OnBlur
