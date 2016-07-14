@@ -26,27 +26,33 @@ fun Path.moveTo(x: Double = 0.0, y: Double = 0.0): Path {
 }
 
 fun Path.hlineTo(x: Double): Path {
-    elements.add(HLineTo(x)); return this
+    elements.add(HLineTo(x))
+    return this
 }
 
 fun Path.vlineTo(y: Double): Path {
-    elements.add(VLineTo(y)); return this
+    elements.add(VLineTo(y))
+    return this
 }
 
-fun Path.quadqurveTo(controlX: Double = 0.0, controlY: Double = 0.0, x: Double = 0.0, y: Double = 0.0): Path {
-    elements.add(QuadCurveTo(controlX, controlY, x, y)); return this
+fun Path.quadqurveTo(controlX: Double = 0.0, controlY: Double = 0.0, x: Double = 0.0, y: Double = 0.0, op: (QuadCurveTo.() -> Unit)? = null): Path {
+    elements.add(QuadCurveTo(controlX, controlY, x, y).apply { op?.invoke(this) })
+    return this
 }
 
 fun Path.lineTo(x: Double = 0.0, y: Double = 0.0): Path {
-    elements.add(LineTo(x, y)); return this
+    elements.add(LineTo(x, y))
+    return this
 }
 
-fun Path.arcTo(radiusX: Double = 0.0, radiusY: Double = 0.0, xAxisRotation: Double = 0.0, x: Double = 0.0, y: Double = 0.0, largeArcFlag: Boolean = false, sweepFlag: Boolean = false): Path {
-    elements.add(ArcTo(radiusX, radiusY, xAxisRotation, x, y, largeArcFlag, sweepFlag)); return this
+fun Path.arcTo(radiusX: Double = 0.0, radiusY: Double = 0.0, xAxisRotation: Double = 0.0, x: Double = 0.0, y: Double = 0.0, largeArcFlag: Boolean = false, sweepFlag: Boolean = false, op: (ArcTo.() -> Unit)? = null): Path {
+    elements.add(ArcTo(radiusX, radiusY, xAxisRotation, x, y, largeArcFlag, sweepFlag).apply { op?.invoke(this) })
+    return this
 }
 
 fun Path.closepath(): Path {
-    elements.add(ClosePath()); return this
+    elements.add(ClosePath())
+    return this
 }
 
 fun Parent.polygon(vararg points: Double, op: (Polygon.() -> Unit)? = null) =
