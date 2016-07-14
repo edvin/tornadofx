@@ -190,18 +190,9 @@ fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
  * The validation trigger decides when the validation is applied. ValidationTrigger.OnBlur
  * tracks focus on the supplied node while OnChange tracks changes to the property itself.
  */
-inline fun <reified T> Property<T>.addValidator(
-        node: Node,
-        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
-        noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
-
-    if (bean is ViewModel) {
-        val model = bean as ViewModel
-        model.addValidator(node, this, trigger, validator)
-    } else {
-        throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
-    }
-}
+inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = (bean as? ViewModel)?.addValidator(node, this, trigger, validator)
+        ?: throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
 
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
@@ -263,14 +254,9 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
 /**
  * Add a validator to the given Control for the given model property.
  */
-inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
-    val model = property.viewModel
-
-    if (model != null)
-        model.addValidator(control, property, trigger, validator)
-    else
-        throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
-}
+inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = property.viewModel?.addValidator(control, property, trigger, validator)
+        ?: throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
 
 /**
  * Extract the ViewModel from a bound ViewModel property
