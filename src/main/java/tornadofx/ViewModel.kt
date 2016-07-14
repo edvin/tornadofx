@@ -154,7 +154,7 @@ open class ViewModel {
  * `model.property.isDirty`
  *
  */
-val <T> Property<T>.isDirty: Boolean get() = if (bean is ViewModel) (bean as ViewModel).isDirty(this) else false
+val <T> Property<T>.isDirty: Boolean get() = (bean as? ViewModel)?.isDirty(this) ?: false
 val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
 
 /**
