@@ -175,7 +175,7 @@ fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Uni
         = rebindOnChange(listview.selectionModel.selectedItemProperty(), op)
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
-    op.invoke(this)
+    op()
     rollback()
 }
 
