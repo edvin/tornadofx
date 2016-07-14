@@ -102,9 +102,9 @@ open class ViewModel {
     fun commit(force: Boolean = false): Boolean {
         if (!validate() && !force) return false
 
-        properties.forEach {
-            it.value.invoke().value = it.key.value
-        }
+        for ((facade, propExtractor) in properties)
+            propExtractor().value = facade.value
+
         clearDirtyState()
         return true
     }
