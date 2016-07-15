@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - TreeItem nesting extension functions (https://github.com/edvin/tornadofx/issues/134)
 - TableView `selectWhere()`, `moveToTopWhere()` and `moveToBottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 - Group builder `group`
+- Create bindings dependent on a Property: `Property.integerBinding`, `Property.longBinding` for all applicable types
 - New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty` (https://github.com/edvin/tornadofx/pull/143)
 - `kotlin-reflect.jar` is now a default dependency. It can be removed if you don't use any of the TableView.`column` functions. Over time, more features will probably require it.
  
