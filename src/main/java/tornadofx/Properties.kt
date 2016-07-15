@@ -216,7 +216,7 @@ operator fun BooleanProperty.setValue(thisRef: Any?, property: KProperty<*>, val
     this.value = value
 }
 
-fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T.() -> Int)): IntegerBinding
+fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T?.() -> Int)): IntegerBinding
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?.() -> Long?)): LongBinding
