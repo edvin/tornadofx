@@ -188,6 +188,7 @@ open class Stylesheet : SelectionHolder, Rendered {
         val hover by csspseudoclass()
         val pressed by csspseudoclass()
         val showMnemonics by csspseudoclass()
+        val selected by csspseudoclass()
     }
 
     val selections = mutableListOf<CssSelection>()
