@@ -105,14 +105,14 @@ open class ViewModel {
     val isDirty: Boolean get() = dirtyStateProperty.value
     val isNotDirty: Boolean get() = !isDirty
 
-    fun validate(): Boolean = validationContext.validate()
+    fun validate(focusFirstError: Boolean = true): Boolean = validationContext.validate(focusFirstError)
 
     /**
      * Perform validation and flush the values into the source object if validation passes.
      * @param force Force flush even if validation fails
      */
-    fun commit(force: Boolean = false): Boolean {
-        if (!validate() && !force) return false
+    fun commit(force: Boolean = false, focusFirstError: Boolean = true): Boolean {
+        if (!validate(focusFirstError) && !force) return false
 
         for ((facade, propExtractor) in properties)
             propExtractor().value = facade.value

@@ -1,8 +1,10 @@
 package tornadofx
 
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.control.Control
 import javafx.scene.control.Tooltip
 import javafx.scene.paint.Color
 import javafx.scene.shape.Polygon
@@ -34,9 +36,17 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
     }
     var tag: Polygon? = null
     var tooltip: Tooltip? = null
-    var focusListener: ((ObservableValue<out Boolean>, Boolean, Boolean) -> Unit)? = null
+    var attachedToNode: Node? = null
+
+    @Suppress("ObjectLiteralToLambda") // Must remain object literal or else removeListener doesn't match
+    var focusListener = object : ChangeListener<Boolean> {
+        override fun changed(observable: ObservableValue<out Boolean>?, oldValue: Boolean?, newValue: Boolean?) {
+            if (newValue == true) showTooltip(attachedToNode!!) else tooltip?.hide()
+        }
+    }
 
     override fun decorate(node: Node) {
+        attachedToNode = node
         if (node is Parent) {
             tag = node.polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0) {
                 isManaged = false
@@ -45,22 +55,19 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
         }
 
         if (message?.isNotBlank() ?: false) {
-            tooltip = node.tooltip(message) {
-                focusListener = { observableValue, oldFocus, newFocus ->
-                    if (newFocus)
-                        showTooltip(node)
-                    else
-                        tooltip?.hide()
-                }
-                node.focusedProperty().addListener(focusListener)
-                if (node.isFocused) showTooltip(node)
-            }
+            tooltip = Tooltip(message)
+            if (node is Control) node.tooltip = tooltip else Tooltip.install(node, tooltip)
+            if (node.isFocused) showTooltip(node)
+            node.focusedProperty().addListener(focusListener)
         }
     }
 
-    private fun Tooltip.showTooltip(node: Node) {
-        val b = node.localToScreen(node.boundsInLocal)
-        if (b != null) show(node, b.minX + 5, b.maxY)
+    private fun showTooltip(node: Node) {
+        tooltip?.apply {
+            if (isShowing) return
+            val b = node.localToScreen(node.boundsInLocal)
+            if (b != null) show(node, b.minX + 5, b.maxY)
+        }
     }
 
     override fun undecorate(node: Node) {
@@ -69,6 +76,6 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
             hide()
             Tooltip.uninstall(node, this)
         }
-        focusListener?.apply { node.focusedProperty().removeListener(this) }
+        node.focusedProperty().removeListener(focusListener)
     }
 }

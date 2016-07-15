@@ -85,10 +85,14 @@ class ValidationContext {
     /**
      * Rerun all validators and return a boolean indicating if validation passes.
      */
-    fun validate(): Boolean {
-        for (validator in validators)
-            validator.validate()
-
+    fun validate(focusFirstError: Boolean = true): Boolean {
+        var firstErrorFocused = false
+        for (validator in validators) {
+            if (!validator.validate() && focusFirstError && !firstErrorFocused) {
+                firstErrorFocused = true
+                validator.node.requestFocus()
+            }
+        }
         return isValid
     }
 
