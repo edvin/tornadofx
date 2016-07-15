@@ -2,6 +2,8 @@ package tornadofx
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
+import javafx.scene.control.TreeItem
+import javafx.scene.control.TreeView
 import javafx.stage.Stage
 import org.junit.Assert.*
 import org.junit.Test
@@ -84,6 +86,19 @@ open class ViewModelTests {
             person = it ?: Person()
         }
         tableview.selectionModel.select(1)
+        assertEquals(model.name.value, "Jay")
+    }
+
+    @Test fun treeview_master_detail() {
+        val treeview = TreeView<Person>()
+        treeview.root = TreeItem(Person("John", 37))
+        treeview.root.children.add(TreeItem(Person("Jay", 33)))
+        val model = PersonModel(treeview.root.value)
+        assertEquals(model.name.value, "John")
+        model.rebindOnChange(treeview) {
+            person = it ?: Person()
+        }
+        treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
     }
 }

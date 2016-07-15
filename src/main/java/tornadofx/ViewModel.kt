@@ -170,21 +170,24 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T
     }
 }
 
+fun <V : ViewModel, T> V.rebindOnTreeItemChange(observable: ObservableValue<TreeItem<T>>, op: V.(T?) -> Unit) {
+    observable.addListener { observableValue, oldValue, newValue ->
+        op(newValue?.value)
+        rollback()
+    }
+}
+
 fun <V : ViewModel, T> V.rebindOnChange(tableview: TableView<T>, op: V.(T?) -> Unit)
         = rebindOnChange(tableview.selectionModel.selectedItemProperty(), op)
 
 fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Unit)
         = rebindOnChange(listview.selectionModel.selectedItemProperty(), op)
 
-fun <V : ViewModel, T> V.rebindOnChange(treeview: TreeView<T>, op: V.(T?) -> Unit) {
-    val itemObservable = Bindings.createObjectBinding(Callable { treeview.selectionModel.selectedItem?.value }, treeview.selectionModel.selectedItemProperty())
-    rebindOnChange(itemObservable, op)
-}
+fun <V : ViewModel, T> V.rebindOnChange(treeview: TreeView<T>, op: V.(T?) -> Unit) =
+    rebindOnTreeItemChange(treeview.selectionModel.selectedItemProperty(), op)
 
-fun <V : ViewModel, T> V.rebindOnChange(treetableview: TreeTableView<T>, op: V.(T?) -> Unit) {
-    val itemObservable = Bindings.createObjectBinding(Callable { treetableview.selectionModel.selectedItem?.value }, treetableview.selectionModel.selectedItemProperty())
-    rebindOnChange(itemObservable, op)
-}
+fun <V : ViewModel, T> V.rebindOnChange(treetableview: TreeTableView<T>, op: V.(T?) -> Unit)
+    = rebindOnTreeItemChange(treetableview.selectionModel.selectedItemProperty(), op)
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op()
