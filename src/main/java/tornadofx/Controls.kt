@@ -1,6 +1,8 @@
 package tornadofx
 
-import javafx.beans.property.Property
+import javafx.beans.binding.Bindings
+import javafx.beans.property.*
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -12,7 +14,9 @@ import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
+import javafx.util.converter.NumberStringConverter
 import java.time.LocalDate
+import java.util.concurrent.Callable
 
 fun Pane.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -52,10 +56,54 @@ fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = nul
 
 fun Pane.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
 
-fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield().apply {
-    textProperty().bindBidirectional(property, converter)
-    op?.invoke(this)
+/**
+ * A textfield with an Int converter. This is useful to provide a validator that can operate on Int instead of String (typedValidator)
+ */
+class IntegerTextField(property: IntegerProperty) : TextField() {
+    val converter = NumberStringConverter()
+    init {
+        textProperty().bindBidirectional(property, converter)
+    }
+    val convertedObservable: ObservableValue<Int> by lazy { Bindings.createObjectBinding(Callable { converter.fromString(text).toInt() }, property) }
 }
+
+/**
+ * A textfield with a Double converter. This is useful to provide a validator that can operate on Double instead of String (typedValidator)
+ */
+class DoubleTextField(property: DoubleProperty) : TextField() {
+    val converter = NumberStringConverter()
+    init {
+        textProperty().bindBidirectional(property, converter)
+    }
+    val convertedObservable: ObservableValue<Double> by lazy { Bindings.createObjectBinding(Callable { converter.fromString(text).toDouble() }, property) }
+}
+
+/**
+ * A textfield with a Float converter. This is useful to provide a validator that can operate on Float instead of String (typedValidator)
+ */
+class FloatTextField(property: FloatProperty) : TextField() {
+    val converter = NumberStringConverter()
+    init {
+        textProperty().bindBidirectional(property, converter)
+    }
+    val convertedObservable: ObservableValue<Float> by lazy { Bindings.createObjectBinding(Callable { converter.fromString(text).toFloat() }, property) }
+}
+
+/**
+ * A textfield with a Long converter. This is useful to provide a validator that can operate on Long instead of String (typedValidator)
+ */
+class LongTextField(property: LongProperty) : TextField() {
+    val converter = NumberStringConverter()
+    init {
+        textProperty().bindBidirectional(property, converter)
+    }
+    val convertedObservable: ObservableValue<Long> by lazy { Bindings.createObjectBinding(Callable { converter.fromString(text).toLong() }, property) }
+}
+
+fun Pane.textfield(property: IntegerProperty, op: (IntegerTextField.() -> Unit)? = null) : IntegerTextField = opcr(this, IntegerTextField(property), op).apply { op?.invoke(this) }
+fun Pane.textfield(property: DoubleProperty, op: (DoubleTextField.() -> Unit)? = null) : DoubleTextField = opcr(this, DoubleTextField(property), op).apply { op?.invoke(this) }
+fun Pane.textfield(property: FloatProperty, op: (FloatTextField.() -> Unit)? = null) : FloatTextField = opcr(this, FloatTextField(property), op).apply { op?.invoke(this) }
+fun Pane.textfield(property: LongProperty, op: (LongTextField.() -> Unit)? = null) : LongTextField = opcr(this, LongTextField(property), op).apply { op?.invoke(this) }
 
 fun Pane.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
 fun Pane.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> Unit)? = null) = datepicker().apply {

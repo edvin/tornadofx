@@ -14,6 +14,7 @@ import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.paint.Paint
+import javafx.util.StringConverter
 import java.time.LocalDate
 
 open class ViewModel {
@@ -229,10 +230,51 @@ inline fun <reified T> Spinner<T>.validator(trigger: ValidationTrigger = Validat
         = validator(this, valueFactory.valueProperty(), trigger, validator)
 
 /**
+ * Add a validator to a IntegerTextField that is already bound to a model property. This
+ * makes it possible to validate the actual value as provided by the converter instead
+ * of just a String.
+ */
+fun IntegerTextField.typedValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Int?) -> ValidationMessage?) {
+    textProperty().viewModel?.addValidator(this, convertedObservable, trigger, validator)
+            ?: throw IllegalArgumentException("The addValidator extension on TypedTextField can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
+ * Add a validator to a DoubleTextField that is already bound to a model property. This
+ * makes it possible to validate the actual value as provided by the converter instead
+ * of just a String.
+ */
+fun DoubleTextField.typedValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Double?) -> ValidationMessage?) {
+    textProperty().viewModel?.addValidator(this, convertedObservable, trigger, validator)
+            ?: throw IllegalArgumentException("The addValidator extension on TypedTextField can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
+ * Add a validator to a FloatTextField that is already bound to a model property. This
+ * makes it possible to validate the actual value as provided by the converter instead
+ * of just a String.
+ */
+fun FloatTextField.typedValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Float?) -> ValidationMessage?) {
+    textProperty().viewModel?.addValidator(this, convertedObservable, trigger, validator)
+            ?: throw IllegalArgumentException("The addValidator extension on TypedTextField can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
+ * Add a validator to a LongTextField that is already bound to a model property. This
+ * makes it possible to validate the actual value as provided by the converter instead
+ * of just a String.
+ */
+fun LongTextField.typedValidator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(Long?) -> ValidationMessage?) {
+    textProperty().viewModel?.addValidator(this, convertedObservable, trigger, validator)
+            ?: throw IllegalArgumentException("The addValidator extension on TypedTextField can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+}
+
+/**
  * Add a validator to a TextInputControl that is already bound to a model property.
  */
 fun TextInputControl.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?)
         = validator(this, textProperty(), trigger, validator)
+
 
 /**
  * Add a validator to a Labeled Control that is already bound to a model property.
