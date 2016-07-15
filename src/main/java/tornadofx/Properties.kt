@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.beans.property.*
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 
@@ -37,6 +38,14 @@ fun Class<*>.findFieldByName(name: String): Field? {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     if (superclass == java.lang.Object::class.java) return null
     return superclass.findFieldByName(name)
+}
+
+fun Class<*>.findMethodByName(name: String): Method? {
+    val method = (declaredMethods + methods).find { it.name == name }
+    if (method != null) return method
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+    if (superclass == java.lang.Object::class.java) return null
+    return superclass.findMethodByName(name)
 }
 
 /**
