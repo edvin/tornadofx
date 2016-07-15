@@ -4,7 +4,6 @@ package tornadofx
 
 import com.sun.javafx.binding.BidirectionalBinding
 import com.sun.javafx.binding.ExpressionHelper
-import javafx.beans.binding.Bindings
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -16,7 +15,6 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.paint.Paint
 import java.time.LocalDate
-import java.util.concurrent.Callable
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -281,22 +279,23 @@ val Property<*>.viewModel: ViewModel? get() {
     val helperField = javaClass.findFieldByName("helper")
     if (helperField != null) {
         helperField.isAccessible = true
-        val helper = helperField.get(this) as ExpressionHelper<String>
+        val helper = helperField.get(this) as? ExpressionHelper<String>
+        if (helper != null) {
+            val clField = helper.javaClass.findFieldByName("changeListeners")
+            if (clField != null) {
+                clField.isAccessible = true
+                val bindings = clField.get(helper)
+                if (bindings is Array<*>) {
+                    val binding = bindings.find { it is BidirectionalBinding<*> }
 
-        val clField = helper.javaClass.findFieldByName("changeListeners")
-        if (clField != null) {
-            clField.isAccessible = true
-            val bindings = clField.get(helper)
-            if (bindings is Array<*>) {
-                val binding = bindings.find { it is BidirectionalBinding<*> }
+                    if (binding != null) {
+                        val propField = binding.javaClass.getDeclaredMethod("getProperty2")
+                        propField.isAccessible = true
+                        val modelProp = propField.invoke(binding) as Property<String>
 
-                if (binding != null) {
-                    val propField = binding.javaClass.getDeclaredMethod("getProperty2")
-                    propField.isAccessible = true
-                    val modelProp = propField.invoke(binding) as Property<String>
-
-                    if (modelProp is Property<*> && modelProp.bean is ViewModel)
-                        return modelProp.bean as ViewModel
+                        if (modelProp is Property<*> && modelProp.bean is ViewModel)
+                            return modelProp.bean as ViewModel
+                    }
                 }
             }
         }
