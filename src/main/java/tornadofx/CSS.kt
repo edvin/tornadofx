@@ -276,6 +276,9 @@ open class PropertyHolder {
 
     val properties = linkedMapOf<String, Any>()
 
+    // Root
+    var focusColor: Paint by cssprop("-fx-focus-color")
+
     // Font
     var font: Font by cssprop("-fx-font")
     var fontFamily: MultiValue<String> by cssprop("-fx-font-family")
