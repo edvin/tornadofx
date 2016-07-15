@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Tooltip
@@ -33,6 +34,7 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
     }
     var tag: Polygon? = null
     var tooltip: Tooltip? = null
+    var focusListener: ((ObservableValue<out Boolean>, Boolean, Boolean) -> Unit)? = null
 
     override fun decorate(node: Node) {
         if (node is Parent) {
@@ -44,10 +46,21 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
 
         if (message?.isNotBlank() ?: false) {
             tooltip = node.tooltip(message) {
-                val b = node.localToScreen(node.boundsInLocal)
-                if (b != null) show(node, b.minX, b.maxY)
+                focusListener = { observableValue, oldFocus, newFocus ->
+                    if (newFocus)
+                        showTooltip(node)
+                    else
+                        tooltip?.hide()
+                }
+                node.focusedProperty().addListener(focusListener)
+                if (node.isFocused) showTooltip(node)
             }
         }
+    }
+
+    private fun Tooltip.showTooltip(node: Node) {
+        val b = node.localToScreen(node.boundsInLocal)
+        if (b != null) show(node, b.minX + 5, b.maxY)
     }
 
     override fun undecorate(node: Node) {
@@ -56,5 +69,6 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
             hide()
             Tooltip.uninstall(node, this)
         }
+        focusListener?.apply { node.focusedProperty().removeListener(this) }
     }
 }
