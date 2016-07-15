@@ -4,6 +4,7 @@ package tornadofx
 
 import com.sun.javafx.binding.BidirectionalBinding
 import com.sun.javafx.binding.ExpressionHelper
+import javafx.beans.binding.Bindings
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -15,6 +16,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.paint.Paint
 import java.time.LocalDate
+import java.util.concurrent.Callable
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -173,6 +175,16 @@ fun <V : ViewModel, T> V.rebindOnChange(tableview: TableView<T>, op: V.(T?) -> U
 
 fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Unit)
         = rebindOnChange(listview.selectionModel.selectedItemProperty(), op)
+
+fun <V : ViewModel, T> V.rebindOnChange(treeview: TreeView<T>, op: V.(T?) -> Unit) {
+    val itemObservable = Bindings.createObjectBinding(Callable { treeview.selectionModel.selectedItem?.value }, treeview.selectionModel.selectedItemProperty())
+    rebindOnChange(itemObservable, op)
+}
+
+fun <V : ViewModel, T> V.rebindOnChange(treetableview: TreeTableView<T>, op: V.(T?) -> Unit) {
+    val itemObservable = Bindings.createObjectBinding(Callable { treetableview.selectionModel.selectedItem?.value }, treetableview.selectionModel.selectedItemProperty())
+    rebindOnChange(itemObservable, op)
+}
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op()
