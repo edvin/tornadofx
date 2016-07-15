@@ -219,16 +219,16 @@ operator fun BooleanProperty.setValue(thisRef: Any?, property: KProperty<*>, val
 fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T?.() -> Int)): IntegerBinding
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?.() -> Long?)): LongBinding
+fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?.() -> Long)): LongBinding
         = Bindings.createLongBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.doubleBinding(vararg dependencies: Observable, op: (T?.() -> Double?)): DoubleBinding
+fun <T> Property<T>.doubleBinding(vararg dependencies: Observable, op: (T?.() -> Double)): DoubleBinding
         = Bindings.createDoubleBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.floatBinding(vararg dependencies: Observable, op: (T?.() -> Float?)): FloatBinding
+fun <T> Property<T>.floatBinding(vararg dependencies: Observable, op: (T?.() -> Float)): FloatBinding
         = Bindings.createFloatBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.booleanBinding(vararg dependencies: Observable, op: (T?.() -> Boolean?)): BooleanBinding
+fun <T> Property<T>.booleanBinding(vararg dependencies: Observable, op: (T?.() -> Boolean)): BooleanBinding
         = Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T> Property<T>.stringBinding(vararg dependencies: Observable, op: (T?.() -> String?)): StringBinding
