@@ -193,11 +193,11 @@ fun <V : ViewModel, T> V.rebindOnChange(tableview: TableView<T>, op: V.(T?) -> U
 fun <V : ViewModel, T> V.rebindOnChange(listview: ListView<T>, op: V.(T?) -> Unit)
         = rebindOnChange(listview.selectionModel.selectedItemProperty(), op)
 
-fun <V : ViewModel, T> V.rebindOnChange(treeview: TreeView<T>, op: V.(T?) -> Unit) =
-    rebindOnTreeItemChange(treeview.selectionModel.selectedItemProperty(), op)
+fun <V : ViewModel, T> V.rebindOnChange(treeview: TreeView<T>, op: V.(T?) -> Unit)
+        = rebindOnTreeItemChange(treeview.selectionModel.selectedItemProperty(), op)
 
 fun <V : ViewModel, T> V.rebindOnChange(treetableview: TreeTableView<T>, op: V.(T?) -> Unit)
-    = rebindOnTreeItemChange(treetableview.selectionModel.selectedItemProperty(), op)
+        = rebindOnTreeItemChange(treetableview.selectionModel.selectedItemProperty(), op)
 
 fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
     op()
