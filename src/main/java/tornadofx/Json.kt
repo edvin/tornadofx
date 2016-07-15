@@ -107,13 +107,14 @@ fun JsonObject.uuid(key: String) = if (containsKey(key)) UUID.fromString(getStri
 fun JsonObject.int(key: String) = if (containsKey(key)) getInt(key) else null
 
 fun JsonObject.jsonObject(key: String) = if (containsKey(key)) getJsonObject(key) else null
+inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (containsKey(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
 
 fun JsonObject.jsonArray(key: String) = if (containsKey(key)) getJsonArray(key) else null
 
 class JsonBuilder {
-    private val delegate : JsonObjectBuilder = Json.createObjectBuilder()
+    private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
 
-    fun <S, T: ObservableValue<S>>add(key: String, observable: T) {
+    fun <S, T : ObservableValue<S>> add(key: String, observable: T) {
         observable.value?.apply {
             when (this) {
                 is Int -> add(key, this)
@@ -240,7 +241,7 @@ class JsonBuilder {
 /**
  * Requires kotlin-reflect on classpath
  */
-private fun <T> KProperty<T>.generic() : Class<*> =
+private fun <T> KProperty<T>.generic(): Class<*> =
         (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
 /**
@@ -268,7 +269,7 @@ interface JsonModelAuto : JsonModel {
                     val Array = pr as ObservableList<Any>
 
                     val arrayObject = json.getJsonArray(it.name)
-                    arrayObject?.forEach {jsonObj ->
+                    arrayObject?.forEach { jsonObj ->
                         val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
                         Array.add(New.apply { updateModel(jsonObj as JsonObject) })
                     }
@@ -278,7 +279,7 @@ interface JsonModelAuto : JsonModel {
     }
 
     override fun toJSON(json: JsonBuilder) {
-        with (json) {
+        with(json) {
             val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
             props.forEach {
                 val pr = it.get(this@JsonModelAuto)
@@ -325,4 +326,4 @@ fun JsonStructure.toString(vararg options: String): String {
     return stringWriter.toString()
 }
 
-fun <T: JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
+fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
