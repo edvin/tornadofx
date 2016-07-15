@@ -17,12 +17,13 @@ fun alert(type: Alert.AlertType,
           header: String,
           content: String,
           vararg buttons: ButtonType,
-          actionFn: (Alert.(ButtonType) -> Unit)? = null) {
+          actionFn: (Alert.(ButtonType) -> Unit)? = null): Alert {
 
     val alert = Alert(type, content, *buttons)
     alert.headerText = header
     val buttonClicked = alert.showAndWait()
     buttonClicked.ifPresent { actionFn?.invoke(alert, buttonClicked.get()) }
+    return alert
 }
 
 enum class FileChooserMode { None, Single, Multi, Save }
