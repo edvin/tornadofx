@@ -278,6 +278,7 @@ open class PropertyHolder {
 
     // Root
     var focusColor: Paint by cssprop("-fx-focus-color")
+    var faintFocusColor: Paint by cssprop("-fx-faint-focus-color")
 
     // Font
     var font: Font by cssprop("-fx-font")
