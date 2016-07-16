@@ -38,6 +38,27 @@ class StylesheetTests {
     val lumpyPseudoClass by csspseudoclass()
 
     @Test
+    fun unsafeProperties() {
+        stylesheet {
+            label {
+                textFill = Color.GREEN
+                unsafe(base, raw("green"))
+                unsafe("base", Color.GREEN)
+                multiProp force base
+            }
+        } shouldEqual {
+            """
+            .label {
+                -fx-text-fill: rgba(0, 128, 0, 1);
+                -fx-base: green;
+                base: rgba(0, 128, 0, 1);
+                multi-prop: -fx-base;
+            }
+            """
+        }
+    }
+
+    @Test
     fun starTest() {
         stylesheet {
             box child star {

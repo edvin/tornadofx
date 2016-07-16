@@ -262,6 +262,8 @@ open class PropertyHolder {
                 is Array<*> -> return value.joinToString { toCss(it) }
                 is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
                 is KClass<*> -> return value.simpleName ?: "none"
+                is CssProperty<*> -> return value.name
+                is Raw -> return value.name
                 is String -> return "\"$value\""
                 is Effect -> {
                     // JavaFX currently only supports DropShadow and InnerShadow in CSS
@@ -281,6 +283,7 @@ open class PropertyHolder {
     }
 
     val properties = linkedMapOf<String, Any>()
+    val unsafeProperties = linkedMapOf<String, Any>()
 
     // Root
     var focusColor: Paint by cssprop("-fx-focus-color")
@@ -538,6 +541,13 @@ open class PropertyHolder {
     var verticalGridLinesVisible: Boolean by cssprop("-fx-vertical-grid-lines-visible")
     var verticalZeroLineVisible: Boolean by cssprop("-fx-vertical-zero-line-visible")
 
+    infix fun CssProperty<*>.force(value: Any) = unsafe(this, value)
+    infix fun String.force(value: Any) = unsafe(this, value)
+    fun unsafe(key: CssProperty<*>, value: Any) = unsafe(key.name, value)
+    fun unsafe(key: String, value: Any) {
+        unsafeProperties[key] = value
+    }
+
     private inline fun <reified V : Any> cssprop(key: String): ReadWriteProperty<PropertyHolder, V> {
         return object : ReadWriteProperty<PropertyHolder, V> {
             override fun getValue(thisRef: PropertyHolder, property: KProperty<*>): V {
@@ -573,6 +583,9 @@ open class PropertyHolder {
     fun <T : Any> setProperty(property: CssProperty<T>, value: T) {
         properties[property.name] = value
     }
+
+    class Raw(val name: String)
+    fun raw(name: String) = Raw(name)
 }
 
 @Suppress("NAME_SHADOWING")
@@ -583,9 +596,13 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
 
     fun render(parents: List<String>, refine: Boolean): String = buildString {
         val ruleStrings = selector.strings(parents, refine)
-        if (block.properties.size > 0) {
+        val properties = linkedMapOf<String, Any>().apply {
+            putAll(block.properties)
+            putAll(block.unsafeProperties)
+        }
+        if (properties.size > 0) {
             append("${ruleStrings.joinToString()} {\n")
-            for ((name, value) in block.properties) {
+            for ((name, value) in properties) {
                 append("    $name: ${PropertyHolder.toCss(value)};\n")
             }
             append("}\n\n")
@@ -724,7 +741,10 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 // Inline CSS
 
 class InlineCss : PropertyHolder(), Rendered {
-    override fun render() = properties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
+    override fun render() = linkedMapOf<String, Any>().apply {
+            putAll(properties)
+            putAll(unsafeProperties)
+        }.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
 }
 
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
