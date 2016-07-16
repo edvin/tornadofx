@@ -825,8 +825,8 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
 // Style Class
 
 fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
-fun <T : Node> T.addClass(vararg cssClass: CssRule) = cssClass.forEach { addClass(it.name) }
-fun <T : Node> T.removeClass(vararg cssClass: CssRule) = cssClass.forEach { removeClass(it.name) }
+fun <T : Node> T.addClass(vararg cssClass: CssRule): T { cssClass.forEach { addClass(it.name) } return this }
+fun <T : Node> T.removeClass(vararg cssClass: CssRule): T { cssClass.forEach { removeClass(it.name) } return this }
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 
 fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
