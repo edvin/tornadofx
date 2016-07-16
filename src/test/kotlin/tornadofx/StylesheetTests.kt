@@ -9,6 +9,7 @@ import org.junit.Test
 import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.label
+import tornadofx.Stylesheet.Companion.star
 import kotlin.test.assertEquals
 
 class StylesheetTests {
@@ -35,6 +36,21 @@ class StylesheetTests {
     val lumpyId by cssid()
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
+
+    @Test
+    fun starTest() {
+        stylesheet {
+            box child star {
+                textFill = Color.BLUE
+            }
+        } shouldEqual {
+            """
+            .box > * {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            """
+        }
+    }
 
     @Test
     fun lumpySnakes() {

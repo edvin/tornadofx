@@ -93,9 +93,9 @@ interface SelectionHolder {
 open class Stylesheet : SelectionHolder, Rendered {
     companion object {
         // TODO: Elements?
+        val star by csselement("*")
 
         // Style classes used by JavaFX
-        val star by cssclass("*")
         val accordion by cssclass()
         val arrow by cssclass()
         val arrowButton by cssclass()
@@ -634,6 +634,8 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
         this@CssSelectionBlock.mix(this)
     }
 
+    fun and(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector, op)
+    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = add(selector, *selectors, op = op)
     fun add(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector.toSelector(), op = op)
     fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
         val s = select(selector, *selectors)(op)
@@ -672,15 +674,16 @@ class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
     companion object {
         fun elem(value: String) = CssRule("", value.cssValidate())
         fun id(value: String) = CssRule("#", value.cssValidate())
-        fun c(value: String) = if ("*" == value) CssRule("", "*") else CssRule(".", value.cssValidate())
+        fun c(value: String) = CssRule(".", value.cssValidate())
         fun pc(value: String) = CssRule(":", value.cssValidate())
 
         private val name = "\\*|-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         private val prefix = "[.#:]?"
         private val relation = "[ >+~]?"
+        private val subRule = "\\s*?($relation)\\s*($prefix)($name)"
         val nameRegex = Regex(name)
-        val ruleSetRegex = Regex("(\\s*$relation\\s*$prefix$name)+\\s*")
-        val subRuleRegex = Regex("\\s*?($relation)\\s*($prefix)($name)")
+        val subRuleRegex = Regex(subRule)
+        val ruleSetRegex = Regex("($subRule)+\\s*")
         val splitter = Regex("\\s*,\\s*")
         val upperCaseRegex = Regex("([A-Z])")
     }
@@ -830,8 +833,16 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
 // Style Class
 
 fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
-fun <T : Node> T.addClass(vararg cssClass: CssRule): T { cssClass.forEach { addClass(it.name) }; return this }
-fun <T : Node> T.removeClass(vararg cssClass: CssRule): T { cssClass.forEach { removeClass(it.name) }; return this }
+fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
+    cssClass.forEach { addClass(it.name) }
+    return this
+}
+
+fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
+    cssClass.forEach { removeClass(it.name) }
+    return this
+}
+
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 
 fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
