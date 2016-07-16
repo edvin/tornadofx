@@ -302,21 +302,37 @@ class LayoutDebugger : Fragment() {
                     field("Padding") {
                         textfield() {
                             textProperty().shadowBindTo(node.paddingProperty(), InsetsConverter())
-                            prefColumnCount = 20
+                            prefColumnCount = 10
                         }
                     }
 
-                    field("Pref width") {
+                    field("Pref/min/max width") {
                         textfield() {
                             textProperty().shadowBindTo(node.prefWidthProperty(), DoubleStringConverter())
-                            prefColumnCount = 20
+                            prefColumnCount = 10
+                        }
+                        textfield() {
+                            textProperty().shadowBindTo(node.minWidthProperty(), DoubleStringConverter())
+                            prefColumnCount = 10
+                        }
+                        textfield() {
+                            textProperty().shadowBindTo(node.maxWidthProperty(), DoubleStringConverter())
+                            prefColumnCount = 10
                         }
                     }
 
-                    field("Pref height") {
+                    field("Pref/min/max height") {
                         textfield() {
                             textProperty().shadowBindTo(node.prefHeightProperty(), DoubleStringConverter())
-                            prefColumnCount = 20
+                            prefColumnCount = 10
+                        }
+                        textfield() {
+                            textProperty().shadowBindTo(node.minHeightProperty(), DoubleStringConverter())
+                            prefColumnCount = 10
+                        }
+                        textfield() {
+                            textProperty().shadowBindTo(node.maxHeightProperty(), DoubleStringConverter())
+                            prefColumnCount = 10
                         }
                     }
 
