@@ -15,12 +15,13 @@ All notable changes to this project will be documented in this file.
 - `UIComponent.addOnDockListener` and `UIComponent.addOnUndockListener`
 - LayoutDebugger (https://github.com/edvin/tornadofx/wiki/Layout-Debugger)
 - ViewModel (https://github.com/edvin/tornadofx/wiki/ViewModel)
-- TableView `cellDecorator` 
+- TableView `cellDecorator`
 - ComboBox `cellFormat` formatter function
 - TreeView `lazyPopulate` alternative to `populate` that lazily creates children as needed
 - TreeItem nesting extension functions (https://github.com/edvin/tornadofx/issues/134)
 - TableView `selectWhere()`, `moveToTopWhere()` and `moveToBottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 - Group builder `group`
+- Improved tab for tabpane builder `tab("Name") { operateOnTab(); content { .. } }`
 - Create bindings dependent on a Property: `Property.integerBinding`, `Property.longBinding` for all applicable types
 - New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty` (https://github.com/edvin/tornadofx/pull/143)
 - Extract a JsonObject and turn it into a JsonModel by with `json.jsonModel("key")`

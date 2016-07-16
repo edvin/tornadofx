@@ -6,6 +6,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
@@ -36,6 +37,20 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     tabs.add(tab)
     if (op != null) op(content)
     return tab
+}
+
+fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab(text)
+    tabs.add(tab)
+    op?.invoke(tab)
+    return tab
+}
+
+fun Tab.content(op: Pane.() -> Unit): Node {
+    val fake = VBox()
+    op(fake)
+    content = if (fake.children.size == 1) fake.children.first() else fake
+    return content
 }
 
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
