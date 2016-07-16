@@ -95,6 +95,7 @@ open class Stylesheet : SelectionHolder, Rendered {
         // TODO: Elements?
 
         // Style classes used by JavaFX
+        val star by cssclass("*")
         val accordion by cssclass()
         val arrow by cssclass()
         val arrowButton by cssclass()
@@ -667,10 +668,10 @@ class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
     companion object {
         fun elem(value: String) = CssRule("", value.cssValidate())
         fun id(value: String) = CssRule("#", value.cssValidate())
-        fun c(value: String) = CssRule(".", value.cssValidate())
+        fun c(value: String) = if ("*" == value) CssRule("", "*") else CssRule(".", value.cssValidate())
         fun pc(value: String) = CssRule(":", value.cssValidate())
 
-        private val name = "-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
+        private val name = "\\*|-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         private val prefix = "[.#:]?"
         private val relation = "[ >+~]?"
         val nameRegex = Regex(name)

@@ -174,8 +174,9 @@ class LayoutDebugger : Fragment() {
                         text = null
 
                         if (!empty && item != null)
-
-                            text = if (item.javaClass.simpleName.isNotBlank()) item.javaClass.simpleName else item.javaClass.name.substringBeforeLast("\\$").substringAfter(".")
+                            // Avoid using javaClass.simpleName, because kotlin produces class names
+                            // that are failing the check in Class#getSimpleName
+                            text = item.javaClass.name.substringBeforeLast("\\$").substringAfterLast(".")
                     }
                 }
             }
