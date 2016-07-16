@@ -7,6 +7,7 @@ import javafx.beans.property.StringProperty
 import javafx.event.EventHandler
 import javafx.geometry.Bounds
 import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -256,6 +257,14 @@ class LayoutDebugger : Fragment() {
                         }
                     }
                 }
+
+                if (node is HBox) alignmentCombo(node.alignmentProperty())
+                if (node is VBox) alignmentCombo(node.alignmentProperty())
+                if (node is StackPane) alignmentCombo(node.alignmentProperty())
+                if (node is FlowPane) alignmentCombo(node.alignmentProperty())
+                if (node is TitledPane) alignmentCombo(node.alignmentProperty())
+                if (node is GridPane) alignmentCombo(node.alignmentProperty())
+
                 if (node is Region) {
                     // Background/fills is immutable, so a new background object must be created with the augmented fill
                     if (node.background?.fills?.isNotEmpty() ?: false) {
@@ -314,6 +323,16 @@ class LayoutDebugger : Fragment() {
                 }
             }
 
+        }
+    }
+
+    fun Fieldset.alignmentCombo(property: Property<Pos>) {
+        field("Alignment") {
+            combobox<Pos> {
+                items = listOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
+                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT).observable()
+                valueProperty().shadowBindTo(property)
+            }
         }
     }
 
