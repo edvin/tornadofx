@@ -145,6 +145,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         val rootPopup by cssclass("root.popup")
         val scrollArrow by cssclass()
         val scrollBar by cssclass()
+        val track by cssclass()
+        val thumb by cssclass()
         val scrollPane by cssclass()
         val separator by cssclass()
         val slider by cssclass()
