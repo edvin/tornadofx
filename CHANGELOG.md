@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
  
 ### Changed
 
+- addClass/removeClass now accepts vararg
 - alert() function now returns Alert object
 - Fixed bug: Inherited properties cannot be accessed via getProperty - NoSuchFieldException (https://github.com/edvin/tornadofx/issues/141)
 - Uncaught exceptions will now be logged to the console to ensure error message delivery even when UI is not initialized

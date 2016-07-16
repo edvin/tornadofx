@@ -825,12 +825,12 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
 // Style Class
 
 fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
-fun <T : Node> T.addClass(cssClass: CssRule) = addClass(cssClass.name)
-fun <T : Node> T.removeClass(cssClass: CssRule) = removeClass(cssClass.name)
+fun <T : Node> T.addClass(vararg cssClass: CssRule) = cssClass.forEach { addClass(it.name) }
+fun <T : Node> T.removeClass(vararg cssClass: CssRule) = cssClass.forEach { removeClass(it.name) }
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
 
-fun Iterable<Node>.addClass(cssClass: CssRule) = forEach { it.addClass(cssClass) }
-fun Iterable<Node>.removeClass(cssClass: CssRule) = forEach { it.removeClass(cssClass) }
+fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
+fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
 fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
 
 fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
