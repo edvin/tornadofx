@@ -190,6 +190,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         val pressed by csspseudoclass()
         val showMnemonics by csspseudoclass()
         val selected by csspseudoclass()
+        val even by csspseudoclass()
+        val odd by csspseudoclass()
     }
 
     val selections = mutableListOf<CssSelection>()

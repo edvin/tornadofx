@@ -176,7 +176,7 @@ class LayoutDebugger : Fragment() {
                         if (!empty && item != null)
                             // Avoid using javaClass.simpleName, because kotlin produces class names
                             // that are failing the check in Class#getSimpleName
-                            text = item.javaClass.name.substringBeforeLast("\\$").substringAfterLast(".")
+                            text = item.javaClass.name.substringAfterLast("\\$").substringAfterLast(".")
                     }
                 }
             }
