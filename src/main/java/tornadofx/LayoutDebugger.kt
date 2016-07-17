@@ -174,8 +174,8 @@ class LayoutDebugger : Fragment() {
                         text = null
 
                         if (!empty && item != null)
-                            // Avoid using javaClass.simpleName, because kotlin produces class names
-                            // that are failing the check in Class#getSimpleName
+                        // Avoid using javaClass.simpleName, because kotlin produces class names
+                        // that are failing the check in Class#getSimpleName
                             text = item.javaClass.name.substringAfterLast("\\$").substringAfterLast(".")
                     }
                 }
@@ -258,7 +258,44 @@ class LayoutDebugger : Fragment() {
                         }
                     }
                 }
-
+                if (node.parent is HBox) {
+                    field("HBox Grow") {
+                        combobox<Priority> {
+                            items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                            value = HBox.getHgrow(node) ?: Priority.NEVER
+                            valueProperty().onChange {
+                                HBox.setHgrow(node, it)
+                            }
+                        }
+                    }
+                    field("HBox Margin") {
+                        textfield(InsetsConverter().toString(HBox.getMargin(node))) {
+                            textProperty().onChange {
+                                HBox.setMargin(node, InsetsConverter().fromString(it))
+                            }
+                            prefColumnCount = 10
+                        }
+                    }
+                }
+                if (node.parent is HBox) {
+                    field("VBox Grow") {
+                        combobox<Priority> {
+                            items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                            value = VBox.getVgrow(node) ?: Priority.NEVER
+                            valueProperty().onChange {
+                                VBox.setVgrow(node, it)
+                            }
+                        }
+                    }
+                    field("VBox Margin") {
+                        textfield(InsetsConverter().toString(VBox.getMargin(node))) {
+                            textProperty().onChange {
+                                VBox.setMargin(node, InsetsConverter().fromString(it))
+                            }
+                            prefColumnCount = 10
+                        }
+                    }
+                }
                 if (node is HBox) alignmentCombo(node.alignmentProperty())
                 if (node is VBox) alignmentCombo(node.alignmentProperty())
                 if (node is StackPane) alignmentCombo(node.alignmentProperty())
