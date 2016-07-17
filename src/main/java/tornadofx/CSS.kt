@@ -692,6 +692,12 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
             else
                 properties[k] = v
         }
+        mixin.unsafeProperties.forEach { k, v ->
+            if (unsafeProperties[k] is MultiValue<*>)
+                (unsafeProperties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
+            else
+                unsafeProperties[k] = v
+        }
         selections.putAll(mixin.selections)
     }
 }

@@ -41,6 +41,7 @@ class StylesheetTests {
     fun unsafeProperties() {
         stylesheet {
             label {
+                unsafe("-fx-background", raw("-fx-control-inner-background"))
                 textFill = Color.GREEN
                 unsafe(base, raw("green"))
                 unsafe("base", Color.GREEN)
@@ -50,6 +51,7 @@ class StylesheetTests {
             """
             .label {
                 -fx-text-fill: rgba(0, 128, 0, 1);
+                -fx-background: -fx-control-inner-background;
                 -fx-base: green;
                 base: rgba(0, 128, 0, 1);
                 multi-prop: -fx-base;
