@@ -79,7 +79,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         syncOrientationState()
 
         // Add legend label when text is populated
-        textProperty().addListener { observable, oldValue, newValue -> if (newValue != null) addLegend() }
+        textProperty().addListener { observable, oldValue, newValue -> if (!newValue.isNullOrBlank()) addLegend() }
 
         // Add legend when icon is populated
         iconProperty().addListener { observable1, oldValue1, newValue -> if (newValue != null) addLegend() }
