@@ -66,6 +66,10 @@ fun Pane.textfield(property: Property<String>, op: (TextField.() -> Unit)? = nul
 }
 
 fun Pane.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
+fun Pane.passwordfield(property: Property<String>, op: (PasswordField.() -> Unit)? = null) = passwordfield().apply {
+    bind(property)
+    op?.invoke(this)
+}
 
 fun <T> Pane.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     textProperty().bindBidirectional(property, converter)
