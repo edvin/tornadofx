@@ -20,11 +20,14 @@ import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
+import sun.net.www.protocol.css.Handler
+import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
@@ -194,6 +197,26 @@ open class Stylesheet : SelectionHolder, Rendered {
         val selected by csspseudoclass()
         val even by csspseudoclass()
         val odd by csspseudoclass()
+
+        /**
+         * Try to retrieve a type safe stylesheet, and force installation of url handler
+         * if it's missing. This typically happens in environments with atypical class loaders.
+         *
+         * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
+         * up by the JVM automatically.
+         */
+        init {
+            try {
+                URL("css://content:64")
+            } catch (ex: MalformedURLException) {
+                log.info("Installing CSS url handler, since it was not picked up automatically")
+                try {
+                    URL.setURLStreamHandlerFactory(Handler.HandlerFactory())
+                } catch (installFailed: Exception) {
+                    log.log(Level.WARNING, "Unable to install CSS url handler, type safe stylesheets might not work", ex)
+                }
+            }
+        }
     }
 
     val selections = mutableListOf<CssSelection>()
@@ -585,6 +608,7 @@ open class PropertyHolder {
     }
 
     class Raw(val name: String)
+
     fun raw(name: String) = Raw(name)
 }
 
@@ -742,9 +766,9 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 
 class InlineCss : PropertyHolder(), Rendered {
     override fun render() = linkedMapOf<String, Any>().apply {
-            putAll(properties)
-            putAll(unsafeProperties)
-        }.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
+        putAll(properties)
+        putAll(unsafeProperties)
+    }.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
 }
 
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
