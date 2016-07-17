@@ -159,7 +159,7 @@ abstract class Component {
      * The default progress node is a ProgressIndicator that fills the same
      * client area as the parent. You can swap the progress node for any Node you like.
      */
-    fun <T> Node.runAsynWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
+    fun <T> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
         if (progress is Region)
             progress.setPrefSize(boundsInParent.width, boundsInParent.height)
         val children = parent.getChildList()
