@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
  
 ### Changed
 
+- CSSUrlHandler force install moved to CSS.CompanionObject to make sure it happens in time
 - addClass/removeClass now accepts vararg
 - alert() function now returns Alert object
 - Fixed bug: Inherited properties cannot be accessed via getProperty - NoSuchFieldException (https://github.com/edvin/tornadofx/issues/141)
