@@ -277,7 +277,7 @@ class LayoutDebugger : Fragment() {
                         }
                     }
                 }
-                if (node.parent is HBox) {
+                if (node.parent is VBox) {
                     field("VBox Grow") {
                         combobox<Priority> {
                             items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
