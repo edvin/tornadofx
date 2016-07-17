@@ -639,17 +639,14 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
 class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     companion object {
         fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
-
-        fun List<String>.cartesian(parents: List<String>, refine: Boolean): List<String> {
-            if (parents.size == 0) {
-                return this;
-            }
-            return parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
-        }
+        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.size == 0) this else
+            parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
     }
 
     override fun toSelection() = this
     fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
+
+    fun simpleRender() = rule.map { it.render() }.joinToString()
 }
 
 class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), SelectionHolder {
@@ -915,10 +912,10 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.toString()) as T
+fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.simpleRender()) as T
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.toString()) as Set<T>).toList()
+fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.simpleRender()) as Set<T>).toList()
 
 fun <T : Node> T.setId(cssId: CssRule): T {
     id = cssId.name
