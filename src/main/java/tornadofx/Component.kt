@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
@@ -9,10 +10,12 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.Pane
+import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -149,6 +152,29 @@ abstract class Component {
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     fun <T> runAsync(func: () -> T) = task(func)
+    /**
+     * Replace this node with a progress node while a long running task
+     * is running and swap it back when complete.
+     *
+     * The default progress node is a ProgressIndicator that fills the same
+     * client area as the parent. You can swap the progress node for any Node you like.
+     */
+    fun <T> Node.runAsynWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
+        if (progress is Region)
+            progress.setPrefSize(boundsInParent.width, boundsInParent.height)
+        val children = parent.getChildList()
+        val index = children.indexOf(this)
+        children.add(index, progress)
+        removeFromParent()
+        return task {
+            val result = op()
+            Platform.runLater {
+                children.add(index, this)
+                progress.removeFromParent()
+            }
+            result
+        }
+    }
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
 

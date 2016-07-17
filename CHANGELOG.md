@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Validation support
 - Decoration support
 - Node.removeFromParent()
+- `Node.runAsyncWithProgress` shows a progress indicator instead of while async task is running 
 - `runAsync` on Injectable class references (`CustomerController::class.runAsync { listContacts(customerId) }`)
 - `runAsync` on Injectable class function references (`CustomerController::listContacts.runAsync(customerId)`)
 - `ObservableValue.onChange` listener
