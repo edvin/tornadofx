@@ -307,6 +307,7 @@ open class PropertyHolder {
 
     val properties = linkedMapOf<String, Any>()
     val unsafeProperties = linkedMapOf<String, Any>()
+    val mergedProperties: Map<String, Any> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties) }
 
     // Root
     var focusColor: Paint by cssprop("-fx-focus-color")
@@ -620,16 +621,14 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
 
     fun render(parents: List<String>, refine: Boolean): String = buildString {
         val ruleStrings = selector.strings(parents, refine)
-        val properties = linkedMapOf<String, Any>().apply {
-            putAll(block.properties)
-            putAll(block.unsafeProperties)
-        }
-        if (properties.size > 0) {
-            append("${ruleStrings.joinToString()} {\n")
-            for ((name, value) in properties) {
-                append("    $name: ${PropertyHolder.toCss(value)};\n")
+        block.mergedProperties.let {
+            if (it.size > 0) {
+                append("${ruleStrings.joinToString()} {\n")
+                for ((name, value) in it) {
+                    append("    $name: ${PropertyHolder.toCss(value)};\n")
+                }
+                append("}\n\n")
             }
-            append("}\n\n")
         }
         for ((selection, refine) in block.selections) {
             append(selection.render(ruleStrings, refine))
@@ -771,10 +770,7 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 // Inline CSS
 
 class InlineCss : PropertyHolder(), Rendered {
-    override fun render() = linkedMapOf<String, Any>().apply {
-        putAll(properties)
-        putAll(unsafeProperties)
-    }.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
+    override fun render() = mergedProperties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
 }
 
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
