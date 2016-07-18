@@ -23,6 +23,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
+import sun.tools.tree.ThisExpression
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -182,6 +183,11 @@ inline fun <reified T : Fragment> ToolBar.add(type: KClass<T>): Unit = plusAssig
 
 operator fun Pane.plusAssign(node: Node) {
     children.add(node)
+}
+
+fun Pane.replaceChildren(op: Pane.() -> Unit) {
+    children.clear()
+    op(this)
 }
 
 @JvmName("addView")

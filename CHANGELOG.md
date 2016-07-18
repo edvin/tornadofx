@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Validation support
 - Decoration support
 - Node.removeFromParent()
+- `Node.replaceChildren` replaces current children with new ones created with builder
 - `Node.runAsyncWithProgress` shows a progress indicator instead of while async task is running 
 - `runAsync` on Injectable class references (`CustomerController::class.runAsync { listContacts(customerId) }`)
 - `runAsync` on Injectable class function references (`CustomerController::listContacts.runAsync(customerId)`)
@@ -27,7 +28,7 @@ All notable changes to this project will be documented in this file.
 - New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty` (https://github.com/edvin/tornadofx/pull/143)
 - Extract a JsonObject and turn it into a JsonModel by with `json.jsonModel("key")`
 - `kotlin-reflect.jar` is now a default dependency. It can be removed if you don't use any of the TableView.`column` functions. Over time, more features will probably require it.
-- Replace View function: `UIComponent.replaceWith` now accepts `KClass<View>` and `KClass<Fragment>` as well as UIComponent instances
+- Replace View function `UIComponent.replaceWith` now accepts `KClass<View>` and `KClass<Fragment>` as well as UIComponent instances
  
 ### Changed
 
