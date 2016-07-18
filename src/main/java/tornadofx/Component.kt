@@ -153,6 +153,17 @@ abstract class Component {
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
+    /**
+     * Find the given property inside the given Injectable. Useful for assigning a property from a View or Controller
+     * in any Component. Example:
+     *
+     * val person = find(UserController::currentPerson)
+     */
+    inline fun <reified InjectableType : Injectable, T> find(prop: KProperty1<InjectableType, T>): T {
+        val injectable = find(InjectableType::class)
+        return prop.get(injectable)
+    }
+
     fun <T> runAsync(func: () -> T) = task(func)
     /**
      * Replace this node with a progress node while a long running task
