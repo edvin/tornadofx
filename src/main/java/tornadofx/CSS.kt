@@ -912,10 +912,10 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.select(selector: CssSelector) = lookup(selector.simpleRender()) as T
+fun <T : Node> Node.select(selector: Selectable) = lookup(selector.toSelection().simpleRender()) as T
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Node> Node.selectAll(selector: CssSelector) = (lookupAll(selector.simpleRender()) as Set<T>).toList()
+fun <T : Node> Node.selectAll(selector: Selectable) = (lookupAll(selector.toSelection().simpleRender()) as Set<T>).toList()
 
 fun <T : Node> T.setId(cssId: CssRule): T {
     id = cssId.name
