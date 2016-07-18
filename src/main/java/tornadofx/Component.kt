@@ -164,6 +164,11 @@ abstract class Component {
         return prop.get(injectable)
     }
 
+    inline fun <reified InjectableType : Injectable, T> set(prop: KMutableProperty1<InjectableType, T>, value: T) {
+        val injectable = find(InjectableType::class)
+        return prop.set(injectable, value)
+    }
+
     fun <T> runAsync(func: () -> T) = task(func)
     /**
      * Replace this node with a progress node while a long running task

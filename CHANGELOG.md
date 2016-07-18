@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Validation support
 - Decoration support
 - Node.removeFromParent()
-- Get a reference to objects in other Components via `get(ComponentType::propertyName)`
+- Get a reference to objects in other Components via `get(ComponentType::propertyName)` and set them via `set(ComponentType::propertyName, value`
 - `Node.replaceChildren` replaces current children with new ones created with builder
 - `Node.runAsyncWithProgress` shows a progress indicator instead of while async task is running 
 - `runAsync` on Injectable class references (`CustomerController::class.runAsync { listContacts(customerId) }`)
