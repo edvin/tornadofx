@@ -173,9 +173,9 @@ val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
  * Listen to changes in the given observable and call the op with the new value on change.
  * After each change the viewmodel is rolled back to reflect the values in the new source object or objects.
  */
-fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T?) -> Unit) {
+fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(T?) -> Unit)? = null) {
     observable.addListener { observableValue, oldValue, newValue ->
-        op(newValue)
+        op?.invoke(this, newValue)
         rollback()
     }
 }
