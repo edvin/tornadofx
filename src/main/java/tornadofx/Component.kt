@@ -136,17 +136,19 @@ abstract class Component {
      *
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType : Injectable, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null) : Task<ReturnType> {
+    inline fun <reified InjectableType : Injectable, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType> {
         val t = task { invoke(find(InjectableType::class)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
     }
+
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
      *
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
     inline fun <reified InjectableType : Injectable, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
     inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
@@ -175,6 +177,7 @@ abstract class Component {
             result
         }
     }
+
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 }
 
@@ -185,9 +188,9 @@ abstract class UIComponent : Component() {
     var modalStage: Stage? = null
     internal var reloadInit = false
     abstract val root: Parent
-    var onDockListeners : MutableList<(UIComponent) -> Unit>? = null
-    var onUndockListeners : MutableList<(UIComponent) -> Unit>? = null
-    
+    var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
+    var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
+
     fun init() {
         root.properties["tornadofx.uicomponent"] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
@@ -207,7 +210,7 @@ abstract class UIComponent : Component() {
 
     open fun onDock() {
     }
-    
+
     internal fun callOnDock() {
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
@@ -318,6 +321,15 @@ abstract class UIComponent : Component() {
 
             throw IllegalArgumentException("Property $key does not match fx:id declaration")
         }
+    }
+
+    inline fun <reified T : View>replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        return replaceWith(find(view), transition)
+    }
+
+    @JvmName("replaceWithFragment")
+    inline fun <reified T : Fragment>replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        return replaceWith(findFragment(fragment), transition)
     }
 
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
