@@ -4,6 +4,7 @@ import javafx.beans.property.Property
 import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
@@ -176,4 +177,5 @@ fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = nul
 
 fun Pane.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar(), op)
 
-fun Pane.imageview(url: String? = null, op: (ImageView.() -> Unit)? = null) = opcr(this, if (url == null) ImageView() else ImageView(url), op)
+fun Pane.imageview(url: String? = null, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
+        = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)

@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
  
 ### Changed
 
+- ImageView builder now loads image lazily by default
 - CSSUrlHandler force install moved to CSS.CompanionObject to make sure it happens in time
 - addClass/removeClass now accepts vararg
 - alert() function now returns Alert object
