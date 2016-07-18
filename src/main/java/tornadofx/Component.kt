@@ -159,7 +159,7 @@ abstract class Component {
      *
      * val person = find(UserController::currentPerson)
      */
-    inline fun <reified InjectableType : Injectable, T> find(prop: KProperty1<InjectableType, T>): T {
+    inline fun <reified InjectableType : Injectable, T> get(prop: KProperty1<InjectableType, T>): T {
         val injectable = find(InjectableType::class)
         return prop.get(injectable)
     }
