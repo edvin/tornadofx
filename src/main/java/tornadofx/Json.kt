@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
+import javax.json.JsonValue.ValueType.NULL
 import javax.json.stream.JsonGenerator
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.javaField
@@ -87,29 +88,31 @@ interface JsonModel {
 
 }
 
-fun JsonObject.string(key: String) = if (containsKey(key)) getString(key) else null
+fun JsonObject.isNotNullOrNULL(key: String) = containsKey(key) && get(key)?.valueType != NULL
 
-fun JsonObject.double(key: String) = if (containsKey(key)) getJsonNumber(key).doubleValue() else null
+fun JsonObject.string(key: String) = if (isNotNullOrNULL(key)) getString(key) else null
 
-fun JsonObject.bigdecimal(key: String) = if (containsKey(key)) getJsonNumber(key).bigDecimalValue() else null
+fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).doubleValue() else null
 
-fun JsonObject.long(key: String) = if (containsKey(key)) getJsonNumber(key).longValue() else null
+fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).bigDecimalValue() else null
 
-fun JsonObject.bool(key: String): Boolean? = if (containsKey(key)) getBoolean(key) else null
+fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).longValue() else null
 
-fun JsonObject.date(key: String) = if (containsKey(key)) LocalDate.parse(getString(key)) else null
+fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolean(key) else null
 
-fun JsonObject.datetime(key: String) = if (containsKey(key))
+fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) LocalDate.parse(getString(key)) else null
+
+fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key))
     LocalDateTime.ofEpochSecond(getJsonNumber(key).longValue(), 0, ZoneOffset.UTC) else null
 
-fun JsonObject.uuid(key: String) = if (containsKey(key)) UUID.fromString(getString(key)) else null
+fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) UUID.fromString(getString(key)) else null
 
-fun JsonObject.int(key: String) = if (containsKey(key)) getInt(key) else null
+fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
 
-fun JsonObject.jsonObject(key: String) = if (containsKey(key)) getJsonObject(key) else null
-inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (containsKey(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
+fun JsonObject.jsonObject(key: String) = if (isNotNullOrNULL(key)) getJsonObject(key) else null
+inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
 
-fun JsonObject.jsonArray(key: String) = if (containsKey(key)) getJsonArray(key) else null
+fun JsonObject.jsonArray(key: String) = if (isNotNullOrNULL(key)) getJsonArray(key) else null
 
 class JsonBuilder {
     private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
@@ -302,7 +305,7 @@ interface JsonModelAuto : JsonModel {
                     is Boolean -> add(it.name, pr)
                     is ObservableList<*> -> {
                         val Array = pr as ObservableList<JsonModel>
-                        val jsonArray = Json.createArrayBuilder();
+                        val jsonArray = Json.createArrayBuilder()
                         Array.forEach { jsonArray.add(it.toJSON()) }
                         add(it.name, jsonArray.build())
                     }
