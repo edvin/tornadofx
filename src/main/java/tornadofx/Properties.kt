@@ -186,33 +186,33 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
     override fun isInitialized() = initialized
 }
 
-operator fun <T> ObservableValue<T>.getValue(thisRef: Any?, property: KProperty<*>): T = value
-operator fun <T> Property<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+operator fun <T> ObservableValue<T?>.getValue(thisRef: Any, property: KProperty<*>): T = value as T
+operator fun <T> Property<T>.setValue(thisRef: Any, property: KProperty<*>, value: T?) {
     this.value = value
 }
 
-operator fun ObservableDoubleValue.getValue(thisRef: Any?, property: KProperty<*>): Double = value.toDouble()
-operator fun DoubleProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Double) {
+operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>): Double = value.toDouble()
+operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) {
     this.value = value
 }
 
-operator fun ObservableFloatValue.getValue(thisRef: Any?, property: KProperty<*>): Float = value.toFloat()
-operator fun FloatProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Float) {
+operator fun ObservableFloatValue.getValue(thisRef: Any, property: KProperty<*>): Float = value.toFloat()
+operator fun FloatProperty.setValue(thisRef: Any, property: KProperty<*>, value: Float) {
     this.value = value
 }
 
-operator fun ObservableLongValue.getValue(thisRef: Any?, property: KProperty<*>): Long = value.toLong()
-operator fun LongProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Long) {
+operator fun ObservableLongValue.getValue(thisRef: Any, property: KProperty<*>): Long = value.toLong()
+operator fun LongProperty.setValue(thisRef: Any, property: KProperty<*>, value: Long) {
     this.value = value
 }
 
-operator fun ObservableIntegerValue.getValue(thisRef: Any?, property: KProperty<*>): Int = value.toInt()
-operator fun IntegerProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
+operator fun ObservableIntegerValue.getValue(thisRef: Any, property: KProperty<*>): Int = value.toInt()
+operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, value: Int) {
     this.value = value
 }
 
-operator fun ObservableBooleanValue.getValue(thisRef: Any?, property: KProperty<*>): Boolean = value
-operator fun BooleanProperty.setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
+operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>): Boolean = value
+operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) {
     this.value = value
 }
 
