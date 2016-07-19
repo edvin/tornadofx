@@ -417,13 +417,13 @@ abstract class UIComponent : Component() {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <U : UIComponent> U.addOnDockListener(listener: (U) -> Unit) {
+fun <U : UIComponent> U.whenDocked(listener: (U) -> Unit) {
     if (onDockListeners == null) onDockListeners = mutableListOf()
     onDockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <U : UIComponent> U.addOnUndockListener(listener: (U) -> Unit) {
+fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
     if (onUndockListeners == null) onUndockListeners = mutableListOf()
     onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
