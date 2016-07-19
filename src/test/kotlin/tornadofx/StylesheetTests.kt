@@ -51,6 +51,8 @@ class StylesheetTests {
         assert(8.px == base - num)
         assert(20.px == base * num)
         assert(5.px == base / num)
+        assert(0.px == base % num)
+        assert(3.px == base % 7)
 
         assert(12.px == base + dim)
         assert(8.px == base - dim)

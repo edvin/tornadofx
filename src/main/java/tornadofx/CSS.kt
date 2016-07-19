@@ -819,6 +819,7 @@ open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
     operator fun minus(value: Dimension<T>) = safeMath(value, Double::minus)
     operator fun times(value: Number) = Dimension(this.value * value.toDouble(), units)
     operator fun div(value: Number) = Dimension(this.value / value.toDouble(), units)
+    operator fun mod(value: Number) = Dimension(this.value % value.toDouble(), units)
 
     private fun safeMath(value: Dimension<T>, op: (Double, Double) -> Double) = if (units == value.units)
         Dimension(op(this.value, value.value), units)
