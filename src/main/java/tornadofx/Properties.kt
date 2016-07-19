@@ -187,7 +187,7 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 }
 
 operator fun <T> ObservableValue<T?>.getValue(thisRef: Any, property: KProperty<*>): T = value as T
-operator fun <T> Property<T>.setValue(thisRef: Any, property: KProperty<*>, value: T?) {
+operator fun <T> Property<T?>.setValue(thisRef: Any, property: KProperty<*>, value: T?) {
     this.value = value
 }
 
@@ -216,23 +216,23 @@ operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, valu
     this.value = value
 }
 
-fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T?.() -> Int)): IntegerBinding
+fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T?) -> Int): IntegerBinding
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?.() -> Long)): LongBinding
+fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?) -> Long): LongBinding
         = Bindings.createLongBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.doubleBinding(vararg dependencies: Observable, op: (T?.() -> Double)): DoubleBinding
+fun <T> Property<T>.doubleBinding(vararg dependencies: Observable, op: (T?) -> Double): DoubleBinding
         = Bindings.createDoubleBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.floatBinding(vararg dependencies: Observable, op: (T?.() -> Float)): FloatBinding
+fun <T> Property<T>.floatBinding(vararg dependencies: Observable, op: (T?) -> Float): FloatBinding
         = Bindings.createFloatBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.booleanBinding(vararg dependencies: Observable, op: (T?.() -> Boolean)): BooleanBinding
+fun <T> Property<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding
         = Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.stringBinding(vararg dependencies: Observable, op: (T?.() -> String?)): StringBinding
+fun <T> Property<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T, R> Property<T>.objectBinding(vararg dependencies: Observable, op: (T?.() -> R?)): Binding<R?>
+fun <T, R> Property<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)
