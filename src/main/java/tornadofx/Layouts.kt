@@ -117,11 +117,8 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T: Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane {
-    val scrollpane = ScrollPane(content)
-    opcr(this, scrollpane, op as (Node.() -> Unit)?)
-    return scrollpane
-}
+fun <T: Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
+    opcr(this, ScrollPane(content), op as (Node.() -> Unit)?)
 
 @Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Pane.scrollpane(content, op)"), DeprecationLevel.WARNING)
 fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
