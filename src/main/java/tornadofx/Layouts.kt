@@ -79,6 +79,31 @@ fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
     top = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
+fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
+    top = topNode
+    return opcr(this, topNode, op)
+}
+
+fun <T : Node> BorderPane.bottom(bottomNode: T, op: (T.() -> Unit)? = null): T {
+    bottom = bottomNode
+    return opcr(this, bottomNode, op)
+}
+
+fun <T : Node> BorderPane.left(leftNode: T, op: (T.() -> Unit)? = null): T {
+    left = leftNode
+    return opcr(this, leftNode, op)
+}
+
+fun <T : Node> BorderPane.right(rightNode: T, op: (T.() -> Unit)? = null): T {
+    right = rightNode
+    return opcr(this, rightNode, op)
+}
+
+fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
+    center = centerNode
+    return opcr(this, centerNode, op)
+}
+
 @Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.bottom = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.bottom(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
@@ -117,8 +142,8 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T: Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
-    opcr(this, ScrollPane(content), op as (Node.() -> Unit)?)
+fun <T : Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
+        opcr(this, ScrollPane(content), op as (Node.() -> Unit)?)
 
 @Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Pane.scrollpane(content, op)"), DeprecationLevel.WARNING)
 fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
