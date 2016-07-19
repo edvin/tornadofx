@@ -11,6 +11,7 @@ import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.label
 import tornadofx.Stylesheet.Companion.star
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 class StylesheetTests {
     val vbox by cssclass()
@@ -36,6 +37,33 @@ class StylesheetTests {
     val lumpyId by cssid()
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
+
+    @Test
+    fun dimensionalAnalysis() {
+        val base = 10.px
+        val num = 2
+        val dim = 2.px
+        val disjoint = 5.mm
+
+        assert((-10).px == -base)
+
+        assert(12.px == base + num)
+        assert(8.px == base - num)
+        assert(20.px == base * num)
+        assert(5.px == base / num)
+        assert(0.px == base % num)
+        assert(3.px == base % 7)
+
+        assert(12.px == base + dim)
+        assert(8.px == base - dim)
+
+        assert(12.px == num + base)
+        assert(-8.px == num - base)
+        assert(20.px == num * base)
+
+        assertFails { base + disjoint }
+        assertFails { base - disjoint }
+    }
 
     @Test
     fun unsafeProperties() {

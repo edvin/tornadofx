@@ -811,7 +811,24 @@ class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) :
 // Dimensions
 
 open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
+    operator fun unaryPlus() = this
     operator fun unaryMinus() = Dimension(-value, units)
+    operator fun plus(value: Number) = Dimension(this.value + value.toDouble(), units)
+    operator fun plus(value: Dimension<T>) = safeMath(value, Double::plus)
+    operator fun minus(value: Number) = Dimension(this.value - value.toDouble(), units)
+    operator fun minus(value: Dimension<T>) = safeMath(value, Double::minus)
+    operator fun times(value: Number) = Dimension(this.value * value.toDouble(), units)
+    operator fun div(value: Number) = Dimension(this.value / value.toDouble(), units)
+    operator fun mod(value: Number) = Dimension(this.value % value.toDouble(), units)
+
+    private fun safeMath(value: Dimension<T>, op: (Double, Double) -> Double) = if (units == value.units)
+        Dimension(op(this.value, value.value), units)
+    else
+        throw IllegalArgumentException("Cannot combine $this and $value: Units do not match")
+
+    override fun equals(other: Any?) = other != null && other is Dimension<*> && value == other.value && units == other.units
+    override fun hashCode() = value.hashCode() * 31 + units.hashCode()
+
     override fun toString() = when (value) {
         Double.POSITIVE_INFINITY, Double.MAX_VALUE -> "infinity"
         Double.NEGATIVE_INFINITY, Double.MIN_VALUE -> "-infinity"
@@ -834,6 +851,10 @@ open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
         override fun toString() = value
     }
 }
+
+operator fun <T : Enum<T>> Number.plus(value: Dimension<T>) = Dimension(this.toDouble() + value.value, value.units)
+operator fun <T : Enum<T>> Number.minus(value: Dimension<T>) = Dimension(this.toDouble() - value.value, value.units)
+operator fun <T : Enum<T>> Number.times(value: Dimension<T>) = Dimension(this.toDouble() * value.value, value.units)
 
 val infinity = Dimension(Double.POSITIVE_INFINITY, Dimension.LinearUnits.px)
 
