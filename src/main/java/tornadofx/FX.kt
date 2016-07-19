@@ -11,7 +11,8 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.*
+import javafx.scene.control.Control
+import javafx.scene.control.SkinBase
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
@@ -223,11 +224,7 @@ fun <T : Node> opcr(parent: Parent, node: T, op: (T.() -> Unit)? = null): T {
 }
 
 fun Parent.addToChildListIfAppliccable(node: Node) {
-    if (this is ScrollPane)
-        content = node
-    else if (this is Accordion && node is TitledPane)
-        panes += node
-    else if (this !is BorderPane)
+    if (this !is BorderPane)
         getChildList().add(node)
 }
 

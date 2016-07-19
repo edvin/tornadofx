@@ -160,10 +160,10 @@ fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null)
     return accordion
 }
 
-@Suppress("UNCHECKED_CAST")
 fun <T : Node> Accordion.fold(title: String? = null, node: T, op: (T.() -> Unit)? = null): TitledPane {
     val fold = TitledPane(title, node)
-    opcr(this, fold, op as (Node.() -> Unit)?)
+    panes += fold
+    op?.invoke(node)
     return fold
 }
 
