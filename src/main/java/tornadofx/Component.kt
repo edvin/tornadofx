@@ -203,6 +203,7 @@ abstract class UIComponent : Component() {
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
     internal var reloadInit = false
+    internal var muteDocking = false
     abstract val root: Parent
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
@@ -228,11 +229,13 @@ abstract class UIComponent : Component() {
     }
 
     internal fun callOnDock() {
+        if (muteDocking) return
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
 
     internal fun callOnUndock() {
+        if (muteDocking) return
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
     }
@@ -350,14 +353,26 @@ abstract class UIComponent : Component() {
 
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
         if (root.scene != null) {
+            val scene = root.scene
+
+            if (scene.window is Stage) {
+                val stage = scene.window as Stage
+                stage.titleProperty().unbind()
+                stage.titleProperty().bind(replacement.titleProperty)
+            }
+
             if (transition != null) {
-                val scene = root.scene
+                muteDocking = true
+                replacement.muteDocking = true
+
                 val temp = StackPane(root, replacement.root)
                 scene.root = temp
 
                 transition.invoke(this@UIComponent, replacement, {
                     temp.children.remove(replacement.root)
                     undockFromParent(replacement)
+                    replacement.muteDocking = false
+                    muteDocking = false
                     scene.root = replacement.root
                 })
 
