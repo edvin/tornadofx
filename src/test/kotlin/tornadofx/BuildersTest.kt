@@ -11,7 +11,6 @@ import org.testfx.api.FxToolkit
 import org.testfx.matcher.base.NodeMatchers
 
 class BuildersTest {
-
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     lateinit var pane: StackPane

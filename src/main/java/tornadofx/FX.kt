@@ -11,11 +11,11 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Control
-import javafx.scene.control.SkinBase
+import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import java.util.*
@@ -217,9 +217,18 @@ interface DIContainer {
  * Add the given node to the pane, invoke the node operation and return the node
  */
 fun <T : Node> opcr(parent: Parent, node: T, op: (T.() -> Unit)? = null): T {
-    parent.getChildList().add(node)
+    parent.addToChildListIfAppliccable(node)
     op?.invoke(node)
     return node
+}
+
+fun Parent.addToChildListIfAppliccable(node: Node) {
+    if (this is ScrollPane)
+        content = node
+    else if (this is Accordion && node is TitledPane)
+        panes += node
+    else if (this !is BorderPane)
+        getChildList().add(node)
 }
 
 /**

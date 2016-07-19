@@ -33,7 +33,7 @@ fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
 fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar {
-    var toolbar = ToolBar()
+    val toolbar = ToolBar()
     if (nodes.isNotEmpty())
         toolbar.items.addAll(nodes)
     opcr(this, toolbar, op)
@@ -72,40 +72,42 @@ fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op
 fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
+@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.top = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
     top = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
+@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.bottom = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.bottom(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
     bottom = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
+@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.left = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.left(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
     left = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
+@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.right = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.right(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
     right = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
+@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.center = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.center(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
     center = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun Pane.titledpane(title: String, node: Node): TitledPane {
-    val pane = TitledPane(title, node)
-    return opcr(this, pane)
-}
+fun Pane.titledpane(title: String, node: Node): TitledPane = opcr(this, TitledPane(title, node))
 
 fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
     val pagination = Pagination()
@@ -114,6 +116,14 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
     return opcr(this, pagination, op)
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <T: Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane {
+    val scrollpane = ScrollPane(content)
+    opcr(this, scrollpane, op as (Node.() -> Unit)?)
+    return scrollpane
+}
+
+@Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Pane.scrollpane(content, op)"), DeprecationLevel.WARNING)
 fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
     val vbox = VBox()
     op?.invoke(vbox)
@@ -123,7 +133,7 @@ fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
 }
 
 fun Pane.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
-    var splitpane = SplitPane()
+    val splitpane = SplitPane()
     if (nodes.isNotEmpty())
         splitpane.items.addAll(nodes)
     opcr(this, splitpane, op)
@@ -146,13 +156,21 @@ fun Pane.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): An
 }
 
 fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
-    var accordion = Accordion()
+    val accordion = Accordion()
     if (panes.isNotEmpty())
         accordion.panes.addAll(panes)
     opcr(this, accordion, op)
     return accordion
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <T : Node> Accordion.fold(title: String? = null, node: T, op: (T.() -> Unit)? = null): TitledPane {
+    val fold = TitledPane(title, node)
+    opcr(this, fold, op as (Node.() -> Unit)?)
+    return fold
+}
+
+@Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Accordion.fold(title, node, op)"), DeprecationLevel.WARNING)
 fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): TitledPane {
     val vbox = VBox()
     op?.invoke(vbox)
