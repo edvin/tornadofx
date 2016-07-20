@@ -175,8 +175,8 @@ fun Pane.label(observable: ObservableValue<String>, op: (Label.() -> Unit)? = nu
 }
 
 fun Pane.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
-fun Pane.hyperlink(property: Property<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink().apply {
-    textProperty().bind(property)
+fun Pane.hyperlink(observable: ObservableValue<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink().apply {
+    textProperty().bind(observable)
     op?.invoke(this)
 }
 
