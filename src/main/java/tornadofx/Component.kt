@@ -216,7 +216,7 @@ abstract class UIComponent : Component() {
             if (newParent != null && newParent != oldParent) callOnDock()
         })
         root.sceneProperty().addListener({ observable, oldParent, newParent ->
-            if (modalStage != null) return@addListener
+            if (modalStage != null || root.parent != null) return@addListener
             if (newParent == null && oldParent != null) callOnUndock()
             if (newParent != null && newParent != oldParent) callOnDock()
         })
