@@ -88,24 +88,36 @@ interface JsonModel {
 
 }
 
+/**
+ * Nullable getters are lowercase, not null getters are prependend with get + camelcase
+ * JsonObject already provide some not null getters like getString, getBoolean etc, the rest
+ * are added here
+ */
+
 fun JsonObject.isNotNullOrNULL(key: String) = containsKey(key) && get(key)?.valueType != NULL
 
 fun JsonObject.string(key: String) = if (isNotNullOrNULL(key)) getString(key) else null
 
-fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).doubleValue() else null
+fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getDouble(key) else null
+fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
 
-fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).bigDecimalValue() else null
+fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
+fun JsonObject.getBigDecimal(key: String) : BigDecimal = getJsonNumber(key).bigDecimalValue()
 
-fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getJsonNumber(key).longValue() else null
+fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getLong(key) else null
+fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
 
 fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolean(key) else null
+fun JsonObject.boolean(key: String) = bool(key) // Alias
 
-fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) LocalDate.parse(getString(key)) else null
+fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
+fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
 
-fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key))
-    LocalDateTime.ofEpochSecond(getJsonNumber(key).longValue(), 0, ZoneOffset.UTC) else null
+fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key)) getDateTime(key) else null
+fun JsonObject.getDateTime(key: String): LocalDateTime = LocalDateTime.ofEpochSecond(getJsonNumber(key).longValue(), 0, ZoneOffset.UTC)
 
-fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) UUID.fromString(getString(key)) else null
+fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) getUUID(key) else null
+fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
 
 fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
 
