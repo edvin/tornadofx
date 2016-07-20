@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.value.ObservableValue
 import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -57,6 +58,10 @@ fun Tab.content(op: Pane.() -> Unit): Node {
 fun Pane.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text().apply {
     textProperty().bindBidirectional(property)
+    op?.invoke(this)
+}
+fun Pane.text(observable: ObservableValue<String>, op: (Text.() -> Unit)? = null) = text().apply {
+    textProperty().bind(observable)
     op?.invoke(this)
 }
 
@@ -164,8 +169,8 @@ fun Pane.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), 
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
-fun Pane.label(property: Property<String>, op: (Label.() -> Unit)? = null) = label().apply {
-    textProperty().bind(property)
+fun Pane.label(observable: ObservableValue<String>, op: (Label.() -> Unit)? = null) = label().apply {
+    textProperty().bind(observable)
     op?.invoke(this)
 }
 
