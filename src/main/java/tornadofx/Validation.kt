@@ -41,12 +41,9 @@ class ValidationContext {
             node: Node,
             property: ObservableValue<T>,
             trigger: ValidationTrigger = ValidationTrigger.OnChange(),
-            noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
+            noinline validator: ValidationContext.(T?) -> ValidationMessage?) = addValidator(Validator(node, property, trigger, validator))
 
-        addValidator(Validator(node, property, trigger, validator))
-    }
-
-    fun <T> addValidator(validator: Validator<T>) {
+    fun <T> addValidator(validator: Validator<T>): Validator<T> {
         when (validator.trigger) {
             is ValidationTrigger.OnChange -> {
                 var delayActive = false
@@ -75,6 +72,7 @@ class ValidationContext {
             }
         }
         validators.add(validator)
+        return validator
     }
 
     /**
