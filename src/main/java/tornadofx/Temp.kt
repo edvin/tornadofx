@@ -21,10 +21,7 @@ class Omnipotent : View() {
             left = listview<Person> {
                 items = listOf(Person("One", 1), Person("Two", 2)).observable()
                 cellFormat {
-                    with (textProperty()) {
-                        unbind()
-                        bind(it.nameProperty)
-                    }
+                    textProperty().bind(it.nameProperty)
                 }
             }
         }

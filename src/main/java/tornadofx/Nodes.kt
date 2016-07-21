@@ -314,7 +314,7 @@ fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     return this
 }
 
-inline fun <S, T> TableColumn<S, T>.cellFormat(noinline formatter: (TableCell<S, T>.(T) -> Unit)) {
+fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -331,7 +331,7 @@ inline fun <S, T> TableColumn<S, T>.cellFormat(noinline formatter: (TableCell<S,
     }
 }
 
-inline fun <T> ComboBox<T>.cellFormat(noinline formatter: (ListCell<T>.(T) -> Unit)) {
+fun <T> ComboBox<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
     cellFactory = Callback { listView: ListView<T> ->
         object : ListCell<T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -358,7 +358,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Un
     }
 }
 
-inline fun <S> TreeView<S>.cellFormat(noinline formatter: (TreeCell<S>.(S) -> Unit)) {
+fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
     cellFactory = Callback {
         object : TreeCell<S>() {
             override fun updateItem(item: S?, empty: Boolean) {
@@ -375,7 +375,7 @@ inline fun <S> TreeView<S>.cellFormat(noinline formatter: (TreeCell<S>.(S) -> Un
     }
 }
 
-inline fun <S, T> TreeTableColumn<S, T>.cellFormat(noinline formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
+fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -392,15 +392,21 @@ inline fun <S, T> TreeTableColumn<S, T>.cellFormat(noinline formatter: (TreeTabl
     }
 }
 
-inline fun <T> ListView<T>.cellFormat(noinline formatter: (ListCell<T>.(T) -> Unit)) {
+fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
     cellFactory = Callback {
         object : ListCell<T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
-                    text = null
-                    graphic = null
+                    with(textProperty()) {
+                        if (isBound) unbind()
+                        value = null
+                    }
+                    with(graphicProperty()) {
+                        if (isBound) unbind()
+                        value = null
+                    }
                 } else {
                     formatter(this, item)
                 }

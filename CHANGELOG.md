@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Replace View function `UIComponent.replaceWith` now accepts `KClass<View>` and `KClass<Fragment>` as well as UIComponent instances
 - label() and text() builders now accepts an ObservableValue<String> for unidirectional binding
 - Added non-null JSON getters (`getLong(key)` returns Long while `long(key)` returns Long?)
+- Improved compatibility with ScenicView by not creating inline/crossinline cellformatters (https://youtrack.jetbrains.com/issue/KT-13148)
  
 ### Changed
 
