@@ -216,23 +216,23 @@ operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, valu
     this.value = value
 }
 
-fun <T> Property<T>.integerBinding(vararg dependencies: Observable, op: (T?) -> Int): IntegerBinding
+fun <T> ObservableValue<T>.integerBinding(vararg dependencies: Observable, op: (T?) -> Int): IntegerBinding
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.longBinding(vararg dependencies: Observable, op: (T?) -> Long): LongBinding
+fun <T> ObservableValue<T>.longBinding(vararg dependencies: Observable, op: (T?) -> Long): LongBinding
         = Bindings.createLongBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.doubleBinding(vararg dependencies: Observable, op: (T?) -> Double): DoubleBinding
+fun <T> ObservableValue<T>.doubleBinding(vararg dependencies: Observable, op: (T?) -> Double): DoubleBinding
         = Bindings.createDoubleBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.floatBinding(vararg dependencies: Observable, op: (T?) -> Float): FloatBinding
+fun <T> ObservableValue<T>.floatBinding(vararg dependencies: Observable, op: (T?) -> Float): FloatBinding
         = Bindings.createFloatBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding
+fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding
         = Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T> Property<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
+fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T, R> Property<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
+fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)

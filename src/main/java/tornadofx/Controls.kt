@@ -20,6 +20,7 @@ import java.time.LocalDate
 fun Pane.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
 enum class ColorPickerMode { Button, MenuButton, SplitMenuButton }
+
 fun Pane.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorPickerMode.Button, op: (ColorPicker.() -> Unit)? = null): ColorPicker {
     val picker = ColorPicker()
     if (mode == ColorPickerMode.MenuButton) picker.addClass(ColorPicker.STYLE_CLASS_BUTTON)
@@ -60,6 +61,7 @@ fun Pane.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text(
     textProperty().bindBidirectional(property)
     op?.invoke(this)
 }
+
 fun Pane.text(observable: ObservableValue<String>, op: (Text.() -> Unit)? = null) = text().apply {
     textProperty().bind(observable)
     op?.invoke(this)
@@ -169,8 +171,13 @@ fun Pane.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), 
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
 
 fun Pane.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
-fun Pane.label(observable: ObservableValue<String>, op: (Label.() -> Unit)? = null) = label().apply {
-    textProperty().bind(observable)
+inline fun <reified T> Pane.label(observable: ObservableValue<T>, noinline op: (Label.() -> Unit)? = null) = label().apply {
+    if (T::class == String::class) {
+        @Suppress("UNCHECKED_CAST")
+        textProperty().bind(observable as ObservableValue<String>)
+    } else {
+        textProperty().bind(observable.stringBinding { it?.toString() })
+    }
     op?.invoke(this)
 }
 

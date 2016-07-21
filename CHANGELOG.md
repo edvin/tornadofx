@@ -26,12 +26,13 @@ All notable changes to this project will be documented in this file.
 - TableView `selectWhere()`, `moveToTopWhere()` and `moveToBottomWhere()` (https://github.com/edvin/tornadofx/issues/134)
 - Group builder `group`
 - Improved tab for tabpane builder `tab("Name") { operateOnTab(); content { .. } }`
-- Create bindings dependent on a Property: `Property.integerBinding`, `Property.longBinding` for all applicable types
+- Create bindings dependent on an ObservableValue: `objectBinding` + `integerBinding`, `longBinding` etc for all applicable types
 - New, simplified method of creating properties `val nameProperty = SimpleStringProperty(); var name by nameProperty` (https://github.com/edvin/tornadofx/pull/143)
 - Extract a JsonObject and turn it into a JsonModel by with `json.jsonModel("key")`
 - `kotlin-reflect.jar` is now a default dependency. It can be removed if you don't use any of the TableView.`column` functions. Over time, more features will probably require it.
 - Replace View function `UIComponent.replaceWith` now accepts `KClass<View>` and `KClass<Fragment>` as well as UIComponent instances
 - label() and text() builders now accepts an ObservableValue<String> for unidirectional binding
+- Added non-null JSON getters (`getLong(key)` returns Long while `long(key)` returns Long?)
  
 ### Changed
 
