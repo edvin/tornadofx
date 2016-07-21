@@ -360,7 +360,7 @@ inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: K
 /**
  * Create a column with a value factory that extracts the value from the given callback.
  */
-inline fun <reified S, T> TreeTableView<S>.column(title: String, crossinline valueProvider: (TreeTableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueProvider: (TreeTableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)

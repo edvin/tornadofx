@@ -117,7 +117,7 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
-inline fun <T> ObservableValue<T>.onChange(crossinline op: (T?) -> Unit) : ObservableValue<T> {
+fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) : ObservableValue<T> {
     addListener { observable, oldValue, newValue -> op(newValue) }
     return this
 }

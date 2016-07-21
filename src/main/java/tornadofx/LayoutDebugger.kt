@@ -42,18 +42,15 @@ class LayoutDebugger : Fragment() {
         with(root) {
             setPrefSize(800.0, 600.0)
 
-            center {
-                splitpane {
-                    setDividerPosition(0, 0.3)
-                    items {
-                        treeview<Node> {
-                            nodeTree = this
-                        }
-                        this += propertyContainer.apply {
-                            padding = Insets(10.0)
-                        }
+            center = splitpane {
+                setDividerPosition(0, 0.3)
+                items {
+                    treeview<Node> {
+                        nodeTree = this
                     }
-
+                    this += propertyContainer.apply {
+                        padding = Insets(10.0)
+                    }
                 }
             }
         }
