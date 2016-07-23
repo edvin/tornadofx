@@ -294,14 +294,12 @@ init {
 }
 ```
 
-Swap a View for another (change Scene root or parent/pos)
+Swap a View for another (change Scene root or embedded View)
 
 ```kotlin
-val pageTwo: PageTwo by inject()
-
 button("Go to next page") {
     setOnAction {
-    	replaceWith(pageTwo)
+    	replaceWith(PageTwo::class, ViewTransition.SlideIn)
     }
 }
 ```
