@@ -14,6 +14,7 @@ import javafx.collections.ObservableSet
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.paint.Paint
+import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 
 open class ViewModel {
@@ -112,19 +113,28 @@ open class ViewModel {
      * @param force Force flush even if validation fails
      */
     fun commit(force: Boolean = false, focusFirstError: Boolean = true): Boolean {
-        if (!validate(focusFirstError) && !force) return false
+        var commited = true
 
-        for ((facade, propExtractor) in properties)
-            propExtractor().value = facade.value
+        runAndWait {
+            if (!validate(focusFirstError) && !force) {
+                commited = false
+            } else {
+                for ((facade, propExtractor) in properties)
+                    propExtractor().value = facade.value
 
-        clearDirtyState()
-        return true
+                clearDirtyState()
+            }
+        }
+
+        return commited
     }
 
     fun rollback() {
-        for ((facade, propExtractor) in properties)
-            facade.value = propExtractor().value
-        clearDirtyState()
+        runAndWait {
+            for ((facade, propExtractor) in properties)
+                facade.value = propExtractor().value
+            clearDirtyState()
+        }
     }
 
     inline fun <reified T> addValidator(

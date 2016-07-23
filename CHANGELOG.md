@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+### Changed
+
+- ViewModel `commit` and `rollback` run on the UI thread because decorators might be invoked 
+
 ## [1.5.2] - 2016-07-21
 
 ### Added
