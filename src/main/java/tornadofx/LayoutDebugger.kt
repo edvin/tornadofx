@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.property.DoubleProperty
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.StringProperty
@@ -293,8 +294,14 @@ class LayoutDebugger : Fragment() {
                         }
                     }
                 }
-                if (node is HBox) alignmentCombo(node.alignmentProperty())
-                if (node is VBox) alignmentCombo(node.alignmentProperty())
+                if (node is HBox) {
+                    alignmentCombo(node.alignmentProperty())
+                    spacingEditor(node.spacingProperty())
+                }
+                if (node is VBox) {
+                    alignmentCombo(node.alignmentProperty())
+                    spacingEditor(node.spacingProperty())
+                }
                 if (node is StackPane) alignmentCombo(node.alignmentProperty())
                 if (node is FlowPane) alignmentCombo(node.alignmentProperty())
                 if (node is TitledPane) alignmentCombo(node.alignmentProperty())
@@ -374,6 +381,15 @@ class LayoutDebugger : Fragment() {
                 }
             }
 
+        }
+    }
+
+    private fun Fieldset.spacingEditor(spacingProperty: DoubleProperty) {
+        field("Spacing") {
+            textfield {
+                textProperty().shadowBindTo(spacingProperty, DoubleStringConverter())
+                prefColumnCount = 10
+            }
         }
     }
 

@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- LayoutDebugger can edit new Node properties: `spacing`
+
 ### Changed
 
 - ViewModel `commit` and `rollback` run on the UI thread because decorators might be invoked 
