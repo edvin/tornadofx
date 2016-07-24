@@ -112,7 +112,7 @@ open class ViewModel {
      * Perform validation and flush the values into the source object if validation passes.
      * @param force Force flush even if validation fails
      */
-    fun commit(force: Boolean = false, focusFirstError: Boolean = true): Boolean {
+    fun commit(force: Boolean = false, focusFirstError: Boolean = true, successFn: (() -> Unit)? = null): Boolean {
         var commited = true
 
         runAndWait {
@@ -126,6 +126,7 @@ open class ViewModel {
             }
         }
 
+        if (commited) successFn?.invoke()
         return commited
     }
 

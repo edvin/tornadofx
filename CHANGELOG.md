@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - ViewModel `commit` and `rollback` run on the UI thread because decorators might be invoked 
+- ViewModel `commit` accepts a function that will be run if the commit is successful
 
 ## [1.5.2] - 2016-07-21
 
