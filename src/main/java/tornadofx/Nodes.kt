@@ -166,11 +166,9 @@ fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
 @JvmName("addView")
 inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
-@Deprecated("Just an alias for += SomeFragment::class", ReplaceWith("this += SomeFragment::class"), DeprecationLevel.WARNING)
 @JvmName("addFragment")
 inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
 
-@Deprecated("Just an alias for += node", ReplaceWith("this += node"), DeprecationLevel.WARNING)
 fun EventTarget.add(node: Node) = plusAssign(node)
 
 @JvmName("plusView")

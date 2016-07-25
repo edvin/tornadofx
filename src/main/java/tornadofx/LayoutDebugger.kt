@@ -37,7 +37,7 @@ class LayoutDebugger : Fragment() {
 
     init {
         overlay.isMouseTransparent = true
-        stackpane.add(overlay)
+        stackpane += overlay
         gc.fill = c("#99bbbb", 0.4)
 
         with(root) {
@@ -129,7 +129,7 @@ class LayoutDebugger : Fragment() {
         stackpane.scene?.root = null
         val newSceneRoot = currentScene.root
         currentScene.root = stackpane
-        stackpane.add(newSceneRoot)
+        stackpane += newSceneRoot
         overlay.toFront()
 
         // Populate the node tree
