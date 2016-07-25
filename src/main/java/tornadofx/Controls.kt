@@ -158,8 +158,10 @@ fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> U
     return button
 }
 
-fun ButtonBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+fun ButtonBar.button(text: String = "", type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
+    if (type != null)
+        ButtonBar.setButtonData(button, type)
     if (graphic != null)
         button.graphic = graphic
     buttons.add(button)
