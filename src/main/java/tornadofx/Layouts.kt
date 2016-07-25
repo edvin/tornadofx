@@ -7,7 +7,6 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
 
-@Deprecated("Properties set on the fake pane would be lost. Use form/fieldset builder instead", ReplaceWith("form"), DeprecationLevel.WARNING)
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
 
