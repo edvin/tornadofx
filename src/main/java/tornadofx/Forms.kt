@@ -19,8 +19,15 @@ import java.util.concurrent.Callable
 
 fun EventTarget.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
 
-open class Form : VBox() {
+fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
+    val fieldset = Fieldset(text ?: "")
+    if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
+    if (labelPosition != null) fieldset.labelPosition = labelPosition
+    if (icon != null) fieldset.icon = icon
+    return opcr(this, fieldset, op)
+}
 
+open class Form : VBox() {
     init {
         addClass(Stylesheet.form)
     }
@@ -33,17 +40,6 @@ open class Form : VBox() {
 
     override fun getUserAgentStylesheet() =
             Form::class.java.getResource("form.css").toExternalForm()!!
-
-    fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
-        val fieldset = Fieldset(text ?: "")
-        if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
-        children.add(fieldset)
-        if (labelPosition != null) fieldset.labelPosition = labelPosition
-        if (icon != null) fieldset.icon = icon
-        op?.invoke(fieldset)
-        return fieldset
-    }
-
 }
 
 @DefaultProperty("children")
@@ -223,7 +219,7 @@ class Field(text: String? = null) : Pane() {
         val labelHasContent = text.isNotBlank()
 
         val insets = insets
-        var contentX = insets.left
+        val contentX = insets.left
         val contentY = insets.top
         val contentWidth = width - insets.left - insets.right
         val contentHeight = height - insets.top - insets.bottom

@@ -223,10 +223,11 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 }
 
 fun EventTarget.addChildIfPossible(node: Node) {
-    if (this is BorderPane) return
-    if (this is ScrollPane) content = node
-    if (this is Tab) content = node
-    getChildList()?.add(node)
+    if (this is UIComponent) root.addChildIfPossible(node)
+    else if (this is BorderPane) center = node
+    else if (this is ScrollPane) content = node
+    else if (this is Tab) content = node
+    else getChildList()?.add(node)
 }
 
 /**
