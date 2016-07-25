@@ -222,6 +222,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
     return node
 }
 
+@Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node) {
     when (this) {
         is UIComponent -> root?.addChildIfPossible(node)
