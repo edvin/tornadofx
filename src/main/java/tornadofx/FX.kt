@@ -225,6 +225,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node) {
     when (this) {
+        // only add if root is created, else this will become the root
         is UIComponent -> root?.addChildIfPossible(node)
         is BorderPane -> return
         is ScrollPane -> content = node
