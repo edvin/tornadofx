@@ -169,17 +169,14 @@ fun SplitPane.items(op: (SplitPane.() -> Unit)) = op(this)
 
 fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): AnchorPane {
     val anchorpane = AnchorPane()
-    if (nodes.isNotEmpty()) {
-        anchorpane.children.addAll(nodes)
-    }
+    if (nodes.isNotEmpty()) anchorpane.children.addAll(nodes)
     opcr(this, anchorpane, op)
     return anchorpane
 }
 
 fun EventTarget.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
     val accordion = Accordion()
-    if (panes.isNotEmpty())
-        accordion.panes.addAll(panes)
+    if (panes.isNotEmpty()) accordion.panes.addAll(panes)
     opcr(this, accordion, op)
     return accordion
 }

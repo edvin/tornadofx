@@ -129,6 +129,7 @@ fun Stage.hookLayoutDebuggerShortcut() {
             LayoutDebugger.debug(scene)
     }
 }
+
 fun Stage.reloadViewsOnFocus() {
     focusedProperty().addListener { obs, old, focused ->
         if (focused && FX.initialized.value) scene?.reloadViews()
@@ -151,12 +152,6 @@ fun EventTarget.replaceChildren(vararg node: Node) {
     children.clear()
     children.addAll(node)
 }
-
-@JvmName("addView")
-inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
-
-@JvmName("addFragment")
-inline fun <reified T : Fragment> ToolBar.add(type: KClass<T>): Unit = plusAssign(findFragment(type))
 
 operator fun EventTarget.plusAssign(node: Node) {
     addChildIfPossible(node)
