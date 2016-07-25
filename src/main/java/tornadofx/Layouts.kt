@@ -154,10 +154,6 @@ fun EventTarget.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (
     return opcr(this, pagination, op)
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T : Node> EventTarget.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
-        opcr(this, ScrollPane(content), op as (Node.() -> Unit)?)
-
 fun EventTarget.scrollpane(op: (ScrollPane.() -> Unit)? = null) = opcr(this, ScrollPane(), op)
 
 fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
