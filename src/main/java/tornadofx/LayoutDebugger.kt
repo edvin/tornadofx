@@ -45,13 +45,11 @@ class LayoutDebugger : Fragment() {
 
             center = splitpane {
                 setDividerPosition(0, 0.3)
-                items {
-                    treeview<Node> {
-                        nodeTree = this
-                    }
-                    this += propertyContainer.apply {
-                        padding = Insets(10.0)
-                    }
+                treeview<Node> {
+                    nodeTree = this
+                }
+                this += propertyContainer.apply {
+                    padding = Insets(10.0)
                 }
             }
         }

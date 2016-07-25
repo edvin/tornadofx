@@ -1,14 +1,16 @@
 package tornadofx
 
+import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
 
-val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
-
+@Deprecated("Properties set on the fake pane would be lost. Use form/fieldset builder instead", ReplaceWith("form"), DeprecationLevel.WARNING)
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
+    val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
+
     properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
 
     // Allow the caller to add children to a fake pane
@@ -32,7 +34,7 @@ fun ToolBar.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = nu
 fun HBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { HBox.setHgrow(this, prio) }, op)
 fun VBox.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null) = opcr(this, Pane().apply { VBox.setVgrow(this, prio) }, op)
 
-fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar {
+fun EventTarget.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar {
     val toolbar = ToolBar()
     if (nodes.isNotEmpty())
         toolbar.items.addAll(nodes)
@@ -40,7 +42,14 @@ fun Pane.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): ToolBar 
     return toolbar
 }
 
-fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
+
+@Deprecated("No need to wrap ToolBar children in children{} anymore. Remove the wrapper and all builder items will still be added as before.", ReplaceWith("no children{} wrapper"), DeprecationLevel.WARNING)
+fun ToolBar.children(op: ToolBar.() -> Unit): ToolBar {
+    op(this)
+    return this
+}
+
+fun EventTarget.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
     if (children != null)
         hbox.children.addAll(children)
@@ -48,7 +57,7 @@ fun Pane.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HB
     return opcr(this, hbox, op)
 }
 
-fun Pane.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
+fun EventTarget.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
     val vbox = VBox()
     if (children != null)
         vbox.children.addAll(children)
@@ -63,14 +72,14 @@ fun ToolBar.separator(orientation: Orientation = Orientation.HORIZONTAL, op: (Se
     return separator
 }
 
-fun Pane.separator(orientation: Orientation = Orientation.HORIZONTAL, op: (Separator.() -> Unit)? = null) = opcr(this, Separator(orientation), op)
+fun EventTarget.separator(orientation: Orientation = Orientation.HORIZONTAL, op: (Separator.() -> Unit)? = null) = opcr(this, Separator(orientation), op)
 
-fun Pane.group(initialChildren: Iterable<Node>? = null, op: (Group.() -> Unit)? = null) = opcr(this, Group().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
-fun Pane.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
-fun Pane.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
-fun Pane.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
-fun Pane.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
-fun Pane.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
+fun EventTarget.group(initialChildren: Iterable<Node>? = null, op: (Group.() -> Unit)? = null) = opcr(this, Group().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
+fun EventTarget.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
+fun EventTarget.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
+fun EventTarget.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
+fun EventTarget.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
+fun EventTarget.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 @Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.top = yourNode { }"), DeprecationLevel.WARNING)
 fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
@@ -132,9 +141,9 @@ fun BorderPane.center(op: (Pane.() -> Unit)? = null) {
     center = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-fun Pane.titledpane(title: String, node: Node): TitledPane = opcr(this, TitledPane(title, node))
+fun EventTarget.titledpane(title: String, node: Node): TitledPane = opcr(this, TitledPane(title, node))
 
-fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
+fun EventTarget.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
     val pagination = Pagination()
     if (pageCount != null) pagination.pageCount = pageCount
     if (pageIndex != null) pagination.currentPageIndex = pageIndex
@@ -142,19 +151,12 @@ fun Pane.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Paginat
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Node> Pane.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
+fun <T : Node> EventTarget.scrollpane(content: T, op: (T.() -> Unit)? = null): ScrollPane =
         opcr(this, ScrollPane(content), op as (Node.() -> Unit)?)
 
-@Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Pane.scrollpane(content, op)"), DeprecationLevel.WARNING)
-fun Pane.scrollpane(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    val scrollPane = ScrollPane()
-    scrollPane.content = if (vbox.children.size == 1) vbox.children[0] else vbox
-    this += scrollPane
-}
+fun EventTarget.scrollpane(op: (ScrollPane.() -> Unit)? = null) = opcr(this, ScrollPane(), op)
 
-fun Pane.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
+fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
     val splitpane = SplitPane()
     if (nodes.isNotEmpty())
         splitpane.items.addAll(nodes)
@@ -162,13 +164,10 @@ fun Pane.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): Spli
     return splitpane
 }
 
-fun SplitPane.items(op: (Pane.() -> Unit)) {
-    val fake = Pane()
-    op(fake)
-    items.addAll(fake.children)
-}
+@Deprecated("No need to wrap splitpane items in items{} anymore. Remove the wrapper and all builder items will still be added as before.", ReplaceWith("no items{} wrapper"), DeprecationLevel.WARNING)
+fun SplitPane.items(op: (SplitPane.() -> Unit)) = op(this)
 
-fun Pane.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): AnchorPane {
+fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): AnchorPane {
     val anchorpane = AnchorPane()
     if (nodes.isNotEmpty()) {
         anchorpane.children.addAll(nodes)
@@ -177,7 +176,7 @@ fun Pane.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): An
     return anchorpane
 }
 
-fun Pane.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
+fun EventTarget.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
     val accordion = Accordion()
     if (panes.isNotEmpty())
         accordion.panes.addAll(panes)

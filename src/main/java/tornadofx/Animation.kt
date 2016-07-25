@@ -4,9 +4,9 @@ import javafx.animation.*
 import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.scene.layout.Pane
+import javafx.event.EventTarget
 import javafx.util.Duration
-import java.util.ArrayList
+import java.util.*
 
 operator fun Timeline.plusAssign(keyFrame: KeyFrame) {
     keyFrames.add(keyFrame)
@@ -16,7 +16,7 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
     values.add(keyValue)
 }
 
-fun Pane.timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
+fun EventTarget.timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
     val timeline = Timeline()
     timeline.op()
     if (play) timeline.play()

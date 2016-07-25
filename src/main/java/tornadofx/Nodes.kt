@@ -141,38 +141,16 @@ fun Pane.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-infix fun Node.addTo(pane: Pane) = pane.children.add(this)
+infix fun Node.addTo(pane: EventTarget) = pane.addChildIfPossible(this)
 
 fun Pane.replaceChildren(vararg uiComponents: UIComponent) =
         this.replaceChildren(*(uiComponents.map { it.root }.toTypedArray()))
 
-fun Pane.replaceChildren(vararg node: Node) {
+fun EventTarget.replaceChildren(vararg node: Node) {
+    val children = getChildList() ?: throw IllegalArgumentException("This node doesn't have a child list")
     children.clear()
     children.addAll(node)
 }
-
-fun ToolBar.children(op: Pane.() -> Unit): ToolBar {
-    val fake = Pane()
-    op(fake)
-    items.addAll(fake.children)
-    return this
-}
-
-fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
-    val fake = Pane()
-    op(fake)
-    addTo.addAll(fake.children)
-}
-
-operator fun ToolBar.plusAssign(uiComponent: UIComponent): Unit {
-    items.add(uiComponent.root)
-}
-
-operator fun ToolBar.plusAssign(node: Node): Unit {
-    items.add(node)
-}
-
-fun ToolBar.add(node: Node) = plusAssign(node)
 
 @JvmName("addView")
 inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(find(type))
@@ -180,30 +158,30 @@ inline fun <reified T : View> ToolBar.add(type: KClass<T>): Unit = plusAssign(fi
 @JvmName("addFragment")
 inline fun <reified T : Fragment> ToolBar.add(type: KClass<T>): Unit = plusAssign(findFragment(type))
 
-operator fun Pane.plusAssign(node: Node) {
-    children.add(node)
+operator fun EventTarget.plusAssign(node: Node) {
+    addChildIfPossible(node)
 }
 
-fun Pane.replaceChildren(op: Pane.() -> Unit) {
-    children.clear()
+fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
+    getChildList()?.clear()
     op(this)
 }
 
 @JvmName("addView")
-inline fun <reified T : View> Pane.add(type: KClass<T>): Unit = plusAssign(find(type).root)
+inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 @JvmName("addFragment")
-inline fun <reified T : Fragment> Pane.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
+inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
 
-fun Pane.add(node: Node) = plusAssign(node)
+fun EventTarget.add(node: Node) = plusAssign(node)
 
 @JvmName("plusView")
-operator fun <T : View> Pane.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
+operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 @JvmName("plusFragment")
-operator fun <T : Fragment> Pane.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
+operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
 
-operator fun Pane.plusAssign(view: UIComponent) {
+operator fun EventTarget.plusAssign(view: UIComponent) {
     plusAssign(view.root)
 }
 
@@ -785,4 +763,4 @@ inline fun <reified T : UIComponent> Parent.find(): T? = findAll<T>().getOrNull(
  */
 inline fun <reified T : UIComponent> UIComponent.find(): T? = findAll<T>().getOrNull(0)
 
-fun Node.removeFromParent() = parent.getChildList().remove(this)
+fun Node.removeFromParent() = parent.getChildList()?.remove(this)

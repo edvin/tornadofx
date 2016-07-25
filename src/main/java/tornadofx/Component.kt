@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
+import javafx.event.EventDispatchChain
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -180,7 +181,7 @@ abstract class Component {
     fun <T> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
         if (progress is Region)
             progress.setPrefSize(boundsInParent.width, boundsInParent.height)
-        val children = parent.getChildList()
+        val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
         val index = children.indexOf(this)
         children.add(index, progress)
         removeFromParent()
@@ -199,7 +200,11 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
-abstract class UIComponent : Component() {
+abstract class UIComponent : Component(), EventTarget {
+    override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
+        throw UnsupportedOperationException("not implemented")
+    }
+
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
     internal var reloadInit = false

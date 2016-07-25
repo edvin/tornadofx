@@ -6,10 +6,10 @@ import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import javafx.event.EventTarget
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
-import javafx.scene.layout.Pane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -20,64 +20,64 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
-fun <T> Pane.spinner(editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>()
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun Pane.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
+fun EventTarget.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
     val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun Pane.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
+fun EventTarget.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
     val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.spinner(items: ObservableList<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(items)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(valueFactory)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> Pane.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
+fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
     if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
     if (property != null) valueProperty().bindBidirectional(property)
 }, op)
 
-fun <T> Pane.choicebox(values: ObservableList<T>? = null, changeListener: ((ObservableValue<out T>, T?, T?) -> Unit)? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
+fun <T> EventTarget.choicebox(values: ObservableList<T>? = null, changeListener: ((ObservableValue<out T>, T?, T?) -> Unit)? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
     if (values != null) items = values
     if (changeListener != null) selectionModel.selectedItemProperty().addListener(changeListener)
 }, op)
 
-fun <T> Pane.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
+fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     values?.let { items = it }
 }, op)
 
-fun <S> Pane.tableview(items: ObservableList<S>? = null, op: (TableView<S>.() -> Unit)? = null): TableView<S> {
-    val tableview = TableView<S>()
+fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
+    val tableview = TableView<T>()
     if (items != null) tableview.items = items
     return opcr(this, tableview, op)
 }
 
-fun <S> Pane.treeview(root: TreeItem<S>? = null, op: (TreeView<S>.() -> Unit)? = null): TreeView<S> {
-    val treeview = TreeView<S>()
+fun <T> EventTarget.treeview(root: TreeItem<T>? = null, op: (TreeView<T>.() -> Unit)? = null): TreeView<T> {
+    val treeview = TreeView<T>()
     if (root != null) treeview.root = root
     return opcr(this, treeview, op)
 }
 
-fun <S> Pane.treetableview(root: TreeItem<S>? = null, op: (TreeTableView<S>.() -> Unit)? = null): TreeTableView<S> {
-    val treetableview = TreeTableView<S>()
+fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: (TreeTableView<T>.() -> Unit)? = null): TreeTableView<T> {
+    val treetableview = TreeTableView<T>()
     if (root != null) treetableview.root = root
     return opcr(this, treetableview, op)
 }

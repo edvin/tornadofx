@@ -7,12 +7,12 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Control
-import javafx.scene.control.SkinBase
+import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
@@ -213,33 +213,41 @@ interface DIContainer {
     fun <T : Any> getInstance(type: KClass<T>): T
 }
 
-
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-fun <T : Node> opcr(parent: Parent, node: T, op: (T.() -> Unit)? = null): T {
-    parent.addToChildListIfAppliccable(node)
+fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T {
+    parent.addChildIfPossible(node)
     op?.invoke(node)
     return node
 }
 
-fun Parent.addToChildListIfAppliccable(node: Node) {
-    if (this !is BorderPane)
-        getChildList().add(node)
+fun EventTarget.addChildIfPossible(node: Node) {
+    if (this is BorderPane) return
+    if (this is ScrollPane) content = node
+    if (this is Tab) content = node
+    getChildList()?.add(node)
 }
 
 /**
  * Find the list of children from a Parent node. Gleaned code from ControlsFX for this.
  */
-fun Parent.getChildList(): MutableList<Node> = when (this) {
+fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
+    is SplitPane -> items
+    is ToolBar -> items
     is Pane -> children
     is Group -> children
     is Control -> if (skin is SkinBase<*>) (skin as SkinBase<*>).children else getChildrenReflectively()
-    else -> getChildrenReflectively()
+    is Parent -> getChildrenReflectively()
+    else -> null
 }
 
-@Suppress("UNCHECKED_CAST")
-private fun Parent.getChildrenReflectively() = Parent::class.java.getDeclaredMethod("getChildren")?.let {
-    it.isAccessible = true
-    it.invoke(this) as MutableList<Node>
-} ?: throw RuntimeException("Unable to get children for Parent of type " + javaClass)
+@Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+private fun Parent.getChildrenReflectively(): MutableList<Node>? {
+    val getter = this.javaClass.findMethodByName("getChildren")
+    if (getter != null && java.util.List::class.java.isAssignableFrom(getter.returnType)) {
+        getter.isAccessible = true
+        return getter.invoke(this) as MutableList<Node>
+    }
+    return null
+}

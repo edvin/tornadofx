@@ -5,6 +5,7 @@ import javafx.beans.binding.Bindings.createObjectBinding
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
+import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
@@ -16,7 +17,7 @@ import javafx.scene.layout.Priority.SOMETIMES
 import javafx.scene.layout.VBox
 import java.util.concurrent.Callable
 
-fun Pane.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
+fun EventTarget.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
 
 open class Form : VBox() {
 
