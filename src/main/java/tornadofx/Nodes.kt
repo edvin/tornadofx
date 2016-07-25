@@ -162,12 +162,15 @@ fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
     op(this)
 }
 
+@Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
 @JvmName("addView")
 inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
+@Deprecated("Just an alias for += SomeFragment::class", ReplaceWith("this += SomeFragment::class"), DeprecationLevel.WARNING)
 @JvmName("addFragment")
 inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
 
+@Deprecated("Just an alias for += node", ReplaceWith("this += node"), DeprecationLevel.WARNING)
 fun EventTarget.add(node: Node) = plusAssign(node)
 
 @JvmName("plusView")
@@ -177,13 +180,11 @@ operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssi
 operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
 
 operator fun EventTarget.plusAssign(view: UIComponent) {
-    plusAssign(view.root)
-}
-
-operator fun UIComponent.plusAssign(view: UIComponent) {
-    val r = root
-    if (r is Pane)
-        r += view
+    if (this is UIComponent) {
+        root += view
+    } else {
+        this += view.root
+    }
 }
 
 var Region.useMaxWidth: Boolean
