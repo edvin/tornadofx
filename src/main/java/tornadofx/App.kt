@@ -8,8 +8,12 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class App : Application() {
-    open val primaryView: KClass<out View> = DeterminedByParameter::class
+open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+    open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
+
+    init {
+        stylesheet.forEach { importStylesheet(it) }
+    }
 
     override fun start(stage: Stage) {
         FX.registerApplication(this, stage)
