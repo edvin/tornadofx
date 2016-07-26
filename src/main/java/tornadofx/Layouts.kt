@@ -87,31 +87,26 @@ fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
     top = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
-@Deprecated("Use BorderPane.top = yourNode {} instead", ReplaceWith("BorderPane.top = yourNode { }"), DeprecationLevel.WARNING)
 fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     top = topNode
     return opcr(this, topNode, op)
 }
 
-@Deprecated("Use BorderPane.bottom = yourNode {} instead", ReplaceWith("BorderPane.bottom = yourNode { }"), DeprecationLevel.WARNING)
 fun <T : Node> BorderPane.bottom(bottomNode: T, op: (T.() -> Unit)? = null): T {
     bottom = bottomNode
     return opcr(this, bottomNode, op)
 }
 
-@Deprecated("Use BorderPane.left = yourNode {} instead", ReplaceWith("BorderPane.left = yourNode { }"), DeprecationLevel.WARNING)
 fun <T : Node> BorderPane.left(leftNode: T, op: (T.() -> Unit)? = null): T {
     left = leftNode
     return opcr(this, leftNode, op)
 }
 
-@Deprecated("Use BorderPane.right = yourNode {} instead", ReplaceWith("BorderPane.right = yourNode { }"), DeprecationLevel.WARNING)
 fun <T : Node> BorderPane.right(rightNode: T, op: (T.() -> Unit)? = null): T {
     right = rightNode
     return opcr(this, rightNode, op)
 }
 
-@Deprecated("Use BorderPane.center = yourNode {} instead", ReplaceWith("BorderPane.center = yourNode { }"), DeprecationLevel.WARNING)
 fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
     center = centerNode
     return opcr(this, centerNode, op)
