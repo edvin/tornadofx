@@ -1,11 +1,14 @@
 package tornadofx
 
+import javafx.beans.property.ObjectProperty
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
+import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
+import kotlin.reflect.KFunction1
 
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
@@ -80,64 +83,69 @@ fun EventTarget.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPan
 fun EventTarget.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun EventTarget.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
-@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.top = yourNode { }"), DeprecationLevel.WARNING)
-fun BorderPane.top(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    top = if (vbox.children.size == 1) vbox.children[0] else vbox
+@Suppress("UNCHECKED_CAST")
+internal var BorderPane.builderTarget : KFunction1<BorderPane, ObjectProperty<Node>>?
+    get() = properties["tornadofx.builderTarget"] as KFunction1<BorderPane, ObjectProperty<Node>>?
+    set(value) { properties["tornadofx.builderTarget"] = value }
+
+fun BorderPane.top(op: BorderPane.() -> Unit) {
+    builderTarget = BorderPane::topProperty
+    op(this)
+    builderTarget = null
 }
 
+fun BorderPane.bottom(op: BorderPane.() -> Unit) {
+    builderTarget = BorderPane::bottomProperty
+    op(this)
+    builderTarget = null
+}
+
+fun BorderPane.left(op: BorderPane.() -> Unit) {
+    builderTarget = BorderPane::leftProperty
+    op(this)
+    builderTarget = null
+}
+
+fun BorderPane.right(op: BorderPane.() -> Unit) {
+    builderTarget = BorderPane::rightProperty
+    op(this)
+    builderTarget = null
+}
+
+fun BorderPane.center(op: BorderPane.() -> Unit) {
+    builderTarget = BorderPane::centerProperty
+    op(this)
+    builderTarget = null
+}
+
+@Deprecated("Use top = node {} instead")
 fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     top = topNode
     return opcr(this, topNode, op)
 }
 
+@Deprecated("Use bottom = node {} instead")
 fun <T : Node> BorderPane.bottom(bottomNode: T, op: (T.() -> Unit)? = null): T {
     bottom = bottomNode
     return opcr(this, bottomNode, op)
 }
 
+@Deprecated("Use left = node {} instead")
 fun <T : Node> BorderPane.left(leftNode: T, op: (T.() -> Unit)? = null): T {
     left = leftNode
     return opcr(this, leftNode, op)
 }
 
+@Deprecated("Use right = node {} instead")
 fun <T : Node> BorderPane.right(rightNode: T, op: (T.() -> Unit)? = null): T {
     right = rightNode
     return opcr(this, rightNode, op)
 }
 
+@Deprecated("Use center = node {} instead")
 fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
     center = centerNode
     return opcr(this, centerNode, op)
-}
-
-@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.bottom = yourNode { }"), DeprecationLevel.WARNING)
-fun BorderPane.bottom(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    bottom = if (vbox.children.size == 1) vbox.children[0] else vbox
-}
-
-@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.left = yourNode { }"), DeprecationLevel.WARNING)
-fun BorderPane.left(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    left = if (vbox.children.size == 1) vbox.children[0] else vbox
-}
-
-@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.right = yourNode { }"), DeprecationLevel.WARNING)
-fun BorderPane.right(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    right = if (vbox.children.size == 1) vbox.children[0] else vbox
-}
-
-@Deprecated("Properties set on the container will be lost if you add only a single child Node", ReplaceWith("BorderPane.center = yourNode { }"), DeprecationLevel.WARNING)
-fun BorderPane.center(op: (Pane.() -> Unit)? = null) {
-    val vbox = VBox()
-    op?.invoke(vbox)
-    center = if (vbox.children.size == 1) vbox.children[0] else vbox
 }
 
 fun EventTarget.titledpane(title: String, node: Node): TitledPane = opcr(this, TitledPane(title, node))
