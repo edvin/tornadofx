@@ -2,16 +2,20 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.scene.Scene
+import javafx.scene.image.Image
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+open class App(primaryView: KClass<out View>? = null, icon: Image? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+    constructor(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, null, *stylesheet)
+
     open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
 
     init {
+        icon?.let { addStageIcon(it) }
         stylesheet.forEach { importStylesheet(it) }
     }
 
