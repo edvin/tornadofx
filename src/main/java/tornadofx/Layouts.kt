@@ -87,33 +87,14 @@ internal var BorderPane.builderTarget : KFunction1<BorderPane, ObjectProperty<No
     get() = properties["tornadofx.builderTarget"] as KFunction1<BorderPane, ObjectProperty<Node>>?
     set(value) { properties["tornadofx.builderTarget"] = value }
 
-fun BorderPane.top(op: BorderPane.() -> Unit) {
-    builderTarget = BorderPane::topProperty
-    op(this)
-    builderTarget = null
-}
-
-fun BorderPane.bottom(op: BorderPane.() -> Unit) {
-    builderTarget = BorderPane::bottomProperty
-    op(this)
-    builderTarget = null
-}
-
-fun BorderPane.left(op: BorderPane.() -> Unit) {
-    builderTarget = BorderPane::leftProperty
-    op(this)
-    builderTarget = null
-}
-
-fun BorderPane.right(op: BorderPane.() -> Unit) {
-    builderTarget = BorderPane::rightProperty
-    op(this)
-    builderTarget = null
-}
-
-fun BorderPane.center(op: BorderPane.() -> Unit) {
-    builderTarget = BorderPane::centerProperty
-    op(this)
+fun BorderPane.top(op: BorderPane.() -> Unit) = region(BorderPane::topProperty, op)
+fun BorderPane.bottom(op: BorderPane.() -> Unit) = region(BorderPane::bottomProperty, op)
+fun BorderPane.left(op: BorderPane.() -> Unit) = region(BorderPane::leftProperty, op)
+fun BorderPane.right(op: BorderPane.() -> Unit) = region(BorderPane::rightProperty, op)
+fun BorderPane.center(op: BorderPane.() -> Unit) = region(BorderPane::centerProperty, op)
+internal fun BorderPane.region(region: KFunction1<BorderPane, ObjectProperty<Node>>, op: BorderPane.() -> Unit) {
+    builderTarget = region
+    op()
     builderTarget = null
 }
 
