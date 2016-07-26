@@ -9,8 +9,8 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class App(primaryView: KClass<out View>? = null, icon: Image? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
-    constructor(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, null, *stylesheet)
+open class App(icon: Image? = null, primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+    constructor(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(null, primaryView, *stylesheet)
 
     open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
 
