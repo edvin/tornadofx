@@ -3,7 +3,6 @@ package tornadofx
 import javafx.beans.property.ObjectProperty
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
-import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.*
