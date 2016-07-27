@@ -119,8 +119,7 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Injectable> find(componentType: Class<T>) =
-                find(componentType.kotlin)
+        fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
@@ -186,27 +185,31 @@ fun importStylesheet(stylesheet: String) {
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) =
         FX.stylesheets.add("css://${stylesheetType.java.name}")
 
-inline fun <reified T : Injectable> find(): T = find(T::class)
-inline fun <reified T : Fragment> findFragment(): T = findFragment(T::class)
+@Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
+inline fun <reified T : Fragment> findFragment(): T = find(T::class)
+@Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
+fun <T : Fragment> findFragment(type: KClass<T>): T = find(type)
 
-fun <T : Fragment> findFragment(type: KClass<T>): T {
-    val cmp = type.java.newInstance()
-    cmp.init()
-    return cmp
-}
+inline fun <reified T : Component> find(): T = find(T::class)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Injectable> find(type: KClass<T>): T {
-    if (!FX.components.containsKey(type)) {
-        synchronized(FX.lock) {
-            if (!FX.components.containsKey(type)) {
-                val cmp = type.java.newInstance()
-                if (cmp is UIComponent) cmp.init()
-                FX.components[type] = cmp
+fun <T : Component> find(type: KClass<T>): T {
+    if (Injectable::class.java.isAssignableFrom(type.java)) {
+        if (!FX.components.containsKey(type as KClass<out Injectable>)) {
+            synchronized(FX.lock) {
+                if (!FX.components.containsKey(type)) {
+                    val cmp = type.java.newInstance()
+                    if (cmp is UIComponent) cmp.init()
+                    FX.components[type] = cmp
+                }
             }
         }
+        return FX.components[type] as T
     }
-    return FX.components[type] as T
+
+    val cmp = type.java.newInstance()
+    if (cmp is Fragment) cmp.init()
+    return cmp
 }
 
 interface DIContainer {

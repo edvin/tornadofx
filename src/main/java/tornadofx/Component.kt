@@ -103,7 +103,7 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T> inject(): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
     }
 
@@ -111,7 +111,7 @@ abstract class Component {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = findFragment(T::class)
+            if (fragment == null) fragment = find(T::class)
             return fragment!!
         }
     }
@@ -130,14 +130,15 @@ abstract class Component {
      *
      * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
-    inline fun <reified T : Injectable, R> KClass<T>.runAsync(noinline op: T.() -> R) = task { op(find(T::class)) }
+    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(T::class)) }
 
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
      *
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType : Injectable, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType> {
+    inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
+            where InjectableType : Component, InjectableType : Injectable {
         val t = task { invoke(find(InjectableType::class)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
@@ -148,11 +149,21 @@ abstract class Component {
      *
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType : Injectable, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+            where InjectableType : Component, InjectableType : Injectable
+            = task { invoke(find(InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
 
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
-    inline fun <reified InjectableType : Injectable, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null) = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+            where InjectableType : Component, InjectableType : Injectable
+            = task { invoke(find(InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+            where InjectableType : Component, InjectableType : Injectable
+            = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+            where InjectableType : Component, InjectableType : Injectable
+            = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     /**
      * Find the given property inside the given Injectable. Useful for assigning a property from a View or Controller
@@ -160,12 +171,14 @@ abstract class Component {
      *
      * val person = find(UserController::currentPerson)
      */
-    inline fun <reified InjectableType : Injectable, T> get(prop: KProperty1<InjectableType, T>): T {
+    inline fun <reified InjectableType, T> get(prop: KProperty1<InjectableType, T>): T
+            where InjectableType : Component, InjectableType : Injectable {
         val injectable = find(InjectableType::class)
         return prop.get(injectable)
     }
 
-    inline fun <reified InjectableType : Injectable, T> set(prop: KMutableProperty1<InjectableType, T>, value: T) {
+    inline fun <reified InjectableType, T> set(prop: KMutableProperty1<InjectableType, T>, value: T)
+            where InjectableType : Component, InjectableType : Injectable {
         val injectable = find(InjectableType::class)
         return prop.set(injectable, value)
     }
@@ -347,13 +360,13 @@ abstract class UIComponent : Component(), EventTarget {
         }
     }
 
-    inline fun <reified T : View>replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+    inline fun <reified T : View> replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
         return replaceWith(find(view), transition)
     }
 
     @JvmName("replaceWithFragment")
-    inline fun <reified T : Fragment>replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        return replaceWith(findFragment(fragment), transition)
+    inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        return replaceWith(find(fragment), transition)
     }
 
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {

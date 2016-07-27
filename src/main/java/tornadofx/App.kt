@@ -47,18 +47,18 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
             val viewClass = Class.forName(viewClassName)
             if (View::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out View>
             throw IllegalArgumentException("Class specified by --class-name is not a subclass of tornadofx.View")
-        } else {
+         } else {
             return primaryView
         }
     }
 
-    inline fun <reified T : Injectable> inject(): ReadOnlyProperty<App, T> = object : ReadOnlyProperty<App, T> {
+    @Suppress("UNCHECKED_CAST")
+    inline fun <reified T> inject(): ReadOnlyProperty<App, T> where T : Component, T: Injectable = object : ReadOnlyProperty<App, T> {
         override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class)
     }
 
     class DeterminedByParameter : View() {
         override val root = Pane()
     }
-
 
 }

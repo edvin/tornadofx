@@ -7,6 +7,7 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.layout.*
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
@@ -103,6 +104,17 @@ fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     top = topNode
     return opcr(this, topNode, op)
 }
+
+internal fun <C: UIComponent> BorderPane.setRegion(region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
+    region.invoke(this).value = find(nodeType).root
+    return this
+}
+
+fun <C: UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(BorderPane::topProperty, nodeType)
+fun <C: UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(BorderPane::rightProperty, nodeType)
+fun <C: UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(BorderPane::bottomProperty, nodeType)
+fun <C: UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(BorderPane::leftProperty, nodeType)
+fun <C: UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(BorderPane::centerProperty, nodeType)
 
 @Deprecated("Use bottom = node {} instead")
 fun <T : Node> BorderPane.bottom(bottomNode: T, op: (T.() -> Unit)? = null): T {

@@ -10,9 +10,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- `Parent.find` and `UIComponent.find` renamed to `lookup` for better alignment with JavaFX `lookup` and to avoid confusion with `find(View::class)` 
+- Improved `BorderPane` builders, they also now accept `UIComponent` references instead of instances
+- Builders now operate on `EventTarget` instead of `Pane` and as a result, many builders have improved syntax and functionality
+- Reduced boilerplate for `App` creation (you can now use `class MyApp : App(MyView::class, Styles::class)`
 - ViewModel `commit` and `rollback` run on the UI thread because decorators might be invoked 
 - ViewModel `commit` accepts a function that will be run if the commit is successful
-- Reduced boilerplate for `App` creation (you can now use `class MyApp : App(MyView::class, Styles::class)`
+- `find` can now also find `Fragments`, so `findFragment` is deprecated
 
 ## [1.5.2] - 2016-07-21
 

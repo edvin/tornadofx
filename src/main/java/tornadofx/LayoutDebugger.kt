@@ -188,7 +188,7 @@ class LayoutDebugger : Fragment() {
     }
 
     companion object {
-        fun debug(scene: Scene) = with(findFragment<LayoutDebugger>()) {
+        fun debug(scene: Scene) = with(find<LayoutDebugger>()) {
             currentScene = scene
             openModal(modality = Modality.NONE)
         }

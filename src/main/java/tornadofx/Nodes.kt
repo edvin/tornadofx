@@ -167,7 +167,7 @@ fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
 inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 @JvmName("addFragment")
-inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(findFragment(type).root)
+inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 fun EventTarget.add(node: Node) = plusAssign(node)
 
@@ -175,7 +175,7 @@ fun EventTarget.add(node: Node) = plusAssign(node)
 operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 @JvmName("plusFragment")
-operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(findFragment(type).root)
+operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
 
 operator fun EventTarget.plusAssign(view: UIComponent) {
     if (this is UIComponent) {
@@ -750,11 +750,11 @@ inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findA
 /**
  * Find the first UIComponent of the specified type that owns any of this node's children
  */
-inline fun <reified T : UIComponent> Parent.find(): T? = findAll<T>().getOrNull(0)
+inline fun <reified T : UIComponent> Parent.lookup(): T? = findAll<T>().getOrNull(0)
 
 /**
  * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
  */
-inline fun <reified T : UIComponent> UIComponent.find(): T? = findAll<T>().getOrNull(0)
+inline fun <reified T : UIComponent> UIComponent.lookup(): T? = findAll<T>().getOrNull(0)
 
 fun Node.removeFromParent() = parent.getChildList()?.remove(this)
