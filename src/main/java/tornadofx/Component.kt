@@ -272,7 +272,6 @@ abstract class UIComponent : Component(), EventTarget {
                         scene = root.scene
                         this@UIComponent.properties["tornadofx.scene"] = root.scene
                     } else {
-
                         Scene(root).apply {
                             if (escapeClosesWindow) {
                                 addEventFilter(KeyEvent.KEY_PRESSED) {
@@ -288,25 +287,26 @@ abstract class UIComponent : Component(), EventTarget {
                         }
                     }
 
-                    if (!block) {
+                    hookLayoutDebuggerShortcut()
+                }
+
+                with (modalStage!!) {
+                    if (block) {
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
+                            thread(true) {
+                                Thread.sleep(5000)
+                                configureReloading()
+                            }
+                        }
+                        showAndWait()
+                    } else {
                         show()
                         configureReloading()
                     }
-                    hookLayoutDebuggerShortcut()
-                }
-                
-                if (block) {
-                    if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
-                        thread(true) {
-                            Thread.sleep(5000)
-                            modalStage?.configureReloading()
-                        }
-                    }
-                    modalStage?.showAndWait()
-                }
 
-                modalStage!!.showingProperty().addListener { obs, old, showing ->
-                    if (showing) callOnDock() else callOnUndock()
+                    showingProperty().onChange {
+                        if (it == true) callOnDock() else callOnUndock()
+                    }
                 }
             }
         }
