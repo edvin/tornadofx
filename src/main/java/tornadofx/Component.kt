@@ -275,19 +275,21 @@ abstract class UIComponent : Component(), EventTarget {
                         }
                     }
 
-                    if (block) {
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
-                            thread(true) {
-                                Thread.sleep(5000)
-                                configureReloading()
-                            }
-                        }
-                        showAndWait()
-                    } else {
+                    if (!block) {
                         show()
                         configureReloading()
                     }
                     hookLayoutDebuggerShortcut()
+                }
+                
+                if (block) {
+                    if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
+                        thread(true) {
+                            Thread.sleep(5000)
+                            configureReloading()
+                        }
+                    }
+                    modalStage?.showAndWait()
                 }
 
                 modalStage!!.showingProperty().addListener { obs, old, showing ->
