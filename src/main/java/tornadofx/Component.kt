@@ -299,7 +299,7 @@ abstract class UIComponent : Component(), EventTarget {
                     if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
                         thread(true) {
                             Thread.sleep(5000)
-                            configureReloading()
+                            modalStage?.configureReloading()
                         }
                     }
                     modalStage?.showAndWait()
