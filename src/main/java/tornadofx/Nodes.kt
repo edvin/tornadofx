@@ -750,11 +750,19 @@ inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findA
 /**
  * Find the first UIComponent of the specified type that owns any of this node's children
  */
-inline fun <reified T : UIComponent> Parent.lookup(): T? = findAll<T>().getOrNull(0)
+inline fun <reified T : UIComponent> Parent.lookup(noinline op: (T.() -> Unit)? = null): T? {
+    val result = findAll<T>().getOrNull(0)
+    if (result != null) op?.invoke(result)
+    return result
+}
 
 /**
  * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
  */
-inline fun <reified T : UIComponent> UIComponent.lookup(): T? = findAll<T>().getOrNull(0)
+inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Unit)? = null): T? {
+    val result = findAll<T>().getOrNull(0)
+    if (result != null) op?.invoke(result)
+    return result
+}
 
 fun Node.removeFromParent() = parent.getChildList()?.remove(this)
