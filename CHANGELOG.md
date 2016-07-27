@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Set modalStage before showAndWait() (https://github.com/edvin/tornadofx/pull/151)
 - `Parent.find` and `UIComponent.find` renamed to `lookup` for better alignment with JavaFX `lookup` and to avoid confusion with `find(View::class)` 
 - Improved `BorderPane` builders, they also now accept `UIComponent` references instead of instances
 - Builders now operate on `EventTarget` instead of `Pane` and as a result, many builders have improved syntax and functionality
