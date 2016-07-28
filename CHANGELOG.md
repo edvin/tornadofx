@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - LayoutDebugger can edit new Node properties: `spacing`
+- Convenience methods for creating bindings on any object. e.g. `stringBinding(person, person.firstNameProperty, person.lastNameProperty) { "$firstName, #lastName" }`
 
 ### Changed
 
