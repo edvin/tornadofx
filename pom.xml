@@ -32,12 +32,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
+            <artifactId>kotlin-osgi-bundle</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -218,7 +213,6 @@
                 </executions>
                 <configuration>
                     <instructions>
-                        <Export-Package>tornadofx, tornadofx.osgi</Export-Package>
                         <Bundle-Activator>tornadofx.osgi.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
