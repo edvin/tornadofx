@@ -218,7 +218,8 @@
                 </executions>
                 <configuration>
                     <instructions>
-                        <Export-Package>tornadofx</Export-Package>
+                        <Export-Package>tornadofx, tornadofx.osgi</Export-Package>
+                        <Bundle-Activator>tornadofx.osgi.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
             </plugin>
