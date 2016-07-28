@@ -34,9 +34,6 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-private val _log = lazy { Logger.getLogger("CSS") }
-val log: Logger get() = _log.value
-
 interface Rendered {
     fun render(): String
 }
@@ -85,7 +82,7 @@ interface SelectionHolder {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
         if (ruleSets.size > 1) {
-            log.warning { "Selection has ${ruleSets.size} selectors, but only the first will be used" }
+            Stylesheet.log.warning { "Selection has ${ruleSets.size} selectors, but only the first will be used" }
         }
         val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
         addSelection(selection)
@@ -95,8 +92,11 @@ interface SelectionHolder {
 
 open class Stylesheet : SelectionHolder, Rendered {
     companion object {
-        // TODO: Elements?
+        val log: Logger by lazy { Logger.getLogger("CSS") }
+
+        // Elements
         val star by csselement("*")
+        // TODO: Are other elements available by default in JavaFX?
 
         // Style classes used by JavaFX
         val accordion by cssclass()
@@ -956,21 +956,21 @@ open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
 fun c(colorString: String, opacity: Double = 1.0) = try {
     Color.web(colorString, opacity)
 } catch (e: Exception) {
-    log.warning("Error parsing color c('$colorString', opacity=$opacity)")
+    Stylesheet.log.warning("Error parsing color c('$colorString', opacity=$opacity)")
     Color.MAGENTA
 }
 
 fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
     Color.color(red, green, blue, opacity)
 } catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
     Color.MAGENTA
 }
 
 fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
     Color.rgb(red, green, blue, opacity)
 } catch (e: Exception) {
-    log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
+    Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
     Color.MAGENTA
 }
 
