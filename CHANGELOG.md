@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- OSGI manifest metadata
 - LayoutDebugger can edit new Node properties: `spacing`
 
 ### Changed
