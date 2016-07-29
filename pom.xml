@@ -19,12 +19,6 @@
             <version>1.0.4</version>
         </dependency>
         <dependency>
-            <groupId>no.tornado</groupId>
-            <artifactId>tornadofx-controls</artifactId>
-            <version>1.0.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.1</version>
