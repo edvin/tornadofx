@@ -2,6 +2,7 @@ package tornadofx.osgi.impl
 
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.scene.control.Label
 import javafx.stage.Stage
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceEvent.REGISTERED
@@ -21,6 +22,7 @@ class ApplicationListener : Application(), ServiceListener {
 
     companion object {
         lateinit var realPrimaryStage: Stage
+
         init {
             thread(true) {
                 val originalClassLoader = Thread.currentThread().contextClassLoader
@@ -37,37 +39,39 @@ class ApplicationListener : Application(), ServiceListener {
             val entrypoint = appProvider.application
 
             if (event.type == REGISTERED) {
-                if (!hasActiveApplication) startApplication(appProvider)
+                if (!hasActiveApplication) startDelegate(appProvider)
                 else println("An application already running, not starting $entrypoint.")
             } else if (event.type == UNREGISTERING && isRunningApplication(appProvider.application)) {
-                stopApplication()
+                stopDelegate()
             }
         }
     }
 
     override fun start(stage: Stage) {
         realPrimaryStage = stage
+        Platform.setImplicitExit(false)
         FX.installErrorHandler()
     }
 
     override fun stop() {
-        stopApplication()
+        stopDelegate()
     }
 
-    fun startApplication(provider: ApplicationProvider) {
+    fun startDelegate(provider: ApplicationProvider) {
         delegate = provider.application.java.newInstance()
         delegate!!.init()
         Platform.runLater {
-            println("Starting with realPrimaryStage")
             delegate!!.start(realPrimaryStage)
             realPrimaryStage.toFront()
         }
     }
 
-    fun stopApplication() {
-        delegate = null
+    fun stopDelegate() {
         Platform.runLater {
-            realPrimaryStage.hide()
+            delegate!!.stop()
+            realPrimaryStage.close()
+            realPrimaryStage.scene.root = Label("No TornadoFX OSGi Bundle running")
+            delegate = null
         }
     }
 
