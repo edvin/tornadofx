@@ -2,19 +2,17 @@ package tornadofx.osgi
 
 import org.osgi.service.url.URLStreamHandlerService
 import org.osgi.service.url.URLStreamHandlerSetter
-import sun.net.www.protocol.css.Handler
 import tornadofx.FX
 import tornadofx.Stylesheet
 import tornadofx.osgi.impl.bundleContext
 import java.io.InputStream
-import java.net.InetAddress
-import java.net.Proxy
 import java.net.URL
 import java.net.URLConnection
+import java.net.URLStreamHandler
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class CSSURLStreamHandlerService : Handler(), URLStreamHandlerService {
+class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandlerService {
     private lateinit var realHandler: URLStreamHandlerSetter
 
     override fun openConnection(url: URL): URLConnection = CSSURLConnection(url)
@@ -38,43 +36,15 @@ class CSSURLStreamHandlerService : Handler(), URLStreamHandlerService {
         parseURL(u, spec, start, limit)
     }
 
-    override fun parseURL(u: URL?, spec: String?, start: Int, limit: Int) {
-        super.parseURL(u, spec, start, limit)
-    }
-
-    override public fun openConnection(u: URL?, p: Proxy?): URLConnection {
-        return super.openConnection(u, p)
-    }
-
-    override fun hashCode(u: URL?): Int {
-        return super.hashCode(u)
-    }
-
-    override fun sameFile(u1: URL?, u2: URL?): Boolean {
-        return super.sameFile(u1, u2)
-    }
-
     override fun setURL(u: URL?, protocol: String?, host: String?, port: Int, authority: String?, userInfo: String?, path: String?, query: String?, ref: String?) {
         realHandler.setURL(u, protocol, host, port, authority, userInfo, path, query, ref)
     }
 
-    override fun equals(u1: URL?, u2: URL?): Boolean {
-        return super.equals(u1, u2)
-    }
-
-    override fun toExternalForm(u: URL?): String {
-        return super.toExternalForm(u)
-    }
-
-    override fun getHostAddress(u: URL?): InetAddress {
-        return super.getHostAddress(u)
-    }
-
-    override fun hostsEqual(u1: URL?, u2: URL?): Boolean {
-        return super.hostsEqual(u1, u2)
-    }
-
-    override fun getDefaultPort(): Int {
-        return super.getDefaultPort()
-    }
+    override fun hashCode(u: URL) = super.hashCode(u)
+    override fun toExternalForm(u: URL?) = super.toExternalForm(u)
+    override fun equals(u1: URL?, u2: URL?) = super.equals(u1, u2)
+    override fun sameFile(u1: URL?, u2: URL?) = super.sameFile(u1, u2)
+    override fun getDefaultPort() = super.getDefaultPort()
+    override fun getHostAddress(u: URL?) = super.getHostAddress(u)
+    override fun hostsEqual(u1: URL?, u2: URL?) = super.hostsEqual(u1, u2)
 }
