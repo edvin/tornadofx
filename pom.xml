@@ -20,7 +20,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <artifactId>httpclient-osgi</artifactId>
             <version>4.5.1</version>
             <scope>provided</scope>
         </dependency>
@@ -180,6 +180,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
