@@ -1,5 +1,6 @@
 package tornadofx.osgi.impl
 
+import com.sun.javafx.application.PlatformImpl
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.control.Label
@@ -11,6 +12,7 @@ import org.osgi.framework.ServiceListener
 import tornadofx.App
 import tornadofx.FX
 import tornadofx.osgi.ApplicationProvider
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
@@ -21,14 +23,27 @@ class ApplicationListener : Application(), ServiceListener {
     fun isRunningApplication(appClass: KClass<out App>) = appClass == delegate?.javaClass?.kotlin
 
     companion object {
-        lateinit var realPrimaryStage: Stage
+        var realPrimaryStage: Stage? = null
 
-        init {
-            thread(true) {
-                val originalClassLoader = Thread.currentThread().contextClassLoader
-                Thread.currentThread().contextClassLoader = ApplicationListener::class.java.classLoader
-                Application.launch(ApplicationListener::class.java)
-                Thread.currentThread().contextClassLoader = originalClassLoader
+        private val fxRuntimeInitialized: Boolean get() {
+            val initializedField = PlatformImpl::class.java.getDeclaredField("initialized")
+            initializedField.isAccessible = true
+            val initialized = initializedField.get(null) as AtomicBoolean
+            return initialized.get()
+        }
+
+        private fun ensureFxRuntimeInitialized() {
+            if (!fxRuntimeInitialized) {
+                thread(true) {
+                    val originalClassLoader = Thread.currentThread().contextClassLoader
+                    Thread.currentThread().contextClassLoader = ApplicationListener::class.java.classLoader
+                    launch(ApplicationListener::class.java)
+                    Thread.currentThread().contextClassLoader = originalClassLoader
+                }
+                do {
+                    println("Waiting for JavaFX Runtime Startup...")
+                    Thread.sleep(100)
+                } while (!fxRuntimeInitialized)
             }
         }
     }
@@ -58,19 +73,24 @@ class ApplicationListener : Application(), ServiceListener {
     }
 
     fun startDelegate(provider: ApplicationProvider) {
+        ensureFxRuntimeInitialized()
         delegate = provider.application.java.newInstance()
+        while (realPrimaryStage == null) {
+            println("Waiting for Primary Stage to be initialized...")
+            Thread.sleep(100)
+        }
         delegate!!.init()
         Platform.runLater {
-            delegate!!.start(realPrimaryStage)
-            realPrimaryStage.toFront()
+            delegate!!.start(realPrimaryStage!!)
+            realPrimaryStage!!.toFront()
         }
     }
 
     fun stopDelegate() {
         Platform.runLater {
             delegate!!.stop()
-            realPrimaryStage.close()
-            realPrimaryStage.scene.root = Label("No TornadoFX OSGi Bundle running")
+            realPrimaryStage!!.close()
+            realPrimaryStage!!.scene.root = Label("No TornadoFX OSGi Bundle running")
             delegate = null
         }
     }
