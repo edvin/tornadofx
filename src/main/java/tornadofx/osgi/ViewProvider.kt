@@ -12,7 +12,7 @@ import java.util.*
 import kotlin.reflect.KClass
 
 interface ViewProvider {
-    val view: UIComponent
+    fun getView(): UIComponent
     val discriminator: Any?
 }
 
@@ -24,9 +24,8 @@ interface ViewReceiver {
  * Provide this View to other OSGi Bundles. To receive this View, call `Node.addViewWhen` on the containing Node
  */
 fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator: Any? = null) {
-    val view = find(viewType)
     val provider = object : ViewProvider {
-        override val view = view
+        override fun getView() = find(viewType)
         override val discriminator = discriminator
     }
     registerService(ViewProvider::class.java, provider, Hashtable<String, String>())
@@ -43,7 +42,7 @@ fun EventTarget.addViewsWhen(acceptor: (ViewProvider) -> Boolean) {
         override fun viewProvided(provider: ViewProvider) {
             Platform.runLater {
                 if (acceptor.invoke(provider))
-                    plusAssign(provider.view)
+                    plusAssign(provider.getView())
             }
         }
     }

@@ -3,11 +3,22 @@ package tornadofx.osgi.impl
 import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceListener
+import org.osgi.util.tracker.ServiceTracker
 import tornadofx.importStylesheet
 import tornadofx.osgi.StylesheetProvider
 import tornadofx.removeStylesheet
 
 internal class StylesheetListener(val context: BundleContext) : ServiceListener {
+    val tracker = ServiceTracker<StylesheetProvider, Any>(context, context.createFilter("(&(objectClass=${StylesheetProvider::class.java.name}))"), null)
+
+    init {
+        tracker.open()
+        tracker.services?.forEach {
+            it as StylesheetProvider
+            importStylesheet(it.stylesheet)
+        }
+    }
+
     override fun serviceChanged(event: ServiceEvent) {
         if (event.isStylesheetProviderEvent()) {
             val provider = context.getService(event.serviceReference) as StylesheetProvider

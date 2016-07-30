@@ -5,10 +5,12 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.control.Label
 import javafx.stage.Stage
+import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceEvent.REGISTERED
 import org.osgi.framework.ServiceEvent.UNREGISTERING
 import org.osgi.framework.ServiceListener
+import org.osgi.util.tracker.ServiceTracker
 import tornadofx.App
 import tornadofx.FX
 import tornadofx.osgi.ApplicationProvider
@@ -16,15 +18,23 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
-// TODO: Split in two classes, one will be instantiated by the JavaFX Runtime, so this is dirty
+internal class ApplicationListener(val context: BundleContext) : ServiceListener {
+    val tracker = ServiceTracker<ApplicationProvider, Any>(context, context.createFilter("(&(objectClass=${ApplicationProvider::class.java.name}))"), null)
 
-internal class ApplicationListener() : Application(), ServiceListener {
-    var delegate: App? = null
     val hasActiveApplication: Boolean get() = delegate != null
 
     fun isRunningApplication(appClass: KClass<out App>) = appClass == delegate?.javaClass?.kotlin
 
+    init {
+        tracker.open()
+        tracker.services?.forEach {
+            it as ApplicationProvider
+            startDelegateIfPossible(it)
+        }
+    }
+
     companion object {
+        var delegate: App? = null
         var realPrimaryStage: Stage? = null
 
         private val fxRuntimeInitialized: Boolean get() {
@@ -39,47 +49,68 @@ internal class ApplicationListener() : Application(), ServiceListener {
                 thread(true) {
                     val originalClassLoader = Thread.currentThread().contextClassLoader
                     Thread.currentThread().contextClassLoader = ApplicationListener::class.java.classLoader
-                    launch(ApplicationListener::class.java)
+                    Application.launch(ProxyApplication::class.java)
                     Thread.currentThread().contextClassLoader = originalClassLoader
                 }
+                print("Waiting for JavaFX Runtime Startup")
                 do {
-                    println("Waiting for JavaFX Runtime Startup...")
                     Thread.sleep(100)
+                    print(".")
                 } while (!fxRuntimeInitialized)
+                println("[Done]")
             }
         }
+
+        fun stopDelegate() {
+            Platform.runLater {
+                delegate!!.stop()
+                realPrimaryStage!!.close()
+                realPrimaryStage!!.scene.root = Label("No TornadoFX OSGi Bundle running")
+                delegate = null
+            }
+        }
+
     }
 
     override fun serviceChanged(event: ServiceEvent) {
         if (event.isApplicationProviderEvent()) {
-            val appProvider = fxBundleContext.getService(event.serviceReference) as ApplicationProvider
-            val entrypoint = appProvider.application
+            val appProvider = context.getService(event.serviceReference) as ApplicationProvider
 
             if (event.type == REGISTERED) {
-                if (!hasActiveApplication) startDelegate(appProvider)
-                else println("An application already running, not starting $entrypoint.")
-            } else if (event.type == UNREGISTERING && isRunningApplication(entrypoint)) {
+                startDelegateIfPossible(appProvider)
+            } else if (event.type == UNREGISTERING && isRunningApplication(appProvider.application)) {
                 stopDelegate()
             }
         }
     }
 
-    override fun start(stage: Stage) {
-        realPrimaryStage = stage
-        Platform.setImplicitExit(false)
-        FX.installErrorHandler()
+    private fun startDelegateIfPossible(appProvider: ApplicationProvider) {
+        if (!hasActiveApplication) startDelegate(appProvider)
+        else println("An application already running, not starting ${appProvider.application}.")
     }
 
-    override fun stop() {
-        stopDelegate()
+    class ProxyApplication : Application() {
+        override fun start(stage: Stage) {
+            realPrimaryStage = stage
+            Platform.setImplicitExit(false)
+            FX.installErrorHandler()
+        }
+
+        override fun stop() {
+            stopDelegate()
+        }
     }
 
     fun startDelegate(provider: ApplicationProvider) {
         ensureFxRuntimeInitialized()
         delegate = provider.application.java.newInstance()
-        while (realPrimaryStage == null) {
-            println("Waiting for Primary Stage to be initialized...")
-            Thread.sleep(100)
+        if (realPrimaryStage == null) {
+            print("Waiting for Primary Stage to be initialized")
+            while (realPrimaryStage == null) {
+                Thread.sleep(100)
+                print(".")
+            }
+            println("[Done]")
         }
         delegate!!.init()
         Platform.runLater {
@@ -88,23 +119,6 @@ internal class ApplicationListener() : Application(), ServiceListener {
         }
     }
 
-    fun stopDelegate() {
-        Platform.runLater {
-            delegate!!.stop()
-            realPrimaryStage!!.close()
-            realPrimaryStage!!.scene.root = Label("No TornadoFX OSGi Bundle running")
-            delegate = null
-        }
-    }
-
     private fun ServiceEvent.isApplicationProviderEvent() = objectClass == ApplicationProvider::class.qualifiedName
-
-    fun lookForApplicationProviders() {
-        val refs = fxBundleContext.getAllServiceReferences(ApplicationProvider::class.qualifiedName, null)
-        if (refs != null && refs.size > 0) {
-            val provider = fxBundleContext.getService(refs.first()) as ApplicationProvider?
-            if (provider != null) startDelegate(provider)
-        }
-    }
 
 }

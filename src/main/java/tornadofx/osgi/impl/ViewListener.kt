@@ -31,7 +31,7 @@ internal class ViewListener(val context: BundleContext) : ServiceListener {
                 }
             } else if (event.type == ServiceEvent.UNREGISTERING) {
                 Platform.runLater {
-                    provider.view.root.removeFromParent()
+                    provider.getView().root.removeFromParent()
                 }
             }
         } else if (event.isViewReceiverEvent()) {

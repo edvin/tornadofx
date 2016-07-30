@@ -11,7 +11,7 @@ internal class Activator : BundleActivator {
     lateinit var viewListener : ViewListener
 
     override fun start(context: BundleContext) {
-        applicationListener = ApplicationListener()
+        applicationListener = ApplicationListener(context)
         stylesheetListener = StylesheetListener(context)
         viewListener = ViewListener(context)
 
@@ -23,8 +23,6 @@ internal class Activator : BundleActivator {
         cssOptions["url.handler.protocol"] = "css"
         cssOptions["url.content.mimetype"] = "text/css"
         context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
-
-        applicationListener.lookForApplicationProviders()
     }
 
     override fun stop(context: BundleContext) {
