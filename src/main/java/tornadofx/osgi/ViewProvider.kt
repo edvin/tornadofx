@@ -20,6 +20,9 @@ interface ViewReceiver {
     fun viewProvided(provider: ViewProvider)
 }
 
+/**
+ * Provide this View to other OSGi Bundles. To receive this View, call `Node.addViewWhen` on the containing Node
+ */
 fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator: Any? = null) {
     val view = find(viewType)
     val provider = object : ViewProvider {
