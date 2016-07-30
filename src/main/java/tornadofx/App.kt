@@ -27,7 +27,7 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
             val view = find(determinePrimaryView())
 
             stage.apply {
-                scene = Scene(view.root)
+                scene = createPrimaryScene(view)
                 view.properties["tornadofx.scene"] = scene
                 scene.stylesheets.addAll(FX.stylesheets)
                 titleProperty().bind(view.titleProperty)
@@ -39,6 +39,8 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
     }
+
+    open fun createPrimaryScene(view: View) = Scene(view.root)
 
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out View> {
