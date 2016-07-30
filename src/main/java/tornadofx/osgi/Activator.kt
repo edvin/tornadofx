@@ -18,6 +18,8 @@ class Activator : BundleActivator {
         context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
         context.addServiceListener(applicationListener)
         context.addServiceListener(stylesheetListener)
+
+        applicationListener.lookForApplicationProviders(context)
     }
 
     override fun stop(context: BundleContext) {
