@@ -29,7 +29,7 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
             stage.apply {
                 scene = createPrimaryScene(view)
                 view.properties["tornadofx.scene"] = scene
-                scene.stylesheets.addAll(FX.stylesheets)
+                FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
                 hookLayoutDebuggerShortcut()
                 show()

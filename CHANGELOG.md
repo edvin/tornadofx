@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `App.createPrimaryScene` overridable function to specify how the scene for the primary View is created
 - OSGI manifest metadata
 - LayoutDebugger can edit new Node properties: `spacing`
+- Stylesheets can be dynamically added at runtime and will affect all active scenes
 
 ### Changed
 

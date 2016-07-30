@@ -7,6 +7,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
@@ -171,6 +172,16 @@ class FX {
                 }
             }
         }
+
+        fun applyStylesheetsTo(scene: Scene) {
+            scene.stylesheets.addAll(stylesheets)
+            stylesheets.addListener(ListChangeListener {
+                while (it.next()) {
+                    if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
+                    if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
+                }
+            })
+        }
     }
 }
 
@@ -201,6 +212,13 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     val bundleId = FX.getBundleId(stylesheetType)
     if (bundleId != null) url.append("?$bundleId")
     FX.stylesheets.add(url.toString())
+}
+
+fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
+    val url = StringBuilder("css://${stylesheetType.java.name}")
+    val bundleId = FX.getBundleId(stylesheetType)
+    if (bundleId != null) url.append("?$bundleId")
+    FX.stylesheets.remove(url.toString())
 }
 
 @Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
