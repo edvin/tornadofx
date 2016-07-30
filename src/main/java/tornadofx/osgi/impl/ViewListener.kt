@@ -1,27 +1,53 @@
 package tornadofx.osgi.impl
 
+import javafx.application.Platform
+import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceListener
+import org.osgi.util.tracker.ServiceTracker
 import tornadofx.osgi.ViewProvider
 import tornadofx.osgi.ViewReceiver
 import tornadofx.removeFromParent
 
-internal class ViewListener : ServiceListener {
+internal class ViewListener(val context: BundleContext) : ServiceListener {
+    val providerTracker = ServiceTracker<ViewProvider, Any>(context, context.createFilter("(&(objectClass=${ViewProvider::class.java.name}))"), null)
+    val receiverTracker = ServiceTracker<ViewReceiver, Any>(context, context.createFilter("(&(objectClass=${ViewReceiver::class.java.name}))"), null)
+
+    init {
+        providerTracker.open()
+        receiverTracker.open()
+    }
+
     override fun serviceChanged(event: ServiceEvent) {
         if (event.isViewProviderEvent()) {
-            val provider = fxBundleContext.getService(event.serviceReference) as ViewProvider
+            val provider = context.getService(event.serviceReference) as ViewProvider
 
             if (event.type == ServiceEvent.REGISTERED) {
-                viewReceivers.forEach { it.viewProvided(provider) }
+                receiverTracker.services?.forEach {
+                    it as ViewReceiver
+                    Platform.runLater {
+                        it.viewProvided(provider)
+                    }
+                }
             } else if (event.type == ServiceEvent.UNREGISTERING) {
-                provider.view.root.removeFromParent()
+                Platform.runLater {
+                    provider.view.root.removeFromParent()
+                }
+            }
+        } else if (event.isViewReceiverEvent()) {
+            val receiver = context.getService(event.serviceReference) as ViewReceiver
+
+            if (event.type == ServiceEvent.REGISTERED) {
+                providerTracker.services?.forEach {
+                    it as ViewProvider
+                    Platform.runLater {
+                        receiver.viewProvided(it)
+                    }
+                }
             }
         }
     }
 
-    private val viewReceivers: Collection<ViewReceiver> get() =
-        fxBundleContext.getServiceReferences(ViewReceiver::class.java, "(Language=*)")
-                .map { fxBundleContext.getService(it) }
-
     private fun ServiceEvent.isViewProviderEvent() = objectClass == ViewProvider::class.qualifiedName
+    private fun ServiceEvent.isViewReceiverEvent() = objectClass == ViewReceiver::class.qualifiedName
 }

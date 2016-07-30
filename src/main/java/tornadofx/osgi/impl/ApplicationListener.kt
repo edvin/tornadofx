@@ -5,7 +5,6 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.control.Label
 import javafx.stage.Stage
-import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceEvent.REGISTERED
 import org.osgi.framework.ServiceEvent.UNREGISTERING
@@ -13,13 +12,13 @@ import org.osgi.framework.ServiceListener
 import tornadofx.App
 import tornadofx.FX
 import tornadofx.osgi.ApplicationProvider
-import tornadofx.osgi.impl.fxBundleContext
-import tornadofx.osgi.impl.objectClass
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
-internal class ApplicationListener : Application(), ServiceListener {
+// TODO: Split in two classes, one will be instantiated by the JavaFX Runtime, so this is dirty
+
+internal class ApplicationListener() : Application(), ServiceListener {
     var delegate: App? = null
     val hasActiveApplication: Boolean get() = delegate != null
 
@@ -100,10 +99,10 @@ internal class ApplicationListener : Application(), ServiceListener {
 
     private fun ServiceEvent.isApplicationProviderEvent() = objectClass == ApplicationProvider::class.qualifiedName
 
-    fun lookForApplicationProviders(context: BundleContext) {
-        val refs = context.getServiceReferences(ApplicationProvider::class.java, "(Language=*)")
+    fun lookForApplicationProviders() {
+        val refs = fxBundleContext.getAllServiceReferences(ApplicationProvider::class.qualifiedName, null)
         if (refs != null && refs.size > 0) {
-            val provider = context.getService(refs.first())
+            val provider = fxBundleContext.getService(refs.first()) as ApplicationProvider?
             if (provider != null) startDelegate(provider)
         }
     }

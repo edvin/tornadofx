@@ -1,5 +1,6 @@
 package tornadofx.osgi
 
+import javafx.application.Platform
 import javafx.event.EventTarget
 import org.osgi.framework.BundleContext
 import org.osgi.framework.FrameworkUtil
@@ -37,8 +38,10 @@ fun EventTarget.addViewsWhen(acceptor: (ViewProvider) -> Boolean) {
     val context = FrameworkUtil.getBundle(acceptor.javaClass).bundleContext
     val receiver = object : ViewReceiver {
         override fun viewProvided(provider: ViewProvider) {
-            if (acceptor.invoke(provider))
-                plusAssign(provider.view)
+            Platform.runLater {
+                if (acceptor.invoke(provider))
+                    plusAssign(provider.view)
+            }
         }
     }
     context.registerService(ViewReceiver::class.java, receiver, Hashtable<String, String>())

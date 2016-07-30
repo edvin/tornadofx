@@ -1,17 +1,16 @@
 package tornadofx.osgi.impl
 
+import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceListener
 import tornadofx.importStylesheet
 import tornadofx.osgi.StylesheetProvider
-import tornadofx.osgi.impl.fxBundleContext
-import tornadofx.osgi.impl.objectClass
 import tornadofx.removeStylesheet
 
-internal class StylesheetListener : ServiceListener {
+internal class StylesheetListener(val context: BundleContext) : ServiceListener {
     override fun serviceChanged(event: ServiceEvent) {
         if (event.isStylesheetProviderEvent()) {
-            val provider = fxBundleContext.getService(event.serviceReference) as StylesheetProvider
+            val provider = context.getService(event.serviceReference) as StylesheetProvider
 
             if (event.type == ServiceEvent.REGISTERED) {
                 importStylesheet(provider.stylesheet)

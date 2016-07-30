@@ -6,20 +6,25 @@ import org.osgi.service.url.URLStreamHandlerService
 import java.util.*
 
 internal class Activator : BundleActivator {
-    val applicationListener = ApplicationListener()
-    val stylesheetListener = StylesheetListener()
-    val viewListener = ViewListener()
+    lateinit var applicationListener: ApplicationListener
+    lateinit var stylesheetListener: StylesheetListener
+    lateinit var viewListener : ViewListener
 
     override fun start(context: BundleContext) {
-        val cssOptions = Hashtable<String, String>()
-        cssOptions["url.handler.protocol"] = "css"
-        cssOptions["url.content.mimetype"] = "text/css"
-        context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
+        applicationListener = ApplicationListener()
+        stylesheetListener = StylesheetListener(context)
+        viewListener = ViewListener(context)
+
         context.addServiceListener(applicationListener)
         context.addServiceListener(stylesheetListener)
         context.addServiceListener(viewListener)
 
-        applicationListener.lookForApplicationProviders(context)
+        val cssOptions = Hashtable<String, String>()
+        cssOptions["url.handler.protocol"] = "css"
+        cssOptions["url.content.mimetype"] = "text/css"
+        context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
+
+        applicationListener.lookForApplicationProviders()
     }
 
     override fun stop(context: BundleContext) {
