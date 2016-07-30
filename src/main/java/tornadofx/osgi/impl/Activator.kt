@@ -3,14 +3,12 @@ package tornadofx.osgi.impl
 import org.osgi.framework.BundleActivator
 import org.osgi.framework.BundleContext
 import org.osgi.service.url.URLStreamHandlerService
-import tornadofx.osgi.impl.ApplicationListener
-import tornadofx.osgi.impl.CSSURLStreamHandlerService
-import tornadofx.osgi.impl.StylesheetListener
 import java.util.*
 
-class Activator : BundleActivator {
+internal class Activator : BundleActivator {
     val applicationListener = ApplicationListener()
     val stylesheetListener = StylesheetListener()
+    val viewListener = ViewListener()
 
     override fun start(context: BundleContext) {
         val cssOptions = Hashtable<String, String>()
@@ -19,12 +17,11 @@ class Activator : BundleActivator {
         context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
         context.addServiceListener(applicationListener)
         context.addServiceListener(stylesheetListener)
+        context.addServiceListener(viewListener)
 
         applicationListener.lookForApplicationProviders(context)
     }
 
     override fun stop(context: BundleContext) {
-        context.removeServiceListener(applicationListener)
-        context.removeServiceListener(stylesheetListener)
     }
 }

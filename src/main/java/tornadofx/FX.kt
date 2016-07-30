@@ -42,6 +42,15 @@ class FX {
         var dumpStylesheets = false
         var layoutDebuggerShortcut: KeyCodeCombination? = KeyCodeCombination(KeyCode.J, KeyCodeCombination.META_DOWN, KeyCodeCombination.ALT_DOWN)
 
+        val osgiAvailable: Boolean by lazy {
+            try {
+                Class.forName("org.osgi.framework.FrameworkUtil")
+                true
+            } catch (ex: Throwable) {
+                false
+            }
+        }
+
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
         }
@@ -56,14 +65,8 @@ class FX {
          * Try to resolve the OSGi Bundle Id of the given class. This is safe
          * to run even when there isn't an OSGi runtime present.
          */
-        fun getBundleId(classFromBundle: KClass<*>): Long? {
-            try {
-                Class.forName("org.osgi.framework.FrameworkUtil")
-                return FrameworkUtil.getBundle(classFromBundle.java)?.bundleId
-            } catch (ex: Throwable) {
-                return null
-            }
-        }
+        fun getBundleId(classFromBundle: KClass<*>) =
+            if (osgiAvailable) FrameworkUtil.getBundle(classFromBundle.java)?.bundleId else null
 
         /**
          * Load global resource bundle for the current locale. Triggered when the locale changes.
@@ -272,6 +275,11 @@ fun EventTarget.addChildIfPossible(node: Node) {
         }
         is ScrollPane -> content = node
         is Tab -> content = node
+        is TabPane -> {
+            val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
+            val tab = Tab(uicmp?.title ?: node.toString(), node)
+            tabs.add(tab)
+        }
         else -> getChildList()?.add(node)
     }
 }

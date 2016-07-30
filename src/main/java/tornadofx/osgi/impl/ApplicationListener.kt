@@ -13,11 +13,13 @@ import org.osgi.framework.ServiceListener
 import tornadofx.App
 import tornadofx.FX
 import tornadofx.osgi.ApplicationProvider
+import tornadofx.osgi.impl.fxBundleContext
+import tornadofx.osgi.impl.objectClass
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
-class ApplicationListener : Application(), ServiceListener {
+internal class ApplicationListener : Application(), ServiceListener {
     var delegate: App? = null
     val hasActiveApplication: Boolean get() = delegate != null
 
@@ -51,7 +53,7 @@ class ApplicationListener : Application(), ServiceListener {
 
     override fun serviceChanged(event: ServiceEvent) {
         if (event.isApplicationProviderEvent()) {
-            val appProvider = bundleContext.getService(event.serviceReference) as ApplicationProvider
+            val appProvider = fxBundleContext.getService(event.serviceReference) as ApplicationProvider
             val entrypoint = appProvider.application
 
             if (event.type == REGISTERED) {

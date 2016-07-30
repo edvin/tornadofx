@@ -4,7 +4,7 @@ import org.osgi.service.url.URLStreamHandlerService
 import org.osgi.service.url.URLStreamHandlerSetter
 import tornadofx.FX
 import tornadofx.Stylesheet
-import tornadofx.osgi.impl.bundleContext
+import tornadofx.osgi.impl.fxBundleContext
 import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
@@ -12,7 +12,7 @@ import java.net.URLStreamHandler
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandlerService {
+internal class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandlerService {
     private lateinit var realHandler: URLStreamHandlerSetter
 
     override fun openConnection(url: URL): URLConnection = CSSURLConnection(url)
@@ -23,7 +23,7 @@ class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandlerService {
 
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
-            val owningBundle = bundleContext.getBundle(url.query.toLong())!!
+            val owningBundle = fxBundleContext.getBundle(url.query.toLong())!!
             val stylesheet = owningBundle.loadClass(url.host).newInstance() as Stylesheet
             val rendered = stylesheet.render()
             if (FX.dumpStylesheets) println(rendered)
