@@ -1,9 +1,10 @@
-package tornadofx.osgi
+package tornadofx.osgi.impl
 
 import org.osgi.framework.BundleActivator
 import org.osgi.framework.BundleContext
 import org.osgi.service.url.URLStreamHandlerService
 import tornadofx.osgi.impl.ApplicationListener
+import tornadofx.osgi.impl.CSSURLStreamHandlerService
 import tornadofx.osgi.impl.StylesheetListener
 import java.util.*
 

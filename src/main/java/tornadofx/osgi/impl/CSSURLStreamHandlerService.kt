@@ -1,4 +1,4 @@
-package tornadofx.osgi
+package tornadofx.osgi.impl
 
 import org.osgi.service.url.URLStreamHandlerService
 import org.osgi.service.url.URLStreamHandlerSetter

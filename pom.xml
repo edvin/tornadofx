@@ -216,7 +216,7 @@
                 </executions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>tornadofx.osgi.Activator</Bundle-Activator>
+                        <Bundle-Activator>tornadofx.osgi.impl.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
             </plugin>
