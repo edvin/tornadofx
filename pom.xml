@@ -222,6 +222,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>tornadofx.osgi.impl.Activator</Bundle-Activator>
+                        <Bundle-SymbolicName>no.tornado.tornadofx</Bundle-SymbolicName>
                     </instructions>
                 </configuration>
             </plugin>
