@@ -3,8 +3,6 @@ package tornadofx.osgi
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.TableView
 import javafx.scene.input.TransferMode
-import javafx.scene.layout.Pane
-import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import org.osgi.framework.Bundle
 import org.osgi.framework.Bundle.ACTIVE
@@ -33,18 +31,14 @@ class OSGIConsole : View() {
                     items.setAll(fxBundleContext.bundles.toList())
                 }
 
-                val selectedIsActive = booleanBinding(selectionModel.selectedItemProperty()) {
-                    get()?.state == ACTIVE
-                }
-
                 contextmenu {
                     menuitem("Stop") {
                         selectedItem?.stop()
-                    }.disableProperty().bind(selectedIsActive.not())
+                    }
                     menuitem("Start") {
                         selectedItem?.start()
-                    }.disableProperty().bind(selectedIsActive)
-                    menuitem("Uninstall", graphic = iconCross) {
+                    }
+                    menuitem("Uninstall") {
                         selectedItem?.uninstall()
                     }
                     menuitem("Update") {
@@ -92,14 +86,4 @@ class OSGIConsole : View() {
         return "$name | $version"
     }
 
-    val iconCross = icon("M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z")
-
-    fun icon(svg: String) = Pane().apply {
-        style {
-            prefWidth = 16.px
-            prefHeight = prefWidth
-            fill = Color.GRAY
-            shape = svg
-        }
-    }
 }

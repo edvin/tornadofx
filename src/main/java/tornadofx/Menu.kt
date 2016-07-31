@@ -40,7 +40,7 @@ fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = 
 fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name,graphic);
     keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = graphic }
+    graphic?.apply { menuItem.graphic = this }
     onAction?.apply { menuItem.setOnAction { onAction.invoke(it) } }
     this += menuItem
     return menuItem
