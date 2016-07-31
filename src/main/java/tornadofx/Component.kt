@@ -287,7 +287,7 @@ abstract class UIComponent : Component(), EventTarget {
                         }
                     }
 
-                    hookLayoutDebuggerShortcut()
+                    hookGlobalShortcuts()
                 }
 
                 with (modalStage!!) {

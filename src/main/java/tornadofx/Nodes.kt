@@ -23,6 +23,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
+import tornadofx.osgi.OSGIConsole
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -123,10 +124,12 @@ fun Stage.reloadStylesheetsOnFocus() {
     }
 }
 
-fun Stage.hookLayoutDebuggerShortcut() {
+fun Stage.hookGlobalShortcuts() {
     addEventFilter(KeyEvent.KEY_PRESSED) {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
+        if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
+            find(OSGIConsole::class).openModal()
     }
 }
 

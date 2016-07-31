@@ -31,7 +31,7 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
                 view.properties["tornadofx.scene"] = scene
                 FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
-                hookLayoutDebuggerShortcut()
+                hookGlobalShortcuts()
                 show()
             }
             FX.initialized.value = true

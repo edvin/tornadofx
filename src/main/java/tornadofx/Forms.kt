@@ -62,7 +62,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun field(text: String? = null, op: (Pane.() -> Unit)? = null): Field {
+    fun field(text: String? = null, op: (HBox.() -> Unit)? = null): Field {
         val field = Field(text ?: "")
         children.add(field)
         op?.invoke(field.inputContainer)
