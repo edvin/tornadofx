@@ -16,6 +16,15 @@ internal class ViewListener(val context: BundleContext) : ServiceListener {
     init {
         providerTracker.open()
         receiverTracker.open()
+
+        providerTracker.withEach { provider ->
+            receiverTracker.withEach { receiver ->
+                Platform.runLater {
+                    receiver.viewProvided(provider)
+                }
+            }
+        }
+
     }
 
     override fun serviceChanged(event: ServiceEvent) {
@@ -23,8 +32,7 @@ internal class ViewListener(val context: BundleContext) : ServiceListener {
             val provider = context.getService(event.serviceReference) as ViewProvider
 
             if (event.type == ServiceEvent.REGISTERED) {
-                receiverTracker.services?.forEach {
-                    it as ViewReceiver
+                receiverTracker.withEach {
                     Platform.runLater {
                         it.viewProvided(provider)
                     }
@@ -38,8 +46,7 @@ internal class ViewListener(val context: BundleContext) : ServiceListener {
             val receiver = context.getService(event.serviceReference) as ViewReceiver
 
             if (event.type == ServiceEvent.REGISTERED) {
-                providerTracker.services?.forEach {
-                    it as ViewProvider
+                providerTracker.withEach {
                     Platform.runLater {
                         receiver.viewProvided(it)
                     }

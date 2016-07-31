@@ -27,8 +27,7 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
 
     init {
         tracker.open()
-        tracker.services?.forEach {
-            it as ApplicationProvider
+        tracker.withEach {
             startDelegateIfPossible(it)
         }
     }

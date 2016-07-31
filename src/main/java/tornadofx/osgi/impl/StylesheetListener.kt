@@ -13,8 +13,7 @@ internal class StylesheetListener(val context: BundleContext) : ServiceListener 
 
     init {
         tracker.open()
-        tracker.services?.forEach {
-            it as StylesheetProvider
+        tracker.withEach {
             importStylesheet(it.stylesheet)
         }
     }
