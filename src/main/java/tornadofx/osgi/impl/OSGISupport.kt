@@ -9,7 +9,8 @@ import org.osgi.util.tracker.ServiceTracker
 val ServiceEvent.objectClass: String
     get() = (serviceReference.getProperty("objectClass") as Array<String>)[0]
 
-val fxBundleContext = FrameworkUtil.getBundle(Activator::class.java).bundleContext
+val fxBundle = FrameworkUtil.getBundle(Activator::class.java)
+val fxBundleContext = fxBundle.bundleContext
 
 inline fun <S, T> ServiceTracker<S, T>.withEach(fn: (S) -> Unit) {
     services?.forEach {

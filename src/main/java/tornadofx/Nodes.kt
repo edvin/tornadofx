@@ -19,6 +19,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
+import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -128,8 +129,8 @@ fun Stage.hookGlobalShortcuts() {
     addEventFilter(KeyEvent.KEY_PRESSED) {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
-        if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(OSGIConsole::class).openModal()
+        else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
+            find(OSGIConsole::class).openModal(modality = Modality.NONE)
     }
 }
 
