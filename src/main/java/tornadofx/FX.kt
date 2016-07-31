@@ -7,6 +7,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
@@ -19,6 +20,7 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
+import org.osgi.framework.FrameworkUtil
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
@@ -40,6 +42,15 @@ class FX {
         var dumpStylesheets = false
         var layoutDebuggerShortcut: KeyCodeCombination? = KeyCodeCombination(KeyCode.J, KeyCodeCombination.META_DOWN, KeyCodeCombination.ALT_DOWN)
 
+        val osgiAvailable: Boolean by lazy {
+            try {
+                Class.forName("org.osgi.framework.FrameworkUtil")
+                true
+            } catch (ex: Throwable) {
+                false
+            }
+        }
+
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
         }
@@ -49,6 +60,13 @@ class FX {
         private val _messages: SimpleObjectProperty<ResourceBundle> = SimpleObjectProperty()
         var messages: ResourceBundle get() = _messages.get(); set(value) = _messages.set(value)
         fun messagesProperty() = _messages
+
+        /**
+         * Try to resolve the OSGi Bundle Id of the given class. This is safe
+         * to run even when there isn't an OSGi runtime present.
+         */
+        fun getBundleId(classFromBundle: KClass<*>) =
+            if (osgiAvailable) FrameworkUtil.getBundle(classFromBundle.java)?.bundleId else null
 
         /**
          * Load global resource bundle for the current locale. Triggered when the locale changes.
@@ -157,6 +175,16 @@ class FX {
                 }
             }
         }
+
+        fun applyStylesheetsTo(scene: Scene) {
+            scene.stylesheets.addAll(stylesheets)
+            stylesheets.addListener(ListChangeListener {
+                while (it.next()) {
+                    if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
+                    if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
+                }
+            })
+        }
     }
 }
 
@@ -182,8 +210,19 @@ fun importStylesheet(stylesheet: String) {
     FX.stylesheets.add(css.toExternalForm())
 }
 
-fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) =
-        FX.stylesheets.add("css://${stylesheetType.java.name}")
+fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
+    val url = StringBuilder("css://${stylesheetType.java.name}")
+    val bundleId = FX.getBundleId(stylesheetType)
+    if (bundleId != null) url.append("?$bundleId")
+    FX.stylesheets.add(url.toString())
+}
+
+fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
+    val url = StringBuilder("css://${stylesheetType.java.name}")
+    val bundleId = FX.getBundleId(stylesheetType)
+    if (bundleId != null) url.append("?$bundleId")
+    FX.stylesheets.remove(url.toString())
+}
 
 @Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
 inline fun <reified T : Fragment> findFragment(): T = find(T::class)
@@ -236,6 +275,11 @@ fun EventTarget.addChildIfPossible(node: Node) {
         }
         is ScrollPane -> content = node
         is Tab -> content = node
+        is TabPane -> {
+            val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
+            val tab = Tab(uicmp?.title ?: node.toString(), node)
+            tabs.add(tab)
+        }
         else -> getChildList()?.add(node)
     }
 }

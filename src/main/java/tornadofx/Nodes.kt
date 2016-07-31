@@ -765,4 +765,10 @@ inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Un
     return result
 }
 
-fun Node.removeFromParent() = parent.getChildList()?.remove(this)
+fun EventTarget.removeFromParent() {
+    if (this is Tab) {
+        tabPane?.tabs?.remove(this)
+    } else if (this is Node) {
+        parent?.getChildList()?.remove(this)
+    }
+}

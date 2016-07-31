@@ -10,10 +10,8 @@ import java.net.URLStreamHandlerFactory
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class Handler : URLStreamHandler() {
-    override fun openConnection(url: URL): URLConnection {
-        return CSSURLConnection(url)
-    }
+open class Handler : URLStreamHandler() {
+    override fun openConnection(url: URL): URLConnection = CSSURLConnection(url)
 
     class CSSURLConnection(url: URL) : URLConnection(url) {
         override fun connect() { }

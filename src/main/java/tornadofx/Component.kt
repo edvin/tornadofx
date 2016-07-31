@@ -280,7 +280,7 @@ abstract class UIComponent : Component(), EventTarget {
                                 }
                             }
 
-                            stylesheets.addAll(FX.stylesheets)
+                            FX.applyStylesheetsTo(this)
                             icons += FX.primaryStage.icons
                             scene = this
                             this@UIComponent.properties["tornadofx.scene"] = this

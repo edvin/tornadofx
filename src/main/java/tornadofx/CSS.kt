@@ -213,7 +213,7 @@ open class Stylesheet : SelectionHolder, Rendered {
                 log.info("Installing CSS url handler, since it was not picked up automatically")
                 try {
                     URL.setURLStreamHandlerFactory(Handler.HandlerFactory())
-                } catch (installFailed: Exception) {
+                } catch (installFailed: Throwable) {
                     log.log(Level.WARNING, "Unable to install CSS url handler, type safe stylesheets might not work", ex)
                 }
             }

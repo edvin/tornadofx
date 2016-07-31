@@ -13,7 +13,6 @@ import javafx.scene.control.cell.*
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import tornadofx.control.DatePickerTableCell
 import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
@@ -194,19 +193,6 @@ fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit:
     cellFactory = ComboBoxTableCell.forTableColumn(items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
-        property.value = it.newValue
-        afterCommit?.invoke(it)
-    }
-    return this
-}
-
-/**
- * Create an editable DatePicker TableCell. This control requires tornadofx-controls on the classpath.
- */
-fun <S> TableColumn<S, LocalDate?>.useDatePicker(converter: StringConverter<LocalDate>? = DatePickerTableCell.DefaultLocalDateConverter(), afterCommit: ((TableColumn.CellEditEvent<S, LocalDate?>) -> Unit)? = null): TableColumn<S, LocalDate?> {
-    cellFactory = DatePickerTableCell.forTableColumn(converter)
-    setOnEditCommit {
-        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<LocalDate?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
