@@ -324,7 +324,7 @@ abstract class UIComponent : Component(), EventTarget {
 
     val titleProperty = SimpleStringProperty()
     var title: String
-        get() = titleProperty.get()
+        get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
 
     fun <T : Node> fxml(location: String? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
