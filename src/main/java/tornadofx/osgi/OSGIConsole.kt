@@ -20,9 +20,9 @@ class OSGIConsole : View() {
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
                 column<Bundle, Long>("ID", { SimpleObjectProperty(it.value.bundleId) }).fixedWidth(75.0)
-                column<Bundle, String>("State", { SimpleObjectProperty(it.value.getStateName()) }).fixedWidth(120.0)
+                column<Bundle, String>("State", { SimpleObjectProperty(it.value.stateDescription) }).fixedWidth(120.0)
                 column<Bundle, Int>("Level", { SimpleObjectProperty(it.value.state) }).fixedWidth(50.0)
-                column<Bundle, String>("Name", { SimpleObjectProperty(it.value.symbolicName ?: it.value.location) })
+                column<Bundle, String>("Name", { SimpleObjectProperty(it.value.description) })
 
                 items.setAll(fxBundleContext.bundles.toList())
 
@@ -70,7 +70,7 @@ class OSGIConsole : View() {
 
     }
 
-    fun Bundle.getStateName() = when (state) {
+    val Bundle.stateDescription : String get() = when (state) {
         Bundle.ACTIVE -> "Active"
         Bundle.INSTALLED -> "Installed"
         Bundle.RESOLVED -> "Resolved"
@@ -80,4 +80,8 @@ class OSGIConsole : View() {
         else -> "Unknown"
     }
 
+    val Bundle.description : String get() {
+        val name = headers["Bundle-Name"] ?: symbolicName ?: location ?: "?"
+        return "$name | $version"
+    }
 }

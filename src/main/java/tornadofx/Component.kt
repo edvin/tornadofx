@@ -305,10 +305,18 @@ abstract class UIComponent : Component(), EventTarget {
                     }
 
                     showingProperty().onChange {
-                        if (it == true) callOnDock() else callOnUndock()
+                        if (it == true) {
+                            callOnDock()
+                        } else {
+                            modalStage = null
+                            callOnUndock()
+                        }
                     }
                 }
             }
+        } else {
+            if (!modalStage!!.isShowing)
+                modalStage!!.show()
         }
     }
 

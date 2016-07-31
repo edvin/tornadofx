@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- UIComponent.showModal now supports reopening even if modalStage was never removed
 - `fieldset` block now operates on an `HBox` instead of `Pane` so you can write `alignment = Pos.BASELINE_RIGHT` to right-align buttons etc
 - Set modalStage before showAndWait() (https://github.com/edvin/tornadofx/pull/151)
 - `Parent.find` and `UIComponent.find` renamed to `lookup` for better alignment with JavaFX `lookup` and to avoid confusion with `find(View::class)` 
