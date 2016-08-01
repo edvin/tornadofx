@@ -50,6 +50,13 @@ class OSGIConsole : View() {
                     }
                 }
 
+                setOnContextMenuRequested {
+                    val stop = contextMenu.items.find { it.text == "Stop" }!!
+                    val start = contextMenu.items.find { it.text == "Start" }!!
+                    stop.isDisable = selectedItem?.state != Bundle.ACTIVE
+                    start.isDisable = !stop.isDisable
+                }
+
                 setOnDragOver { event ->
                     if (event.dragboard.hasFiles()) event.acceptTransferModes(TransferMode.COPY)
                     event.consume()
