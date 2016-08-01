@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - ViewModel `commit` accepts a function that will be run if the commit is successful
 - `find` can now also find `Fragments`, so `findFragment` is deprecated
 - `lookup` takes an optional op that operates on the UIComponent it found
+- `TreeTableView/TableView.populate` accepts any kind of `Iterable<T>` instead of `List`
 
 ## [1.5.2] - 2016-07-21
 

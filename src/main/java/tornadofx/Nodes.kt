@@ -709,10 +709,10 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     }
 }
 
-fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> List<T>?) =
+fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
         populateTree(root, itemFactory, childFactory)
 
-fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> List<T>?) =
+fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
         populateTree(root, itemFactory, childFactory)
 
 /**
@@ -724,7 +724,7 @@ fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
  * simply wraps the given T in a TreeItem, but you can override it to add icons etc. Lastly, the populateTree
  * function is called for each of the generated child items.
  */
-fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFactory: (TreeItem<T>) -> List<T>?) {
+fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFactory: (TreeItem<T>) -> Iterable<T>?) {
     childFactory.invoke(item)?.map { itemFactory.invoke(it) }?.apply {
         item.children.setAll(this)
         forEach { populateTree(it, itemFactory, childFactory) }
