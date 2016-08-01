@@ -459,7 +459,7 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
 
 abstract class Fragment(title: String? = null) : UIComponent(title)
 
-abstract class View(title: String? = null) : UIComponent(), Injectable
+abstract class View(title: String? = null) : UIComponent(title), Injectable
 
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
