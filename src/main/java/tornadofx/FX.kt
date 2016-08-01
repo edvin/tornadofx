@@ -20,7 +20,7 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
-import org.osgi.framework.FrameworkUtil
+import tornadofx.osgi.impl.getBundleId
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
@@ -61,13 +61,6 @@ class FX {
         private val _messages: SimpleObjectProperty<ResourceBundle> = SimpleObjectProperty()
         var messages: ResourceBundle get() = _messages.get(); set(value) = _messages.set(value)
         fun messagesProperty() = _messages
-
-        /**
-         * Try to resolve the OSGi Bundle Id of the given class. This is safe
-         * to run even when there isn't an OSGi runtime present.
-         */
-        fun getBundleId(classFromBundle: KClass<*>) =
-            if (osgiAvailable) FrameworkUtil.getBundle(classFromBundle.java)?.bundleId else null
 
         /**
          * Load global resource bundle for the current locale. Triggered when the locale changes.
@@ -213,14 +206,14 @@ fun importStylesheet(stylesheet: String) {
 
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
-    val bundleId = FX.getBundleId(stylesheetType)
+    val bundleId = getBundleId(stylesheetType)
     if (bundleId != null) url.append("?$bundleId")
     FX.stylesheets.add(url.toString())
 }
 
 fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
-    val bundleId = FX.getBundleId(stylesheetType)
+    val bundleId = getBundleId(stylesheetType)
     if (bundleId != null) url.append("?$bundleId")
     FX.stylesheets.remove(url.toString())
 }
