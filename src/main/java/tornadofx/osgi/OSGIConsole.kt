@@ -2,10 +2,12 @@ package tornadofx.osgi
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.TableView
+import javafx.scene.control.TextInputDialog
 import javafx.scene.input.TransferMode
 import javafx.stage.FileChooser
 import org.osgi.framework.Bundle
 import org.osgi.framework.Bundle.ACTIVE
+import org.osgi.framework.startlevel.BundleStartLevel
 import tornadofx.*
 import tornadofx.osgi.impl.fxBundleContext
 import java.nio.file.Files
@@ -47,6 +49,11 @@ class OSGIConsole : View() {
                     menuitem("Update from...") {
                         val result = chooseFile("Select file to replace ${selectedItem!!.symbolicName}", arrayOf(FileChooser.ExtensionFilter("OSGi Bundle Jar", "jar")))
                         if (result.isNotEmpty()) selectedItem?.update(Files.newInputStream(result.first().toPath()))
+                    }
+                    menuitem("Set start level...") {
+                        TextInputDialog("").showAndWait().ifPresent {
+                            selectedItem!!.bundleContext.bundle.adapt(BundleStartLevel::class.java).startLevel = it.toInt()
+                        }
                     }
                 }
 
