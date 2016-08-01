@@ -213,7 +213,7 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
-abstract class UIComponent(title: String? = "") : Component(), EventTarget {
+abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
     }
@@ -227,7 +227,6 @@ abstract class UIComponent(title: String? = "") : Component(), EventTarget {
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
 
     fun init() {
-        titleProperty.set(title)
         root.properties["tornadofx.uicomponent"] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
@@ -331,7 +330,7 @@ abstract class UIComponent(title: String? = "") : Component(), EventTarget {
         modalStage = null
     }
 
-    val titleProperty = SimpleStringProperty()
+    val titleProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
