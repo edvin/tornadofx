@@ -213,7 +213,7 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
-abstract class UIComponent : Component(), EventTarget {
+abstract class UIComponent(title: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
     }
@@ -227,6 +227,7 @@ abstract class UIComponent : Component(), EventTarget {
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
 
     fun init() {
+        titleProperty.set(title)
         root.properties["tornadofx.uicomponent"] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
@@ -456,9 +457,9 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
     onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
-abstract class Fragment : UIComponent()
+abstract class Fragment(title: String? = null) : UIComponent(title)
 
-abstract class View : UIComponent(), Injectable
+abstract class View(title: String? = null) : UIComponent(), Injectable
 
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - LayoutDebugger can edit new Node properties: `spacing`
 - Stylesheets can be dynamically added at runtime and will affect all active scenes
 - Convenience methods for creating bindings on any object. e.g. `stringBinding(person, person.firstNameProperty, person.lastNameProperty) { "$firstName, #lastName" }`
+- View/Fragment takes optional title in constructor
 
 ### Changed
 
