@@ -40,7 +40,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.5.0
+  -DarchetypeVersion=1.5.3
 ```
 
 ### Add TornadoFX to your project
@@ -51,14 +51,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.5.2'
+compile 'no.tornado:tornadofx:1.5.3'
 ```
 
 ### What does it look like? (Code snippets)
@@ -87,9 +87,7 @@ class HelloWorld : View() {
 Start your application and show the primary `View` and add a type safe stylesheet
     
 ```kotlin
-class HelloWorldApp : App() {
-	override val primaryView = HelloWorld::class
-
+class HelloWorldApp : App(HelloWorld::class) {
 	init {
 		importStylesheet(Styles::class)
 	}
@@ -111,9 +109,6 @@ Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Build
 
 ```kotlin
 class MyView : View() {
-
-    override val root = VBox()
-
     private val persons = FXCollections.observableArrayList<Person>(
             Person(1, "Samantha Stuart", LocalDate.of(1981,12,4)),
             Person(2, "Tom Marks", LocalDate.of(2001,1,23)),
@@ -121,14 +116,12 @@ class MyView : View() {
             Person(3, "Nicole Williams", LocalDate.of(1998,8,11))
     )
 
-    init {
-        with(root) {
-            tableview(persons) {
-                column("ID", Person::id)
-                column("Name", Person::name)
-                column("Birthday", Person::birthday)
-                column("Age", Person::age)
-            }
+    override val root = vbox {
+        tableview(persons) {
+            column("ID", Person::id)
+            column("Name", Person::name)
+            column("Birthday", Person::birthday)
+            column("Age", Person::age)
         }
     }
 }
@@ -138,15 +131,18 @@ class MyView : View() {
 
 ![](https://i.imgur.com/AGMCP8S.png)
 
-Create a Customer model object that can be converted to and from JSON and complies with JavaFX Property guidelines:
-    
-```kotlin
-class Customer : JsonModel {
-    var id by property<Int>()
-    fun idProperty() = getProperty(Customer::id)
+Create a Customer model object that can be converted to and from JSON and exposes both a JavaFX Property and getter/setter pairs:
 
-    var name by property<String>()
-    fun nameProperty() = getProperty(Customer::name)
+```kotlin
+import tornadofx.getValue
+import tornadofx.setValue
+
+class Customer : JsonModel {
+    val idProperty = SimpleIntegerProperty()
+    var id by idProperty
+
+    val nameProperty = SimpleStringProperty()
+    var name by nameProperty
 
     override fun updateModel(json: JsonObject) {
         with(json) {
@@ -218,15 +214,15 @@ class Styles : Stylesheet() {
 		    fontSize = 20.px
 		    fontWeight = BOLD
 		}
-
-        val flat = mixin {
-            backgroundInsets += box(0.px)
-            borderColor += box(Color.DARKGRAY)
-        }
         
         button {
             padding = box(10.px, 20.px)
             fontWeight = BOLD
+        }
+
+        val flat = mixin {
+            backgroundInsets += box(0.px)
+            borderColor += box(Color.DARKGRAY)
         }
 
         s(button, textInput) {
@@ -264,19 +260,20 @@ with (config) {
 }
 ```
 	
-Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
+Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View` is, so you will
 create a new instance and you can reuse the Fragment in multiple ui locations simultaneously.
  	
 ```kotlin
 class MyFragment : Fragment() {
-	override val root = Hbox(..)
+	override val root = hbox {
+	}
 }
 ```
  	
 Open it in a Modal Window:
  		 	 	
 ```kotlin
-MyFragment().openModal()
+find(MyFragment::class).openModal()
 ``` 
 	 	
 Lookup and embed a `View` inside another `Pane` in one go

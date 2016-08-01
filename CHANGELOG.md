@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.3] - 2016-08-02
+
 ### Added
 
 - `App.createPrimaryScene` overridable function to specify how the scene for the primary View is created
