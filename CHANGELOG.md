@@ -2,7 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.5.4] - 2016-08-03
+
+This release fixes an issue with type safe stylesheets. `importStylesheet(Styles::class)` would fail unless an OSGi runtime was available.
 
 ## [1.5.3] - 2016-08-02
 
