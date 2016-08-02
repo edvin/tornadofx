@@ -206,15 +206,19 @@ fun importStylesheet(stylesheet: String) {
 
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
-    val bundleId = getBundleId(stylesheetType)
-    if (bundleId != null) url.append("?$bundleId")
+    if (FX.osgiAvailable) {
+        val bundleId = getBundleId(stylesheetType)
+        if (bundleId != null) url.append("?$bundleId")
+    }
     FX.stylesheets.add(url.toString())
 }
 
 fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
-    val bundleId = getBundleId(stylesheetType)
-    if (bundleId != null) url.append("?$bundleId")
+    if (FX.osgiAvailable) {
+        val bundleId = getBundleId(stylesheetType)
+        if (bundleId != null) url.append("?$bundleId")
+    }
     FX.stylesheets.remove(url.toString())
 }
 

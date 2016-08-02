@@ -15,11 +15,10 @@ val fxBundle = FrameworkUtil.getBundle(Activator::class.java)
 val fxBundleContext = fxBundle.bundleContext
 
 /**
- * Try to resolve the OSGi Bundle Id of the given class. This is safe
- * to run even when there isn't an OSGi runtime present.
+ * Try to resolve the OSGi Bundle Id of the given class. This function can only be called
+ * if OSGi is available on the classpath.
  */
-fun getBundleId(classFromBundle: KClass<*>) =
-        if (FX.osgiAvailable) FrameworkUtil.getBundle(classFromBundle.java)?.bundleId else null
+fun getBundleId(classFromBundle: KClass<*>) = FrameworkUtil.getBundle(classFromBundle.java)?.bundleId
 
 inline fun <S, T> ServiceTracker<S, T>.withEach(fn: (S) -> Unit) {
     services?.forEach {
