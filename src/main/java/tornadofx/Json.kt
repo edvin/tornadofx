@@ -141,6 +141,7 @@ class JsonBuilder {
                 is LocalDate -> add(key, this)
                 is LocalDateTime -> add(key, this)
                 is String -> add(key, this)
+                is JsonModel -> add(key, this)
             }
         }
     }
@@ -225,6 +226,13 @@ class JsonBuilder {
     fun add(key: String, value: JsonObject?): JsonBuilder {
         if (value != null)
             delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: JsonModel?): JsonBuilder {
+        if (value != null)
+            add(key, value.toJSON())
 
         return this
     }

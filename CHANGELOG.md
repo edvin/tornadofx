@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.5-SNAPSHOT]
+
+- `json.add(key, JsonModel)` automatically converts to JSON
+
 ## [1.5.4] - 2016-08-03
 
 This release fixes an issue with type safe stylesheets. `importStylesheet(Styles::class)` would fail unless an OSGi runtime was available.
