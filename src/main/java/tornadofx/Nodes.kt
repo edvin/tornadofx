@@ -2,6 +2,7 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
+import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.HPos
@@ -440,14 +441,14 @@ fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) 
 val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
 
-fun <T> TableView<T>.asyncItems(func: () -> ObservableList<T>) =
-        task { func() } success { if (items == null) items = it else items.setAll(it) }
+fun <T> TableView<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> ListView<T>.asyncItems(func: () -> ObservableList<T>) =
-        task { func() } success { if (items == null) items = it else items.setAll(it) }
+fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> ComboBox<T>.asyncItems(func: () -> ObservableList<T>) =
-        task { func() } success { if (items == null) items = it else items.setAll(it) }
+fun <T> ComboBox<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     selectionModel.selectedItemProperty().addListener { obs, old, new ->

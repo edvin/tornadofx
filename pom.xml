@@ -99,6 +99,12 @@
 			<organization>Southwest Airlines</organization>
 			<organizationUrl>https://www.southwest.com/</organizationUrl>
 	</developer>
+        <developer>
+            <name>Matthew Turnblom</name>
+            <email>uberawesomeemailaddressofdoom@gmail.com</email>
+            <organization>Xactware</organization>
+            <organizationUrl>https://www.xactware.com/</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
