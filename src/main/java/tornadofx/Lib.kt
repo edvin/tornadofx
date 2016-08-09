@@ -100,7 +100,19 @@ fun <T> task(func: () -> T) = object : Task<T>() {
     Thread(this).start()
 }
 
-infix fun <T> Task<T>.success(func: (T) -> Unit) = apply { setOnSucceeded { Platform.runLater { func(value) } } }
+infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> {
+    Platform.runLater {
+        setOnSucceeded { func(value) }
+    }
+    return this
+}
+
+infix fun <T> Task<T>.fail(func: (Throwable) -> Unit): Task<T> {
+    Platform.runLater {
+        setOnFailed { func(exception) }
+    }
+    return this
+}
 
 fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
     val content = ClipboardContent()
