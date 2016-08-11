@@ -15,26 +15,33 @@ import java.util.logging.Logger
 class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
     val log = Logger.getLogger("ErrorHandler")
 
+    companion object {
+        // By default, all error messages are shown. Override to decide if certain errors should be handled another way
+        var errorDialogFilter: (Thread, Throwable) -> Boolean = { t, error -> true }
+    }
+
     override fun uncaughtException(t: Thread, error: Throwable) {
         log.log(Level.SEVERE, "Uncaught error", error)
 
-        Platform.runLater {
-            val cause = Label(if (error.cause != null) error.cause?.message else "").apply {
-                style = "-fx-font-weight: bold"
-            }
+        if (errorDialogFilter(t, error)) {
+            Platform.runLater {
+                val cause = Label(if (error.cause != null) error.cause?.message else "").apply {
+                    style = "-fx-font-weight: bold"
+                }
 
-            val textarea = TextArea().apply {
-                prefRowCount = 20
-                prefColumnCount = 50
-                text = stringFromError(error)
-            }
+                val textarea = TextArea().apply {
+                    prefRowCount = 20
+                    prefColumnCount = 50
+                    text = stringFromError(error)
+                }
 
-            Alert(ERROR).apply {
-                title = error.message ?: "An error occured"
-                isResizable = true
-                headerText = "Error in " + error.stackTrace[0].toString()
-                dialogPane.content = VBox(cause, textarea)
-                showAndWait()
+                Alert(ERROR).apply {
+                    title = error.message ?: "An error occured"
+                    isResizable = true
+                    headerText = "Error in " + error.stackTrace[0].toString()
+                    dialogPane.content = VBox(cause, textarea)
+                    showAndWait()
+                }
             }
         }
     }
