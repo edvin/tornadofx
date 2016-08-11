@@ -15,15 +15,23 @@ import java.util.logging.Logger
 class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
     val log = Logger.getLogger("ErrorHandler")
 
+    class ErrorEvent(val thread: Thread, val error: Throwable) {
+        internal var consumed = false
+        fun consume() { consumed = true }
+    }
+
     companion object {
-        // By default, all error messages are shown. Override to decide if certain errors should be handled another way
-        var errorDialogFilter: (Thread, Throwable) -> Boolean = { t, error -> true }
+        // By default, all error messages are shown. Override to decide if certain errors should be handled another way.
+        // Call consume to avoid error dialog.
+        var filter: (ErrorEvent) -> Unit = { }
     }
 
     override fun uncaughtException(t: Thread, error: Throwable) {
         log.log(Level.SEVERE, "Uncaught error", error)
 
-        if (errorDialogFilter(t, error)) {
+        val event = ErrorEvent(t, error)
+        filter(event)
+        if (!event.consumed) {
             Platform.runLater {
                 val cause = Label(if (error.cause != null) error.cause?.message else "").apply {
                     style = "-fx-font-weight: bold"
