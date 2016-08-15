@@ -113,8 +113,9 @@ fun JsonObject.boolean(key: String) = bool(key) // Alias
 fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
 fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
 
+fun JsonNumber.datetime() = LocalDateTime.ofEpochSecond(longValue(), 0, ZoneOffset.UTC)
+fun JsonObject.getDateTime(key: String): LocalDateTime = getJsonNumber(key).datetime()
 fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key)) getDateTime(key) else null
-fun JsonObject.getDateTime(key: String): LocalDateTime = LocalDateTime.ofEpochSecond(getJsonNumber(key).longValue(), 0, ZoneOffset.UTC)
 
 fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) getUUID(key) else null
 fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
