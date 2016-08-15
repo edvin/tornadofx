@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.5-SNAPSHOT]
 
-- DefaultErrorHandler.errorDialogFilter decides wether an exception should result in an error dialog or not. (Default always true)
+- `DefaultErrorHandler.filter` listens to uncaught errors and can consume them to avoid the default error dialog.
 - `json.add(key, JsonModel)` automatically converts to JSON
 
 ## [1.5.4] - 2016-08-03
