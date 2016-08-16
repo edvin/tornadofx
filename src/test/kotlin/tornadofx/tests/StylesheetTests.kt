@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.layout.Pane
 import javafx.scene.paint.*
@@ -6,6 +6,7 @@ import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import org.junit.Assert
 import org.junit.Test
+import tornadofx.*
 import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.label

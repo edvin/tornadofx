@@ -1,4 +1,7 @@
-package tornadofx
+package tornadofx.tests
+
+import tornadofx.getProperty
+import tornadofx.property
 
 class Person(name: String, age: Int) {
     constructor() : this("", 18)

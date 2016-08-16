@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.Fragment
 
 class FXMLTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()

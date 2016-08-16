@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
@@ -6,6 +6,12 @@ import javafx.beans.property.SimpleStringProperty
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import tornadofx.observable
+import tornadofx.onChange
+import tornadofx.property
+import tornadofx.singleAssign
+import tornadofx.getValue
+import tornadofx.setValue
 import kotlin.test.assertEquals
 
 class PropertiesTest {

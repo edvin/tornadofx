@@ -1,10 +1,14 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.input.DataFormat
 import javafx.stage.Stage
 import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.Controller
+import tornadofx.FX
+import tornadofx.putString
+import tornadofx.setContent
 
 class ClipboardTest {
 

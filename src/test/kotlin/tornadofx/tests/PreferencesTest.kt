@@ -1,7 +1,8 @@
-package tornadofx
+package tornadofx.tests
 
 import org.junit.Assert
 import org.junit.Test
+import tornadofx.Controller
 
 class PreferencesTest {
 

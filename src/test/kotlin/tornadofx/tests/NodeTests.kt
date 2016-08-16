@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
@@ -8,6 +8,7 @@ import javafx.stage.Stage
 import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

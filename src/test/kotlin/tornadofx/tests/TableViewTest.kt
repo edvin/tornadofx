@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
@@ -12,6 +12,9 @@ import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
+import tornadofx.column
+import tornadofx.makeIndexColumn
+import tornadofx.tableview
 import java.nio.file.Paths
 
 class TableViewTest {

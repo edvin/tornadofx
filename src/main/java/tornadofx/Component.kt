@@ -288,11 +288,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     }
 
                     hookGlobalShortcuts()
-                }
 
-                with (modalStage!!) {
                     if (block) {
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadStylesheetsOnFocus) {
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             thread(true) {
                                 Thread.sleep(5000)
                                 configureReloading()

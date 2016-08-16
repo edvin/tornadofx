@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
@@ -8,6 +8,7 @@ import javafx.stage.Stage
 import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.*
 
 open class ViewModelTests {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()

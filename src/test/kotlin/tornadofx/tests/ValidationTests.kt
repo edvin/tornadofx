@@ -1,8 +1,12 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.control.TextField
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.FX
+import tornadofx.ValidationContext
+import tornadofx.ValidationMessage
+import tornadofx.ValidationSeverity
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
