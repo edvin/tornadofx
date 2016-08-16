@@ -1,7 +1,5 @@
 package tornadofx.testapps
 
-import javafx.stage.Modality
-import javafx.stage.StageStyle
 import tornadofx.*
 
 class ReloadStylesInModal : App(MainView::class, Styles::class) {
