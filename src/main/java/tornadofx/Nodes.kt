@@ -74,6 +74,27 @@ fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() ->
 fun Scene.reloadStylesheets() {
     val styles = stylesheets.toMutableList()
     stylesheets.clear()
+    styles.toTypedArray().forEachIndexed { i, s ->
+        if (s.startsWith("css://")) {
+            val b = StringBuilder()
+            val queryPairs = mutableListOf<String>()
+
+            if (s.contains("?")) {
+                val urlAndQuery = s.split(Regex("\\?"), 2)
+                b.append(urlAndQuery[0])
+                val query = urlAndQuery[1]
+
+                val pairs = query.split("&")
+                pairs.filterNot { it.startsWith("squash=") }.forEach { queryPairs.add(it) }
+            } else {
+                b.append(s)
+            }
+
+            queryPairs.add("squash=${System.currentTimeMillis()}")
+            b.append("?").append(queryPairs.joinToString("&"))
+            styles[i] = b.toString()
+        }
+    }
     stylesheets.addAll(styles)
 }
 
