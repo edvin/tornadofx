@@ -60,7 +60,10 @@ fun <T> EventTarget.choicebox(values: ObservableList<T>? = null, changeListener:
 }, op)
 
 fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
-    values?.let { items = it }
+    if (values != null) {
+        if (values is SortedFilteredList<T>) values.bindTo(this)
+        else items = values
+    }
 }, op)
 
 fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
