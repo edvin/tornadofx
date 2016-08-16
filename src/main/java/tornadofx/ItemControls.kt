@@ -65,7 +65,10 @@ fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>
 
 fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
-    if (items != null) tableview.items = items
+    if (items != null) {
+        if (items is SortedFilteredList<T>) items.bindTo(tableview)
+        else tableview.items = items
+    }
     return opcr(this, tableview, op)
 }
 
