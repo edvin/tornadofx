@@ -289,6 +289,15 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
                     hookGlobalShortcuts()
 
+                    showingProperty().onChange {
+                        if (it == true) {
+                            callOnDock()
+                        } else {
+                            modalStage = null
+                            callOnUndock()
+                        }
+                    }
+
                     if (block) {
                         if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             thread(true) {
@@ -302,14 +311,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                         configureReloading()
                     }
 
-                    showingProperty().onChange {
-                        if (it == true) {
-                            callOnDock()
-                        } else {
-                            modalStage = null
-                            callOnUndock()
-                        }
-                    }
                 }
             }
         } else {
