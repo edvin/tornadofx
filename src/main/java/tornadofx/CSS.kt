@@ -90,7 +90,7 @@ interface SelectionHolder {
     }
 }
 
-open class Stylesheet : SelectionHolder, Rendered {
+open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHolder, Rendered {
     companion object {
         val log: Logger by lazy { Logger.getLogger("CSS") }
 
@@ -230,7 +230,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         selections -= selection
     }
 
-    override fun render() = selections.joinToString(separator = "") { it.render() }
+    override fun render() = imports.map { "@import url(css://${it.java.name})" }.joinToString(separator = "\n", postfix = "\n") +
+            selections.joinToString(separator = "") { it.render() }
 
     val base64URL: URL get() {
         val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
@@ -628,7 +629,7 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
                 for ((name, value) in it) {
                     append("    $name: ${PropertyHolder.toCss(value)};\n")
                 }
-                append("}\n\n")
+                append("}\n")
             }
         }
         for ((selection, refine) in block.selections) {
