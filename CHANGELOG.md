@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.5-SNAPSHOT]
 
+- `resizeColumnsToFitContent` has `afterResize` callback parameter
 - SortedFilteredList.asyncItems function
 - SortedFilteredList can now be assigned as items to tableview/listview builder without calling `bindTo`
 - `DefaultErrorHandler.filter` listens to uncaught errors and can consume them to avoid the default error dialog.
