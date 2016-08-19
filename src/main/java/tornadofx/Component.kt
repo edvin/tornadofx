@@ -428,11 +428,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             }
             replaceDelegate.apply {
                 if (transition != null) {
-
                     val idx = children.indexOf(root)
                     children.remove(root)
                     val temp = StackPane(root, replacement.root)
-
                     children.add(idx, temp)
 
                     transition.invoke(this@UIComponent, replacement, {
