@@ -420,6 +420,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 if (borderpane.center == root) borderpane.center = tempParent
                 if (borderpane.left == root) borderpane.left = tempParent
                 if (borderpane.right == root) borderpane.right = tempParent
+                root.removeFromParent()
                 tempParent.add(root)
                 tempParent
             } else {
@@ -427,10 +428,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             }
             replaceDelegate.apply {
                 if (transition != null) {
+
+                    val idx = children.indexOf(root)
+                    children.remove(root)
                     val temp = StackPane(root, replacement.root)
 
-                    children.remove(root)
-                    val idx = children.indexOf(root)
                     children.add(idx, temp)
 
                     transition.invoke(this@UIComponent, replacement, {
