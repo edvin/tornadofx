@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.5-SNAPSHOT]
 
+- Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the styleshet class)
 - `resizeColumnsToFitContent` has `afterResize` callback parameter
 - SortedFilteredList.asyncItems function
 - SortedFilteredList can now be assigned as items to tableview/listview builder without calling `bindTo`
