@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - SortedFilteredList can now be assigned as items to tableview/listview builder without calling `bindTo`
 - `DefaultErrorHandler.filter` listens to uncaught errors and can consume them to avoid the default error dialog.
 - `json.add(key, JsonModel)` automatically converts to JSON
+- CSS DSL now supports imports through constructor parameters. e.g. `class DialogStyle : StyleSheet(BaseStyle::class) { ... }`
 
 ## [1.5.4] - 2016-08-03
 
