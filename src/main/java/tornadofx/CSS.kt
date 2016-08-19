@@ -199,6 +199,16 @@ open class Stylesheet : SelectionHolder, Rendered {
         val even by csspseudoclass()
         val odd by csspseudoclass()
 
+        init {
+            detectAndInstallUrlHandler()
+            detectAndImportServiceProvidedStylesheets()
+        }
+
+        private fun detectAndImportServiceProvidedStylesheets() {
+            val loader = ServiceLoader.load(Stylesheet::class.java)
+            for (style in loader) importStylesheet(style.javaClass.kotlin)
+        }
+
         /**
          * Try to retrieve a type safe stylesheet, and force installation of url handler
          * if it's missing. This typically happens in environments with atypical class loaders.
@@ -206,7 +216,7 @@ open class Stylesheet : SelectionHolder, Rendered {
          * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
          * up by the JVM automatically.
          */
-        init {
+        private fun detectAndInstallUrlHandler() {
             try {
                 URL("css://content:64")
             } catch (ex: MalformedURLException) {
