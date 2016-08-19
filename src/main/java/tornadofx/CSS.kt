@@ -201,10 +201,9 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
 
         init {
             detectAndInstallUrlHandler()
-            detectAndImportServiceProvidedStylesheets()
         }
 
-        private fun detectAndImportServiceProvidedStylesheets() {
+        fun importServiceLoadedStylesheets() {
             val loader = ServiceLoader.load(Stylesheet::class.java)
             for (style in loader) importStylesheet(style.javaClass.kotlin)
         }
@@ -296,7 +295,7 @@ open class PropertyHolder {
                 is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
                 is Array<*> -> return value.joinToString { toCss(it) }
                 is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
-                is KClass<*> -> return value.simpleName ?: "none"
+                is KClass<*> -> return "\"${value.qualifiedName}\""
                 is CssProperty<*> -> return value.name
                 is Raw -> return value.name
                 is String -> return "\"$value\""

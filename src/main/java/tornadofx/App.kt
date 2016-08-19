@@ -17,6 +17,7 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
     open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
 
     init {
+        Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }
     }
 
