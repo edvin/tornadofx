@@ -15,6 +15,7 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
@@ -379,7 +380,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        if (root.scene != null) {
+        if (root == root.scene?.root) {
             val scene = root.scene
 
             if (scene.window is Stage) {
@@ -411,7 +412,20 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
             return true
         } else if (root.parent is Pane) {
-            (root.parent as Pane).apply {
+            val replaceDelegate = if (root.parent is BorderPane) {
+                val borderpane = root.parent as BorderPane
+                val tempParent = StackPane()
+                if (borderpane.top == root) borderpane.top = tempParent
+                if (borderpane.bottom == root) borderpane.bottom = tempParent
+                if (borderpane.center == root) borderpane.center = tempParent
+                if (borderpane.left == root) borderpane.left = tempParent
+                if (borderpane.right == root) borderpane.right = tempParent
+                tempParent.add(root)
+                tempParent
+            } else {
+                root.parent as Pane
+            }
+            replaceDelegate.apply {
                 if (transition != null) {
                     val temp = StackPane(root, replacement.root)
 

@@ -28,7 +28,9 @@ class ReloadStylesInModal : App(MainView::class, Styles::class) {
         }
     }
 
-    class Styles : Stylesheet() {
+    class Styles : Stylesheet(Base::class)
+
+    class Base : Stylesheet() {
         init {
             button {
                 fontSize = 30.px
