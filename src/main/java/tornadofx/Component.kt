@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
@@ -427,22 +428,24 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 root.parent as Pane
             }
             replaceDelegate.apply {
+                val childList = getChildList()!!
+
+                val index = childList.indexOf(root)
+                root.removeFromParent()
+
                 if (transition != null) {
-                    val idx = children.indexOf(root)
-                    children.remove(root)
                     val temp = StackPane(root, replacement.root)
-                    children.add(idx, temp)
+                    childList.add(index, temp)
 
                     transition.invoke(this@UIComponent, replacement, {
-                        val index = children.indexOf(temp)
-                        temp.children.remove(replacement.root)
-                        children.remove(temp)
-                        children.add(index, replacement.root)
+                        root.removeFromParent()
+                        replacement.root.removeFromParent()
+                        temp.removeFromParent()
+                        childList.add(index, replacement.root)
                     })
                 } else {
-                    val index = children.indexOf(root)
-                    children.remove(root)
-                    children.add(index, replacement.root)
+                    replacement.root.removeFromParent()
+                    childList.add(index, replacement.root)
                 }
                 return true
             }
