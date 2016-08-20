@@ -761,9 +761,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"]?.let {
-    if (it is T) it else null
-}
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children

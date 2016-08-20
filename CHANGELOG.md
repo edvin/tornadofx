@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.5]
 
-- Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the styleshet class)
+- Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
 - Default constructor was re-added to `tornadofx.App` to support `Run View` in IDEA Plugin
 - `resizeColumnsToFitContent` has `afterResize` callback parameter
 - SortedFilteredList.asyncItems function

@@ -413,14 +413,31 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
             return true
         } else if (root.parent is Pane) {
+            var unwrapper: ((Node) -> Unit)? = null
+
             val replaceDelegate = if (root.parent is BorderPane) {
                 val borderpane = root.parent as BorderPane
                 val tempParent = StackPane()
-                if (borderpane.top == root) borderpane.top = tempParent
-                if (borderpane.bottom == root) borderpane.bottom = tempParent
-                if (borderpane.center == root) borderpane.center = tempParent
-                if (borderpane.left == root) borderpane.left = tempParent
-                if (borderpane.right == root) borderpane.right = tempParent
+                if (borderpane.top == root) {
+                    borderpane.top = tempParent
+                    unwrapper = { borderpane.top = it }
+                }
+                if (borderpane.bottom == root) {
+                    borderpane.bottom = tempParent
+                    unwrapper = { borderpane.bottom = it }
+                }
+                if (borderpane.center == root) {
+                    borderpane.center = tempParent
+                    unwrapper = { borderpane.center = it }
+                }
+                if (borderpane.left == root) {
+                    borderpane.left = tempParent
+                    unwrapper = { borderpane.left = it }
+                }
+                if (borderpane.right == root) {
+                    borderpane.right = tempParent
+                    unwrapper = { borderpane.right = it }
+                }
                 root.removeFromParent()
                 tempParent.add(root)
                 tempParent
@@ -442,10 +459,12 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                         replacement.root.removeFromParent()
                         temp.removeFromParent()
                         childList.add(index, replacement.root)
+                        unwrapper?.invoke(replacement.root)
                     })
                 } else {
                     replacement.root.removeFromParent()
                     childList.add(index, replacement.root)
+                    unwrapper?.invoke(replacement.root)
                 }
                 return true
             }
