@@ -11,7 +11,6 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
@@ -368,6 +367,45 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 log.warning("Property $key of $thisRef did not resolve to the correct type. Check declaration in ${thisRef.fxmlLoader!!.location}")
 
             throw IllegalArgumentException("Property $key does not match fx:id declaration")
+        }
+    }
+
+    inline fun <reified T : View> replaceWith(view: KClass<T>, transition: ViewTransition2? = null) {
+        return replaceWith(find(view), transition)
+    }
+
+    @JvmName("replaceWithFragment")
+    inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, transition: ViewTransition2? = null) {
+        return replaceWith(find(fragment), transition)
+    }
+
+    private var transitioning = false
+
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition2? = null) {
+        if (transitioning || replacement.transitioning) {
+            // TODO: Cannot transition
+            return
+        }
+        if (root == root.scene?.root) {
+            val scene = root.scene
+
+            (scene.window as? Stage)?.apply {
+                titleProperty().unbind()
+                titleProperty().bind(replacement.titleProperty)
+            }
+
+            if (transition != null) {
+                transition.call(this, replacement, { scene.root = it }, { scene.root = it.root })
+            } else {
+                with(replacement) {
+                    removeFromParent()
+                    scene.root = root
+                }
+            }
+        } else if (root.parent is Pane) {
+            // TODO: Replace in parent
+        } else {
+            // TODO: Cannot replace view
         }
     }
 

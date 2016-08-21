@@ -5,6 +5,7 @@ import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.event.EventTarget
+import javafx.scene.layout.StackPane
 import javafx.util.Duration
 import java.util.*
 
@@ -79,6 +80,43 @@ val Number.hours: Duration get() = Duration.hours(this.toDouble())
 
 operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
 operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
+
+
+
+abstract class ViewTransition2(val newOnTop: Boolean = true, val transition: (UIComponent, UIComponent) -> Animation) {
+    open val onComplete: (() -> Unit)? = null  // TODO: Is this right?
+
+    fun call(current: UIComponent, replacement: UIComponent, attach: (StackPane) -> Unit, cleanup: (UIComponent) -> Unit) {
+        current.muteDocking = true
+        replacement.muteDocking = true
+
+        val stack = stack(current, replacement)
+        attach(stack)
+
+        val animation = transition(current, replacement)
+        val oldFinish: EventHandler<ActionEvent>? = animation.onFinished
+        animation.setOnFinished {
+            stack.children.clear()
+            current.removeFromParent()
+            replacement.removeFromParent()
+            current.muteDocking = false
+            replacement.muteDocking = false
+            cleanup(replacement)
+            oldFinish?.handle(it)
+            onComplete?.invoke()
+        }
+        animation.play()
+    }
+
+    fun swapViews() {
+        // TODO: How would this work?
+    }
+
+    fun stack(current: UIComponent, replacement: UIComponent): StackPane {
+        // TODO: Remove parent from it's parent?
+        return if (newOnTop) StackPane(current.root, replacement.root) else StackPane(replacement.root, current.root)
+    }
+}
 
 class ViewTransition {
     companion object {
