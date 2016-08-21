@@ -185,13 +185,33 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
     return column
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>) {
+    val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S,*>> ?: columns
+    columnTarget.add(column)
+}
+
+/**
+ * Create a column holding children columns
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? = null): TableColumn<S,Any?> {
+    val column = TableColumn<S, Any?>(title)
+    addColumnInternal(column)
+    val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S,*>>
+    properties["tornadofx.columnTarget"] = column.columns
+    op?.invoke(this)
+    properties["tornadofx.columnTarget"] = previousColumnTarget
+    return column
+}
+
 /**
  * Create a column using the propertyName of the attribute you want shown.
  */
 fun <S, T> TableView<S>.column(title: String, propertyName: String): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = PropertyValueFactory<S, T>(propertyName)
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -283,7 +303,7 @@ class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -301,7 +321,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableP
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -319,7 +339,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -338,7 +358,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
 inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observableFn.call(it.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
