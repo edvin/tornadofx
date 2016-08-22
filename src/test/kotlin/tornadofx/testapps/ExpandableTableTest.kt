@@ -8,6 +8,7 @@ import java.util.*
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
+    // Makes sure equals/hashCode always returns the same value, or we can't track expanded state accurately
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
@@ -24,8 +25,6 @@ class ExpandableTableTest : View("Expandable Table") {
                 column("Date", Occupancy::date)
                 column("Customer", Occupancy::customer)
             }
-            minHeight = 150.0
-            maxHeight = 150.0
             prefHeight = 150.0
         }
     }
