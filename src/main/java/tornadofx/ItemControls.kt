@@ -382,7 +382,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
 }
 
 
-fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: StackPane.(S) -> Unit) {
+fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: RowExpanderPane.(S) -> Unit) {
     val expander = ExpanderColumn<S>()
     addColumnInternal(expander, 0)
     setRowFactory {
@@ -396,6 +396,12 @@ fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedN
         val expanded = expander.getCellObservableValue(selectedItem) as SimpleBooleanProperty
         expanded.value = !expanded.value
         refresh()
+    }
+}
+
+class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderColumn<*>) : StackPane() {
+    fun toggleExpanded() {
+        expanderColumn.toggleExpanded(tableRow.index)
     }
 }
 
@@ -419,18 +425,22 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
                     padding = box(0.px)
                 }
                 setOnAction {
-                    val expanded = getCellObservableValue(index) as SimpleBooleanProperty
-                    expanded.value = !expanded.value
-                    tableView.refresh()
+                    toggleExpanded(index)
                 }
             }
         }
     }
+
+    fun toggleExpanded(index: Int) {
+        val expanded = getCellObservableValue(index) as SimpleBooleanProperty
+        expanded.value = !expanded.value
+        tableView.refresh()
+    }
 }
 
-class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: StackPane.(S) -> Unit, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: RowExpanderPane.(S) -> Unit, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
     val expandedWrapper by lazy {
-        val sp = StackPane()
+        val sp = RowExpanderPane(tableRow, expanderColumn)
         expandedNodeBuilder(sp, skinnable.item)
         children.add(sp)
         sp
