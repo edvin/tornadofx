@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.5.6-SNAPSHOT]
 
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)
+- TableView support for expanded row node (`rowExpander { // create node to show on expand here }`)
 
 ## [1.5.5]
 

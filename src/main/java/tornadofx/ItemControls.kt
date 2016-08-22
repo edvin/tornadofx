@@ -1,15 +1,20 @@
 package tornadofx
 
+import com.sun.javafx.scene.control.skin.TableRowSkin
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -186,9 +191,9 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>) {
+fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = null) {
     val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S,*>> ?: columns
-    columnTarget.add(column)
+    if (index == null) columnTarget.add(column) else columnTarget.add(index, column)
 }
 
 /**
@@ -377,4 +382,69 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
     column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)
     return column
+}
+
+
+fun <S> TableView<S>.rowExpander(expandedNodeProvider: Pane.(S) -> Node) {
+    val expander = ExpanderColumn<S>()
+    addColumnInternal(expander, 0)
+    setRowFactory {
+        object : TableRow<S>() {
+            override fun createDefaultSkin(): Skin<*> {
+                return ExpandableTableRowSkin(this, expandedNodeProvider, expander)
+            }
+        }
+    }
+}
+
+class ExpanderColumn<S> : TableColumn<S, Boolean>() {
+    val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
+
+    init {
+        cellValueFactory = Callback {
+            if (!expansionState.containsKey(it.value))
+                expansionState[it.value] = SimpleBooleanProperty(false)
+            expansionState[it.value]
+        }
+        cellFormat {
+            graphic = Button(if (it) "-" else "+").apply {
+                addClass("expander-button")
+                style {
+                    prefWidth = 16.px
+                    prefHeight = 16.px
+                    padding = box(0.px)
+                }
+                setOnAction {
+                    val expanded = getCellObservableValue(index) as SimpleBooleanProperty
+                    expanded.value = !expanded.value
+                }
+            }
+        }
+    }
+}
+
+class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expandedNodeProvider: Pane.(S) -> Node, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+    var expandedWrapper: StackPane? = null
+    var tableColumnPrefHeight = 25.0
+
+    fun getExpandedNode(): Node? {
+        val expanded = expanderColumn.getCellData(tableRow.item)
+        if (skinnable.item == null || !expanded) return null
+        if (expandedWrapper == null) {
+            expandedWrapper = StackPane()
+            expandedNodeProvider(expandedWrapper!!, skinnable.item)
+            children.add(expandedWrapper)
+        }
+        return expandedWrapper!!
+    }
+
+    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
+        tableColumnPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+        return tableColumnPrefHeight + (getExpandedNode()?.prefHeight(width) ?: 0.0)
+    }
+
+    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
+        super.layoutChildren(x, y, w, h)
+        getExpandedNode()?.resizeRelocate(0.0, tableColumnPrefHeight, w, h - tableColumnPrefHeight)
+    }
 }
