@@ -607,7 +607,7 @@ open class PropertyHolder {
                 if (!props.containsKey(name) && multiValue)
                     props[name] = MultiValue<T>()
 
-                return selectionScope.get().properties[name] as T;
+                return selectionScope.get().properties[name] as T
             }
             set(value) {
                 selectionScope.get().properties.put(name, value as Any)
@@ -959,7 +959,7 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+open class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
 }
 
