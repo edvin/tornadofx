@@ -82,18 +82,19 @@ operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
 operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
 
 
+abstract class ViewTransition2(val newOnTop: Boolean = true) {
+    abstract fun transit(current: UIComponent, replacement: UIComponent): Animation
 
-abstract class ViewTransition2(val newOnTop: Boolean = true, val transition: (UIComponent, UIComponent) -> Animation) {
-    open val onComplete: (() -> Unit)? = null  // TODO: Is this right?
+    open fun onComplete() = Unit
 
-    fun call(current: UIComponent, replacement: UIComponent, attach: (StackPane) -> Unit, cleanup: (UIComponent) -> Unit) {
+    internal fun call(current: UIComponent, replacement: UIComponent, attach: (StackPane) -> Unit, cleanup: (UIComponent) -> Unit) {
         current.muteDocking = true
         replacement.muteDocking = true
 
         val stack = stack(current, replacement)
         attach(stack)
 
-        val animation = transition(current, replacement)
+        val animation = transit(current, replacement)
         val oldFinish: EventHandler<ActionEvent>? = animation.onFinished
         animation.setOnFinished {
             stack.children.clear()
@@ -103,7 +104,7 @@ abstract class ViewTransition2(val newOnTop: Boolean = true, val transition: (UI
             replacement.muteDocking = false
             cleanup(replacement)
             oldFinish?.handle(it)
-            onComplete?.invoke()
+            onComplete()
         }
         animation.play()
     }

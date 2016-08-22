@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.animation.Animation
 import javafx.animation.FadeTransition
 import javafx.animation.ParallelTransition
 import javafx.util.Duration
@@ -37,10 +38,12 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
     }
 }
 
-class Fade(duration: Duration) : ViewTransition2(true, { current, replacement ->
-    replacement.root.opacity = 0.0
-    ParallelTransition(
-            FadeTransition(duration, current.root).apply { toValue = 0.0 },
-            FadeTransition(duration, replacement.root).apply { toValue = 1.0 }
-    )
-})
+class Fade(val duration: Duration) : ViewTransition2(true) {
+    override fun transition(current: UIComponent, replacement: UIComponent): Animation {
+        replacement.root.opacity = 0.0
+        return ParallelTransition(
+                FadeTransition(duration, current.root).apply { toValue = 0.0 },
+                FadeTransition(duration, replacement.root).apply { toValue = 1.0 }
+        )
+    }
+}
