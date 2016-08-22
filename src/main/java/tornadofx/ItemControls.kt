@@ -1,19 +1,21 @@
 package tornadofx
 
+import com.sun.javafx.scene.control.skin.TableRowSkin
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Pos
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
@@ -141,7 +143,7 @@ class LazyTreeItem<T>(
 }
 
 fun <T> TreeItem<T>.treeitem(value: T? = null, op: TreeItem<T>.() -> Unit = {}): TreeItem<T> {
-    val treeItem = value?.let { TreeItem<T>(it) }?:TreeItem<T>()
+    val treeItem = value?.let { TreeItem<T>(it) } ?: TreeItem<T>()
     treeItem.op()
     this += treeItem
     return treeItem
@@ -185,13 +187,33 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
     return column
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = null) {
+    val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>> ?: columns
+    if (index == null) columnTarget.add(column) else columnTarget.add(index, column)
+}
+
+/**
+ * Create a column holding children columns
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? = null): TableColumn<S, Any?> {
+    val column = TableColumn<S, Any?>(title)
+    addColumnInternal(column)
+    val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>>
+    properties["tornadofx.columnTarget"] = column.columns
+    op?.invoke(this)
+    properties["tornadofx.columnTarget"] = previousColumnTarget
+    return column
+}
+
 /**
  * Create a column using the propertyName of the attribute you want shown.
  */
 fun <S, T> TableView<S>.column(title: String, propertyName: String): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = PropertyValueFactory<S, T>(propertyName)
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -252,7 +274,7 @@ fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableCol
     return this
 }
 
-class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
+class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
     override fun updateItem(item: Boolean?, empty: Boolean) {
         super.updateItem(item, empty)
         style { alignment = Pos.CENTER }
@@ -283,7 +305,7 @@ class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -301,7 +323,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableP
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -319,7 +341,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -338,7 +360,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
 inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observableFn.call(it.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -357,4 +379,90 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
     column.cellValueFactory = Callback { valueProvider(it) }
     columns.add(column)
     return column
+}
+
+
+fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: RowExpanderPane.(S) -> Unit) {
+    val expander = ExpanderColumn<S>()
+    addColumnInternal(expander, 0)
+    setRowFactory {
+        object : TableRow<S>() {
+            override fun createDefaultSkin(): Skin<*> {
+                return ExpandableTableRowSkin(this, expandedNodeBuilder, expander)
+            }
+        }
+    }
+    if (expandOnDoubleClick) onUserSelect(2) {
+        val expanded = expander.getCellObservableValue(selectedItem) as SimpleBooleanProperty
+        expanded.value = !expanded.value
+        refresh()
+    }
+}
+
+class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderColumn<*>) : StackPane() {
+    init {
+        addClass("expander-pane")
+    }
+    fun toggleExpanded() {
+        expanderColumn.toggleExpanded(tableRow.index)
+    }
+}
+
+class ExpanderColumn<S> : TableColumn<S, Boolean>() {
+    val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
+
+    init {
+        cellValueFactory = Callback {
+            if (it.value == null) return@Callback null
+            if (!expansionState.containsKey(it.value))
+                expansionState[it.value] = SimpleBooleanProperty(false)
+
+            expansionState[it.value]
+        }
+        cellFormat {
+            graphic = Button(if (it) "-" else "+").apply {
+                addClass("expander-button")
+                style {
+                    prefWidth = 16.px
+                    prefHeight = 16.px
+                    padding = box(0.px)
+                }
+                setOnAction {
+                    toggleExpanded(index)
+                }
+            }
+        }
+    }
+
+    fun toggleExpanded(index: Int) {
+        val expanded = getCellObservableValue(index) as SimpleBooleanProperty
+        expanded.value = !expanded.value
+        tableView.refresh()
+    }
+}
+
+class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: RowExpanderPane.(S) -> Unit, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+    val expandedWrapper by lazy {
+        val sp = RowExpanderPane(tableRow, expanderColumn)
+        expandedNodeBuilder(sp, skinnable.item)
+        children.add(sp)
+        sp
+    }
+
+    var tableRowPrefHeight = 25.0
+
+    val expanded: Boolean get() {
+        val item = skinnable.item
+        return (item != null && expanderColumn.getCellData(skinnable.index))
+    }
+
+    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
+        tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+        return if (expanded) tableRowPrefHeight + expandedWrapper.prefHeight(width) else tableRowPrefHeight
+    }
+
+    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
+        super.layoutChildren(x, y, w, h)
+        if (expanded) expandedWrapper.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
+    }
 }

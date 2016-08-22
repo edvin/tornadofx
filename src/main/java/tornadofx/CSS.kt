@@ -607,7 +607,7 @@ open class PropertyHolder {
                 if (!props.containsKey(name) && multiValue)
                     props[name] = MultiValue<T>()
 
-                return selectionScope.get().properties[name] as T;
+                return selectionScope.get().properties[name] as T
             }
             set(value) {
                 selectionScope.get().properties.put(name, value as Any)
@@ -959,25 +959,25 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+open class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
 }
 
-fun c(colorString: String, opacity: Double = 1.0) = try {
+fun c(colorString: String, opacity: Double = 1.0): Color = try {
     Color.web(colorString, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c('$colorString', opacity=$opacity)")
     Color.MAGENTA
 }
 
-fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0): Color = try {
     Color.color(red, green, blue, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
     Color.MAGENTA
 }
 
-fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0): Color = try {
     Color.rgb(red, green, blue, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
