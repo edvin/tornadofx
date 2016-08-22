@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.beans.property.ObjectProperty
 import javafx.event.EventTarget
+import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
@@ -190,4 +191,20 @@ fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): Titled
     val fold = TitledPane(title, if (vbox.children.size == 1) vbox.children[0] else vbox)
     panes += fold
     return fold
+}
+
+fun Region.paddingRight(p: Double) {
+    padding = Insets(padding.top, p, padding.bottom, padding.left)
+}
+
+fun Region.paddingLeft(p: Double) {
+    padding = Insets(padding.top, padding.right, padding.bottom, p)
+}
+
+fun Region.paddingTop(p: Double) {
+    padding = Insets(p, padding.right, padding.bottom, padding.left)
+}
+
+fun Region.paddingBottom(p: Double) {
+    padding = Insets(padding.top, padding.right, p, padding.left)
 }

@@ -400,6 +400,9 @@ fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedN
 }
 
 class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderColumn<*>) : StackPane() {
+    init {
+        addClass("expander-pane")
+    }
     fun toggleExpanded() {
         expanderColumn.toggleExpanded(tableRow.index)
     }
