@@ -39,7 +39,7 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
 }
 
 class Fade(val duration: Duration) : ViewTransition2(true) {
-    override fun transition(current: UIComponent, replacement: UIComponent): Animation {
+    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
         replacement.root.opacity = 0.0
         return ParallelTransition(
                 FadeTransition(duration, current.root).apply { toValue = 0.0 },
