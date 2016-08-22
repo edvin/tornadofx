@@ -10,15 +10,12 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
-import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
@@ -146,7 +143,7 @@ class LazyTreeItem<T>(
 }
 
 fun <T> TreeItem<T>.treeitem(value: T? = null, op: TreeItem<T>.() -> Unit = {}): TreeItem<T> {
-    val treeItem = value?.let { TreeItem<T>(it) }?:TreeItem<T>()
+    val treeItem = value?.let { TreeItem<T>(it) } ?: TreeItem<T>()
     treeItem.op()
     this += treeItem
     return treeItem
@@ -192,7 +189,7 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
 
 @Suppress("UNCHECKED_CAST")
 fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = null) {
-    val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S,*>> ?: columns
+    val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>> ?: columns
     if (index == null) columnTarget.add(column) else columnTarget.add(index, column)
 }
 
@@ -200,10 +197,10 @@ fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = 
  * Create a column holding children columns
  */
 @Suppress("UNCHECKED_CAST")
-fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? = null): TableColumn<S,Any?> {
+fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? = null): TableColumn<S, Any?> {
     val column = TableColumn<S, Any?>(title)
     addColumnInternal(column)
-    val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S,*>>
+    val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>>
     properties["tornadofx.columnTarget"] = column.columns
     op?.invoke(this)
     properties["tornadofx.columnTarget"] = previousColumnTarget
@@ -277,7 +274,7 @@ fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableCol
     return this
 }
 
-class CheckBoxCell<S> (val editable: Boolean) : TableCell<S, Boolean?>() {
+class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
     override fun updateItem(item: Boolean?, empty: Boolean) {
         super.updateItem(item, empty)
         style { alignment = Pos.CENTER }
@@ -385,15 +382,20 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
 }
 
 
-fun <S> TableView<S>.rowExpander(expandedNodeProvider: Pane.(S) -> Node) {
+fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: StackPane.(S) -> Unit) {
     val expander = ExpanderColumn<S>()
     addColumnInternal(expander, 0)
     setRowFactory {
         object : TableRow<S>() {
             override fun createDefaultSkin(): Skin<*> {
-                return ExpandableTableRowSkin(this, expandedNodeProvider, expander)
+                return ExpandableTableRowSkin(this, expandedNodeBuilder, expander)
             }
         }
+    }
+    if (expandOnDoubleClick) onUserSelect(2) {
+        val expanded = expander.getCellObservableValue(selectedItem) as SimpleBooleanProperty
+        expanded.value = !expanded.value
+        refresh()
     }
 }
 
@@ -402,8 +404,10 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
 
     init {
         cellValueFactory = Callback {
+            if (it.value == null) return@Callback null
             if (!expansionState.containsKey(it.value))
                 expansionState[it.value] = SimpleBooleanProperty(false)
+
             expansionState[it.value]
         }
         cellFormat {
@@ -417,34 +421,35 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
                 setOnAction {
                     val expanded = getCellObservableValue(index) as SimpleBooleanProperty
                     expanded.value = !expanded.value
+                    tableView.refresh()
                 }
             }
         }
     }
 }
 
-class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expandedNodeProvider: Pane.(S) -> Node, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
-    var expandedWrapper: StackPane? = null
-    var tableColumnPrefHeight = 25.0
+class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: StackPane.(S) -> Unit, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+    val expandedWrapper by lazy {
+        val sp = StackPane()
+        expandedNodeBuilder(sp, skinnable.item)
+        children.add(sp)
+        sp
+    }
 
-    fun getExpandedNode(): Node? {
-        val expanded = expanderColumn.getCellData(tableRow.item)
-        if (skinnable.item == null || !expanded) return null
-        if (expandedWrapper == null) {
-            expandedWrapper = StackPane()
-            expandedNodeProvider(expandedWrapper!!, skinnable.item)
-            children.add(expandedWrapper)
-        }
-        return expandedWrapper!!
+    var tableRowPrefHeight = 25.0
+
+    val expanded: Boolean get() {
+        val item = skinnable.item
+        return (item != null && expanderColumn.getCellData(skinnable.index))
     }
 
     override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        tableColumnPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
-        return tableColumnPrefHeight + (getExpandedNode()?.prefHeight(width) ?: 0.0)
+        tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+        return if (expanded) tableRowPrefHeight + expandedWrapper.prefHeight(width) else tableRowPrefHeight
     }
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         super.layoutChildren(x, y, w, h)
-        getExpandedNode()?.resizeRelocate(0.0, tableColumnPrefHeight, w, h - tableColumnPrefHeight)
+        if (expanded) expandedWrapper.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
     }
 }

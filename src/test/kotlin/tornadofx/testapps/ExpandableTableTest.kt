@@ -8,8 +8,8 @@ import java.util.*
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
-    data class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
-    data class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
+    class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
+    class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
     val rooms = listOf(Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)), Room(2, "105", "Bedroom", "King", makeOccupancy(5))).observable()
 
@@ -23,8 +23,10 @@ class ExpandableTableTest : View("Expandable Table") {
                 column("Occupancy", Occupancy::id)
                 column("Date", Occupancy::date)
                 column("Customer", Occupancy::customer)
-                prefHeight = 150.0
             }
+            minHeight = 150.0
+            maxHeight = 150.0
+            prefHeight = 150.0
         }
     }
 
