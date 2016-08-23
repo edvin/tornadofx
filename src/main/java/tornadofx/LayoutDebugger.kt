@@ -106,6 +106,9 @@ class LayoutDebugger : Fragment() {
     }
 
     override fun onDock() {
+        // Avoid duplicate ondock, since we redock inside this function
+        if (currentScene.root == stackpane) return
+
         // Prevent the debugger from being reloaded
         Platform.runLater {
             modalStage!!.scene.properties["javafx.layoutdebugger"] = this
@@ -126,7 +129,7 @@ class LayoutDebugger : Fragment() {
         overlay.heightProperty().bind(currentScene.heightProperty())
 
         // Stackpane becomes the new scene root and contains the currentScene.root and our overlay
-        stackpane.scene?.root = null
+        //stackpane.scene?.root = null
         val newSceneRoot = currentScene.root
         currentScene.root = stackpane
         stackpane += newSceneRoot
