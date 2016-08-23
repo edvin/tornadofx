@@ -1,38 +1,35 @@
 package tornadofx.testapps
 
-import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
-class SwitchViewApp2 : App(View1::class, Styles::class) {
-    class View1 : View() {
+class SwitchViewApp2 : App(Main::class, Styles::class) {
+    abstract class SwapView(name: String, cssClass: CssRule) : View(name) {
         val controller: SwitchController by inject()
+        val button = button("Fade") { setOnAction { swap() } }
         override val root = stackpane {
             vbox {
-                addClass(Styles.box, Styles.red)
-                label("Main")
-                button("Alternate") { setOnAction { replaceWith(View2::class, controller.transition) } }
+                addClass(Styles.box, cssClass)
+                label(name)
+                this += button
             }
         }
 
-        init {
-            titleProperty.bind(controller.transitionProperty)
+        abstract fun swap()
+    }
+
+    class Main : SwapView("Main", Styles.red) {
+        val alt: Alt by inject()
+        override fun swap() {
+            controller.swap(this, alt)
         }
     }
 
-    class View2 : View() {
-        val controller: SwitchController by inject()
-        override val root = stackpane {
-            vbox {
-                addClass(Styles.box, Styles.blue)
-                label("Alternate")
-                button("Main") { setOnAction { replaceWith(View1::class, controller.transition) } }
-            }
-        }
-
-        init {
-            titleProperty.bind(controller.transitionProperty)
+    class Alt : SwapView("Alternate", Styles.blue) {
+        val main: Main by inject()
+        override fun swap() {
+            controller.swap(this, main)
         }
     }
 
@@ -46,10 +43,10 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
                 "Slide Right" to Slide(time, Direction.RIGHT),
                 "Slide Down" to Slide(time, Direction.DOWN),
                 "Slide Left" to Slide(time, Direction.LEFT),
-                "Cover Up" to Cover(time, Direction.UP),
-                "Cover Right" to Cover(time, Direction.RIGHT),
-                "Cover Down" to Cover(time, Direction.DOWN),
-                "Cover Left" to Cover(time, Direction.LEFT),
+                "Cover From Up" to Cover(time, Direction.UP),
+                "Cover From Right" to Cover(time, Direction.RIGHT),
+                "Cover From Down" to Cover(time, Direction.DOWN),
+                "Cover From Left" to Cover(time, Direction.LEFT),
                 "Reveal Up" to Reveal(time, Direction.UP),
                 "Reveal Right" to Reveal(time, Direction.RIGHT),
                 "Reveal Down" to Reveal(time, Direction.DOWN),
@@ -63,15 +60,13 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
                 "Swap Down" to Swap(doubleTime, Direction.DOWN),
                 "Swap Left" to Swap(doubleTime, Direction.LEFT)
         )
-        val transitionProperty = SimpleStringProperty("Next Transition: ${transitions[0].first}")
-        val transition: ViewTransition2
-            get() {
-                val t = transitions[currentTransition].second
-                currentTransition = (currentTransition + 1) % transitions.size
-                transitionProperty.value = "Next Transition: ${transitions[currentTransition].first}"
-                return t
-            }
-//        val transition: ViewTransition2 = Swap(2.seconds, Direction.RIGHT)
+
+        fun swap(current: SwapView, replacement: SwapView) {
+            val t = transitions[currentTransition].second
+            currentTransition = (currentTransition + 1) % transitions.size
+            replacement.button.text = transitions[currentTransition].first
+            current.replaceWith(replacement, t)
+        }
     }
 
     class Styles : Stylesheet() {
