@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
+import javafx.scene.control.Button
 import tornadofx.*
 import java.time.LocalDate
 import java.util.*
@@ -26,6 +27,8 @@ class ExpandableTableTest : View("Expandable Table") {
                 column("Customer", Occupancy::customer)
             }
             prefHeight = 150.0
+        } toggleButton {
+            Button(if(it) "Close" else "Open")
         }
     }
 
