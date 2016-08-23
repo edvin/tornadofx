@@ -406,6 +406,8 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
     fun toggleExpanded() {
         expanderColumn.toggleExpanded(tableRow.index)
     }
+    fun expandedProperty() = expanderColumn.getCellObservableValue(tableRow.index) as SimpleBooleanProperty
+    var expanded: Boolean get() = expandedProperty().value; set(value) { expandedProperty().value = value }
 }
 
 class ExpanderColumn<S> : TableColumn<S, Boolean>() {
