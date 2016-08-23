@@ -10,8 +10,10 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
@@ -418,7 +420,7 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
      * Override to provide a different look to the toggle button. An onAction event handler will
      * be connected to this button to perform the actual toggel operation.
      */
-    private var toggleButtonProvider: TableCell<S, Boolean>.(Boolean) -> Button = { expanded ->
+    private var toggleNodeProvider: TableCell<S, Boolean>.(Boolean) -> Node = { expanded ->
         Button(if (expanded) "-" else "+").apply {
             addClass("expander-button")
             style {
@@ -429,8 +431,8 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
         }
     }
 
-    infix fun toggleButton(provider: TableCell<S, Boolean>.(Boolean) -> Button): ExpanderColumn<S> {
-        toggleButtonProvider = provider
+    infix fun toggleNode(provider: TableCell<S, Boolean>.(Boolean) -> Node): ExpanderColumn<S> {
+        toggleNodeProvider = provider
         return this
     }
 
@@ -443,11 +445,10 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
             expansionState[it.value]
         }
         cellFormat {
-            graphic = toggleButtonProvider(this, it).apply {
-                setOnAction {
-                    toggleExpanded(index)
-                }
-            }
+            val toggleNode = toggleNodeProvider(this, it)
+            if (toggleNode is ButtonBase) toggleNode.setOnAction { toggleExpanded(index) }
+            else toggleNode.addEventFilter(MouseEvent.MOUSE_CLICKED) { toggleExpanded(index) }
+            graphic = toggleNode
         }
     }
 
