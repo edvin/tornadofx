@@ -379,10 +379,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         return replaceWith(find(fragment), transition)
     }
 
-    private var transitioning = false
+    internal var currentTransition: StackPane? = null
 
     fun replaceWith(replacement: UIComponent, transition: ViewTransition2? = null) {
-        if (transitioning || replacement.transitioning) {
+        if (currentTransition != null || replacement.currentTransition != null) {
             // TODO: Cannot transition
             return
         }
