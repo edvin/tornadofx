@@ -121,6 +121,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val content by cssclass()
         val contextMenu by cssclass()
         val datePicker by cssclass()
+        val datePickerPopUp by cssclass()
         val dialogPane by cssclass()
         val firstTitledPane by cssclass()
         val graphicContainer by cssclass()
@@ -198,6 +199,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val visited by csspseudoclass()
         val even by csspseudoclass()
         val odd by csspseudoclass()
+        val filled by csspseudoclass()
 
         init {
             detectAndInstallUrlHandler()
