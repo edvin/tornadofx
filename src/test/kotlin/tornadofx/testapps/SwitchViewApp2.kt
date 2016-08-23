@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
+import javafx.scene.paint.Paint
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -74,6 +75,8 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
             val box by cssclass()
             val red by cssclass()
             val blue by cssclass()
+            val bg by cssproperty<Paint>("-fx-background-color")
+            val nuke by cssproperty<Paint>()
         }
 
         init {
@@ -83,15 +86,29 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
                 spacing = 12.px
                 alignment = Pos.CENTER
                 s(label, button) {
+                    textFill = c("white")
                     fontSize = 36.px
                     fontWeight = FontWeight.BOLD
                     alignment = Pos.BASELINE_CENTER
                 }
+                val boxMix = mixin {
+                    bg force nuke
+                    button {
+                        bg force raw("derive(${nuke.name}, -10%)")
+                        and(hover) {
+                            bg force raw("derive(${nuke.name}, -15%)")
+                        }
+                    }
+                }
                 and(red) {
-                    backgroundColor += c(1.0, .75, .75)
+                    val c = c(.75, .5, .5)
+                    nuke.value = c
+                    +boxMix
                 }
                 and(blue) {
-                    backgroundColor += c(.75, .75, 1.0)
+                    val c = c(.5, .5, .75)
+                    nuke.value = c
+                    +boxMix
                 }
             }
         }
