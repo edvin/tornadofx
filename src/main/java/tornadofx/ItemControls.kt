@@ -10,8 +10,10 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
@@ -382,7 +384,7 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
 }
 
 
-fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: RowExpanderPane.(S) -> Unit) {
+fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: RowExpanderPane.(S) -> Unit): ExpanderColumn<S> {
     val expander = ExpanderColumn<S>()
     addColumnInternal(expander, 0)
     setRowFactory {
@@ -397,6 +399,7 @@ fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedN
         expanded.value = !expanded.value
         refresh()
     }
+    return expander
 }
 
 class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderColumn<*>) : StackPane() {
@@ -413,6 +416,26 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
 class ExpanderColumn<S> : TableColumn<S, Boolean>() {
     val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
 
+    /**
+     * Override to provide a different look to the toggle button. An onAction event handler will
+     * be connected to this button to perform the actual toggel operation.
+     */
+    private var toggleNodeProvider: TableCell<S, Boolean>.(Boolean) -> Node = { expanded ->
+        Button(if (expanded) "-" else "+").apply {
+            addClass("expander-button")
+            style {
+                prefWidth = 16.px
+                prefHeight = 16.px
+                padding = box(0.px)
+            }
+        }
+    }
+
+    infix fun toggleNode(provider: TableCell<S, Boolean>.(Boolean) -> Node): ExpanderColumn<S> {
+        toggleNodeProvider = provider
+        return this
+    }
+
     init {
         cellValueFactory = Callback {
             if (it.value == null) return@Callback null
@@ -422,17 +445,10 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
             expansionState[it.value]
         }
         cellFormat {
-            graphic = Button(if (it) "-" else "+").apply {
-                addClass("expander-button")
-                style {
-                    prefWidth = 16.px
-                    prefHeight = 16.px
-                    padding = box(0.px)
-                }
-                setOnAction {
-                    toggleExpanded(index)
-                }
-            }
+            val toggleNode = toggleNodeProvider(this, it)
+            if (toggleNode is ButtonBase) toggleNode.setOnAction { toggleExpanded(index) }
+            else toggleNode.addEventFilter(MouseEvent.MOUSE_CLICKED) { toggleExpanded(index) }
+            graphic = toggleNode
         }
     }
 
@@ -467,4 +483,5 @@ class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: 
         super.layoutChildren(x, y, w, h)
         if (expanded) expandedWrapper.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
     }
+
 }
