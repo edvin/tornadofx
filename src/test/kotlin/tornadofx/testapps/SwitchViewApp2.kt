@@ -32,6 +32,7 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
 
     class SwitchController : Controller() {
         private val time = .25.seconds
+        private val doubleTime = time.multiply(2.0)
         private var currentTransition = 0
         private val transitions = listOf(
                 Fade(time),
@@ -51,10 +52,10 @@ class SwitchViewApp2 : App(View1::class, Styles::class) {
                 Metro(time, Direction.RIGHT),
                 Metro(time, Direction.DOWN),
                 Metro(time, Direction.LEFT),
-                Swap(time, Direction.UP),
-                Swap(time, Direction.RIGHT),
-                Swap(time, Direction.DOWN),
-                Swap(time, Direction.LEFT)
+                Swap(doubleTime, Direction.UP),
+                Swap(doubleTime, Direction.RIGHT),
+                Swap(doubleTime, Direction.DOWN),
+                Swap(doubleTime, Direction.LEFT)
         )
         val transition: ViewTransition2
             get() = transitions[currentTransition++ % transitions.size]
