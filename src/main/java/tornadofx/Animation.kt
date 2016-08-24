@@ -26,21 +26,24 @@ fun EventTarget.timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timel
     return timeline
 }
 
-fun UIComponent.translate(time: Duration, destination: Point2D, reversed: Boolean = false, play: Boolean = true,
-                          op: (TranslateTransition.() -> Unit)? = null)
-        = root.translate(time, destination, reversed, play, op)
+fun UIComponent.move(time: Duration, destination: Point2D,
+                     easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                     op: (TranslateTransition.() -> Unit)? = null)
+        = root.move(time, destination, easing, reversed, play, op)
 
-fun Node.translate(time: Duration, destination: Point2D, reversed: Boolean = false, play: Boolean = true,
-                   op: (TranslateTransition.() -> Unit)? = null): TranslateTransition {
+fun Node.move(time: Duration, destination: Point2D,
+              easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+              op: (TranslateTransition.() -> Unit)? = null): TranslateTransition {
     val target: Point2D
     if (reversed) {
+        target = Point2D(translateX, translateY)
         translateX = destination.x
         translateY = destination.y
-        target = Point2D.ZERO
     } else {
         target = destination
     }
     return TranslateTransition(time, this).apply {
+        interpolator = easing
         op?.invoke(this)
         toX = target.x
         toY = target.y
@@ -48,70 +51,101 @@ fun Node.translate(time: Duration, destination: Point2D, reversed: Boolean = fal
     }
 }
 
-fun UIComponent.fade(time: Duration, opacity: Double, reversed: Boolean = false, play: Boolean = true,
-                     op: (FadeTransition.() -> Unit)? = null)
-        = root.fade(time, opacity, reversed, play, op)
+fun UIComponent.rotate(time: Duration, angle: Double,
+                       easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                       op: (RotateTransition.() -> Unit)? = null)
+        = root.rotate(time, angle, easing, reversed, play, op)
 
-fun Node.fade(time: Duration, opacity: Double, reversed: Boolean = false, play: Boolean = true,
+fun Node.rotate(time: Duration, angle: Double,
+                easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                op: (RotateTransition.() -> Unit)? = null): RotateTransition {
+    val target: Double
+    if (reversed) {
+        target = rotate
+        rotate = angle
+    } else {
+        target = angle
+    }
+    return RotateTransition(time, this).apply {
+        interpolator = easing
+        op?.invoke(this)
+        toAngle = target
+        if (play) play()
+    }
+}
+
+fun UIComponent.scale(time: Duration, scale: Point2D,
+                      easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                      op: (ScaleTransition.() -> Unit)? = null)
+        = root.scale(time, scale, easing, reversed, play, op)
+
+fun Node.scale(time: Duration, scale: Point2D,
+               easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+               op: (ScaleTransition.() -> Unit)? = null): ScaleTransition {
+    val target: Point2D
+    if (reversed) {
+        target = Point2D(scaleX, scaleY)
+        scaleX = scale.x
+        scaleY = scale.y
+    } else {
+        target = scale
+    }
+    return ScaleTransition(time, this).apply {
+        interpolator = easing
+        op?.invoke(this)
+        toX = target.x
+        toY = target.y
+        if (play) play()
+    }
+}
+
+fun UIComponent.fade(time: Duration, opacity: Double,
+                     easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                     op: (FadeTransition.() -> Unit)? = null)
+        = root.fade(time, opacity, easing, reversed, play, op)
+
+fun Node.fade(time: Duration, alpha: Double,
+              easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
               op: (FadeTransition.() -> Unit)? = null): FadeTransition {
     val target: Double
     if (reversed) {
-        this.opacity = opacity
-        target = 1.0
-    } else {
         target = opacity
+        opacity = alpha
+    } else {
+        target = alpha
     }
     return FadeTransition(time, this).apply {
+        interpolator = easing
         op?.invoke(this)
         toValue = target
         if (play) play()
     }
 }
 
-fun UIComponent.scale(time: Duration, scale: Point2D, reversed: Boolean = false, play: Boolean = false,
-                      op: (ScaleTransition.() -> Unit)? = null)
-        = root.scale(time, scale, reversed, play, op)
+fun UIComponent.transform(time: Duration, destination: Point2D, angle: Double, scale: Point2D, opacity: Double,
+                          easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                          op: (ParallelTransition.() -> Unit)? = null)
+        = root.transform(time, destination, angle, scale, opacity, easing, reversed, play, op)
 
-fun Node.scale(time: Duration, scale: Point2D, reversed: Boolean = false, play: Boolean = false,
-               op: (ScaleTransition.() -> Unit)? = null): ScaleTransition {
-    val target: Point2D
-    if (reversed) {
-        scaleX = scale.x
-        scaleY = scale.y
-        target = Point2D(1.0, 1.0)
-    } else {
-        target = scale
-    }
-    return ScaleTransition(time, this).apply {
-        op?.invoke(this)
-        toX = target.x
-        toY = target.y
-        if (play) play()
-    }
-}
-
-fun UIComponent.translateFadeScale(time: Duration, destination: Point2D, opacity: Double, scale: Point2D,
-                                   reversed: Boolean = false, play: Boolean = true,
-                                   op: (ParallelTransition.() -> Unit)? = null)
-        = root.translateFadeScale(time, destination, opacity, scale, reversed, play, op)
-
-fun Node.translateFadeScale(time: Duration, destination: Point2D, opacity: Double, scale: Point2D,
-                            reversed: Boolean = false, play: Boolean = true,
-                            op: (ParallelTransition.() -> Unit)? = null)
-        = translate(time, destination, reversed, play)
-        .and(fade(time, opacity, reversed, play))
-        .and(scale(time, scale, reversed, play))
+fun Node.transform(time: Duration, destination: Point2D, angle: Double, scale: Point2D, opacity: Double,
+                   easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                   op: (ParallelTransition.() -> Unit)? = null)
+        = move(time, destination, easing, reversed, play)
+        .and(rotate(time, angle, easing, reversed, play))
+        .and(scale(time, scale, easing, reversed, play))
+        .and(fade(time, opacity, easing, reversed, play))
         .apply {
+            interpolator = easing
             op?.invoke(this)
             if (play) play()
         }
 
-fun Animation.and(vararg animation: Animation): ParallelTransition {
-    return ParallelTransition(this, *animation)
+fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null): ParallelTransition {
+    return ParallelTransition(this, *animation).apply { op?.invoke(this) }
 }
 
-fun Animation.then(vararg animation: Animation): SequentialTransition {
-    return SequentialTransition(this, *animation)
+fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null): SequentialTransition {
+    return SequentialTransition(this, *animation).apply { op?.invoke(this) }
 }
 
 fun Timeline.keyframe(duration: Duration, op: (KeyFrameBuilder).() -> Unit): KeyFrame {
@@ -212,7 +246,7 @@ class ViewTransition {
 }
 
 abstract class ViewTransition2(val newOnTop: Boolean = true) {
-    abstract fun transit(current: UIComponent, replacement: UIComponent): Animation
+    abstract fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation
 
     open fun onComplete(removed: UIComponent, replacement: UIComponent) = Unit
 
@@ -221,11 +255,11 @@ abstract class ViewTransition2(val newOnTop: Boolean = true) {
         replacement.muteDocking = true
 
         val stack = stack(current, replacement)
-        current.currentTransition = stack
-        replacement.currentTransition = stack
+        current.isTransitioning = true
+        replacement.isTransitioning = true
         attachTemp(stack)
 
-        val animation = transit(current, replacement)
+        val animation = transit(current, replacement, stack)
         val oldFinish: EventHandler<ActionEvent>? = animation.onFinished
         animation.setOnFinished {
             stack.children.clear()
@@ -236,22 +270,18 @@ abstract class ViewTransition2(val newOnTop: Boolean = true) {
             attachReplacement(replacement)
             oldFinish?.handle(it)
             onComplete(current, replacement)
-            current.currentTransition = null
-            replacement.currentTransition = null
+            current.isTransitioning = false
+            replacement.isTransitioning = false
         }
         animation.play()
     }
 
-    fun UIComponent.moveToTop() {
-        currentTransition?.let { stack ->
-            if (stack.children.remove(this.root)) {
-                stack.children.add(this.root)
-            }
-        }
+    protected fun StackPane.moveToTop(component: UIComponent) = moveToTop(component.root)
+    protected fun StackPane.moveToTop(node: Node) {
+        if (children.remove(node)) children.add(node)
     }
 
-    fun stack(current: UIComponent, replacement: UIComponent): StackPane {
-        // TODO: Remove parent from it's parent?
+    open fun stack(current: UIComponent, replacement: UIComponent): StackPane {
         return if (newOnTop) StackPane(current.root, replacement.root) else StackPane(replacement.root, current.root)
     }
 }
@@ -267,7 +297,7 @@ enum class Direction { UP, RIGHT, DOWN, LEFT;
 }
 
 class Fade(val duration: Duration) : ViewTransition2(false) {
-    override fun transit(current: UIComponent, replacement: UIComponent) = current.fade(duration, 0.0, play = false)
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane) = current.fade(duration, 0.0, play = false)
 
     override fun onComplete(removed: UIComponent, replacement: UIComponent) {
         removed.root.opacity = 1.0
@@ -279,7 +309,7 @@ abstract class ReversibleViewTransition(newOnTop: Boolean = true) : ViewTransiti
 }
 
 class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
-    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
             Direction.UP -> Point2D(0.0, -bounds.height)
@@ -287,8 +317,8 @@ class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) :
             Direction.DOWN -> Point2D(0.0, bounds.height)
             Direction.LEFT -> Point2D(-bounds.width, 0.0)
         }
-        return current.translate(duration, destination, play = false)
-                .and(replacement.translate(duration, destination.multiply(-1.0), reversed = true, play = false))
+        return current.move(duration, destination, play = false)
+                .and(replacement.move(duration, destination.multiply(-1.0), reversed = true, play = false))
     }
 
     override fun onComplete(removed: UIComponent, replacement: UIComponent) {
@@ -300,7 +330,7 @@ class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) :
 }
 
 class Cover(val duration: Duration, val direction: Direction = Direction.RIGHT) : ReversibleViewTransition() {
-    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
             Direction.UP -> Point2D(0.0, -bounds.height)
@@ -308,14 +338,14 @@ class Cover(val duration: Duration, val direction: Direction = Direction.RIGHT) 
             Direction.DOWN -> Point2D(0.0, bounds.height)
             Direction.LEFT -> Point2D(-bounds.width, 0.0)
         }
-        return replacement.translate(duration, destination, reversed = true, play = false)
+        return replacement.move(duration, destination, reversed = true, play = false)
     }
 
     override fun reversed() = Reveal(duration, direction)
 }
 
 class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition(false) {
-    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
             Direction.UP -> Point2D(0.0, -bounds.height)
@@ -323,7 +353,7 @@ class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) 
             Direction.DOWN -> Point2D(0.0, bounds.height)
             Direction.LEFT -> Point2D(-bounds.width, 0.0)
         }
-        return current.translate(duration, destination, play = false)
+        return current.move(duration, destination, play = false)
     }
 
     override fun onComplete(removed: UIComponent, replacement: UIComponent) {
@@ -335,7 +365,7 @@ class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) 
 }
 
 class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition(false) {
-    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
             Direction.UP -> Point2D(0.0, -bounds.height * distancePercentage)
@@ -345,8 +375,8 @@ class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, v
         }
         val opacity = 0.0
         val scale = Point2D(1.0, 1.0)
-        return current.translateFadeScale(duration.divide(2.0), destination, opacity, scale, play = false)
-                .then(replacement.translateFadeScale(duration.divide(2.0), destination.multiply(-1.0), opacity, scale,
+        return current.transform(duration.divide(2.0), destination, 0.0, scale, opacity, play = false)
+                .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0.0, scale, opacity,
                         reversed = true, play = false))
     }
 
@@ -360,9 +390,7 @@ class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, v
 }
 
 class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scaling: Point2D = Point2D(.75, .75)) : ReversibleViewTransition(false) {
-    override fun transit(current: UIComponent, replacement: UIComponent): Animation {
-        replacement.root.scaleX = scaling.x
-        replacement.root.scaleY = scaling.y
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
             Direction.UP -> Point2D(0.0, -bounds.height * 0.5)
@@ -371,10 +399,10 @@ class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, va
             Direction.LEFT -> Point2D(-bounds.width * 0.5, 0.0)
         }
         val halfTime = duration.divide(2.0)
-        return current.translate(halfTime, destination).and(replacement.translate(halfTime, destination.multiply(-1.0)))
-                .apply { setOnFinished { replacement.moveToTop() } }
-                .then(current.translate(halfTime, Point2D(0.0, 0.0)).and(replacement.translate(halfTime, Point2D(0.0, 0.0))))
-                .and(current.scale(duration, scaling, play = false), replacement.scale(duration, scaling, reversed = true, play = false))
+        return current.scale(duration, scaling, play = false).and(replacement.scale(duration, scaling, reversed = true, play = false))
+                .and(current.move(halfTime, destination).and(replacement.move(halfTime, destination.multiply(-1.0))) {
+                    setOnFinished { stack.moveToTop(replacement) }
+                }.then(current.move(halfTime, Point2D(0.0, 0.0)).and(replacement.move(halfTime, Point2D(0.0, 0.0)))))
     }
 
     override fun onComplete(removed: UIComponent, replacement: UIComponent) {
@@ -390,5 +418,12 @@ class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, va
 
     override fun reversed(): ReversibleViewTransition {
         return Swap(duration, direction.reversed())
+    }
+}
+
+class NewsFlash(val duration: Duration, val rotations: Double) : ViewTransition2(true) {
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        return replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
+                easing = Interpolator.EASE_IN, reversed = true, play = false)
     }
 }

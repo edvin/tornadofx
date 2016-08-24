@@ -44,7 +44,8 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
                 *Direction.values().map { "Cover from $it" to Cover(time, it) }.toTypedArray(),
                 *Direction.values().map { "Reveal $it" to Reveal(time, it) }.toTypedArray(),
                 *Direction.values().map { "Metro $it" to Metro(time, it) }.toTypedArray(),
-                *Direction.values().map { "Swap $it" to Swap(time, it) }.toTypedArray()
+                *Direction.values().map { "Swap $it" to Swap(doubleTime, it) }.toTypedArray(),
+                "NewsFlash" to NewsFlash(doubleTime, 2.0)
         )
 
         fun swap(current: SwapView, replacement: SwapView) {
