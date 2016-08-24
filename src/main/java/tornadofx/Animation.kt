@@ -354,10 +354,10 @@ class Cover(val duration: Duration, val direction: Direction = Direction.RIGHT) 
     override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
-            Direction.UP -> Point2D(0.0, -bounds.height)
-            Direction.RIGHT -> Point2D(bounds.width, 0.0)
-            Direction.DOWN -> Point2D(0.0, bounds.height)
-            Direction.LEFT -> Point2D(-bounds.width, 0.0)
+            Direction.UP -> Point2D(0.0, bounds.height)
+            Direction.RIGHT -> Point2D(-bounds.width, 0.0)
+            Direction.DOWN -> Point2D(0.0, -bounds.height)
+            Direction.LEFT -> Point2D(bounds.width, 0.0)
         }
         return replacement.move(duration, destination, reversed = true, play = false)
     }
