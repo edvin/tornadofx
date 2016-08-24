@@ -7,7 +7,11 @@ import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.geometry.Point2D
 import javafx.scene.Node
+import javafx.scene.layout.Background
+import javafx.scene.layout.BackgroundFill
+import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Paint
 import javafx.util.Duration
 import java.util.*
 
@@ -298,6 +302,23 @@ enum class Direction { UP, RIGHT, DOWN, LEFT;
 
 class Fade(val duration: Duration) : ViewTransition2(false) {
     override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane) = current.fade(duration, 0.0, play = false)
+
+    override fun onComplete(removed: UIComponent, replacement: UIComponent) {
+        removed.root.opacity = 1.0
+    }
+}
+
+class FadeThrough(val duration: Duration, val color: Paint) : ViewTransition2() {
+    private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
+    val halfTime = duration.divide(2.0)
+    override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        return current.fade(halfTime, 0.0, easing = Interpolator.EASE_IN, play = false)
+                .then(replacement.fade(halfTime, 0.0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
+    }
+
+    override fun stack(current: UIComponent, replacement: UIComponent): StackPane {
+        return StackPane(bg, replacement.root, current.root)
+    }
 
     override fun onComplete(removed: UIComponent, replacement: UIComponent) {
         removed.root.opacity = 1.0

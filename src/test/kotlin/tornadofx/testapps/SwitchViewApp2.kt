@@ -40,6 +40,7 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
         private var currentTransition = 0
         private val transitions = listOf(
                 "Fade" to Fade(time),
+                "Fade Through Black" to FadeThrough(time, c("black")),
                 *Direction.values().map { "Slide $it" to Slide(time, it) }.toTypedArray(),
                 *Direction.values().map { "Cover from $it" to Cover(time, it) }.toTypedArray(),
                 *Direction.values().map { "Reveal $it" to Reveal(time, it) }.toTypedArray(),
