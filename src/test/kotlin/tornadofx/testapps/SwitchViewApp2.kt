@@ -1,7 +1,7 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
-import javafx.scene.paint.Paint
+import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -37,18 +37,30 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
     class SwitchController : Controller() {
         private val time = .25.seconds
         private val doubleTime = time.multiply(2.0)
-        private var currentTransition = 0
+        private val fades = listOf(
+                "Black" to Color.BLACK,
+                "White" to Color.WHITE,
+                "Red" to Color.RED,
+                "Fade" to LinearGradient(0.0, 1.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
+                "Crazy" to RadialGradient(0.0, 0.0, 150.0, 100.0, 75.0, false, CycleMethod.REPEAT,
+                        Stop(0.0, Color.RED), Stop(0.33, Color.RED),
+                        Stop(0.33, Color.GREEN), Stop(0.66, Color.GREEN),
+                        Stop(0.66, Color.BLUE), Stop(1.0, Color.BLUE)
+                )
+        )
+
         private val transitions = listOf(
                 "Fade" to Fade(time),
-                "Fade Through Black" to FadeThrough(time, c("black")),
+                *fades.map { "Fade Through ${it.first}" to FadeThrough(doubleTime, it.second) }.toTypedArray(),
                 *Direction.values().map { "Slide $it" to Slide(time, it) }.toTypedArray(),
-                *Direction.values().map { "Cover from $it" to Cover(time, it) }.toTypedArray(),
+                *Direction.values().map { "Cover $it" to Cover(time, it) }.toTypedArray(),
                 *Direction.values().map { "Reveal $it" to Reveal(time, it) }.toTypedArray(),
                 *Direction.values().map { "Metro $it" to Metro(time, it) }.toTypedArray(),
                 *Direction.values().map { "Swap $it" to Swap(doubleTime, it) }.toTypedArray(),
                 "NewsFlash" to NewsFlash(doubleTime, 2.0)
         )
 
+        private var currentTransition = 0
         fun swap(current: SwapView, replacement: SwapView) {
             val t = transitions[currentTransition].second
             currentTransition = (currentTransition + 1) % transitions.size
@@ -73,7 +85,7 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
                 spacing = 12.px
                 alignment = Pos.CENTER
                 s(label, button) {
-                    textFill = c("white")
+                    textFill = Color.WHITE
                     fontSize = 36.px
                     fontWeight = FontWeight.BOLD
                     alignment = Pos.BASELINE_CENTER
@@ -88,13 +100,11 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
                     }
                 }
                 and(red) {
-                    val c = c(.75, .5, .5)
-                    nuke.value = c
+                    nuke.value = Color(.75, .5, .5, 1.0)
                     +boxMix
                 }
                 and(blue) {
-                    val c = c(.5, .5, .75)
-                    nuke.value = c
+                    nuke.value = Color(.5, .5, .75, 1.0)
                     +boxMix
                 }
             }
