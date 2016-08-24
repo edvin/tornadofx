@@ -40,26 +40,11 @@ class SwitchViewApp2 : App(Main::class, Styles::class) {
         private var currentTransition = 0
         private val transitions = listOf(
                 "Fade" to Fade(time),
-                "Slide Up" to Slide(time, Direction.UP),
-                "Slide Right" to Slide(time, Direction.RIGHT),
-                "Slide Down" to Slide(time, Direction.DOWN),
-                "Slide Left" to Slide(time, Direction.LEFT),
-                "Cover From Up" to Cover(time, Direction.UP),
-                "Cover From Right" to Cover(time, Direction.RIGHT),
-                "Cover From Down" to Cover(time, Direction.DOWN),
-                "Cover From Left" to Cover(time, Direction.LEFT),
-                "Reveal Up" to Reveal(time, Direction.UP),
-                "Reveal Right" to Reveal(time, Direction.RIGHT),
-                "Reveal Down" to Reveal(time, Direction.DOWN),
-                "Reveal Left" to Reveal(time, Direction.LEFT),
-                "Metro Up" to Metro(time, Direction.UP),
-                "Metro Right" to Metro(time, Direction.RIGHT),
-                "Metro Down" to Metro(time, Direction.DOWN),
-                "Metro Left" to Metro(time, Direction.LEFT),
-                "Swap Up" to Swap(doubleTime, Direction.UP),
-                "Swao Right" to Swap(doubleTime, Direction.RIGHT),
-                "Swap Down" to Swap(doubleTime, Direction.DOWN),
-                "Swap Left" to Swap(doubleTime, Direction.LEFT)
+                *Direction.values().map { "Slide $it" to Slide(time, it) }.toTypedArray(),
+                *Direction.values().map { "Cover from $it" to Cover(time, it) }.toTypedArray(),
+                *Direction.values().map { "Reveal $it" to Reveal(time, it) }.toTypedArray(),
+                *Direction.values().map { "Metro $it" to Metro(time, it) }.toTypedArray(),
+                *Direction.values().map { "Swap $it" to Swap(time, it) }.toTypedArray()
         )
 
         fun swap(current: SwapView, replacement: SwapView) {
