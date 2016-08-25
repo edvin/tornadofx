@@ -29,13 +29,13 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, Styles::class
     }
 }
 
-abstract class SwapView(name: String, cssClass: CssRule) : View(name) {
+abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
     val controller: SwitchController by inject()
     val button = button(controller.firstTransition) { setOnAction { swap() } }
     override val root = stackpane {
         vbox {
             addClass(Styles.box, cssClass)
-            label(name)
+            label(this@SwapView.javaClass.simpleName)
             this += button
         }
     }
@@ -43,14 +43,14 @@ abstract class SwapView(name: String, cssClass: CssRule) : View(name) {
     abstract fun swap()
 }
 
-class Main : SwapView("Main", Styles.red) {
-    val alt: Alt by inject()
+class Main : SwapView(Styles.red) {
+    val alt: Alternate by inject()
     override fun swap() {
         controller.swap(this, alt)
     }
 }
 
-class Alt : SwapView("Alternate", Styles.blue) {
+class Alternate : SwapView(Styles.blue) {
     val main: Main by inject()
     override fun swap() {
         controller.swap(this, main)
