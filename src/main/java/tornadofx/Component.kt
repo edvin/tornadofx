@@ -384,9 +384,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         if (root == root.scene?.root) {
             val scene = root.scene
 
-            (scene.window as? Stage)?.apply {
-                titleProperty().unbind()
-                titleProperty().bind(replacement.titleProperty)
+            (scene.window as? Stage)?.titleProperty()?.apply {
+                unbind()
+                bind(replacement.titleProperty)
             }
 
             if (transition != null) {
@@ -440,6 +440,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("View Transitions are now created with the `ViewTransition` class")
     inline fun <reified T : View> replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        @Suppress("DEPRECATION")
         return replaceWith(find(view), transition)
     }
 
@@ -447,6 +448,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("View Transitions are now created with the `ViewTransition` class")
     inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        @Suppress("DEPRECATION")
         return replaceWith(find(fragment), transition)
     }
 

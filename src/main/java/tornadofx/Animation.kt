@@ -228,6 +228,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
             stack.children.clear()
             current.removeFromParent()
             replacement.removeFromParent()
+            stack.removeFromParent()
             current.muteDocking = false
             replacement.muteDocking = false
             attach(replacement.root)
@@ -244,9 +245,8 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
         if (children.remove(node)) children.add(node)
     }
 
-    open fun stack(current: UIComponent, replacement: UIComponent): StackPane {
-        return if (newOnTop) StackPane(current.root, replacement.root) else StackPane(replacement.root, current.root)
-    }
+    open fun stack(current: UIComponent, replacement: UIComponent)
+            = if (newOnTop) StackPane(current.root, replacement.root) else StackPane(replacement.root, current.root)
 
     companion object {
         @Deprecated("Use `Slide(0.2.seconds)`", ReplaceWith("Slide(0.2.seconds)"))
