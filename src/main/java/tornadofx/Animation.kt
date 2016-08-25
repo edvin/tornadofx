@@ -7,6 +7,7 @@ import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.geometry.Point2D
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.Pane
@@ -254,14 +255,14 @@ abstract class ViewTransition2(val newOnTop: Boolean = true) {
 
     open fun onComplete(removed: UIComponent, replacement: UIComponent) = Unit
 
-    internal fun call(current: UIComponent, replacement: UIComponent, attachTemp: (StackPane) -> Unit, attachReplacement: (UIComponent) -> Unit) {
+    internal fun call(current: UIComponent, replacement: UIComponent, attach: (Node) -> Unit) {
         current.muteDocking = true
         replacement.muteDocking = true
 
         val stack = stack(current, replacement)
         current.isTransitioning = true
         replacement.isTransitioning = true
-        attachTemp(stack)
+        attach(stack)
 
         val animation = transit(current, replacement, stack)
         val oldFinish: EventHandler<ActionEvent>? = animation.onFinished
@@ -271,7 +272,7 @@ abstract class ViewTransition2(val newOnTop: Boolean = true) {
             replacement.removeFromParent()
             current.muteDocking = false
             replacement.muteDocking = false
-            attachReplacement(replacement)
+            attach(replacement.root)
             oldFinish?.handle(it)
             onComplete(current, replacement)
             current.isTransitioning = false

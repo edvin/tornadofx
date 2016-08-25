@@ -183,7 +183,7 @@ operator fun EventTarget.plusAssign(node: Node) {
     addChildIfPossible(node)
 }
 
-fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
+fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
     getChildList()?.clear()
     op(this)
 }
@@ -265,20 +265,22 @@ fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boo
                 if (scrollTo) scrollTo(it)
             }
 }
+
 fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(0,it)
+        backingList.add(0, it)
         if (select) selectionModel.select(it)
     }
 }
+
 fun <T> TableView<T>.moveToBottomWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     val end = backingList.size - 1
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(end,it)
+        backingList.add(end, it)
         if (select) selectionModel.select(it)
 
     }
@@ -353,7 +355,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Un
 
     cellFactory = Callback { column: TableColumn<S, T> ->
         val cell = originalFactory.call(column)
-        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue)  }
+        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue) }
         cell
     }
 }
@@ -795,7 +797,9 @@ inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Un
 }
 
 fun EventTarget.removeFromParent() {
-    if (this is Tab) {
+    if (this is UIComponent) {
+        root.removeFromParent()
+    } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
         parent?.getChildList()?.remove(this)

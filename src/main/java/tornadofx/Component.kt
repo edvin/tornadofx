@@ -395,15 +395,53 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             }
 
             if (transition != null) {
-                transition.call(this, replacement, { scene.root = it }, { scene.root = it.root })
+                transition.call(this, replacement) { scene.root = it as Parent }
             } else {
-                with(replacement) {
-                    removeFromParent()
-                    scene.root = root
-                }
+                replacement.removeFromParent()
+                scene.root = replacement.root
+                removeFromParent()
             }
         } else if (root.parent is Pane) {
-            // TODO: Replace in parent
+            // TODO: Generate attach function
+            val attacher: (Node) -> Unit
+            if (root.parent is BorderPane) {  // Are there any other situations we'll have to watch out for?
+                attacher = with(root.parent as BorderPane) {
+                    when (root) {
+                        top -> {
+                            { top = it }
+                        }
+                        right -> {
+                            { right = it }
+                        }
+                        bottom -> {
+                            { bottom = it }
+                        }
+                        left -> {
+                            { left = it }
+                        }
+                        center -> {
+                            { center = it }
+                        }
+                        else -> {
+                            {}  // TODO: Should be an exception?
+                        }
+                    }
+                }
+            } else {
+                attacher = with(root.parent as Pane) {
+                    val index = getChildList()!!.indexOf(root);
+                    { children.add(index, it) }
+                }
+            }
+
+            // TODO: Do transition
+            if (transition != null) {
+                transition.call(this, replacement, attacher)
+            } else {
+                removeFromParent()
+                replacement.removeFromParent()
+                attacher(replacement.root)
+            }
         } else {
             // TODO: Cannot replace view
         }
