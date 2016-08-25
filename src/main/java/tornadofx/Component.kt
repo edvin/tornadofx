@@ -383,7 +383,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null) {
         if (isTransitioning || replacement.isTransitioning) {
-            // TODO: Log Cannot transition
+            log.warning { "Components are already in transition" }
             return
         }
         if (root == root.scene?.root) {
@@ -402,9 +402,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 removeFromParent()
             }
         } else if (root.parent is Pane) {
-            // TODO: Generate attach function
             val attacher: (Node) -> Unit
-            if (root.parent is BorderPane) {  // Are there any other situations we'll have to watch out for?
+            if (root.parent is BorderPane) {
                 attacher = with(root.parent as BorderPane) {
                     when (root) {
                         top -> {
@@ -423,7 +422,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                             { center = it }
                         }
                         else -> {
-                            {}  // TODO: Should be an exception?
+                            { log.severe { "Item not found in parent BorderPane" } }  // TODO: Should throw an exception?
                         }
                     }
                 }
@@ -434,7 +433,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 }
             }
 
-            // TODO: Do transition
             if (transition != null) {
                 transition.call(this, replacement, attacher)
             } else {
@@ -442,8 +440,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 replacement.removeFromParent()
                 attacher(replacement.root)
             }
-        } else {
-            // TODO: Cannot replace view
+        } else {  // Are there any other situations we'll have to watch out for?
+            log.warning { "Parent cannot replace sub views" }  // TODO: Should throw an exception?
         }
     }
 
