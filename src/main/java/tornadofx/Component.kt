@@ -370,13 +370,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    inline fun <reified T : View> replaceWith(view: KClass<T>, transition: ViewTransition? = null) {
-        return replaceWith(find(view), transition)
-    }
-
-    @JvmName("replaceWithFragment")
-    inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, transition: ViewTransition? = null) {
-        return replaceWith(find(fragment), transition)
+    fun <T: UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null) {
+        return replaceWith(find(component), transition)
     }
 
     internal var isTransitioning = false
