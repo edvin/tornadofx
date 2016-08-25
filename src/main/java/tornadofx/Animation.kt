@@ -251,6 +251,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     companion object {
+        @Deprecated("Use `Slide(0.2.seconds)`", ReplaceWith("Slide(0.2.seconds)"))
         val SlideIn = fun(existing: UIComponent, replacement: UIComponent, transitionCompleteCallback: () -> Unit) {
             replacement.root.translateX = existing.root.boundsInLocal.width
 
@@ -269,6 +270,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
             replacementSlide.play()
         }
 
+        @Deprecated("Use `Slide(0.2.seconds, Direction.LEFT)`", ReplaceWith("Slide(0.2.seconds, Direction.RIGHT)"))
         val SlideOut = fun(existing: UIComponent, replacement: UIComponent, transitionCompleteCallback: () -> Unit) {
             replacement.root.translateX = -existing.root.boundsInLocal.width
 
