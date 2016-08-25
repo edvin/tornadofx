@@ -209,7 +209,7 @@ operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
 operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
 
 abstract class ViewTransition(val newOnTop: Boolean = true) {
-    abstract fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation
+    abstract fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation
 
     open fun onComplete(removed: UIComponent, replacement: UIComponent) = Unit
 
@@ -222,7 +222,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
         replacement.isTransitioning = true
         attach(stack)
 
-        transit(current, replacement, stack).apply {
+        create(current, replacement, stack).apply {
             val oldFinish: EventHandler<ActionEvent>? = onFinished
             setOnFinished {
                 stack.children.clear()
@@ -299,7 +299,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Fade(val duration: Duration) : ViewTransition(false) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane)
                 = current.fade(duration, 0.0, play = false)
 
         override fun onComplete(removed: UIComponent, replacement: UIComponent) {
@@ -310,7 +310,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     class FadeThrough(duration: Duration, val color: Paint = Color.BLACK) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
         val halfTime = duration.divide(2.0)
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane)
                 = current.fade(halfTime, 0.0, easing = Interpolator.EASE_IN, play = false)
                 .then(replacement.fade(halfTime, 0.0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
 
@@ -326,7 +326,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
             val bounds = current.root.boundsInLocal
             val destination = when (direction) {
                 Direction.UP -> Point2D(0.0, -bounds.height)
@@ -347,7 +347,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Cover(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
             val bounds = current.root.boundsInLocal
             val destination = when (direction) {
                 Direction.UP -> Point2D(0.0, bounds.height)
@@ -362,7 +362,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition(false) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
             val bounds = current.root.boundsInLocal
             val destination = when (direction) {
                 Direction.UP -> Point2D(0.0, -bounds.height)
@@ -382,7 +382,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition(false) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
             val bounds = current.root.boundsInLocal
             val destination = when (direction) {
                 Direction.UP -> Point2D(0.0, -bounds.height * distancePercentage)
@@ -407,7 +407,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scaling: Point2D = Point2D(.75, .75)) : ReversibleViewTransition(false) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
             val bounds = current.root.boundsInLocal
             val destination = when (direction) {
                 Direction.UP -> Point2D(0.0, -bounds.height * 0.5)
@@ -435,7 +435,7 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class NewsFlash(val duration: Duration, val rotations: Double = 2.0) : ViewTransition(true) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane)
                 = replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
                 easing = Interpolator.EASE_IN, reversed = true, play = false)
     }
