@@ -370,7 +370,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    fun <T: UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null) {
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null) {
         return replaceWith(find(component), transition)
     }
 
