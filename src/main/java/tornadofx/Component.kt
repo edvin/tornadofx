@@ -397,35 +397,33 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 removeFromParent()
             }
         } else if (root.parent is Pane) {
+            val parent = root.parent as Pane
             val attacher: (Node) -> Unit
-            if (root.parent is BorderPane) {
-                attacher = with(root.parent as BorderPane) {
-                    when (root) {
-                        top -> {
-                            { top = it }
-                        }
-                        right -> {
-                            { right = it }
-                        }
-                        bottom -> {
-                            { bottom = it }
-                        }
-                        left -> {
-                            { left = it }
-                        }
-                        center -> {
-                            { center = it }
-                        }
-                        else -> {
-                            { log.severe { "Item not found in parent BorderPane" } }  // TODO: Should throw an exception?
-                        }
+            if (parent is BorderPane) {
+                attacher = when (root) {
+                    parent.top -> {
+                        { parent.top = it }
+                    }
+                    parent.right -> {
+                        { parent.right = it }
+                    }
+                    parent.bottom -> {
+                        { parent.bottom = it }
+                    }
+                    parent.left -> {
+                        { parent.left = it }
+                    }
+                    parent.center -> {
+                        { parent.center = it }
+                    }
+                    else -> {
+                        { log.severe { "Item not found in parent BorderPane" } }  // TODO: Should throw an exception?
                     }
                 }
             } else {
-                attacher = with(root.parent as Pane) {
-                    val index = getChildList()!!.indexOf(root);
-                    { children.add(index, it) }
-                }
+                val children = parent.children
+                val index = children.indexOf(root)
+                attacher = { children.add(index, it) }
             }
 
             if (transition != null) {
