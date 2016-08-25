@@ -398,11 +398,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             }
         } else if (root.parent is Pane) {
             val parent = root.parent as Pane
-            val attacher: (Node) -> Unit
-            if (parent is BorderPane) {
-                attacher = when (root) {
+            val attach = if (parent is BorderPane) {
+                when (root) {
                     parent.top -> {
-                        { parent.top = it }
+                        { it: Node -> parent.top = it }
                     }
                     parent.right -> {
                         { parent.right = it }
@@ -422,16 +421,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                 }
             } else {
                 val children = parent.children
-                val index = children.indexOf(root)
-                attacher = { children.add(index, it) }
+                val index = children.indexOf(root);
+                { children.add(index, it) }
             }
 
             if (transition != null) {
-                transition.call(this, replacement, attacher)
+                transition.call(this, replacement, attach)
             } else {
                 removeFromParent()
                 replacement.removeFromParent()
-                attacher(replacement.root)
+                attach(replacement.root)
             }
         } else {  // Are there any other situations we'll have to watch out for?
             log.warning { "Parent cannot replace sub views" }  // TODO: Should throw an exception?
