@@ -145,13 +145,11 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Double, scale: P
             if (play) play()
         }
 
-fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null): ParallelTransition {
-    return ParallelTransition(this, *animation).apply { op?.invoke(this) }
-}
+fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null)
+        = ParallelTransition(this, *animation).apply { op?.invoke(this) }
 
-fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null): SequentialTransition {
-    return SequentialTransition(this, *animation).apply { op?.invoke(this) }
-}
+fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null)
+        = SequentialTransition(this, *animation).apply { op?.invoke(this) }
 
 fun Timeline.keyframe(duration: Duration, op: (KeyFrameBuilder).() -> Unit): KeyFrame {
     val keyFrameBuilder = KeyFrameBuilder(duration)
@@ -301,7 +299,8 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class Fade(val duration: Duration) : ViewTransition(false) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane) = current.fade(duration, 0.0, play = false)
+        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+                = current.fade(duration, 0.0, play = false)
 
         override fun onComplete(removed: UIComponent, replacement: UIComponent) {
             removed.root.opacity = 1.0
@@ -311,14 +310,11 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     class FadeThrough(duration: Duration, val color: Paint = Color.BLACK) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
         val halfTime = duration.divide(2.0)
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
-            return current.fade(halfTime, 0.0, easing = Interpolator.EASE_IN, play = false)
-                    .then(replacement.fade(halfTime, 0.0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
-        }
+        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+                = current.fade(halfTime, 0.0, easing = Interpolator.EASE_IN, play = false)
+                .then(replacement.fade(halfTime, 0.0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
 
-        override fun stack(current: UIComponent, replacement: UIComponent): StackPane {
-            return StackPane(bg, replacement.root, current.root)
-        }
+        override fun stack(current: UIComponent, replacement: UIComponent) = StackPane(bg, replacement.root, current.root)
 
         override fun onComplete(removed: UIComponent, replacement: UIComponent) {
             removed.root.opacity = 1.0
@@ -431,10 +427,6 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
             removed.root.translateY = 0.0
             removed.root.scaleX = 1.0
             removed.root.scaleY = 1.0
-            replacement.root.translateX = 0.0
-            replacement.root.translateY = 0.0
-            replacement.root.scaleX = 1.0
-            replacement.root.scaleY = 1.0
         }
 
         override fun reversed(): ReversibleViewTransition {
@@ -443,9 +435,8 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     }
 
     class NewsFlash(val duration: Duration, val rotations: Double = 2.0) : ViewTransition(true) {
-        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
-            return replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
-                    easing = Interpolator.EASE_IN, reversed = true, play = false)
-        }
+        override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane)
+                = replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
+                easing = Interpolator.EASE_IN, reversed = true, play = false)
     }
 }
