@@ -222,22 +222,22 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
         replacement.isTransitioning = true
         attach(stack)
 
-        val animation = transit(current, replacement, stack)
-        val oldFinish: EventHandler<ActionEvent>? = animation.onFinished
-        animation.setOnFinished {
-            stack.children.clear()
-            current.removeFromParent()
-            replacement.removeFromParent()
-            stack.removeFromParent()
-            current.muteDocking = false
-            replacement.muteDocking = false
-            attach(replacement.root)
-            oldFinish?.handle(it)
-            onComplete(current, replacement)
-            current.isTransitioning = false
-            replacement.isTransitioning = false
-        }
-        animation.play()
+        transit(current, replacement, stack).apply {
+            val oldFinish: EventHandler<ActionEvent>? = onFinished
+            setOnFinished {
+                stack.children.clear()
+                current.removeFromParent()
+                replacement.removeFromParent()
+                stack.removeFromParent()
+                current.muteDocking = false
+                replacement.muteDocking = false
+                attach(replacement.root)
+                oldFinish?.handle(it)
+                onComplete(current, replacement)
+                current.isTransitioning = false
+                replacement.isTransitioning = false
+            }
+        }.play()
     }
 
     protected fun StackPane.moveToTop(component: UIComponent) = moveToTop(component.root)
