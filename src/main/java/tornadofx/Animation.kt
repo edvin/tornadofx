@@ -12,6 +12,7 @@ import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.util.Duration
 import java.util.*
@@ -309,7 +310,7 @@ class Fade(val duration: Duration) : ViewTransition2(false) {
     }
 }
 
-class FadeThrough(val duration: Duration, val color: Paint) : ViewTransition2() {
+class FadeThrough(duration: Duration, val color: Paint = Color.BLACK) : ViewTransition2() {
     private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
     val halfTime = duration.divide(2.0)
     override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
@@ -351,7 +352,7 @@ class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) :
     override fun reversed() = Slide(duration, direction.reversed())
 }
 
-class Cover(val duration: Duration, val direction: Direction = Direction.RIGHT) : ReversibleViewTransition() {
+class Cover(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
     override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         val bounds = current.root.boundsInLocal
         val destination = when (direction) {
@@ -363,7 +364,7 @@ class Cover(val duration: Duration, val direction: Direction = Direction.RIGHT) 
         return replacement.move(duration, destination, reversed = true, play = false)
     }
 
-    override fun reversed() = Reveal(duration, direction)
+    override fun reversed() = Reveal(duration, direction.reversed())
 }
 
 class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition(false) {
@@ -383,7 +384,7 @@ class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) 
         removed.root.translateY = 0.0
     }
 
-    override fun reversed() = Cover(duration, direction)
+    override fun reversed() = Cover(duration, direction.reversed())
 }
 
 class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition(false) {
@@ -443,7 +444,7 @@ class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, va
     }
 }
 
-class NewsFlash(val duration: Duration, val rotations: Double) : ViewTransition2(true) {
+class NewsFlash(val duration: Duration, val rotations: Double = 2.0) : ViewTransition2(true) {
     override fun transit(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
         return replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
                 easing = Interpolator.EASE_IN, reversed = true, play = false)
