@@ -74,14 +74,14 @@ class SwitchController : Controller() {
 
     private val transitions = listOf(
             "None" to null,
-            "Fade" to Fade(time),
-            *fades.map { "Fade Through ${it.first}" to FadeThrough(doubleTime, it.second) }.toTypedArray(),
-            *Direction.values().map { "Slide $it" to Slide(time, it) }.toTypedArray(),
-            *Direction.values().map { "Cover $it" to Cover(time, it) }.toTypedArray(),
-            *Direction.values().map { "Reveal $it" to Reveal(time, it) }.toTypedArray(),
-            *Direction.values().map { "Metro $it" to Metro(time, it) }.toTypedArray(),
-            *Direction.values().map { "Swap $it" to Swap(doubleTime, it) }.toTypedArray(),
-            "NewsFlash" to NewsFlash(doubleTime, 2.0)
+            "Fade" to ViewTransition.Fade(time),
+            *fades.map { "Fade Through ${it.first}" to ViewTransition.FadeThrough(doubleTime, it.second) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Slide $it" to ViewTransition.Slide(time, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Cover $it" to ViewTransition.Cover(time, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Metro $it" to ViewTransition.Metro(time, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Swap $it" to ViewTransition.Swap(doubleTime, it) }.toTypedArray(),
+            "NewsFlash" to ViewTransition.NewsFlash(doubleTime, 2.0)
     )
     val firstTransition = transitions[0].first
     private var currentTransition = 0
