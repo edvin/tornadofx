@@ -29,7 +29,7 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, Styles::class
     }
 }
 
-private abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
+abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
     val controller: SwitchController by inject()
     val button = button(controller.firstTransition) { setOnAction { swap() } }
     override val root = stackpane {
@@ -43,21 +43,21 @@ private abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
     abstract fun swap()
 }
 
-private class Main : SwapView(Styles.red) {
+class Main : SwapView(Styles.red) {
     val alt: Alternate by inject()
     override fun swap() {
         controller.swap(this, alt)
     }
 }
 
-private class Alternate : SwapView(Styles.blue) {
-    private val main: Main by inject()
+class Alternate : SwapView(Styles.blue) {
+    val main: Main by inject()
     override fun swap() {
         controller.swap(this, main)
     }
 }
 
-private class SwitchController : Controller() {
+class SwitchController : Controller() {
     private val time = .25.seconds
     private val doubleTime = time.multiply(2.0)
     private val fades = listOf(
@@ -93,7 +93,7 @@ private class SwitchController : Controller() {
     }
 }
 
-private class Styles : Stylesheet() {
+class Styles : Stylesheet() {
     companion object {
         val box by cssclass()
         val red by cssclass()
