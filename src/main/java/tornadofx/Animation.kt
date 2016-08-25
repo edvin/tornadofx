@@ -13,6 +13,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
+import javafx.scene.transform.Rotate
 import javafx.util.Duration
 import java.util.*
 
@@ -430,7 +431,38 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
         }
 
         override fun reversed(): ReversibleViewTransition {
-            return Swap(duration, direction.reversed())
+            return Swap(duration, direction.reversed(), scaling)
+        }
+    }
+
+    class Flip(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition(false) {
+        val halfTime = duration.divide(2.0)
+        val targetAxis = when (direction) {
+            Direction.UP, Direction.DOWN -> Rotate.X_AXIS
+            Direction.RIGHT, Direction.LEFT -> Rotate.Y_AXIS
+        }
+        val targetAngle = when (direction) {
+            Direction.UP, Direction.LEFT -> -90.0
+            Direction.RIGHT, Direction.DOWN -> 90.0
+        }
+
+        override fun create(current: UIComponent, replacement: UIComponent, stack: StackPane): Animation {
+            // FIXME: The rotation doesn't show perspective
+            return current.rotate(halfTime, targetAngle, easing = Interpolator.EASE_IN, play = false) {
+                axis = targetAxis
+            }.then(replacement.rotate(halfTime, -targetAngle, easing = Interpolator.EASE_OUT, reversed = true, play = false) {
+                axis = targetAxis
+            })
+        }
+
+        override fun onComplete(removed: UIComponent, replacement: UIComponent) {
+            removed.root.rotate = 0.0
+            removed.root.rotationAxis = Rotate.Z_AXIS
+            replacement.root.rotationAxis = Rotate.Z_AXIS
+        }
+
+        override fun reversed(): ReversibleViewTransition {
+            return Flip(duration, direction.reversed())
         }
     }
 

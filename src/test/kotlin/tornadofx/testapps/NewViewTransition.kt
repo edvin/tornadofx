@@ -81,6 +81,7 @@ class SwitchController : Controller() {
             *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Metro $it" to ViewTransition.Metro(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Swap $it" to ViewTransition.Swap(doubleTime, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Flip $it" to ViewTransition.Flip(time, it) }.toTypedArray(),
             "NewsFlash" to ViewTransition.NewsFlash(doubleTime, 2.0)
     )
     val firstTransition = transitions[0].first
