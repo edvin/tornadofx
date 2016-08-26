@@ -217,10 +217,10 @@ abstract class ViewTransition(val newOnTop: Boolean = true) {
     internal fun call(current: UIComponent, replacement: UIComponent, attach: (Node) -> Unit) {
         current.muteDocking = true
         replacement.muteDocking = true
-
-        val stack = stack(current, replacement)
         current.isTransitioning = true
         replacement.isTransitioning = true
+
+        val stack = stack(current, replacement)
         attach(stack)
 
         create(current, replacement, stack).apply {
