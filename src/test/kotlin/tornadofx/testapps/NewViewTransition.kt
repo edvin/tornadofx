@@ -1,9 +1,128 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
+import javafx.scene.effect.DropShadow
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
+import javafx.util.StringConverter
 import tornadofx.*
+
+class TransitionDemoApp : App(TransitionDemo::class, TransitionDemoStyles::class) {
+    class TransitionDemo : View("Transition Demo") {
+        val controller: TransitionDemoController by inject()
+        override val root = borderpane {
+            left = vbox {
+                addClass(TransitionDemoStyles.navigation)
+                button("Home")
+                button("Text")
+                button("Study Cards")
+                this += Pane().apply { VBox.setVgrow(this, Priority.ALWAYS) }
+                val time = .25.seconds
+                choicebox(listOf(
+                        "Fade" to ViewTransition.Fade(time),
+                        "Fade 2" to ViewTransition.FadeThrough(time),
+                        "Slide" to ViewTransition.Slide(time),
+                        "Cover" to ViewTransition.Cover(time),
+                        "Reveal" to ViewTransition.Reveal(time)
+                ).observable()) {
+                    converter = object : StringConverter<Pair<String, ViewTransition>>() {
+                        override fun fromString(string: String): Pair<String, ViewTransition> {
+                            throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+                        }
+
+                        override fun toString(value: Pair<String, ViewTransition>): String {
+                            return value.first
+                        }
+                    }
+                }
+            }
+            center(TransitionDemoMain::class)
+        }
+    }
+
+    class TransitionDemoMain : View() {
+        override val root = stackpane {
+            addClass(TransitionDemoStyles.mainPage)
+            vbox {
+                addClass(TransitionDemoStyles.boxed)
+                label("Welcome To The")
+                label("Transition Demo").addClass(TransitionDemoStyles.big)
+            }
+        }
+    }
+
+    class TransitionDemoController : Controller() {
+    }
+
+    class TransitionDemoStyles : Stylesheet() {
+        companion object {
+            val navigation by cssclass()
+
+            val mainPage by cssclass()
+            val boxed by cssclass()
+            val big by cssclass()
+
+            val optionBox by cssclass()
+
+            val bg = Color.gray(.25)
+            val back = mixin {
+                backgroundColor += bg
+            }
+        }
+
+        init {
+            root {
+                prefWidth = 500.px
+                prefHeight = 350.px
+            }
+            navigation {
+                +back
+                padding = box(5.px)
+                spacing = 5.px
+
+                s(button, choiceBox) {
+                    +back
+                    maxWidth = infinity
+                    alignment = Pos.BASELINE_CENTER
+                    fontSize = 14.px
+                    fontWeight = FontWeight.BOLD
+                    padding = box(5.px, 10.px)
+                    textFill = Color.WHITE
+
+                    and(hover) {
+                        backgroundColor += bg.darker()
+                        effect = DropShadow(3.0, 0.0, 3.0, Color.BLACK)
+
+                        and(armed) {
+                            effect = DropShadow(3.0, 0.0, 1.0, Color.BLACK)
+                        }
+                    }
+                }
+            }
+            mainPage {
+                backgroundColor += Color.gray(.75)
+                label {
+                    fontWeight = FontWeight.BOLD
+                    fontSize = 20.px
+
+                    and(big) {
+                        fontSize = 24.px
+                    }
+                }
+            }
+            boxed {
+                alignment = Pos.CENTER
+            }
+            form and optionBox {
+                fontWeight = FontWeight.NORMAL
+                prefWidth = 250.px
+            }
+        }
+    }
+}
 
 class NewViewTransitionRoot : App(NewViewTransitionMain::class, NewViewTransitionStyles::class)
 
@@ -29,13 +148,13 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
     }
 }
 
-abstract class NewViewTransitionSwapView(cssClass: CssRule) : View("Switching Views") {
+abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
     val button = button(controller.firstTransition) { setOnAction { swap() } }
     override val root = stackpane {
         vbox {
             addClass(NewViewTransitionStyles.box, cssClass)
-            label(this@NewViewTransitionSwapView.javaClass.simpleName)
+            label(name)
             this += button
         }
     }
@@ -43,14 +162,14 @@ abstract class NewViewTransitionSwapView(cssClass: CssRule) : View("Switching Vi
     abstract fun swap()
 }
 
-class NewViewTransitionMain : NewViewTransitionSwapView(NewViewTransitionStyles.red) {
+class NewViewTransitionMain : NewViewTransitionSwapView("Main", NewViewTransitionStyles.red) {
     val alt: NewViewTransitionAlternate by inject()
     override fun swap() {
         controller.swap(this, alt)
     }
 }
 
-class NewViewTransitionAlternate : NewViewTransitionSwapView(NewViewTransitionStyles.blue) {
+class NewViewTransitionAlternate : NewViewTransitionSwapView("Alternate", NewViewTransitionStyles.blue) {
     val main: NewViewTransitionMain by inject()
     override fun swap() {
         controller.swap(this, main)
