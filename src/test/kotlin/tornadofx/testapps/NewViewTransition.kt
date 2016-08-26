@@ -5,37 +5,37 @@ import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
-class NewViewTransitionRoot : App(Main::class, Styles::class)
+class NewViewTransitionRoot : App(NewViewTransitionMain::class, NewViewTransitionStyles::class)
 
-class NewViewTransitionVBox : App(VBoxRootView::class, Styles::class) {
+class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::class) {
     class VBoxRootView : View("Switching Sub Views In VBox") {
         override val root = vbox {
-            label("Top").addClass(Styles.topLabel)
-            this += Main::class
-            label("Bottom").addClass(Styles.bottomLabel)
+            label("Top").addClass(NewViewTransitionStyles.topLabel)
+            this += NewViewTransitionMain::class
+            label("Bottom").addClass(NewViewTransitionStyles.bottomLabel)
         }
     }
 }
 
-class NewViewTransitionBorderPane : App(BorderPaneRootView::class, Styles::class) {
+class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransitionStyles::class) {
     class BorderPaneRootView : View("Switching Sub Views In BorderPane") {
         override val root = borderpane {
-            top = label("Top") { addClass(Styles.topLabel) }
-            right = label("Right") { addClass(Styles.rightLabel) }
-            bottom = label("Bottom") { addClass(Styles.bottomLabel) }
-            left = label("Left") { addClass(Styles.leftLabel) }
-            center(Main::class)
+            top = label("Top") { addClass(NewViewTransitionStyles.topLabel) }
+            right = label("Right") { addClass(NewViewTransitionStyles.rightLabel) }
+            bottom = label("Bottom") { addClass(NewViewTransitionStyles.bottomLabel) }
+            left = label("Left") { addClass(NewViewTransitionStyles.leftLabel) }
+            center(NewViewTransitionMain::class)
         }
     }
 }
 
-abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
-    val controller: SwitchController by inject()
+abstract class NewViewTransitionSwapView(cssClass: CssRule) : View("Switching Views") {
+    val controller: NewViewTransitionController by inject()
     val button = button(controller.firstTransition) { setOnAction { swap() } }
     override val root = stackpane {
         vbox {
-            addClass(Styles.box, cssClass)
-            label(this@SwapView.javaClass.simpleName)
+            addClass(NewViewTransitionStyles.box, cssClass)
+            label(this@NewViewTransitionSwapView.javaClass.simpleName)
             this += button
         }
     }
@@ -43,21 +43,21 @@ abstract class SwapView(cssClass: CssRule) : View("Switching Views") {
     abstract fun swap()
 }
 
-class Main : SwapView(Styles.red) {
-    val alt: Alternate by inject()
+class NewViewTransitionMain : NewViewTransitionSwapView(NewViewTransitionStyles.red) {
+    val alt: NewViewTransitionAlternate by inject()
     override fun swap() {
         controller.swap(this, alt)
     }
 }
 
-class Alternate : SwapView(Styles.blue) {
-    val main: Main by inject()
+class NewViewTransitionAlternate : NewViewTransitionSwapView(NewViewTransitionStyles.blue) {
+    val main: NewViewTransitionMain by inject()
     override fun swap() {
         controller.swap(this, main)
     }
 }
 
-class SwitchController : Controller() {
+class NewViewTransitionController : Controller() {
     private val time = .25.seconds
     private val doubleTime = time.multiply(2.0)
     private val fades = listOf(
@@ -86,7 +86,7 @@ class SwitchController : Controller() {
     )
     val firstTransition = transitions[0].first
     private var currentTransition = 0
-    fun swap(current: SwapView, replacement: SwapView) {
+    fun swap(current: NewViewTransitionSwapView, replacement: NewViewTransitionSwapView) {
         val t = transitions[currentTransition].second
         currentTransition = (currentTransition + 1) % transitions.size
         replacement.button.text = transitions[currentTransition].first
@@ -94,7 +94,7 @@ class SwitchController : Controller() {
     }
 }
 
-class Styles : Stylesheet() {
+class NewViewTransitionStyles : Stylesheet() {
     companion object {
         val box by cssclass()
         val red by cssclass()
@@ -105,6 +105,7 @@ class Styles : Stylesheet() {
         val rightLabel by cssclass()
         val bottomLabel by cssclass()
         val leftLabel by cssclass()
+
         val labelMix = mixin {
             maxWidth = infinity
             maxHeight = infinity
