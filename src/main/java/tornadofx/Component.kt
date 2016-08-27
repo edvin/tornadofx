@@ -11,10 +11,12 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
+import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
@@ -289,6 +291,15 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
                     hookGlobalShortcuts()
 
+                    showingProperty().onChange {
+                        if (it == true) {
+                            callOnDock()
+                        } else {
+                            modalStage = null
+                            callOnUndock()
+                        }
+                    }
+
                     if (block) {
                         if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             thread(true) {
@@ -302,14 +313,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                         configureReloading()
                     }
 
-                    showingProperty().onChange {
-                        if (it == true) {
-                            callOnDock()
-                        } else {
-                            modalStage = null
-                            callOnUndock()
-                        }
-                    }
                 }
             }
         } else {
@@ -378,7 +381,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        if (root.scene != null) {
+        if (root == root.scene?.root) {
             val scene = root.scene
 
             if (scene.window is Stage) {
@@ -410,24 +413,58 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
             return true
         } else if (root.parent is Pane) {
-            (root.parent as Pane).apply {
+            var unwrapper: ((Node) -> Unit)? = null
+
+            val replaceDelegate = if (root.parent is BorderPane) {
+                val borderpane = root.parent as BorderPane
+                val tempParent = StackPane()
+                if (borderpane.top == root) {
+                    borderpane.top = tempParent
+                    unwrapper = { borderpane.top = it }
+                }
+                if (borderpane.bottom == root) {
+                    borderpane.bottom = tempParent
+                    unwrapper = { borderpane.bottom = it }
+                }
+                if (borderpane.center == root) {
+                    borderpane.center = tempParent
+                    unwrapper = { borderpane.center = it }
+                }
+                if (borderpane.left == root) {
+                    borderpane.left = tempParent
+                    unwrapper = { borderpane.left = it }
+                }
+                if (borderpane.right == root) {
+                    borderpane.right = tempParent
+                    unwrapper = { borderpane.right = it }
+                }
+                root.removeFromParent()
+                tempParent.add(root)
+                tempParent
+            } else {
+                root.parent as Pane
+            }
+            replaceDelegate.apply {
+                val childList = getChildList()!!
+
+                val index = childList.indexOf(root)
+                root.removeFromParent()
+
                 if (transition != null) {
                     val temp = StackPane(root, replacement.root)
-
-                    children.remove(root)
-                    val idx = children.indexOf(root)
-                    children.add(idx, temp)
+                    childList.add(index, temp)
 
                     transition.invoke(this@UIComponent, replacement, {
-                        val index = children.indexOf(temp)
-                        temp.children.remove(replacement.root)
-                        children.remove(temp)
-                        children.add(index, replacement.root)
+                        root.removeFromParent()
+                        replacement.root.removeFromParent()
+                        temp.removeFromParent()
+                        childList.add(index, replacement.root)
+                        unwrapper?.invoke(replacement.root)
                     })
                 } else {
-                    val index = children.indexOf(root)
-                    children.remove(root)
-                    children.add(index, replacement.root)
+                    replacement.root.removeFromParent()
+                    childList.add(index, replacement.root)
+                    unwrapper?.invoke(replacement.root)
                 }
                 return true
             }

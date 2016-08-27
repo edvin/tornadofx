@@ -13,10 +13,12 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
     constructor(icon: Image, primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
         addStageIcon(icon)
     }
+    constructor() : this(null)
 
     open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
 
     init {
+        Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }
     }
 

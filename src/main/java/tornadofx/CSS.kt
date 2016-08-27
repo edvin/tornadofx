@@ -90,7 +90,7 @@ interface SelectionHolder {
     }
 }
 
-open class Stylesheet : SelectionHolder, Rendered {
+open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHolder, Rendered {
     companion object {
         val log: Logger by lazy { Logger.getLogger("CSS") }
 
@@ -121,6 +121,7 @@ open class Stylesheet : SelectionHolder, Rendered {
         val content by cssclass()
         val contextMenu by cssclass()
         val datePicker by cssclass()
+        val datePickerPopUp by cssclass()
         val dialogPane by cssclass()
         val firstTitledPane by cssclass()
         val graphicContainer by cssclass()
@@ -198,6 +199,16 @@ open class Stylesheet : SelectionHolder, Rendered {
         val visited by csspseudoclass()
         val even by csspseudoclass()
         val odd by csspseudoclass()
+        val filled by csspseudoclass()
+
+        init {
+            detectAndInstallUrlHandler()
+        }
+
+        fun importServiceLoadedStylesheets() {
+            val loader = ServiceLoader.load(Stylesheet::class.java)
+            for (style in loader) importStylesheet(style.javaClass.kotlin)
+        }
 
         /**
          * Try to retrieve a type safe stylesheet, and force installation of url handler
@@ -206,7 +217,7 @@ open class Stylesheet : SelectionHolder, Rendered {
          * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
          * up by the JVM automatically.
          */
-        init {
+        private fun detectAndInstallUrlHandler() {
             try {
                 URL("css://content:64")
             } catch (ex: MalformedURLException) {
@@ -230,7 +241,8 @@ open class Stylesheet : SelectionHolder, Rendered {
         selections -= selection
     }
 
-    override fun render() = selections.joinToString(separator = "") { it.render() }
+    override fun render() = imports.map { "@import url(css://${it.java.name})" }.joinToString(separator = "\n", postfix = "\n") +
+            selections.joinToString(separator = "") { it.render() }
 
     val base64URL: URL get() {
         val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
@@ -285,7 +297,7 @@ open class PropertyHolder {
                 is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
                 is Array<*> -> return value.joinToString { toCss(it) }
                 is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
-                is KClass<*> -> return value.simpleName ?: "none"
+                is KClass<*> -> return "\"${value.qualifiedName}\""
                 is CssProperty<*> -> return value.name
                 is Raw -> return value.name
                 is String -> return "\"$value\""
@@ -597,7 +609,7 @@ open class PropertyHolder {
                 if (!props.containsKey(name) && multiValue)
                     props[name] = MultiValue<T>()
 
-                return selectionScope.get().properties[name] as T;
+                return selectionScope.get().properties[name] as T
             }
             set(value) {
                 selectionScope.get().properties.put(name, value as Any)
@@ -628,7 +640,7 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
                 for ((name, value) in it) {
                     append("    $name: ${PropertyHolder.toCss(value)};\n")
                 }
-                append("}\n\n")
+                append("}\n")
             }
         }
         for ((selection, refine) in block.selections) {
@@ -949,25 +961,25 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-open class CssBox<T>(val top: T, val right: T, val bottom: T, val left: T) {
+open class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T) {
     override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
 }
 
-fun c(colorString: String, opacity: Double = 1.0) = try {
+fun c(colorString: String, opacity: Double = 1.0): Color = try {
     Color.web(colorString, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c('$colorString', opacity=$opacity)")
     Color.MAGENTA
 }
 
-fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0) = try {
+fun c(red: Double, green: Double, blue: Double, opacity: Double = 1.0): Color = try {
     Color.color(red, green, blue, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
     Color.MAGENTA
 }
 
-fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0) = try {
+fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0): Color = try {
     Color.rgb(red, green, blue, opacity)
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")

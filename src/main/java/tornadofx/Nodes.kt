@@ -238,20 +238,22 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
-fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 50) {
+fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
         resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+        afterResize?.invoke()
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
-fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<T, *>> = columns, maxRows: Int = 50) {
+fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<T, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
         resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+        afterResize?.invoke()
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
@@ -461,6 +463,9 @@ fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) 
 
 val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
+
+fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { items.setAll(it) }
 
 fun <T> TableView<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
@@ -756,9 +761,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"]?.let {
-    if (it is T) it else null
-}
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children
