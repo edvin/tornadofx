@@ -1,0 +1,22 @@
+.datagrid {
+    -fx-cell-width: 150px;
+    -fx-cell-height: 150px;
+    -fx-horizontal-cell-spacing: 8px;
+    -fx-vertical-cell-spacing: 8px;
+}
+
+.datagrid-cell {
+    -fx-background: -fx-control-inner-background;
+    -fx-background-color: -fx-background;
+    -fx-text-fill: -fx-text-background-color;
+}
+
+.datagrid-cell:selected {
+    -fx-background: -fx-selection-bar;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+
+.datagrid-cell .label {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}

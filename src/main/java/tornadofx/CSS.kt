@@ -188,6 +188,11 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val labelContainer by cssclass()
         val inputContainer by cssclass()
 
+        // DataGrid
+        val datagrid by cssclass()
+        val datagridCell by cssclass()
+        val datagridRow by cssclass()
+
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
         val disabled by csspseudoclass()
