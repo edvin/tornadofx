@@ -51,14 +51,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.5.4</version>
+	<version>1.5.5</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.5.4'
+compile 'no.tornado:tornadofx:1.5.5'
 ```
 
 ### What does it look like? (Code snippets)
