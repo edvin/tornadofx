@@ -444,6 +444,12 @@ open class PropertyHolder {
     // Cell
     var cellSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-size")
 
+    // DataGrid Celll
+    var cellWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-width")
+    var cellHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-height")
+    var horizontalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-horizontal-cell-spacing")
+    var verticalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-vertical-cell-spacing")
+
     // ColorPicker
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")
 
