@@ -59,7 +59,7 @@ class DataGridTest : View("DataGrid") {
                 cellWidth = 164.0
                 cellHeight = 164.0
 
-                cachedGraphic {
+                cellCache {
                     imageview(it, true)
                 }
             }

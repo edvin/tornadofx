@@ -54,10 +54,10 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         this.cellFormat = cellFormat
     }
 
-    val cachedGraphicProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
-    var cachedGraphic: ((T) -> Node)? get() = cachedGraphicProperty.get(); set(value) = cachedGraphicProperty.set(value)
-    fun cachedGraphic(cachedGraphic: (T) -> Node) {
-        this.cachedGraphic = cachedGraphic
+    val cellCacheProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
+    var cellCache: ((T) -> Node)? get() = cellCacheProperty.get(); set(value) = cellCacheProperty.set(value)
+    fun cellCache(cachedGraphic: (T) -> Node) {
+        this.cellCache = cachedGraphic
     }
 
     val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty })
@@ -133,7 +133,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     internal fun doUpdateItem() {
         val totalCount = dataGrid.items.size
         val item = if (index < 0 || index >= totalCount) null else dataGrid.items[index]
-        val cacheProvider = dataGrid.cachedGraphic
+        val cacheProvider = dataGrid.cellCache
         if (item != null) {
             if (cacheProvider != null)
                 cache = dataGrid.graphicCache.getOrPut(item, { cacheProvider(item) })
