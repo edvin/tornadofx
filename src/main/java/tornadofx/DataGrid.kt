@@ -33,8 +33,8 @@ fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit
 
 @Suppress("unused")
 class DataGrid<T>(items: ObservableList<T>) : Control() {
-    constructor(): this(FXCollections.observableArrayList())
-    constructor(items: List<T>): this(FXCollections.observableArrayList(items))
+    constructor() : this(FXCollections.observableArrayList())
+    constructor(items: List<T>) : this(FXCollections.observableArrayList(items))
 
     private val FACTORY = StyleablePropertyFactory<DataGrid<T>>(Control.getClassCssMetaData())
 
@@ -48,23 +48,35 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     val cellFormatProperty by lazy { SimpleObjectProperty<(DataGridCell<T>.(T) -> Unit)>() }
     var cellFormat: ((DataGridCell<T>).(T) -> Unit)? get() = cellFormatProperty.get(); set(value) = cellFormatProperty.set(value)
-    fun cellFormat(cellFormat: (DataGridCell<T>).(T) -> Unit) { this.cellFormat = cellFormat }
+    fun cellFormat(cellFormat: (DataGridCell<T>).(T) -> Unit) {
+        this.cellFormat = cellFormat
+    }
 
     val cachedGraphicProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
     var cachedGraphic: ((T) -> Node)? get() = cachedGraphicProperty.get(); set(value) = cachedGraphicProperty.set(value)
-    fun cachedGraphic(cachedGraphic: (T) -> Node) { this.cachedGraphic = cachedGraphic }
+    fun cachedGraphic(cachedGraphic: (T) -> Node) {
+        this.cachedGraphic = cachedGraphic
+    }
 
     val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty })
-    var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) { cellWidthProperty.value = value }
+    var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) {
+        cellWidthProperty.value = value
+    }
 
     val cellHeightProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty })
-    var cellHeight: Double get() = cellHeightProperty.value as Double; set(value) { cellHeightProperty.value = value }
+    var cellHeight: Double get() = cellHeightProperty.value as Double; set(value) {
+        cellHeightProperty.value = value
+    }
 
     val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty })
-    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) { horizontalCellSpacingProperty.value = value }
+    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) {
+        horizontalCellSpacingProperty.value = value
+    }
 
     val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty })
-    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) { verticalCellSpacingProperty.value = value }
+    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) {
+        verticalCellSpacingProperty.value = value
+    }
 
     val selectionModel = DataGridSelectionModel(this)
     val focusModel = DataGridFocusModel(this)
@@ -84,12 +96,15 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     var cache: Node? = null
+    var updating = false
 
     init {
         addClass(Stylesheet.datagridCell)
 
         // Update cell content when index changes
-        indexProperty().addListener(InvalidationListener { doUpdateItem() })
+        indexProperty().addListener(InvalidationListener {
+            if (!updating) doUpdateItem()
+        })
     }
 
     internal fun doUpdateItem() {
@@ -98,7 +113,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         val cacheProvider = dataGrid.cachedGraphic
         if (item != null) {
             if (cacheProvider != null)
-                cache = dataGrid.graphicCache.getOrPut(item, { cacheProvider(item)})
+                cache = dataGrid.graphicCache.getOrPut(item, { cacheProvider(item) })
 
             updateItem(item, false)
         } else {
@@ -197,7 +212,9 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
                         cell = createCell()
                         children.add(cell)
                     }
+                    cell.updating = true
                     cell.updateIndex(-1)
+                    cell.updating = false
                     cell.updateIndex(cellIndex)
                 } else {
                     break
@@ -276,15 +293,10 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         val skin = dataGrid.skin as DataGridSkin<T>
         val cellsPerRow = skin.computeMaxCellsInRow()
         val rowIndex = index / cellsPerRow
-        val row = skin.getRow(rowIndex)
-        if (row != null) {
-            val indexInRow = index - (rowIndex * cellsPerRow)
-            val children = row.childrenUnmodifiable
-            return if (children.size > indexInRow) children[indexInRow] as DataGridCell<T>? else null
-        } else {
-            println("CellAt index $index was not found because row $rowIndex did not exist")
-            return null
-        }
+        val row = skin.getRow(rowIndex) ?: return null
+        val indexInRow = index - (rowIndex * cellsPerRow)
+        val children = row.childrenUnmodifiable
+        return if (children.size > indexInRow) children[indexInRow] as DataGridCell<T>? else null
     }
 
     init {
@@ -294,15 +306,19 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
                 if (c.wasAdded()) c.addedSubList.forEach { index ->
                     val cell = getCellAt(index)
                     if (cell != null && !cell.isSelected) {
+                        cell.updating = true
                         cell.updateSelected(true)
                         cell.doUpdateItem()
+                        cell.updating = false
                     }
                 }
                 if (c.wasRemoved()) c.removed.forEach { index ->
                     val cell = getCellAt(index)
                     if (cell != null && cell.isSelected) {
+                        cell.updating = true
                         cell.updateSelected(false)
                         cell.doUpdateItem()
+                        cell.updating = false
                     }
                 }
             }
