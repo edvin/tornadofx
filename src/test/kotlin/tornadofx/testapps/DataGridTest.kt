@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
 
@@ -36,13 +37,15 @@ class DataGridTest : View("DataGrid") {
             combobox(values = images.keys.toList()) {
                 promptText = "Select images"
                 valueProperty().onChange {
-                    datagrid.items.setAll(images[it])
+                    datagrid.items = images[it]!!.observable()
                 }
             }
         }
         center {
             datagrid = datagrid<String> {
                 setPrefSize(530.0, 530.0)
+
+                selectionModel.selectionMode = SelectionMode.MULTIPLE
 
                 cellWidth = 160.0
                 cellHeight = 160.0

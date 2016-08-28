@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase
@@ -83,36 +85,14 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     var cache: Node? = null
 
-    val selectedListener = ListChangeListener<Int> { c ->
-        while (c.next()) {
-            if (c.wasAdded()) c.addedSubList.firstOrNull { it == index }?.apply {
-                if (!isSelected) {
-                    updateSelected(true)
-                    doUpdateItem()
-                }
-            }
-            if (c.wasRemoved()) c.removed.firstOrNull { it == index }?.apply {
-                if (isSelected) {
-                    updateSelected(false)
-                    doUpdateItem()
-                }
-            }
-        }
-    }
-    private val weakSelectedListener = WeakListChangeListener<Int>(selectedListener)
-
     init {
         addClass(Stylesheet.datagridCell)
-
-        // Update selected property and rerender when selection changes
-        dataGrid.selectionModel.selectedIndices.addListener(weakSelectedListener)
 
         // Update cell content when index changes
         indexProperty().addListener(InvalidationListener { doUpdateItem() })
     }
 
-    private fun doUpdateItem() {
-        println("doUpdateItem $index")
+    internal fun doUpdateItem() {
         val totalCount = dataGrid.items.size
         val item = if (index < 0 || index >= totalCount) null else dataGrid.items[index]
         val cacheProvider = dataGrid.cachedGraphic
@@ -291,6 +271,40 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
 class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionModel<T>() {
     private val selectedIndicies = FXCollections.observableArrayList<Int>()
     private val selectedItems = FXCollections.observableArrayList<T>()
+
+    fun getCellAt(index: Int): DataGridCell<T>? {
+        val skin = dataGrid.skin as DataGridSkin<T>
+        val cellsPerRow = skin.computeMaxCellsInRow()
+        val rowIndex = index / cellsPerRow
+        val row = skin.getRow(rowIndex)
+        val indexInRow = index - (rowIndex * cellsPerRow)
+        val children = row.childrenUnmodifiable
+        return if (children.size > indexInRow) children[indexInRow] as DataGridCell<T>? else null
+    }
+
+    init {
+        // Instead of attaching listeners to all cells, distribute selected status directly
+        val selectedIndicesListener = ListChangeListener<Int> { c ->
+            while (c.next()) {
+                if (c.wasAdded()) c.addedSubList.forEach { index ->
+                    val cell = getCellAt(index)
+                    if (cell != null && !cell.isSelected) {
+                        cell.updateSelected(true)
+                        cell.doUpdateItem()
+                    }
+                }
+                if (c.wasRemoved()) c.removed.forEach { index ->
+                    val cell = getCellAt(index)
+                    if (cell != null && cell.isSelected) {
+                        cell.updateSelected(false)
+                        cell.doUpdateItem()
+                    }
+                }
+            }
+        }
+
+        selectedIndices.addListener(selectedIndicesListener)
+    }
 
     override fun selectPrevious() {
         select(selectedIndex - 1)
@@ -477,8 +491,10 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
     private fun updateRows(rowCount: Int) {
         for (i in 0..rowCount - 1)
-            flow.getVisibleCell(i)?.updateIndex(i)
+            getRow(i)?.updateIndex(i)
     }
+
+    fun getRow(index: Int) = flow.getVisibleCell(index)
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         val x1 = skinnable.insets.left
