@@ -7,7 +7,9 @@ import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
+import javafx.beans.Observable
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
@@ -87,9 +89,25 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     override fun getControlCssMetaData(): MutableList<CssMetaData<out Styleable, *>>? = FACTORY.cssMetaData
 
+    // Called when the items list changes structurally
+    private val itemsChangeListener = InvalidationListener {
+        selectionModel.clearSelectionAndReapply()
+        (skin as DataGridSkin<T>).handleControlPropertyChanged("ITEMS")
+    }
+
+    // Called when the items list is swapped for a new
+    private val itemPropertyChangeListener = ChangeListener<ObservableList<T>> { obs, oldList, newList ->
+        oldList?.removeListener(itemsChangeListener)
+        selectionModel.clearSelectionAndReapply()
+        graphicCache.clear()
+        newList.addListener(itemsChangeListener)
+        (skin as DataGridSkin<T>).handleControlPropertyChanged("ITEMS")
+    }
+
     init {
         addClass(Stylesheet.datagrid)
-        itemsProperty.addListener(InvalidationListener { graphicCache.clear() })
+        itemsProperty.addListener(itemPropertyChangeListener)
+        items.addListener(itemsChangeListener)
     }
 
 }
@@ -413,6 +431,18 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         }
     }
 
+    /**
+     * Clear selection and reapply for the items that are still in the list
+     */
+    fun clearSelectionAndReapply() {
+        val currentItems = selectedItems.toList()
+        clearSelection()
+        for (item in currentItems) {
+            val index = dataGrid.items.indexOf(item)
+            select(index)
+        }
+    }
+
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -448,7 +478,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         registerChangeListener(control.heightProperty(), "HEIGHT_PROPERTY")
     }
 
-    override fun handleControlPropertyChanged(p: String) {
+    override public fun handleControlPropertyChanged(p: String) {
         super.handleControlPropertyChanged(p)
 
         when (p) {

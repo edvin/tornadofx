@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
@@ -21,6 +22,7 @@ class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
                         "http://i.imgur.com/37hCL2Pb.jpg",
                         "http://i.imgur.com/v9vBE67b.jpg",
                         "http://i.imgur.com/koQoEExb.jpg",
+                        "http://i.imgur.com/qRfWC9wb.jpg",
                         "http://i.imgur.com/ftDV8oJb.jpg")
 
         )
@@ -34,10 +36,17 @@ class DataGridTest : View("DataGrid") {
 
     override val root = borderpane {
         left {
-            combobox(values = images.keys.toList()) {
-                promptText = "Select images"
-                valueProperty().onChange {
-                    datagrid.items.setAll(images[it])
+            vbox {
+                combobox(values = images.keys.toList()) {
+                    promptText = "Select images"
+                    valueProperty().onChange {
+                        datagrid.items = FXCollections.observableArrayList(images[it])
+                    }
+                }
+                button("Add") {
+                    setOnAction {
+                        datagrid.items.add("http://i.imgur.com/bvqTBT0b.jpg")
+                    }
                 }
             }
         }
@@ -50,8 +59,8 @@ class DataGridTest : View("DataGrid") {
                 cellWidth = 164.0
                 cellHeight = 164.0
 
-                cellFormat {
-                    graphic = imageview(it, true)
+                cachedGraphic {
+                    imageview(it, true)
                 }
             }
         }
