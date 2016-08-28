@@ -22,6 +22,8 @@ import javafx.css.StyleablePropertyFactory
 import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.SelectionMode.MULTIPLE
+import javafx.scene.control.SelectionMode.SINGLE
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.StackPane
 
@@ -83,8 +85,8 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     val selectionModel = DataGridSelectionModel(this)
     val focusModel = DataGridFocusModel(this)
 
-    var singleSelect: Boolean get() = selectionModel.selectionMode == SelectionMode.SINGLE; set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
-    var multiSelect: Boolean get() = selectionModel.selectionMode == SelectionMode.MULTIPLE; set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+    var singleSelect: Boolean get() = selectionModel.selectionMode == SINGLE; set(value) { selectionModel.selectionMode = if (value) SINGLE else MULTIPLE }
+    var multiSelect: Boolean get() = selectionModel.selectionMode == MULTIPLE; set(value) { selectionModel.selectionMode = if (value) MULTIPLE else SINGLE }
 
     override fun createDefaultSkin() = DataGridSkin(this)
 
@@ -429,7 +431,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         selectedIndex = index
         selectedItem = dataGrid.items[index]
 
-        if (selectionMode == SelectionMode.SINGLE) {
+        if (selectionMode == SINGLE) {
             selectedIndicies.removeAll { it != index }
             selectedItems.removeAll { it != selectedItem }
         }
