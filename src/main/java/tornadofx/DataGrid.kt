@@ -197,7 +197,7 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
                         cell = createCell()
                         children.add(cell)
                     }
-//                    cell.updateIndex(-1)
+                    cell.updateIndex(-1)
                     cell.updateIndex(cellIndex)
                 } else {
                     break
@@ -224,7 +224,7 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
             } else {
                 val formatter = skinnable.dataGrid.cellFormat
                 if (cache != null) {
-                    graphic = cache
+                    graphic = StackPane(cache)
                     formatter?.invoke(this, item)
                 } else {
                     if (formatter != null) formatter.invoke(this, item)
@@ -277,9 +277,14 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         val cellsPerRow = skin.computeMaxCellsInRow()
         val rowIndex = index / cellsPerRow
         val row = skin.getRow(rowIndex)
-        val indexInRow = index - (rowIndex * cellsPerRow)
-        val children = row.childrenUnmodifiable
-        return if (children.size > indexInRow) children[indexInRow] as DataGridCell<T>? else null
+        if (row != null) {
+            val indexInRow = index - (rowIndex * cellsPerRow)
+            val children = row.childrenUnmodifiable
+            return if (children.size > indexInRow) children[indexInRow] as DataGridCell<T>? else null
+        } else {
+            println("CellAt index $index was not found because row $rowIndex did not exist")
+            return null
+        }
     }
 
     init {

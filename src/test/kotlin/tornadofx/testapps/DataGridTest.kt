@@ -37,7 +37,7 @@ class DataGridTest : View("DataGrid") {
             combobox(values = images.keys.toList()) {
                 promptText = "Select images"
                 valueProperty().onChange {
-                    datagrid.items = images[it]!!.observable()
+                    datagrid.items.setAll(images[it])
                 }
             }
         }
@@ -47,8 +47,8 @@ class DataGridTest : View("DataGrid") {
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
 
-                cellWidth = 160.0
-                cellHeight = 160.0
+                cellWidth = 164.0
+                cellHeight = 164.0
 
                 cachedGraphic {
                     imageview(it, true)
@@ -62,7 +62,6 @@ class DataGridTest : View("DataGrid") {
 class DataGridStyles : Stylesheet() {
     init {
         datagridCell and selected {
-            opacity = 0.8
         }
     }
 }
