@@ -83,6 +83,9 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     val selectionModel = DataGridSelectionModel(this)
     val focusModel = DataGridFocusModel(this)
 
+    var singleSelect: Boolean get() = selectionModel.selectionMode == SelectionMode.SINGLE; set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
+    var multiSelect: Boolean get() = selectionModel.selectionMode == SelectionMode.MULTIPLE; set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+
     override fun createDefaultSkin() = DataGridSkin(this)
 
     override fun getUserAgentStylesheet(): String = DataGrid::class.java.getResource("datagrid.css").toExternalForm()
@@ -92,7 +95,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     // Called when the items list changes structurally
     private val itemsChangeListener = InvalidationListener {
         selectionModel.clearSelectionAndReapply()
-        (skin as DataGridSkin<T>).handleControlPropertyChanged("ITEMS")
+        (skin as? DataGridSkin<T>)?.handleControlPropertyChanged("ITEMS")
     }
 
     // Called when the items list is swapped for a new
@@ -106,7 +109,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
             graphicCache.clear()
         }
         newList.addListener(itemsChangeListener)
-        (skin as DataGridSkin<T>).handleControlPropertyChanged("ITEMS")
+        (skin as? DataGridSkin<T>)?.handleControlPropertyChanged("ITEMS")
     }
 
     init {
