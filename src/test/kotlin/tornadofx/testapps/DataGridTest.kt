@@ -1,9 +1,11 @@
 package tornadofx.testapps
 
+import javafx.beans.binding.Bindings
 import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
+import java.util.concurrent.Callable
 
 class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
     companion object {
@@ -26,9 +28,7 @@ class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
                         "http://i.imgur.com/ftDV8oJb.jpg")
 
         )
-
     }
-
 }
 
 class DataGridTest : View("DataGrid") {
@@ -64,6 +64,9 @@ class DataGridTest : View("DataGrid") {
                 }
             }
         }
+        bottom {
+            label(Bindings.createStringBinding(Callable {datagrid.selectionModel.selectedItems.joinToString(", ")}, datagrid.selectionModel.selectedItems))
+        }
     }
 
 }
@@ -71,6 +74,7 @@ class DataGridTest : View("DataGrid") {
 class DataGridStyles : Stylesheet() {
     init {
         datagridCell and selected {
+            opacity = 0.7
         }
     }
 }
