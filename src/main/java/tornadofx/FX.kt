@@ -278,6 +278,7 @@ fun EventTarget.addChildIfPossible(node: Node) {
             val tab = Tab(uicmp?.title ?: node.toString(), node)
             tabs.add(tab)
         }
+        is DataGrid<*> -> { }
         else -> getChildList()?.add(node)
     }
 }

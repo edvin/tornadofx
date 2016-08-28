@@ -188,6 +188,11 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val labelContainer by cssclass()
         val inputContainer by cssclass()
 
+        // DataGrid
+        val datagrid by cssclass()
+        val datagridCell by cssclass()
+        val datagridRow by cssclass()
+
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
         val disabled by csspseudoclass()
@@ -438,6 +443,12 @@ open class PropertyHolder {
 
     // Cell
     var cellSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-size")
+
+    // DataGrid Celll
+    var cellWidth: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-width")
+    var cellHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-height")
+    var horizontalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-horizontal-cell-spacing")
+    var verticalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-vertical-cell-spacing")
 
     // ColorPicker
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")

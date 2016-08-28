@@ -1,12 +1,22 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
-import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.layout.Priority
 import tornadofx.*
 import java.time.LocalDate
 import java.util.*
 
+class AccordionViewApp : App(AccordionView::class)
+
+class AccordionView : View() {
+    override val root = vbox {
+        accordion {
+            titledpane("TitledPane1", Label("Label 1"))
+            titledpane("TitledPane2", Label("Label 2"))
+        }
+    }
+}
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
@@ -31,6 +41,8 @@ class ExpandableTableTest : View("Expandable Table") {
         } toggleNode {
             Label(if (it) "Close" else "Open")
         }
+
+
     }
 
     private fun makeOccupancy(count: Int) = (0..count).map {
