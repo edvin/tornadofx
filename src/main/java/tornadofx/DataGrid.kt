@@ -73,14 +73,10 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     }
 
     val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty })
-    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) {
-        horizontalCellSpacingProperty.value = value
-    }
+    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) { horizontalCellSpacingProperty.value = value }
 
     val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty })
-    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) {
-        verticalCellSpacingProperty.value = value
-    }
+    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) { verticalCellSpacingProperty.value = value }
 
     val selectionModel = DataGridSelectionModel(this)
     val focusModel = DataGridFocusModel(this)
