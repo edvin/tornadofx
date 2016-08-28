@@ -97,9 +97,14 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     // Called when the items list is swapped for a new
     private val itemPropertyChangeListener = ChangeListener<ObservableList<T>> { obs, oldList, newList ->
-        oldList?.removeListener(itemsChangeListener)
         selectionModel.clearSelectionAndReapply()
-        graphicCache.clear()
+        if (oldList != null) {
+            oldList.removeListener(itemsChangeListener)
+            // Keep cache for elements in present in the new list
+            oldList.filterNot { newList.contains(it) }.forEach { graphicCache.remove(it) }
+        } else {
+            graphicCache.clear()
+        }
         newList.addListener(itemsChangeListener)
         (skin as DataGridSkin<T>).handleControlPropertyChanged("ITEMS")
     }
