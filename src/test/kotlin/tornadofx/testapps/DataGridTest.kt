@@ -34,6 +34,7 @@ class DataGridTest : View("DataGrid") {
     override val root = borderpane {
         left {
             combobox(values = images.keys.toList()) {
+                promptText = "Select images"
                 valueProperty().onChange {
                     datagrid.items.setAll(images[it])
                 }

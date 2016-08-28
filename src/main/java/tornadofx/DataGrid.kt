@@ -83,33 +83,38 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     var cache: Node? = null
 
+    val selectedListener = ListChangeListener<Int> { c ->
+        while (c.next()) {
+            if (c.wasAdded()) c.addedSubList.firstOrNull { it == index }?.apply {
+                if (!isSelected) {
+                    updateSelected(true)
+                    doUpdateItem()
+                }
+            }
+            if (c.wasRemoved()) c.removed.firstOrNull { it == index }?.apply {
+                if (isSelected) {
+                    updateSelected(false)
+                    doUpdateItem()
+                }
+            }
+        }
+    }
+    private val weakSelectedListener = WeakListChangeListener<Int>(selectedListener)
+
     init {
         addClass(Stylesheet.datagridCell)
 
         // Update selected property and rerender when selection changes
-        dataGrid.selectionModel.selectedIndices.addListener(ListChangeListener { c ->
-            while (c.next()) {
-                if (c.wasAdded()) c.addedSubList.firstOrNull { it == index }?.apply {
-                    if (!isSelected) {
-                        updateSelected(true)
-                        doUpdateItem()
-                    }
-                }
-                if (c.wasRemoved()) c.removed.firstOrNull { it == index }?.apply {
-                    if (isSelected) {
-                        updateSelected(false)
-                        doUpdateItem()
-                    }
-                }
-            }
-        })
+        dataGrid.selectionModel.selectedIndices.addListener(weakSelectedListener)
 
         // Update cell content when index changes
         indexProperty().addListener(InvalidationListener { doUpdateItem() })
     }
 
     private fun doUpdateItem() {
-        val item = if (index < 0) null else dataGrid.items[index]
+        println("doUpdateItem $index")
+        val totalCount = dataGrid.items.size
+        val item = if (index < 0 || index >= totalCount) null else dataGrid.items[index]
         val cacheProvider = dataGrid.cachedGraphic
         if (item != null) {
             if (cacheProvider != null)
@@ -212,7 +217,7 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
                         cell = createCell()
                         children.add(cell)
                     }
-                    cell.updateIndex(-1)
+//                    cell.updateIndex(-1)
                     cell.updateIndex(cellIndex)
                 } else {
                     break
@@ -302,7 +307,6 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
     override fun getSelectedIndices() = selectedIndicies
 
     override fun clearAndSelect(index: Int) {
-        //CellBehaviorBase.setAnchor(dataGrid, index, false)
         selectedIndicies.clear()
         selectedItems.clear()
         select(index)
