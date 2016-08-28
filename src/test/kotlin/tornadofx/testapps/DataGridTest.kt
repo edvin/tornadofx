@@ -52,7 +52,7 @@ class DataGridTest : View("DataGrid") {
         }
         center {
             datagrid = datagrid<String> {
-                setPrefSize(530.0, 530.0)
+                setPrefSize(550.0, 550.0)
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
 

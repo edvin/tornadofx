@@ -143,9 +143,11 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
             cache = null
             updateItem(null, true)
         }
+
         // Preemptive update of selected state
-        if (!isSelected && dataGrid.selectionModel.selectedIndices.contains(index))
-            updateSelected(true)
+        val isActuallySelected = dataGrid.selectionModel.selectedIndices.contains(index)
+        if (!isSelected && isActuallySelected) updateSelected(true)
+        else if (isSelected && !isActuallySelected) updateSelected(false)
     }
 
     override fun createDefaultSkin() = DataGridCellSkin(this)
