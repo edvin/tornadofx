@@ -9,11 +9,10 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
+import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
-import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
@@ -395,9 +394,7 @@ fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedN
         }
     }
     if (expandOnDoubleClick) onUserSelect(2) {
-        val expanded = expander.getCellObservableValue(selectedItem) as SimpleBooleanProperty
-        expanded.value = !expanded.value
-        refresh()
+        expander.toggleExpanded(selectionModel.selectedIndex)
     }
     return expander
 }
@@ -416,46 +413,42 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
 class ExpanderColumn<S> : TableColumn<S, Boolean>() {
     val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
 
-    /**
-     * Override to provide a different look to the toggle button. An onAction event handler will
-     * be connected to this button to perform the actual toggel operation.
-     */
-    private var toggleNodeProvider: TableCell<S, Boolean>.(Boolean) -> Node = { expanded ->
-        Button(if (expanded) "-" else "+").apply {
-            addClass("expander-button")
-            style {
-                prefWidth = 16.px
-                prefHeight = 16.px
-                padding = box(0.px)
-            }
-        }
-    }
-
-    infix fun toggleNode(provider: TableCell<S, Boolean>.(Boolean) -> Node): ExpanderColumn<S> {
-        toggleNodeProvider = provider
-        return this
-    }
-
     init {
+        addClass("expander-column")
+
         cellValueFactory = Callback {
             if (it.value == null) return@Callback null
-            if (!expansionState.containsKey(it.value))
-                expansionState[it.value] = SimpleBooleanProperty(false)
+            expansionState.getOrPut(it.value, { SimpleBooleanProperty(false) })
+        }
 
-            expansionState[it.value]
-        }
-        cellFormat {
-            val toggleNode = toggleNodeProvider(this, it)
-            if (toggleNode is ButtonBase) toggleNode.setOnAction { toggleExpanded(index) }
-            else toggleNode.addEventFilter(MouseEvent.MOUSE_CLICKED) { toggleExpanded(index) }
-            graphic = toggleNode
-        }
+        cellFactory = Callback { ToggleCell() }
     }
 
     fun toggleExpanded(index: Int) {
         val expanded = getCellObservableValue(index) as SimpleBooleanProperty
         expanded.value = !expanded.value
         tableView.refresh()
+    }
+
+    private inner class ToggleCell : TableCell<S, Boolean>() {
+        private val button = Button()
+
+        init {
+            button.styleClass.add("expander-button")
+            button.setPrefSize(16.0, 16.0)
+            button.padding = Insets(0.0)
+            button.setOnAction { event -> toggleExpanded(index) }
+        }
+
+        override fun updateItem(expanded: Boolean?, empty: Boolean) {
+            super.updateItem(expanded, empty)
+            if (item == null || empty) {
+                graphic = null
+            } else {
+                button.text = if (expanded == true) "-" else "+"
+                graphic = button
+            }
+        }
     }
 }
 

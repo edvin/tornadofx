@@ -193,6 +193,8 @@ fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): Titled
     return fold
 }
 
+fun EventTarget.region(op: (Region.() -> Unit)? = null) = opcr(this, Region(), op)
+
 fun Region.paddingRight(p: Double) {
     padding = Insets(padding.top, p, padding.bottom, padding.left)
 }

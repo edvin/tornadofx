@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.collections.ObservableList
 import javafx.scene.control.Label
-import javafx.scene.layout.Priority
 import tornadofx.*
 import java.time.LocalDate
 import java.util.*
@@ -17,6 +16,7 @@ class AccordionView : View() {
         }
     }
 }
+
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
@@ -25,7 +25,7 @@ class ExpandableTableTest : View("Expandable Table") {
 
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
-    val rooms = listOf(Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)), Room(2, "105", "Bedroom", "King", makeOccupancy(5))).observable()
+    val rooms = listOf(Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)), Room(2, "105", "Bedroom", "King", makeOccupancy(5)), Room(4, "106", "Bedroom", "Playroom", makeOccupancy(5))).observable()
 
     override val root = tableview(rooms) {
         column("#", Room::id)
@@ -37,12 +37,9 @@ class ExpandableTableTest : View("Expandable Table") {
                 column("Occupancy", Occupancy::id)
                 column("Date", Occupancy::date)
                 column("Customer", Occupancy::customer)
+                prefHeight = 150.0
             }
-        } toggleNode {
-            Label(if (it) "Close" else "Open")
         }
-
-
     }
 
     private fun makeOccupancy(count: Int) = (0..count).map {
