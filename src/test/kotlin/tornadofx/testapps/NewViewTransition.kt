@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -31,12 +32,12 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
 
 abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
-    val button = button(controller.firstTransition) { setOnAction { swap() } }
+    lateinit var button: Button
     override val root = stackpane {
         vbox {
             addClass(NewViewTransitionStyles.box, cssClass)
             label(name)
-            this += button
+            button = button(controller.firstTransition) { setOnAction { swap() } }
         }
     }
 
