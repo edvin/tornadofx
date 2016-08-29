@@ -427,6 +427,7 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
     fun toggleExpanded(index: Int) {
         val expanded = getCellObservableValue(index) as SimpleBooleanProperty
         expanded.value = !expanded.value
+        tableView.refresh()
     }
 
     private inner class ToggleCell : TableCell<S, Boolean>() {
