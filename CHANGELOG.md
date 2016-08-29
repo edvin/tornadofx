@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)
 - TableView support for expanded row node (`rowExpander { // create node to show on expand here }`)
+- Fixed bug where image URLs defined in CSS were rendered wrong
+- Added support for skipping snake-casing in CSS rules (names still have to be valid css identifiers)
 
 ## [1.5.5]
 
