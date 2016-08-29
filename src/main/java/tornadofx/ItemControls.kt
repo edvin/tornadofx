@@ -397,7 +397,6 @@ fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedN
     if (expandOnDoubleClick) onUserSelect(2) {
         val expanded = expander.getCellObservableValue(selectedItem) as SimpleBooleanProperty
         expanded.value = !expanded.value
-        refresh()
     }
     return expander
 }
