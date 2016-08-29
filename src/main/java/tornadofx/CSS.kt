@@ -333,7 +333,7 @@ open class PropertyHolder {
 
     // Font
     var font: Font by cssprop("-fx-font")
-    var fontFamily: MultiValue<String> by cssprop("-fx-font-family")
+    var fontFamily: String by cssprop("-fx-font-family")
     var fontSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-font-size")
     var fontStyle: FontPosture by cssprop("-fx-font-style")
     var fontWeight: FontWeight by cssprop("-fx-font-weight")
