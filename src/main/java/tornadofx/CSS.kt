@@ -22,6 +22,7 @@ import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import sun.net.www.protocol.css.Handler
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
@@ -276,6 +277,7 @@ open class PropertyHolder {
                 } else {
                     value.toString()
                 }
+                is URI -> return "url(\"${value.toASCIIString()}\")"
                 is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
                         "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
                 is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
@@ -354,10 +356,10 @@ open class PropertyHolder {
     var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
 
     // ImageView
-    var image: String by cssprop("-fx-image")
+    var image: URI by cssprop("-fx-image")
 
     // DialogPane
-    var graphic: String by cssprop("-fx-graphic")
+    var graphic: URI by cssprop("-fx-graphic")
 
     // FlowPane
     var hgap: Dimension<Dimension.LinearUnits> by cssprop("-fx-hgap")
@@ -378,7 +380,7 @@ open class PropertyHolder {
     var backgroundColor: MultiValue<Paint> by cssprop("-fx-background-color")
     var backgroundInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-insets")
     var backgroundRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-radius")
-    var backgroundImage: MultiValue<String> by cssprop("-fx-background-image")
+    var backgroundImage: MultiValue<URI> by cssprop("-fx-background-image")
     var backgroundPosition: MultiValue<BackgroundPosition> by cssprop("-fx-background-position")
     var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
     var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
@@ -387,7 +389,7 @@ open class PropertyHolder {
     var borderRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
     var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
     var borderWidth: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-width")
-    var borderImageSource: MultiValue<String> by cssprop("-fx-border-image-source")
+    var borderImageSource: MultiValue<URI> by cssprop("-fx-border-image-source")
     var borderImageInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-image-insets")
     var borderImageRepeat: MultiValue<Pair<BorderRepeat, BorderRepeat>> by cssprop("-fx-border-image-repeat")
     var borderImageSlice: MultiValue<BorderImageSlice> by cssprop("-fx-border-image-slice")
