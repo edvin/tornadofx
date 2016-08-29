@@ -437,6 +437,8 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
     }
 
     init {
+        addClass("expander-column")
+
         cellValueFactory = Callback {
             if (it.value == null) return@Callback null
             if (!expansionState.containsKey(it.value))
