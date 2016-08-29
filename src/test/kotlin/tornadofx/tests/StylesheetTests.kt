@@ -40,6 +40,30 @@ class StylesheetTests {
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
 
+    val hbox1 by cssclass("HBox")
+    val hbox2 by csselement("HBox", snakeCase = false)
+
+    @Test
+    fun cssNameThingTest() {
+        stylesheet {
+            hbox1 {
+                textFill = c("red")
+            }
+            hbox2 {
+                textFill = c("green")
+            }
+        } shouldEqual {
+            """
+            .h-box {
+                -fx-text-fill: rgba(255, 0, 0, 1);
+            }
+            HBox {
+                -fx-text-fill: rgba(0, 128, 0, 1);
+            }
+            """
+        }
+    }
+
     @Test
     fun uriStyleTest() {
         stylesheet {

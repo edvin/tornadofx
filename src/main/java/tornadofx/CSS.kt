@@ -739,12 +739,12 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
             = CssRuleSet(rootRule, *subRule, CssSubRule(ruleSet.rootRule, relation), *ruleSet.subRule)
 }
 
-class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
+class CssRule(val prefix: String, name: String, snakeCase: Boolean = true) : Selectable, Scoped, Rendered {
     companion object {
-        fun elem(value: String) = CssRule("", value.cssValidate())
-        fun id(value: String) = CssRule("#", value.cssValidate())
-        fun c(value: String) = CssRule(".", value.cssValidate())
-        fun pc(value: String) = CssRule(":", value.cssValidate())
+        fun elem(value: String, snakeCase: Boolean = true) = CssRule("", value.cssValidate(), snakeCase)
+        fun id(value: String, snakeCase: Boolean = true) = CssRule("#", value.cssValidate(), snakeCase)
+        fun c(value: String, snakeCase: Boolean = true) = CssRule(".", value.cssValidate(), snakeCase)
+        fun pc(value: String, snakeCase: Boolean = true) = CssRule(":", value.cssValidate(), snakeCase)
 
         private val name = "\\*|-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         private val prefix = "[.#:]?"
@@ -757,7 +757,7 @@ class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
         val upperCaseRegex = Regex("([A-Z])")
     }
 
-    val name = name.camelToSnake()
+    val name = if (snakeCase) name.camelToSnake() else name
 
     override fun render() = "$prefix$name"
     override fun toRuleSet() = CssRuleSet(this)
@@ -807,26 +807,26 @@ fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
 // Delegates
 
-fun csselement(value: String? = null) = CssElementDelegate(value)
-fun cssid(value: String? = null) = CssIdDelegate(value)
-fun cssclass(value: String? = null) = CssClassDelegate(value)
-fun csspseudoclass(value: String? = null) = CssPseudoClassDelegate(value)
+fun csselement(value: String? = null, snakeCase: Boolean = true) = CssElementDelegate(value, snakeCase)
+fun cssid(value: String? = null, snakeCase: Boolean = true) = CssIdDelegate(value, snakeCase)
+fun cssclass(value: String? = null, snakeCase: Boolean = true) = CssClassDelegate(value, snakeCase)
+fun csspseudoclass(value: String? = null, snakeCase: Boolean = true) = CssPseudoClassDelegate(value, snakeCase)
 inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
 
-class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
+class CssElementDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
 }
 
-class CssIdDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name)
+class CssIdDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name, snakeCase)
 }
 
-class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name)
+class CssClassDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name, snakeCase)
 }
 
-class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
+class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name, snakeCase)
 }
 
 class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
