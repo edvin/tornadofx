@@ -1,7 +1,7 @@
 package tornadofx.testapps
 
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
-import javafx.scene.control.Button
 import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -32,12 +32,15 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
 
 abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
-    lateinit var button: Button
+    val nextTransition = SimpleStringProperty(controller.firstTransition)
     override val root = stackpane {
         vbox {
             addClass(NewViewTransitionStyles.box, cssClass)
             label(name)
-            button = button(controller.firstTransition) { setOnAction { swap() } }
+            button {
+                textProperty().bind(nextTransition)
+                setOnAction { swap() }
+            }
         }
     }
 
@@ -76,7 +79,7 @@ class NewViewTransitionController : Controller() {
     private val transitions = listOf(
             "None" to null,
             "Fade" to ViewTransition.Fade(time),
-            *fades.map { "Fade Through ${it.first}" to ViewTransition.FadeThrough(doubleTime, it.second) }.toTypedArray(),
+            *fades.map { "${it.first} Fade" to ViewTransition.FadeThrough(doubleTime, it.second) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Slide $it" to ViewTransition.Slide(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Cover $it" to ViewTransition.Cover(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
@@ -90,7 +93,7 @@ class NewViewTransitionController : Controller() {
     fun swap(current: NewViewTransitionSwapView, replacement: NewViewTransitionSwapView) {
         val t = transitions[currentTransition].second
         currentTransition = (currentTransition + 1) % transitions.size
-        replacement.button.text = transitions[currentTransition].first
+        replacement.nextTransition.value = transitions[currentTransition].first
         current.replaceWith(replacement, t)
     }
 }
