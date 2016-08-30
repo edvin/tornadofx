@@ -11,8 +11,8 @@ class AccordionViewApp : App(AccordionView::class)
 class AccordionView : View() {
     override val root = vbox {
         accordion {
-            titledpane("TitledPane1", Label("Label 1"))
-            titledpane("TitledPane2", Label("Label 2"))
+            titledpane("TitledPane1", Label("Content 1"))
+            titledpane("TitledPane2", Label("Content 2"))
         }
     }
 }
@@ -25,7 +25,18 @@ class ExpandableTableTest : View("Expandable Table") {
 
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
-    val rooms = listOf(Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)), Room(2, "105", "Bedroom", "King", makeOccupancy(5)), Room(4, "106", "Bedroom", "Playroom", makeOccupancy(5))).observable()
+    val rooms = listOf(
+            Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)),
+            Room(2, "105", "Bedroom", "King", makeOccupancy(5)),
+            Room(3, "106", "Bedroom", "King", makeOccupancy(5)),
+            Room(4, "107", "Suite", "Queen", makeOccupancy(5)),
+            Room(4, "108", "Bedroom", "King", makeOccupancy(5)),
+            Room(4, "109", "Conference Room", "Queen", makeOccupancy(5)),
+            Room(4, "110", "Bedroom", "Queen", makeOccupancy(5)),
+            Room(4, "111", "Playroom", "King", makeOccupancy(5)),
+            Room(4, "112", "Bedroom", "Queen", makeOccupancy(5)),
+            Room(4, "113", "Suite", "King", makeOccupancy(5))
+    ).observable()
 
     override val root = tableview(rooms) {
         column("#", Room::id)
@@ -37,7 +48,7 @@ class ExpandableTableTest : View("Expandable Table") {
                 column("Occupancy", Occupancy::id)
                 column("Date", Occupancy::date)
                 column("Customer", Occupancy::customer)
-                prefHeight = 150.0
+                prefHeight = 100.0
             }
         }
     }

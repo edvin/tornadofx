@@ -24,7 +24,7 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SelectionMode.MULTIPLE
 import javafx.scene.control.SelectionMode.SINGLE
-import javafx.scene.input.MouseButton
+import javafx.scene.input.*
 import javafx.scene.layout.StackPane
 
 fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
@@ -108,6 +108,24 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         }
         newList.addListener(itemsChangeListener)
         (skin as? DataGridSkin<T>)?.handleControlPropertyChanged("ITEMS")
+    }
+
+    val selectedItem: T? get() = this.selectionModel.selectedItem
+
+    fun onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
+        val isSelected = { event: InputEvent ->
+            !selectionModel.isEmpty
+        }
+
+        addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+            if (event.clickCount == clickCount && isSelected(event))
+                action(selectedItem!!)
+        }
+
+        addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+            if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
+                action(selectedItem!!)
+        }
     }
 
     init {
