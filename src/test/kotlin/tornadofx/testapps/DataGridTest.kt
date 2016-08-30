@@ -62,6 +62,10 @@ class DataGridTest : View("DataGrid") {
                 cellCache {
                     imageview(it, true)
                 }
+
+                onUserSelect(1) {
+                    println("Selected $selectedItem")
+                }
             }
         }
         bottom {
