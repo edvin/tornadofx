@@ -33,15 +33,23 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
 abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
     val nextTransition = SimpleStringProperty(controller.firstTransition)
+    val nameLabel = label(name)
+    val surpriseLabel = label("Surprise!")
     override val root = stackpane {
         vbox {
             addClass(NewViewTransitionStyles.box, cssClass)
-            label(name)
+            this += nameLabel
             button {
                 textProperty().bind(nextTransition)
                 setOnAction { swap() }
             }
         }
+    }
+
+    init {
+        // TODO: Implement Node.replaceWith(Node)
+        nameLabel.apply { setOnMouseClicked { /* TODO: this.replaceWith(surpriseLabel) */ } }
+        surpriseLabel.apply { setOnMouseClicked { /* TODO: this.replaceWith(nameLabel) */ } }
     }
 
     abstract fun swap()
