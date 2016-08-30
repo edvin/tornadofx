@@ -914,7 +914,7 @@ internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else th
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     val rules = CssRule.subRuleRegex.findAll(this).map { match ->
-        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3]), CssSubRule.Relation.of(match.groupValues[1]))
+        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3], false), CssSubRule.Relation.of(match.groupValues[1]))
     }.toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")

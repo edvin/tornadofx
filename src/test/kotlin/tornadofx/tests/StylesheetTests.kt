@@ -44,7 +44,22 @@ class StylesheetTests {
     val hbox2 by csselement("HBox", snakeCase = false)
 
     @Test
-    fun cssNameThingTest() {
+    fun cssStringSnake() {
+        stylesheet {
+            "HBox > .labelThing" {
+                textFill = c("red")
+            }
+        }.shouldEqual {
+            """
+            HBox > .labelThing {
+                -fx-text-fill: rgba(255, 0, 0, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun snakeCase() {
         stylesheet {
             hbox1 {
                 textFill = c("red")
