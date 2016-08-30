@@ -2,6 +2,8 @@ package tornadofx.testapps
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
+import javafx.scene.Node
+import javafx.scene.input.MouseButton
 import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
@@ -30,7 +32,7 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
     }
 }
 
-abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
+abstract class NewViewTransitionSwapView(private val name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
     val nextTransition = SimpleStringProperty(controller.firstTransition)
     val nameLabel = label(name)
@@ -46,10 +48,12 @@ abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View
         }
     }
 
+    fun Node.rightClick(action: Node.() -> Unit) = this.setOnMouseClicked { if (it.button == MouseButton.SECONDARY) action() }
+
     init {
-        // TODO: Implement Node.replaceWith(Node)
-        nameLabel.apply { setOnMouseClicked { /* TODO: this.replaceWith(surpriseLabel) */ } }
-        surpriseLabel.apply { setOnMouseClicked { /* TODO: this.replaceWith(nameLabel) */ } }
+        val surprise = ViewTransition.Metro(0.25.seconds, ViewTransition.Direction.UP)
+        nameLabel.rightClick { replaceWith(surpriseLabel, surprise) }
+        surpriseLabel.rightClick { replaceWith(nameLabel, surprise.reversed()) }
     }
 
     abstract fun swap()

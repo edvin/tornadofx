@@ -763,7 +763,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"] as? T
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children
@@ -803,5 +803,73 @@ fun EventTarget.removeFromParent() {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
         parent?.getChildList()?.remove(this)
+    }
+}
+
+const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
+internal var Node.isTransitioning: Boolean
+    get() {
+        val x = properties[TRANSITIONING_PROPERTY]
+        return x != null && (x !is Boolean || x != false)
+    }
+    set(value) {
+        properties[TRANSITIONING_PROPERTY] = value
+    }
+
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null) {
+    if (isTransitioning || replacement.isTransitioning) {
+        return
+    }
+    if (this == scene?.root) {
+        val scene = scene!!
+        if (replacement !is Parent) {
+            throw IllegalArgumentException("Replacement scene root must be a Parent")
+        }
+
+        if (transition != null) {
+            transition.call(this, replacement) {
+                scene.root = it as Parent
+            }
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            scene.root = replacement
+        }
+    } else if (parent is Pane) {
+        val parent = parent as Pane
+        val attach = if (parent is BorderPane) {
+            when (this) {
+                parent.top -> {
+                    { it: Node -> parent.top = it }
+                }
+                parent.right -> {
+                    { parent.right = it }
+                }
+                parent.bottom -> {
+                    { parent.bottom = it }
+                }
+                parent.left -> {
+                    { parent.left = it }
+                }
+                parent.center -> {
+                    { parent.center = it }
+                }
+                else -> {
+                    { throw IllegalStateException("Child of BorderPane not found in BorderPane") }
+                }
+            }
+        } else {
+            val children = parent.children
+            val index = children.indexOf(this);
+            { children.add(index, it) }
+        }
+
+        if (transition != null) {
+            transition.call(this, replacement, attach = attach)
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            attach(replacement)
+        }
     }
 }

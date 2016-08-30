@@ -214,6 +214,7 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
+const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
@@ -228,7 +229,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
 
     fun init() {
-        root.properties["tornadofx.uicomponent"] = this
+        root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null) callOnUndock()
@@ -374,67 +375,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         return replaceWith(find(component), transition)
     }
 
-    internal var isTransitioning = false
-
     fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null) {
-        if (isTransitioning || replacement.isTransitioning) {
-            log.warning { "Components are already in transition" }
-            return
-        }
         if (root == root.scene?.root) {
-            val scene = root.scene
-
-            (scene.window as? Stage)?.titleProperty()?.apply {
+            (root.scene.window as? Stage)?.titleProperty()?.apply {
                 unbind()
                 bind(replacement.titleProperty)
             }
-
-            if (transition != null) {
-                transition.call(this, replacement) { scene.root = it as Parent }
-            } else {
-                replacement.removeFromParent()
-                scene.root = replacement.root
-                removeFromParent()
-            }
-        } else if (root.parent is Pane) {
-            val parent = root.parent as Pane
-            val attach = if (parent is BorderPane) {
-                when (root) {
-                    parent.top -> {
-                        { it: Node -> parent.top = it }
-                    }
-                    parent.right -> {
-                        { parent.right = it }
-                    }
-                    parent.bottom -> {
-                        { parent.bottom = it }
-                    }
-                    parent.left -> {
-                        { parent.left = it }
-                    }
-                    parent.center -> {
-                        { parent.center = it }
-                    }
-                    else -> {
-                        { log.severe { "Item not found in parent BorderPane" } }  // TODO: Should throw an exception?
-                    }
-                }
-            } else {
-                val children = parent.children
-                val index = children.indexOf(root);
-                { children.add(index, it) }
-            }
-
-            if (transition != null) {
-                transition.call(this, replacement, attach)
-            } else {
-                removeFromParent()
-                replacement.removeFromParent()
-                attach(replacement.root)
-            }
-        } else {  // Are there any other situations we'll have to watch out for?
-            log.warning { "Parent cannot replace sub views" }  // TODO: Should throw an exception?
         }
+        root.replaceWith(replacement.root, transition)
     }
 
     @Suppress("DeprecatedCallableAddReplaceWith")
