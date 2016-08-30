@@ -816,10 +816,11 @@ internal var Node.isTransitioning: Boolean
         properties[TRANSITIONING_PROPERTY] = value
     }
 
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null) {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
-        return
+        return false
     }
+    onTransit?.invoke()
     if (this == scene?.root) {
         val scene = scene!!
         if (replacement !is Parent) {
@@ -835,6 +836,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null) {
             replacement.removeFromParent()
             scene.root = replacement
         }
+        return true
     } else if (parent is Pane) {
         val parent = parent as Pane
         val attach = if (parent is BorderPane) {
@@ -871,5 +873,8 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null) {
             replacement.removeFromParent()
             attach(replacement)
         }
+        return true
+    } else {
+        return false
     }
 }

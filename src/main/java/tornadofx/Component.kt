@@ -215,6 +215,7 @@ abstract class Component {
 abstract class Controller : Component(), Injectable
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
+
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
@@ -371,18 +372,19 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null) {
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component), transition)
     }
 
-    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null) {
-        if (root == root.scene?.root) {
-            (root.scene.window as? Stage)?.titleProperty()?.apply {
-                unbind()
-                bind(replacement.titleProperty)
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
+        return root.replaceWith(replacement.root, transition) {
+            if (root == root.scene?.root) {
+                (root.scene.window as? Stage)?.titleProperty()?.apply {
+                    unbind()
+                    bind(replacement.titleProperty)
+                }
             }
         }
-        root.replaceWith(replacement.root, transition)
     }
 
     @Suppress("DeprecatedCallableAddReplaceWith")
