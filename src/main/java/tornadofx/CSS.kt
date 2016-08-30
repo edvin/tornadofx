@@ -22,6 +22,7 @@ import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import sun.net.www.protocol.css.Handler
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
@@ -276,6 +277,7 @@ open class PropertyHolder {
                 } else {
                     value.toString()
                 }
+                is URI -> return "url(\"${value.toASCIIString()}\")"
                 is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
                         "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
                 is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
@@ -333,7 +335,7 @@ open class PropertyHolder {
 
     // Font
     var font: Font by cssprop("-fx-font")
-    var fontFamily: MultiValue<String> by cssprop("-fx-font-family")
+    var fontFamily: String by cssprop("-fx-font-family")
     var fontSize: Dimension<Dimension.LinearUnits> by cssprop("-fx-font-size")
     var fontStyle: FontPosture by cssprop("-fx-font-style")
     var fontWeight: FontWeight by cssprop("-fx-font-weight")
@@ -354,10 +356,10 @@ open class PropertyHolder {
     var visibility: FXVisibility by cssprop("visibility")  // Intentionally not -fx-visibility
 
     // ImageView
-    var image: String by cssprop("-fx-image")
+    var image: URI by cssprop("-fx-image")
 
     // DialogPane
-    var graphic: String by cssprop("-fx-graphic")
+    var graphic: URI by cssprop("-fx-graphic")
 
     // FlowPane
     var hgap: Dimension<Dimension.LinearUnits> by cssprop("-fx-hgap")
@@ -378,7 +380,7 @@ open class PropertyHolder {
     var backgroundColor: MultiValue<Paint> by cssprop("-fx-background-color")
     var backgroundInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-insets")
     var backgroundRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-background-radius")
-    var backgroundImage: MultiValue<String> by cssprop("-fx-background-image")
+    var backgroundImage: MultiValue<URI> by cssprop("-fx-background-image")
     var backgroundPosition: MultiValue<BackgroundPosition> by cssprop("-fx-background-position")
     var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
     var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
@@ -387,7 +389,7 @@ open class PropertyHolder {
     var borderRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
     var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
     var borderWidth: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-width")
-    var borderImageSource: MultiValue<String> by cssprop("-fx-border-image-source")
+    var borderImageSource: MultiValue<URI> by cssprop("-fx-border-image-source")
     var borderImageInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-image-insets")
     var borderImageRepeat: MultiValue<Pair<BorderRepeat, BorderRepeat>> by cssprop("-fx-border-image-repeat")
     var borderImageSlice: MultiValue<BorderImageSlice> by cssprop("-fx-border-image-slice")
@@ -737,12 +739,12 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
             = CssRuleSet(rootRule, *subRule, CssSubRule(ruleSet.rootRule, relation), *ruleSet.subRule)
 }
 
-class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
+class CssRule(val prefix: String, name: String, snakeCase: Boolean = true) : Selectable, Scoped, Rendered {
     companion object {
-        fun elem(value: String) = CssRule("", value.cssValidate())
-        fun id(value: String) = CssRule("#", value.cssValidate())
-        fun c(value: String) = CssRule(".", value.cssValidate())
-        fun pc(value: String) = CssRule(":", value.cssValidate())
+        fun elem(value: String, snakeCase: Boolean = true) = CssRule("", value.cssValidate(), snakeCase)
+        fun id(value: String, snakeCase: Boolean = true) = CssRule("#", value.cssValidate(), snakeCase)
+        fun c(value: String, snakeCase: Boolean = true) = CssRule(".", value.cssValidate(), snakeCase)
+        fun pc(value: String, snakeCase: Boolean = true) = CssRule(":", value.cssValidate(), snakeCase)
 
         private val name = "\\*|-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         private val prefix = "[.#:]?"
@@ -755,7 +757,7 @@ class CssRule(val prefix: String, name: String) : Selectable, Scoped, Rendered {
         val upperCaseRegex = Regex("([A-Z])")
     }
 
-    val name = name.camelToSnake()
+    val name = if (snakeCase) name.camelToSnake() else name
 
     override fun render() = "$prefix$name"
     override fun toRuleSet() = CssRuleSet(this)
@@ -805,26 +807,26 @@ fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
 // Delegates
 
-fun csselement(value: String? = null) = CssElementDelegate(value)
-fun cssid(value: String? = null) = CssIdDelegate(value)
-fun cssclass(value: String? = null) = CssClassDelegate(value)
-fun csspseudoclass(value: String? = null) = CssPseudoClassDelegate(value)
+fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssElementDelegate(value, snakeCase)
+fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
+fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
+fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
 inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
 
-class CssElementDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name)
+class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
 }
 
-class CssIdDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name)
+class CssIdDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name, snakeCase)
 }
 
-class CssClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name)
+class CssClassDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name, snakeCase)
 }
 
-class CssPseudoClassDelegate(val name: String?) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name)
+class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name, snakeCase)
 }
 
 class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
@@ -912,7 +914,7 @@ internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else th
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     val rules = CssRule.subRuleRegex.findAll(this).map { match ->
-        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3]), CssSubRule.Relation.of(match.groupValues[1]))
+        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3], false), CssSubRule.Relation.of(match.groupValues[1]))
     }.toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")

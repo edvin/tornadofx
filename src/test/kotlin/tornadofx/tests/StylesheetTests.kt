@@ -11,6 +11,7 @@ import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.label
 import tornadofx.Stylesheet.Companion.star
+import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
@@ -38,6 +39,63 @@ class StylesheetTests {
     val lumpyId by cssid()
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
+
+    val TestBox by cssclass()
+    val TestBox2 by cssclass("TestBox")
+
+    @Test
+    fun cssStringSnake() {
+        stylesheet {
+            "HBox > .labelThing" {
+                textFill = c("red")
+            }
+        }.shouldEqual {
+            """
+            HBox > .labelThing {
+                -fx-text-fill: rgba(255, 0, 0, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun snakeCase() {
+        stylesheet {
+            TestBox {
+                textFill = c("red")
+            }
+            TestBox2 {
+                textFill = c("green")
+            }
+        } shouldEqual {
+            """
+            .test-box {
+                -fx-text-fill: rgba(255, 0, 0, 1);
+            }
+            .TestBox {
+                -fx-text-fill: rgba(0, 128, 0, 1);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun uriStyleTest() {
+        stylesheet {
+            label {
+                image = URI("/image.png")
+                backgroundImage += URI("/back1.jpg")
+                backgroundImage += URI("/back2.gif")
+            }
+        } shouldEqual {
+            """
+            .label {
+                -fx-image: url("/image.png");
+                -fx-background-image: url("/back1.jpg"), url("/back2.gif");
+            }
+            """
+        }
+    }
 
     @Test
     fun dimensionalAnalysis() {
