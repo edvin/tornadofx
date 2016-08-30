@@ -32,7 +32,7 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
     }
 }
 
-abstract class NewViewTransitionSwapView(private val name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
+abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {
     val controller: NewViewTransitionController by inject()
     val nextTransition = SimpleStringProperty(controller.firstTransition)
     val nameLabel = label(name)
