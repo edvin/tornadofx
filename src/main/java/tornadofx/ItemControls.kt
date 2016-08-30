@@ -417,7 +417,6 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
         addClass("expander-column")
 
         cellValueFactory = Callback {
-            if (it.value == null) return@Callback null
             expansionState.getOrPut(it.value, { SimpleBooleanProperty(false) })
         }
 
@@ -434,10 +433,11 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
         private val button = Button()
 
         init {
+            button.isFocusTraversable = false
             button.styleClass.add("expander-button")
             button.setPrefSize(16.0, 16.0)
             button.padding = Insets(0.0)
-            button.setOnAction { event -> toggleExpanded(index) }
+            button.setOnAction { toggleExpanded(index) }
         }
 
         override fun updateItem(expanded: Boolean?, empty: Boolean) {
@@ -460,7 +460,7 @@ class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: 
         sp
     }
 
-    var tableRowPrefHeight = 25.0
+    var tableRowPrefHeight = -1.0
 
     val expanded: Boolean get() {
         val item = skinnable.item
