@@ -40,8 +40,8 @@ class StylesheetTests {
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
 
-    val hbox1 by cssclass("HBox")
-    val hbox2 by csselement("HBox", snakeCase = false)
+    val TestBox by cssclass()
+    val TestBox2 by cssclass("TestBox")
 
     @Test
     fun cssStringSnake() {
@@ -61,18 +61,18 @@ class StylesheetTests {
     @Test
     fun snakeCase() {
         stylesheet {
-            hbox1 {
+            TestBox {
                 textFill = c("red")
             }
-            hbox2 {
+            TestBox2 {
                 textFill = c("green")
             }
         } shouldEqual {
             """
-            .h-box {
+            .test-box {
                 -fx-text-fill: rgba(255, 0, 0, 1);
             }
-            HBox {
+            .TestBox {
                 -fx-text-fill: rgba(0, 128, 0, 1);
             }
             """

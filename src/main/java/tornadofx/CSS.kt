@@ -807,25 +807,25 @@ fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
 // Delegates
 
-fun csselement(value: String? = null, snakeCase: Boolean = true) = CssElementDelegate(value, snakeCase)
-fun cssid(value: String? = null, snakeCase: Boolean = true) = CssIdDelegate(value, snakeCase)
-fun cssclass(value: String? = null, snakeCase: Boolean = true) = CssClassDelegate(value, snakeCase)
-fun csspseudoclass(value: String? = null, snakeCase: Boolean = true) = CssPseudoClassDelegate(value, snakeCase)
+fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssElementDelegate(value, snakeCase)
+fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
+fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
+fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
 inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
 
-class CssElementDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
 }
 
-class CssIdDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+class CssIdDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.id(name ?: property.name, snakeCase)
 }
 
-class CssClassDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+class CssClassDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.c(name ?: property.name, snakeCase)
 }
 
-class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = true) : ReadOnlyProperty<Any, CssRule> {
+class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name, snakeCase)
 }
 
