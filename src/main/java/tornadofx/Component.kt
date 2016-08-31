@@ -215,7 +215,6 @@ abstract class Component {
 abstract class Controller : Component(), Injectable
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
-
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
