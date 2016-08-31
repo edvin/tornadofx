@@ -1,8 +1,6 @@
 package tornadofx.testapps
 
 import tornadofx.*
-import tornadofx.ViewTransition.Direction
-import tornadofx.ViewTransition.Slide
 
 class SwitchViewApp : App(ContainerView::class)
 
@@ -14,9 +12,9 @@ class ContainerView : View("ContainerView") {
         top {
             button("Switch view").setOnAction {
                 if (center.lookup("#view1") != null)
-                    subView1.replaceWith(subView2, Slide(0.2.seconds))
+                    subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
                 else
-                    subView2.replaceWith(subView1, Slide(0.2.seconds, Direction.RIGHT))
+                    subView2.replaceWith(subView1, ViewTransition.Slide(0.2.seconds, ViewTransition.Direction.RIGHT))
             }
         }
         center {
