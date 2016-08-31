@@ -265,7 +265,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
             } else {
-                modalStage = Stage(stageStyle).apply {
+                modalStage = Stage(stageStyle)
+                // modalStage needs to be set before this code to make closeModal() work in blocking mode
+                with (modalStage!!) {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
