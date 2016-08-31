@@ -481,4 +481,26 @@ abstract class ViewTransition() {
 
         override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
     }
+
+    class Explode(val duration: Duration, val scale: Point2D = Point2D(2.0, 2.0)) : ReversibleViewTransition() {
+        override fun create(current: Node, replacement: Node, stack: StackPane)
+                = current.transform(duration, Point2D.ZERO, 0.0, scale, 0.0, play = false)
+
+        override fun onComplete(removed: Node, replacement: Node) {
+            removed.scaleX = 1.0
+            removed.scaleY = 1.0
+            removed.opacity = 1.0
+        }
+
+        override fun reversed() = Implode(duration, scale).apply { setup = this@Explode.setup }
+    }
+
+    class Implode(val duration: Duration, val scale: Point2D = Point2D(2.0, 2.0)) : ReversibleViewTransition() {
+        override fun create(current: Node, replacement: Node, stack: StackPane)
+                = replacement.transform(duration, Point2D.ZERO, 0.0, scale, 0.0, reversed = true, play = false)
+
+        override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
+
+        override fun reversed() = Explode(duration, scale).apply { setup = this@Implode.setup }
+    }
 }
