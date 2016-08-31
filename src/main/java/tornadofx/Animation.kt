@@ -209,10 +209,14 @@ val Number.hours: Duration get() = Duration.hours(this.toDouble())
 operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
 operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
 
-abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
+abstract class ViewTransition() {
     abstract fun create(current: Node, replacement: Node, stack: StackPane): Animation
 
     open fun onComplete(removed: Node, replacement: Node) = Unit
+    private var setup: StackPane.() -> Unit = {}
+    fun setup(setup: StackPane.() -> Unit) {
+        this.setup = setup
+    }
 
     internal fun call(current: Node, replacement: Node, attach: (Node) -> Unit) {
         current.isTransitioning = true
@@ -223,7 +227,7 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
         replacementUIComponent?.muteDocking = true
 
         val stack = stack(current, replacement)
-        setup?.invoke(stack)
+        stack.setup()
         attach(stack)
 
         create(current, replacement, stack).apply {
@@ -303,7 +307,7 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
         }
     }
 
-    class Fade(val duration: Duration, setup: (StackPane.() -> Unit)? = null) : ViewTransition(setup) {
+    class Fade(val duration: Duration) : ViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.fade(duration, 0.0, play = false)
 
@@ -314,9 +318,8 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
 
     class FadeThrough(
             duration: Duration,
-            val color: Paint = Color.BLACK,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ViewTransition(setup) {
+            val color: Paint = Color.TRANSPARENT
+    ) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
         val halfTime = duration.divide(2.0)!!
         override fun create(current: Node, replacement: Node, stack: StackPane)
@@ -330,15 +333,14 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
         }
     }
 
-    abstract class ReversibleViewTransition(setup: (StackPane.() -> Unit)? = null) : ViewTransition(setup) {
+    abstract class ReversibleViewTransition : ViewTransition() {
         abstract fun reversed(): ViewTransition
     }
 
     class Slide(
             val duration: Duration,
-            val direction: Direction = Direction.LEFT,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val direction: Direction = Direction.LEFT
+    ) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -358,14 +360,13 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Slide(duration, direction.reversed(), setup)
+        override fun reversed() = Slide(duration, direction.reversed())
     }
 
     class Cover(
             val duration: Duration,
-            val direction: Direction = Direction.LEFT,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val direction: Direction = Direction.LEFT
+    ) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -379,14 +380,13 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
 
         override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
 
-        override fun reversed() = Reveal(duration, direction.reversed(), setup)
+        override fun reversed() = Reveal(duration, direction.reversed())
     }
 
     class Reveal(
             val duration: Duration,
-            val direction: Direction = Direction.LEFT,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val direction: Direction = Direction.LEFT
+    ) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -403,15 +403,14 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Cover(duration, direction.reversed(), setup)
+        override fun reversed() = Cover(duration, direction.reversed())
     }
 
     class Metro(
             val duration: Duration,
             val direction: Direction = Direction.LEFT,
-            val distancePercentage: Double = 0.1,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val distancePercentage: Double = 0.1
+    ) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -433,15 +432,14 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
             removed.opacity = 1.0
         }
 
-        override fun reversed() = Metro(duration, direction.reversed(), distancePercentage, setup)
+        override fun reversed() = Metro(duration, direction.reversed(), distancePercentage)
     }
 
     class Swap(
             val duration: Duration,
             val direction: Direction = Direction.LEFT,
-            val scaling: Point2D = Point2D(.75, .75),
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val scale: Point2D = Point2D(.75, .75)
+    ) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -451,7 +449,7 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
                 Direction.LEFT -> Point2D(-bounds.width * 0.5, 0.0)
             }
             val halfTime = duration.divide(2.0)
-            return current.scale(duration, scaling, play = false).and(replacement.scale(duration, scaling, reversed = true, play = false))
+            return current.scale(duration, scale, play = false).and(replacement.scale(duration, scale, reversed = true, play = false))
                     .and(current.move(halfTime, destination).and(replacement.move(halfTime, destination.multiply(-1.0))) {
                         setOnFinished { stack.moveToTop(replacement) }
                     }.then(current.move(halfTime, Point2D(0.0, 0.0)).and(replacement.move(halfTime, Point2D(0.0, 0.0)))))
@@ -464,14 +462,13 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
             removed.scaleY = 1.0
         }
 
-        override fun reversed() = Swap(duration, direction.reversed(), scaling, setup)
+        override fun reversed() = Swap(duration, direction.reversed(), scale)
     }
 
     class Flip(
             val duration: Duration,
-            val direction: Direction = Direction.LEFT,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ReversibleViewTransition(setup) {
+            val direction: Direction = Direction.LEFT
+    ) : ReversibleViewTransition() {
         val halfTime = duration.divide(2.0)!!
         val targetAxis = when (direction) {
             Direction.UP, Direction.DOWN -> Rotate.X_AXIS
@@ -497,14 +494,13 @@ abstract class ViewTransition(val setup: (StackPane.() -> Unit)? = null) {
             replacement.rotationAxis = Rotate.Z_AXIS
         }
 
-        override fun reversed() = Flip(duration, direction.reversed(), setup)
+        override fun reversed() = Flip(duration, direction.reversed())
     }
 
     class NewsFlash(
             val duration: Duration,
-            val rotations: Double = 2.0,
-            setup: (StackPane.() -> Unit)? = null
-    ) : ViewTransition(setup) {
+            val rotations: Double = 2.0
+    ) : ViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = replacement.transform(duration, Point2D.ZERO, rotations * 360, Point2D.ZERO, 1.0,
                 easing = Interpolator.EASE_IN, reversed = true, play = false)
