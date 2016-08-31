@@ -6,8 +6,16 @@ import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
+/**
+ * Run the demo as the root of the scene
+ */
 class NewViewTransitionRoot : App(NewViewTransitionMain::class, NewViewTransitionStyles::class)
 
+/**
+ * Run the demo in a VBox
+ *
+ * Notice the z-ordering is based on the index withing the VBox
+ */
 class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::class) {
     class VBoxRootView : View("Switching Sub Views In VBox") {
         override val root = vbox {
@@ -18,6 +26,11 @@ class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::
     }
 }
 
+/**
+ * Run the demo in a BorderPane
+ *
+ * Notice the z-ordering is based on when the node was added to the scene graph
+ */
 class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransitionStyles::class) {
     class BorderPaneRootView : View("Switching Sub Views In BorderPane") {
         override val root = borderpane {
