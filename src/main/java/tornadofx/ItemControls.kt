@@ -2,10 +2,7 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
 import javafx.beans.binding.Bindings
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.Property
-import javafx.beans.property.ReadOnlyObjectWrapper
-import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
@@ -344,6 +341,30 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S,
     column.cellValueFactory = Callback { prop.call(it.value) }
     addColumnInternal(column)
     return column
+}
+
+/**
+ * Create a column and operate on it. Inside the code block you can assign the column text
+ * and call `value { it.value.someProperty }` to set up a cellValueFactory.
+ */
+fun <S> TableView<S>.column(op: (TableColumn<S, Any?>).() -> Unit): TableColumn<S, Any?> {
+    val column = TableColumn<S, Any?>()
+    op(column)
+    addColumnInternal(column)
+    return column
+}
+
+/**
+ * Configure a cellValueFactory for the column. If the returned value is not observable, it is automatically
+ * wrapped in a SimpleObjectProperty for convenience.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S> TableColumn<S, Any?>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any?>) -> Any?) {
+    this.cellValueFactory = Callback {
+        val createdValue = cellValueFactory(it)
+
+        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any?> else SimpleObjectProperty(createdValue)
+    }
 }
 
 @JvmName(name = "columnForObservableProperty")
