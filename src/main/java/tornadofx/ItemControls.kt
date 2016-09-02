@@ -435,13 +435,13 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
 
 class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) -> Unit) : TableColumn<S, Boolean>() {
     private val expandedNodeCache = HashMap<S, Node>()
-    val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
+    private val expansionState = mutableMapOf<S, BooleanProperty>()
 
     init {
         addClass("expander-column")
 
         cellValueFactory = Callback {
-            expansionState.getOrPut(it.value, { SimpleBooleanProperty(false) })
+            expansionState.getOrPut(it.value, { getExpandedProperty(it.value) })
         }
 
         cellFactory = Callback { ToggleCell() }
