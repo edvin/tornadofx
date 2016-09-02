@@ -3,6 +3,7 @@ package tornadofx.testapps
 import javafx.collections.ObservableList
 import javafx.scene.control.Label
 import tornadofx.*
+import tornadofx.ResizeType.*
 import java.time.LocalDate
 import java.util.*
 
@@ -28,10 +29,15 @@ class ExpandableTableTest : View("Expandable Table") {
     ).observable()
 
     override val root = tableview(rooms) {
-        column("#", Room::id)
-        column("Number", Room::number)
-        column("Type", Room::type)
-        column("Bed", Room::bed)
+        prefWidth = 800.0
+
+        column("#", Room::id) resize Default()
+        column("Number", Room::number) resize Pref(200.0)
+        column("Type", Room::type) resize Pct(40.0)
+        column("Bed", Room::bed) resize Remaining()
+
+        columnResizePolicy = SmartColumnResize.POLICY
+
         rowExpander {
             tableview(it.occupancy) {
                 column("Occupancy", Occupancy::id)

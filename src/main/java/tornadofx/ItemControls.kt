@@ -545,3 +545,95 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
     }
 
 }
+
+sealed class ResizeType {
+    class Pref(val width: Double) : ResizeType()
+    class Fixed(val width: Double) : ResizeType()
+    class Weight(val value: Double) : ResizeType()
+    class Pct(val value: Double) : ResizeType()
+    class Content : ResizeType()
+    class Default : ResizeType()
+    class Remaining : ResizeType()
+}
+
+class SmartColumnResize<S> private constructor(): Callback<TableView.ResizeFeatures<S>, Boolean> {
+
+    override fun call(param: TableView.ResizeFeatures<S>): Boolean {
+        if (param.column == null) {
+            var remainingWidth = param.table.width
+
+            val defaultWidthColumns = param.table.columns.filter { it.resizeType is ResizeType.Default || it.resizeType == null  }.forEach {
+                if (it.resizeType == null) it.resize(ResizeType.Default())
+            }
+            val fixedColumns = param.table.columns.filter { it.resizeType is ResizeType.Fixed }
+            fixedColumns.forEach {
+                val rt = it.resizeType as ResizeType.Fixed
+                it.prefWidth = rt.width
+                it.minWidth = rt.width
+                it.maxWidth = rt.width
+                remainingWidth -= rt.width
+            }
+
+            val prefColumns = param.table.columns.filter { it.resizeType is ResizeType.Pref }
+            prefColumns.forEach {
+                val rt = it.resizeType as ResizeType.Pref
+                it.prefWidth = rt.width
+                remainingWidth -= rt.width
+            }
+
+            val contentColumns = param.table.columns.filter { it.resizeType is ResizeType.Content }
+            contentColumns.forEach {
+                param.table.resizeColumnsToFitContent(contentColumns)
+                remainingWidth -= contentColumns.map { it.width }.sum()
+            }
+
+            val pctColumns = param.table.columns.filter { it.resizeType is ResizeType.Pct }
+            if (pctColumns.isNotEmpty()) {
+                val widthPerPct = remainingWidth / 100.0
+                pctColumns.forEach {
+                    val rt = it.resizeType as ResizeType.Pct
+                    it.prefWidth = widthPerPct * rt.value
+                    remainingWidth -= it.prefWidth
+                }
+            }
+
+            val weightColumns = param.table.columns.filter { it.resizeType is ResizeType.Weight }
+            if (weightColumns.isNotEmpty()) {
+
+            }
+
+            val remainingColumns = param.table.columns.filter { it.resizeType is ResizeType.Weight || it.resizeType == null }
+            if (remainingColumns.isNotEmpty()) {
+                val perColumn = remainingWidth / remainingColumns.size.toDouble()
+                remainingColumns.forEach {
+                    it.prefWidth = perColumn
+                    remainingWidth -= perColumn
+                }
+            }
+
+            // Give remaining width to the last column
+            if (remainingWidth > 0.0) {
+                param.table.columns.last().apply {
+                    prefWidth = remainingWidth
+                }
+            }
+
+            return true
+        }
+        return TableView.UNCONSTRAINED_RESIZE_POLICY.call(param)
+    }
+
+    companion object {
+        val POLICY = SmartColumnResize<Any>()
+        val ResizeTypeKey = "tornadofx.smartColumnResizeType"
+    }
+}
+
+internal var TableColumn<*, *>.resizeType: ResizeType?
+    get() = properties[SmartColumnResize.ResizeTypeKey] as? ResizeType?
+    set(value) { properties[SmartColumnResize.ResizeTypeKey] = value }
+
+infix fun <S, T> TableColumn<S, T>.resize(type: ResizeType): TableColumn<S, T> {
+    resizeType = type
+    return this
+}
