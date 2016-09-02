@@ -1,6 +1,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
+import com.sun.javafx.scene.control.skin.TableViewSkin
 import javafx.beans.binding.Bindings
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
@@ -560,11 +561,15 @@ class SmartColumnResize<S> private constructor(): Callback<TableView.ResizeFeatu
 
     override fun call(param: TableView.ResizeFeatures<S>): Boolean {
         if (param.column == null) {
-            var remainingWidth = param.table.width
+            val scrollBarWidth = 14
+            var remainingWidth = param.table.width - param.table.padding.left - param.table.padding.right - scrollBarWidth
 
-            val defaultWidthColumns = param.table.columns.filter { it.resizeType is ResizeType.Default || it.resizeType == null  }.forEach {
+            // Keep default width columns
+            param.table.columns.filter { it.resizeType is ResizeType.Default || it.resizeType == null  }.forEach {
                 if (it.resizeType == null) it.resize(ResizeType.Default())
+                remainingWidth -= it.width
             }
+
             val fixedColumns = param.table.columns.filter { it.resizeType is ResizeType.Fixed }
             fixedColumns.forEach {
                 val rt = it.resizeType as ResizeType.Fixed
@@ -620,6 +625,7 @@ class SmartColumnResize<S> private constructor(): Callback<TableView.ResizeFeatu
 
             return true
         }
+
         return TableView.UNCONSTRAINED_RESIZE_POLICY.call(param)
     }
 

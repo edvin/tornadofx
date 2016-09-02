@@ -33,7 +33,7 @@ class ExpandableTableTest : View("Expandable Table") {
 
         column("#", Room::id) resize Default()
         column("Number", Room::number) resize Pref(200.0)
-        column("Type", Room::type) resize Pct(40.0)
+        column("Type", Room::type) resize Pct(90.0)
         column("Bed", Room::bed) resize Remaining()
 
         columnResizePolicy = SmartColumnResize.POLICY
