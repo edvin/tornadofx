@@ -566,7 +566,7 @@ class SmartColumnResize<S> private constructor(): Callback<TableView.ResizeFeatu
 
             // Keep default width columns
             param.table.columns.filter { it.resizeType is ResizeType.Default || it.resizeType == null  }.forEach {
-                if (it.resizeType == null) it.resize(ResizeType.Default())
+                if (it.resizeType == null) it.resizeTo(ResizeType.Default())
                 remainingWidth -= it.width
             }
 
@@ -639,7 +639,7 @@ internal var TableColumn<*, *>.resizeType: ResizeType?
     get() = properties[SmartColumnResize.ResizeTypeKey] as? ResizeType?
     set(value) { properties[SmartColumnResize.ResizeTypeKey] = value }
 
-infix fun <S, T> TableColumn<S, T>.resize(type: ResizeType): TableColumn<S, T> {
+infix fun <S, T> TableColumn<S, T>.resizeTo(type: ResizeType): TableColumn<S, T> {
     resizeType = type
     return this
 }
