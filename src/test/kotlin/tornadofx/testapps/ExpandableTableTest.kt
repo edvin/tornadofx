@@ -28,17 +28,20 @@ class ExpandableTableTest : View("Expandable Table") {
     ).observable()
 
     override val root = tableview(rooms) {
-        prefWidth = 800.0
+        //prefWidth = 800.0
 
         column("#", Room::id) resizeTo Default()
         column("Number", Room::number) resizeTo Pref(200.0)
         column {
             text = "Fixed"
             value { "FIXED 75" }
-            resizeTo(ResizeType.Fixed(75.0))
+            resizeTo(Fixed(75.0))
         }
-        column("Type", Room::type) resizeTo Content()
-        column("Bed", Room::bed) resizeTo Remaining()
+        column("Type", Room::type).apply {
+            resizeTo(Remaining())
+            minWidth = 150.0
+        }
+        column("Bed", Room::bed) resizeTo Content()
 
         columnResizePolicy = SmartColumnResize.POLICY
 

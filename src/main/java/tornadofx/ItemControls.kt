@@ -15,6 +15,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
+import tornadofx.ResizeType.*
 import java.util.*
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
@@ -550,14 +551,14 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
 
 }
 
-sealed class ResizeType {
-    class Pref(val width: Double) : ResizeType()
-    class Fixed(val width: Double) : ResizeType()
-    class Weight(val value: Double) : ResizeType()
-    class Pct(val value: Double) : ResizeType()
-    class Content : ResizeType()
-    class Default : ResizeType()
-    class Remaining : ResizeType()
+sealed class ResizeType(val isResizable: Boolean) {
+    class Pref(val width: Double) : ResizeType(true)
+    class Fixed(val width: Double) : ResizeType(false)
+    class Weight(val value: Double) : ResizeType(true)
+    class Pct(val value: Double) : ResizeType(true)
+    class Content : ResizeType(true)
+    class Default : ResizeType(true)
+    class Remaining : ResizeType(true)
 
     var delta: Double = 0.0
 }
@@ -567,20 +568,17 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
     @Suppress("DEPRECATION")
     override fun call(param: TableView.ResizeFeatures<S>): Boolean {
         if (param.column == null) {
-            val contentWidth = TableView::class.java.getDeclaredField("contentWidth").let {
-                it.isAccessible = true
-                it.get(param.table) as Double
-            }
+            val contentWidth = param.table.getContentWidth()
             var remainingWidth = contentWidth
 
-            // Keep default width columns
-            param.table.columns.filter { it.resizeType is ResizeType.Default }.forEach {
+            // Honor default width columns
+            param.table.columns.filter { it.resizeType is Default }.forEach {
                 remainingWidth -= it.width
             }
 
-            val fixedColumns = param.table.columns.filter { it.resizeType is ResizeType.Fixed }
+            val fixedColumns = param.table.columns.filter { it.resizeType is Fixed }
             fixedColumns.forEach {
-                val rt = it.resizeType as ResizeType.Fixed
+                val rt = it.resizeType as Fixed
                 val w = rt.width
                 it.impl_setWidth(w)
                 it.prefWidth = w
@@ -590,14 +588,14 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 remainingWidth -= it.width
             }
 
-            val prefColumns = param.table.columns.filter { it.resizeType is ResizeType.Pref }
+            val prefColumns = param.table.columns.filter { it.resizeType is Pref }
             prefColumns.forEach {
-                val rt = it.resizeType as ResizeType.Pref
+                val rt = it.resizeType as Pref
                 it.impl_setWidth(rt.width + rt.delta)
                 remainingWidth -= it.width
             }
 
-            val contentColumns = param.table.columns.filter { it.resizeType is ResizeType.Content }
+            val contentColumns = param.table.columns.filter { it.resizeType is Content }
             param.table.resizeColumnsToFitContent(contentColumns)
             contentColumns.forEach {
                 val rt = it.resizeType
@@ -607,22 +605,22 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 remainingWidth -= it.width
             }
 
-            val pctColumns = param.table.columns.filter { it.resizeType is ResizeType.Pct }
+            val pctColumns = param.table.columns.filter { it.resizeType is Pct }
             if (pctColumns.isNotEmpty()) {
                 val widthPerPct = contentWidth.toDouble() / 100.0
                 pctColumns.forEach {
-                    val rt = it.resizeType as ResizeType.Pct
+                    val rt = it.resizeType as Pct
                     it.impl_setWidth((widthPerPct * rt.value) + rt.delta)
                     remainingWidth -= it.width
                 }
             }
 
-            val weightColumns = param.table.columns.filter { it.resizeType is ResizeType.Weight }
+            val weightColumns = param.table.columns.filter { it.resizeType is Weight }
             if (weightColumns.isNotEmpty()) {
 
             }
 
-            val remainingColumns = param.table.columns.filter { it.resizeType is ResizeType.Remaining }
+            val remainingColumns = param.table.columns.filter { it.resizeType is Remaining }
             if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
                 val perColumn = remainingWidth / remainingColumns.size.toDouble()
                 remainingColumns.forEach {
@@ -639,9 +637,34 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 }
             }
         } else {
-            if (param.column.resizeType is ResizeType.Fixed) return false
-            param.column.resizeType.delta += param.delta
-            call(TableView.ResizeFeatures(param.table, null, 0.0))
+            val col = param.column
+            if (col.resizeType is ResizeType.Fixed) return false
+            val targetWidth = col.width + param.delta
+            if (targetWidth < col.minWidthProperty().value || targetWidth > col.maxWidthProperty().value) return false
+            val colIndex = param.table.columns.indexOf(col)
+
+            // Apply negative delta to the first resizable column to the right of this column
+            val rightColDelta = param.delta * -1.0
+
+            val rightCol = param.table.columns
+                    .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
+                    .filter {
+                        val newWidth = it.width + rightColDelta
+                        newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
+                    }
+                    .firstOrNull() ?: return false
+
+            // Apply negative delta and set new with for the right column
+            with(rightCol) {
+                resizeType.delta += rightColDelta
+                impl_setWidth(width + rightColDelta)
+            }
+
+            // Apply delta and set new width for the resized column
+            with (param.column) {
+                resizeType.delta += param.delta
+                impl_setWidth(width + param.delta)
+            }
         }
 
         return true
@@ -653,8 +676,16 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
     }
 }
 
+/**
+ * Get the width of the area available for columns inside the TableView
+ */
+fun TableView<*>.getContentWidth() = TableView::class.java.getDeclaredField("contentWidth").let {
+    it.isAccessible = true
+    it.get(this@getContentWidth) as Double
+}
+
 internal var TableColumn<*, *>.resizeType: ResizeType
-    get() = properties.getOrPut(SmartColumnResize.ResizeTypeKey) { ResizeType.Default() } as ResizeType
+    get() = properties.getOrPut(SmartColumnResize.ResizeTypeKey) { Default() } as ResizeType
     set(value) {
         properties[SmartColumnResize.ResizeTypeKey] = value
     }
