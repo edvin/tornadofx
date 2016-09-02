@@ -308,12 +308,6 @@ val <T> ComboBox<T>.selectedItem: T?
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
-    minWidth = width
-    maxWidth = width
-    return this
-}
-
 fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {

@@ -581,10 +581,6 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 val rt = it.resizeType as Fixed
                 val w = rt.width
                 it.impl_setWidth(w)
-                it.prefWidth = w
-                it.minWidth = w
-                it.maxWidth = w
-                it.isResizable = false
                 remainingWidth -= it.width
             }
 
@@ -629,22 +625,37 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 }
             }
 
-            // Give remaining width to the last column
             if (remainingWidth > 0.0) {
-                param.table.columns.last().apply {
-                    impl_setWidth(remainingWidth + resizeType.delta)
+                // Give remaining width to the right most resizable column
+                val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
+                rightMostResizable?.apply {
+                    impl_setWidth(width + remainingWidth)
                     remainingWidth -= width
+                }
+            } else if (remainingWidth < 0.0) {
+                // Reduce from resizable columns, for now just equally between resizable columns
+                // We should probably reduce based on the type of column
+                var canReduceMore = true
+                while (canReduceMore && remainingWidth < 0.0) {
+                    val reduceableColumns = param.table.columns.filter { it.resizeType.isResizable && it.minWidth > it.width - 1 }
+                    canReduceMore = reduceableColumns.isNotEmpty()
+                    reduceableColumns.forEach {
+                        if (remainingWidth < 0.0) {
+                            it.impl_setWidth(it.width - 1)
+                            remainingWidth++
+                        }
+                    }
                 }
             }
         } else {
-            val col = param.column
-            if (col.resizeType is ResizeType.Fixed) return false
-            val targetWidth = col.width + param.delta
-            if (targetWidth < col.minWidthProperty().value || targetWidth > col.maxWidthProperty().value) return false
-            val colIndex = param.table.columns.indexOf(col)
+            if (!param.column.resizeType.isResizable) return false
+            val targetWidth = param.column.width + param.delta
 
-            // Apply negative delta to the first resizable column to the right of this column
+            // Would resize result in illegal width?
+            if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
+
             val rightColDelta = param.delta * -1.0
+            val colIndex = param.table.columns.indexOf(param.column)
 
             val rightCol = param.table.columns
                     .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
@@ -690,7 +701,39 @@ internal var TableColumn<*, *>.resizeType: ResizeType
         properties[SmartColumnResize.ResizeTypeKey] = value
     }
 
-infix fun <S, T> TableColumn<S, T>.resizeTo(type: ResizeType): TableColumn<S, T> {
-    resizeType = type
+fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
+    minWidth = width
+    maxWidth = width
+    resizeType = ResizeType.Fixed(width)
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.minWidth(width: Double): TableColumn<S, T> {
+    minWidth = width
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.maxWidth(width: Double): TableColumn<S, T> {
+    maxWidth = width
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.prefWidth(width: Double): TableColumn<S, T> {
+    prefWidth = width
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
+    resizeType = ResizeType.Remaining()
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.defaultWidth(): TableColumn<S, T> {
+    resizeType = ResizeType.Default()
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.contentWidth(): TableColumn<S, T> {
+    resizeType = ResizeType.Content()
     return this
 }

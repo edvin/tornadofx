@@ -30,18 +30,15 @@ class ExpandableTableTest : View("Expandable Table") {
     override val root = tableview(rooms) {
         //prefWidth = 800.0
 
-        column("#", Room::id) resizeTo Default()
-        column("Number", Room::number) resizeTo Pref(200.0)
+        column("#", Room::id)
+        column("Number", Room::number).remainingWidth().minWidth(75.0)
         column {
             text = "Fixed"
             value { "FIXED 75" }
-            resizeTo(Fixed(75.0))
+            fixedWidth(75.0)
         }
-        column("Type", Room::type).apply {
-            resizeTo(Remaining())
-            minWidth = 150.0
-        }
-        column("Bed", Room::bed) resizeTo Content()
+        column("Type", Room::type).remainingWidth().minWidth(150.0)
+        column("Bed", Room::bed).contentWidth().minWidth(90.0)
 
         columnResizePolicy = SmartColumnResize.POLICY
 
