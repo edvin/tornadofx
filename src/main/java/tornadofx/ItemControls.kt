@@ -8,12 +8,14 @@ import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Insets
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
+import java.util.*
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
@@ -404,13 +406,13 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
 }
 
 
-fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeBuilder: RowExpanderPane.(S) -> Unit): ExpanderColumn<S> {
-    val expander = ExpanderColumn<S>()
+fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeCallback: RowExpanderPane.(S) -> Unit): ExpanderColumn<S> {
+    val expander = ExpanderColumn(expandedNodeCallback)
     addColumnInternal(expander, 0)
     setRowFactory {
         object : TableRow<S>() {
             override fun createDefaultSkin(): Skin<*> {
-                return ExpandableTableRowSkin(this, expandedNodeBuilder, expander)
+                return ExpandableTableRowSkin(this, expander)
             }
         }
     }
@@ -431,7 +433,8 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
     var expanded: Boolean get() = expandedProperty().value; set(value) { expandedProperty().value = value }
 }
 
-class ExpanderColumn<S> : TableColumn<S, Boolean>() {
+class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) -> Unit) : TableColumn<S, Boolean>() {
+    private val expandedNodeCache = HashMap<S, Node>()
     val expansionState = mutableMapOf<S, SimpleBooleanProperty>()
 
     init {
@@ -448,6 +451,41 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
         val expanded = getCellObservableValue(index) as SimpleBooleanProperty
         expanded.value = !expanded.value
         tableView.refresh()
+    }
+
+    fun getOrCreateExpandedNode(tableRow: TableRow<S>): Node? {
+        val index = tableRow.index
+        if (index > -1 && index < tableView.items.size) {
+            val item = tableView.items[index]!!
+            var node: Node? = expandedNodeCache[item]
+            if (node == null) {
+                node = RowExpanderPane(tableRow, this)
+                expandedNodeCallback(node, item)
+                expandedNodeCache.put(item, node)
+            }
+            return node
+        }
+        return null
+    }
+
+    fun getExpandedNode(item: S): Node? = expandedNodeCache[item]
+
+    fun getExpandedProperty(item: S): BooleanProperty {
+        var value: BooleanProperty? = expansionState[item]
+        if (value == null) {
+            value = object : SimpleBooleanProperty(item, "expanded", false) {
+                /**
+                 * When the expanded state change we refresh the tableview.
+                 * If the expanded state changes to false we remove the cached expanded node.
+                 */
+                override fun invalidated() {
+                    tableView.refresh()
+                    if (!getValue()) expandedNodeCache.remove(bean)
+                }
+            }
+            expansionState.put(item, value)
+        }
+        return value
     }
 
     private inner class ToggleCell : TableCell<S, Boolean>() {
@@ -473,29 +511,37 @@ class ExpanderColumn<S> : TableColumn<S, Boolean>() {
     }
 }
 
-class ExpandableTableRowSkin<S>(tableRow: TableRow<S>, val expandedNodeBuilder: RowExpanderPane.(S) -> Unit, val expanderColumn: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
-    val expandedWrapper by lazy {
-        val sp = RowExpanderPane(tableRow, expanderColumn)
-        expandedNodeBuilder(sp, skinnable.item)
-        children.add(sp)
-        sp
-    }
-
+class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
     var tableRowPrefHeight = -1.0
+
+    init {
+        tableRow.itemProperty().addListener { observable, oldValue, newValue ->
+            if (oldValue != null) {
+                val expandedNode = this.expander.getExpandedNode(oldValue)
+                if (expandedNode != null) children.remove(expandedNode)
+            }
+        }
+    }
 
     val expanded: Boolean get() {
         val item = skinnable.item
-        return (item != null && expanderColumn.getCellData(skinnable.index))
+        return (item != null && expander.getCellData(skinnable.index))
+    }
+
+    private fun getContent(): Node? {
+        val node = expander.getOrCreateExpandedNode(tableRow)
+        if (!children.contains(node)) children.add(node)
+        return node
     }
 
     override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
         tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
-        return if (expanded) tableRowPrefHeight + expandedWrapper.prefHeight(width) else tableRowPrefHeight
+        return if (expanded) tableRowPrefHeight + (getContent()?.prefHeight(width) ?: 0.0) else tableRowPrefHeight
     }
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         super.layoutChildren(x, y, w, h)
-        if (expanded) expandedWrapper.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
+        if (expanded) getContent()?.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
     }
 
 }

@@ -6,17 +6,6 @@ import tornadofx.*
 import java.time.LocalDate
 import java.util.*
 
-class AccordionViewApp : App(AccordionView::class)
-
-class AccordionView : View() {
-    override val root = vbox {
-        accordion {
-            titledpane("TitledPane1", Label("Content 1"))
-            titledpane("TitledPane2", Label("Content 2"))
-        }
-    }
-}
-
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
