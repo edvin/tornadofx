@@ -1,7 +1,6 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
-import javafx.scene.control.Label
 import tornadofx.*
 import tornadofx.ResizeType.*
 import java.time.LocalDate
@@ -31,8 +30,13 @@ class ExpandableTableTest : View("Expandable Table") {
     override val root = tableview(rooms) {
         prefWidth = 800.0
 
-        column("#", Room::id) resizeTo Remaining()
+        column("#", Room::id) resizeTo Default()
         column("Number", Room::number) resizeTo Pref(200.0)
+        column {
+            text = "Fixed"
+            value { "FIXED 75" }
+            resizeTo(ResizeType.Fixed(75.0))
+        }
         column("Type", Room::type) resizeTo Content()
         column("Bed", Room::bed) resizeTo Remaining()
 
@@ -47,9 +51,8 @@ class ExpandableTableTest : View("Expandable Table") {
             }
         }
     }
-
-    private fun makeOccupancy(count: Int) = (0..count).map {
-        Occupancy(Random().nextInt(100), LocalDate.now().minusDays(it.toLong()), Random().nextInt(100000))
-    }.observable()
-
 }
+
+private fun makeOccupancy(count: Int) = (0..count).map {
+    ExpandableTableTest.Occupancy(Random().nextInt(100), LocalDate.now().minusDays(it.toLong()), Random().nextInt(100000))
+}.observable()

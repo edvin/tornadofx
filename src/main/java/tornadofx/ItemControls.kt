@@ -581,11 +581,12 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
             val fixedColumns = param.table.columns.filter { it.resizeType is ResizeType.Fixed }
             fixedColumns.forEach {
                 val rt = it.resizeType as ResizeType.Fixed
-                val w = rt.width + rt.delta
+                val w = rt.width
                 it.impl_setWidth(w)
                 it.prefWidth = w
                 it.minWidth = w
                 it.maxWidth = w
+                it.isResizable = false
                 remainingWidth -= it.width
             }
 
@@ -638,6 +639,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 }
             }
         } else {
+            if (param.column.resizeType is ResizeType.Fixed) return false
             param.column.resizeType.delta += param.delta
             call(TableView.ResizeFeatures(param.table, null, 0.0))
         }
