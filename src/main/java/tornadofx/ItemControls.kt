@@ -612,6 +612,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     remainingWidth -= it.width
                 }
 
+                // Fixed columns always keep their size
                 val fixedColumns = param.table.columns.filter { it.resizeType is Fixed }
                 fixedColumns.forEach {
                     val rt = it.resizeType as Fixed
@@ -619,6 +620,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     remainingWidth -= it.width
                 }
 
+                // Preferred sized columns get their size and are adjusted for resize-delta that affected them
                 val prefColumns = param.table.columns.filter { it.resizeType is Pref }
                 prefColumns.forEach {
                     val rt = it.resizeType as Pref
@@ -626,6 +628,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     remainingWidth -= it.width
                 }
 
+                // Content columns are resized to their content and adjusted for resize-delta that affetected them
                 val contentColumns = param.table.columns.filter { it.resizeType is Content }
                 param.table.resizeColumnsToFitContent(contentColumns)
                 contentColumns.forEach {
@@ -634,6 +637,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     remainingWidth -= it.width
                 }
 
+                // Pct columns share what's left of space from here
                 val pctColumns = param.table.columns.filter { it.resizeType is Pct }
                 if (pctColumns.isNotEmpty()) {
                     val widthPerPct = contentWidth.toDouble() / 100.0
@@ -644,6 +648,8 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     }
                 }
 
+                // Weighted columns shouldn't be combined with Pct. Weight is converted to pct of remaining width
+                // and distributed to weigthed columns + remaining type columns
                 val weightColumns = param.table.columns.filter { it.resizeType is Weight }
                 if (weightColumns.isNotEmpty()) {
                     val consideredColumns = weightColumns + param.table.columns.filter { it.resizeType is Remaining }
@@ -669,6 +675,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     }
                 }
 
+                // Adjustment for where we didn't assign all width
                 if (remainingWidth > 0.0) {
                     // Give remaining width to the right most resizable column
                     val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
@@ -676,36 +683,37 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                         impl_setWidth(width + remainingWidth)
                         remainingWidth -= width
                     }
+                // Adjustment for where we assigned more width that we have
                 } else if (remainingWidth < 0.0) {
                     // Reduce from resizable columns, for now we reduce the column with largest reduction potential
                     // We should consider reducing based on the resize type of the column as well
                     var canReduceMore = true
                     while (canReduceMore && remainingWidth < 0.0) {
-                        // Choose the column with largest reduction potential
-                        val reducableCandidate = param.table.columns
+                        // Choose the column with largest reduction potential (largest gap betweeen size and minSize)
+                        val reduceableCandidate = param.table.columns
                                 .filter { it.resizeType.isResizable && it.minWidth < it.width }
                                 .sortedBy { (it.width - it.minWidth) * -1 }
                                 .firstOrNull()
 
-                        canReduceMore = reducableCandidate != null
-                        if (reducableCandidate != null && remainingWidth < 0.0) {
+                        canReduceMore = reduceableCandidate != null
+                        if (reduceableCandidate != null && remainingWidth < 0.0) {
                             val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
-                            val toWidth = reducableCandidate.width - reduceBy
-                            reducableCandidate.resizeType.delta -= reduceBy
-                            reducableCandidate.impl_setWidth(toWidth)
+                            val toWidth = reduceableCandidate.width - reduceBy
+                            reduceableCandidate.resizeType.delta -= reduceBy
+                            reduceableCandidate.impl_setWidth(toWidth)
                             remainingWidth += reduceBy
                         }
                     }
                 }
             } else {
-                // A single column was resized
-
+                // Handle specific column size operation
                 if (!param.column.resizeType.isResizable) return false
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
                 if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
 
+                // Prepare to adjust the right column by the same amount we subtract or add to this column
                 val rightColDelta = param.delta * -1.0
                 val colIndex = param.table.columns.indexOf(param.column)
 
@@ -729,9 +737,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     impl_setWidth(width + param.delta)
                 }
 
-                //call(TableView.ResizeFeatures(param.table, null, 0.0))
             }
-
             return true
         } finally {
             resizing = false

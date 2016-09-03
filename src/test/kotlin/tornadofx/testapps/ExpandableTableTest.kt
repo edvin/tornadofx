@@ -31,11 +31,11 @@ class ExpandableTableTest : View("Expandable Table") {
         prefWidth = 800.0
 
         column("#", Room::id)
-        column("Number", Room::number).remainingWidth().minWidth(75.0)
+        column("Number", Room::number)//.remainingWidth().minWidth(75.0)
         column {
             text = "Fixed"
             value { "FIXED 75" }
-            fixedWidth(75.0)
+            //fixedWidth(75.0)
         }
         column("Type", Room::type).remainingWidth().minWidth(150.0)
         column("Bed", Room::bed).contentWidth().minWidth(90.0)
