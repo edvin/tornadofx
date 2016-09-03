@@ -1,16 +1,21 @@
 package tornadofx
 
+import com.sun.javafx.scene.control.skin.TableColumnHeader
 import com.sun.javafx.scene.control.skin.TableRowSkin
+import com.sun.javafx.scene.control.skin.TableViewSkin
+import javafx.beans.InvalidationListener
 import javafx.beans.binding.Bindings
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
+import javafx.event.EventType
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
@@ -564,121 +569,158 @@ sealed class ResizeType(val isResizable: Boolean) {
 }
 
 class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeatures<S>, Boolean> {
+    var resizing = false
 
     @Suppress("DEPRECATION")
     override fun call(param: TableView.ResizeFeatures<S>): Boolean {
-        if (param.column == null) {
-            val contentWidth = param.table.getContentWidth()
-            var remainingWidth = contentWidth
+        resizing = true
 
-            // Honor default width columns
-            param.table.columns.filter { it.resizeType is Default }.forEach {
-                remainingWidth -= it.width
-            }
+        try {
+            if (param.column == null) {
+                val contentWidth = param.table.getContentWidth()
+                if (contentWidth == 0.0) return false
 
-            val fixedColumns = param.table.columns.filter { it.resizeType is Fixed }
-            fixedColumns.forEach {
-                val rt = it.resizeType as Fixed
-                val w = rt.width
-                it.impl_setWidth(w)
-                remainingWidth -= it.width
-            }
+                if (param.table.properties["tornadofx.smartResizeInitialized"] == null) {
+                    param.table.properties["tornadofx.smartResizeInitialized"] = true
 
-            val prefColumns = param.table.columns.filter { it.resizeType is Pref }
-            prefColumns.forEach {
-                val rt = it.resizeType as Pref
-                it.impl_setWidth(rt.width + rt.delta)
-                remainingWidth -= it.width
-            }
-
-            val contentColumns = param.table.columns.filter { it.resizeType is Content }
-            param.table.resizeColumnsToFitContent(contentColumns)
-            contentColumns.forEach {
-                val rt = it.resizeType
-                if (rt.delta != 0.0) {
-                    it.impl_setWidth(it.width + rt.delta)
-                }
-                remainingWidth -= it.width
-            }
-
-            val pctColumns = param.table.columns.filter { it.resizeType is Pct }
-            if (pctColumns.isNotEmpty()) {
-                val widthPerPct = contentWidth.toDouble() / 100.0
-                pctColumns.forEach {
-                    val rt = it.resizeType as Pct
-                    it.impl_setWidth((widthPerPct * rt.value) + rt.delta)
-                    remainingWidth -= it.width
-                }
-            }
-
-            val weightColumns = param.table.columns.filter { it.resizeType is Weight }
-            if (weightColumns.isNotEmpty()) {
-
-            }
-
-            val remainingColumns = param.table.columns.filter { it.resizeType is Remaining }
-            if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
-                val perColumn = remainingWidth / remainingColumns.size.toDouble()
-                remainingColumns.forEach {
-                    it.impl_setWidth(perColumn + it.resizeType.delta)
-                    remainingWidth -= it.width
-                }
-            }
-
-            if (remainingWidth > 0.0) {
-                // Give remaining width to the right most resizable column
-                val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
-                rightMostResizable?.apply {
-                    impl_setWidth(width + remainingWidth)
-                    remainingWidth -= width
-                }
-            } else if (remainingWidth < 0.0) {
-                // Reduce from resizable columns, for now just equally between resizable columns
-                // We should probably reduce based on the type of column
-                var canReduceMore = true
-                while (canReduceMore && remainingWidth < 0.0) {
-                    val reduceableColumns = param.table.columns.filter { it.resizeType.isResizable && it.minWidth > it.width - 1 }
-                    canReduceMore = reduceableColumns.isNotEmpty()
-                    reduceableColumns.forEach {
-                        if (remainingWidth < 0.0) {
-                            it.impl_setWidth(it.width - 1)
-                            remainingWidth++
+                    // Listen to outside column width changes and adjust column delta accordingly
+                    // This happens if you double click between column headers of programmatically change column width
+                    // TODO: Dynamically add/remove listeners as param.table.columnsProperty() changes
+                    param.table.columns.forEach {
+                        it.widthProperty().addListener { obs, oldValue, newValue ->
+                            if (!resizing) {
+                                @Suppress("UNCHECKED_CAST")
+                                val column = (obs as ReadOnlyProperty<*>).bean as TableColumn<S, *>
+                                val rt = column.resizeType
+                                val diff = oldValue.toDouble() - newValue.toDouble()
+                                rt.delta -= diff
+                                call(TableView.ResizeFeatures(param.table, null, 0.0))
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            if (!param.column.resizeType.isResizable) return false
-            val targetWidth = param.column.width + param.delta
 
-            // Would resize result in illegal width?
-            if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
+                var remainingWidth = contentWidth
 
-            val rightColDelta = param.delta * -1.0
-            val colIndex = param.table.columns.indexOf(param.column)
+                // Honor default width columns
+                param.table.columns.filter { it.resizeType is Default }.forEach {
+                    // Restore default width if we are ever reduced below that size
+                    val defaultWidth = it.properties.getOrPut("tornadofx.defaultWidth", { it.width }) as Double
+                    if (defaultWidth > it.width) it.impl_setWidth(defaultWidth)
+                    remainingWidth -= it.width
+                }
 
-            val rightCol = param.table.columns
-                    .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
-                    .filter {
-                        val newWidth = it.width + rightColDelta
-                        newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
+                val fixedColumns = param.table.columns.filter { it.resizeType is Fixed }
+                fixedColumns.forEach {
+                    val rt = it.resizeType as Fixed
+                    it.impl_setWidth(rt.width)
+                    remainingWidth -= it.width
+                }
+
+                val prefColumns = param.table.columns.filter { it.resizeType is Pref }
+                prefColumns.forEach {
+                    val rt = it.resizeType as Pref
+                    it.impl_setWidth(rt.width + rt.delta)
+                    remainingWidth -= it.width
+                }
+
+                val contentColumns = param.table.columns.filter { it.resizeType is Content }
+                param.table.resizeColumnsToFitContent(contentColumns)
+                contentColumns.forEach {
+                    val rt = it.resizeType
+                    it.impl_setWidth(it.width + rt.delta)
+                    remainingWidth -= it.width
+                }
+
+                val pctColumns = param.table.columns.filter { it.resizeType is Pct }
+                if (pctColumns.isNotEmpty()) {
+                    val widthPerPct = contentWidth.toDouble() / 100.0
+                    pctColumns.forEach {
+                        val rt = it.resizeType as Pct
+                        it.impl_setWidth((widthPerPct * rt.value) + rt.delta)
+                        remainingWidth -= it.width
                     }
-                    .firstOrNull() ?: return false
+                }
 
-            // Apply negative delta and set new with for the right column
-            with(rightCol) {
-                resizeType.delta += rightColDelta
-                impl_setWidth(width + rightColDelta)
+                val weightColumns = param.table.columns.filter { it.resizeType is Weight }
+                if (weightColumns.isNotEmpty()) {
+
+                }
+
+                val remainingColumns = param.table.columns.filter { it.resizeType is Remaining }
+                if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
+                    val perColumn = remainingWidth / remainingColumns.size.toDouble()
+                    remainingColumns.forEach {
+                        it.impl_setWidth(perColumn + it.resizeType.delta)
+                        remainingWidth -= it.width
+                    }
+                }
+
+                if (remainingWidth > 0.0) {
+                    // Give remaining width to the right most resizable column
+                    val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
+                    rightMostResizable?.apply {
+                        impl_setWidth(width + remainingWidth)
+                        remainingWidth -= width
+                    }
+                } else if (remainingWidth < 0.0) {
+                    // Reduce from resizable columns, for now we reduce the column with largest reduction potential
+                    // We should consider reducing based on the resize type of the column as well
+                    var canReduceMore = true
+                    while (canReduceMore && remainingWidth < 0.0) {
+                        // Choose the column with largest reduction potential
+                        val reducableCandidate = param.table.columns
+                                .filter { it.resizeType.isResizable && it.minWidth < it.width }
+                                .sortedBy { (it.width - it.minWidth) * -1 }
+                                .firstOrNull()
+
+                        canReduceMore = reducableCandidate != null
+                        if (reducableCandidate != null && remainingWidth < 0.0) {
+                            val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
+                            val toWidth = reducableCandidate.width - reduceBy
+                            reducableCandidate.resizeType.delta -= reduceBy
+                            reducableCandidate.impl_setWidth(toWidth)
+                            remainingWidth += reduceBy
+                        }
+                    }
+                }
+            } else {
+                if (!param.column.resizeType.isResizable) return false
+                val targetWidth = param.column.width + param.delta
+
+                // Would resize result in illegal width?
+                if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
+
+                val rightColDelta = param.delta * -1.0
+                val colIndex = param.table.columns.indexOf(param.column)
+
+                val rightCol = param.table.columns
+                        .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
+                        .filter {
+                            val newWidth = it.width + rightColDelta
+                            newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
+                        }
+                        .firstOrNull() ?: return false
+
+                // Apply negative delta and set new with for the right column
+                with(rightCol) {
+                    resizeType.delta += rightColDelta
+                    impl_setWidth(width + rightColDelta)
+                }
+
+                // Apply delta and set new width for the resized column
+                with(param.column) {
+                    resizeType.delta += param.delta
+                    impl_setWidth(width + param.delta)
+                }
+
+                //call(TableView.ResizeFeatures(param.table, null, 0.0))
             }
 
-            // Apply delta and set new width for the resized column
-            with (param.column) {
-                resizeType.delta += param.delta
-                impl_setWidth(width + param.delta)
-            }
+            return true
+        } finally {
+            resizing = false
         }
-
-        return true
     }
 
     companion object {
