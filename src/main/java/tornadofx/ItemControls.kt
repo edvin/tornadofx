@@ -577,6 +577,8 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
 
         try {
             if (param.column == null) {
+                // Resize all columns
+
                 val contentWidth = param.table.getContentWidth()
                 if (contentWidth == 0.0) return false
 
@@ -644,15 +646,26 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
 
                 val weightColumns = param.table.columns.filter { it.resizeType is Weight }
                 if (weightColumns.isNotEmpty()) {
+                    val consideredColumns = weightColumns + param.table.columns.filter { it.resizeType is Remaining }
+                    // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
+                    fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.value ?: 1.0
 
-                }
-
-                val remainingColumns = param.table.columns.filter { it.resizeType is Remaining }
-                if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
-                    val perColumn = remainingWidth / remainingColumns.size.toDouble()
-                    remainingColumns.forEach {
-                        it.impl_setWidth(perColumn + it.resizeType.delta)
+                    val totalWeight = consideredColumns.map { it.weight() }.sum()
+                    val perWeight = remainingWidth / totalWeight
+                    consideredColumns.forEach {
+                        it.impl_setWidth((perWeight * it.weight()) + it.resizeType.delta)
                         remainingWidth -= it.width
+                    }
+
+                } else {
+                    // If no weighted columns, give the rest of the width to the "Remaining" columns
+                    val remainingColumns = param.table.columns.filter { it.resizeType is Remaining }
+                    if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
+                        val perColumn = remainingWidth / remainingColumns.size.toDouble()
+                        remainingColumns.forEach {
+                            it.impl_setWidth(perColumn + it.resizeType.delta)
+                            remainingWidth -= it.width
+                        }
                     }
                 }
 
@@ -685,6 +698,8 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     }
                 }
             } else {
+                // A single column was resized
+
                 if (!param.column.resizeType.isResizable) return false
                 val targetWidth = param.column.width + param.delta
 
@@ -767,6 +782,11 @@ fun <S, T> TableColumn<S, T>.prefWidth(width: Double): TableColumn<S, T> {
 
 fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
     resizeType = ResizeType.Remaining()
+    return this
+}
+
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double): TableColumn<S, T> {
+    resizeType = ResizeType.Weight(weight)
     return this
 }
 
