@@ -28,7 +28,7 @@ class ExpandableTableTest : View("Expandable Table") {
     ).observable()
 
     override val root = tableview(rooms) {
-        //prefWidth = 800.0
+        prefWidth = 800.0
 
         column("#", Room::id)
         column("Number", Room::number).remainingWidth().minWidth(75.0)
