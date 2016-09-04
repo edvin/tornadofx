@@ -1,8 +1,11 @@
 package tornadofx.testapps
 
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.ObservableList
+import javafx.scene.control.TableView
+import javafx.util.Callback
+import javafx.util.StringConverter
 import tornadofx.*
-import tornadofx.ResizeType.*
 import java.time.LocalDate
 import java.util.*
 
@@ -27,29 +30,78 @@ class ExpandableTableTest : View("Expandable Table") {
             Room(4, "113", "Suite", "King", makeOccupancy(5))
     ).observable()
 
-    override val root = tableview(rooms) {
-        prefWidth = 800.0
+    private var table: TableView<Room> by singleAssign()
 
-        column("#", Room::id)
-        column("Number", Room::number)//.remainingWidth().minWidth(75.0)
-        column {
-            text = "Fixed"
-            value { "FIXED 75" }
-            //fixedWidth(75.0)
-        }
-        column("Type", Room::type).remainingWidth().minWidth(150.0)
-        column("Bed", Room::bed).contentWidth().minWidth(90.0)
+    private val model = object : ViewModel() {
+        val resizePolicy = bind { SimpleObjectProperty<Callback<TableView.ResizeFeatures<Any>, Boolean>>(TableView.UNCONSTRAINED_RESIZE_POLICY) }
+    }
 
-        columnResizePolicy = SmartColumnResize.POLICY
+    override val root = hbox {
+        prefWidth = 1000.0
 
-        rowExpander {
-            tableview(it.occupancy) {
-                column("Occupancy", Occupancy::id)
-                column("Date", Occupancy::date)
-                column("Customer", Occupancy::customer)
-                prefHeight = 100.0
+        table = tableview(rooms) {
+            prefWidth = 9999.0
+
+            column("#", Room::id)
+
+            column("Number", Room::number) {
+                remainingWidth()
+                minWidth(75.0)
+            }
+            column("Fixed") {
+                value { "FIXED 75" }
+                fixedWidth(75.0)
+            }
+            column("Type", Room::type) {
+                remainingWidth()
+                minWidth(150.0)
+            }
+            column("Bed", Room::bed) {
+                contentWidth()
+                minWidth(90.0)
+            }
+
+            columnResizePolicy = SmartColumnResize.POLICY
+
+            rowExpander {
+                tableview(it.occupancy) {
+                    column("Occupancy", Occupancy::id)
+                    column("Date", Occupancy::date)
+                    column("Customer", Occupancy::customer)
+                    prefHeight = 100.0
+                }
             }
         }
+
+        form {
+            minWidth = 400.0
+            maxWidth = 400.0
+
+            fieldset("Table Resize Options") {
+
+                field("Resize Policy") {
+                    val policies = listOf(TableView.CONSTRAINED_RESIZE_POLICY, TableView.UNCONSTRAINED_RESIZE_POLICY, SmartColumnResize.POLICY).observable()
+
+                    combobox(model.resizePolicy, policies) {
+                        converter = PolicyToStringConverter()
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        table.columnResizePolicyProperty().bind(model.resizePolicy)
+    }
+}
+
+private class PolicyToStringConverter : StringConverter<Callback<TableView.ResizeFeatures<Any>, Boolean>?>() {
+    override fun toString(policy: Callback<TableView.ResizeFeatures<Any>, Boolean>?): String {
+        return policy.toString().toUpperCase().replace("TORNADOFX.", "").replace("-", "_").substringBefore("@") + "_POLICY"
+    }
+
+    override fun fromString(string: String): Callback<TableView.ResizeFeatures<Any>, Boolean> {
+        throw UnsupportedOperationException("not implemented")
     }
 }
 

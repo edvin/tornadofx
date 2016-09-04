@@ -10,10 +10,7 @@ import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
-import tornadofx.column
-import tornadofx.makeIndexColumn
-import tornadofx.tableview
-import tornadofx.value
+import tornadofx.*
 import java.nio.file.Paths
 
 class TableViewTest {
@@ -34,8 +31,7 @@ class TableViewTest {
                 tableview(TestList) {
                     makeIndexColumn()
                     column("A Column", TestObject::A)
-                    column {
-                        text = "B Column"
+                    column("B Column") {
                         value { it.value.B }
                     }
                     column("C Column", TestObject::C)
