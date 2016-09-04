@@ -2,8 +2,10 @@ package tornadofx.testapps
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
+import javafx.geometry.Orientation.VERTICAL
+import javafx.geometry.Pos
 import javafx.scene.control.TableView
-import javafx.util.Callback
+import javafx.scene.text.FontWeight
 import javafx.util.StringConverter
 import tornadofx.*
 import java.time.LocalDate
@@ -18,9 +20,7 @@ class ExpandableTableTest : View("Expandable Table") {
             "SMART_RESIZE_POLICY" to SmartResize.POLICY
     )
 
-    // Makes sure equals/hashCode always returns the same value, or we can't track expanded state accurately
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
-
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
     val rooms = listOf(
@@ -49,25 +49,12 @@ class ExpandableTableTest : View("Expandable Table") {
             prefWidth = 9999.0
 
             column("#", Room::id)
-
-            column("Number", Room::number) {
-                remainingWidth()
-                minWidth(75.0)
+            column("Number", Room::number)
+            column("Static") {
+                value { "Static text" }
             }
-            column("Fixed") {
-                value { "FIXED 75" }
-                fixedWidth(75.0)
-            }
-            column("Type", Room::type) {
-                remainingWidth()
-                minWidth(150.0)
-            }
-            column("Bed", Room::bed) {
-                contentWidth()
-                minWidth(90.0)
-            }
-
-            columnResizePolicy = SmartResize.POLICY
+            column("Type", Room::type)
+            column("Bed", Room::bed)
 
             rowExpander {
                 tableview(it.occupancy) {
@@ -83,10 +70,47 @@ class ExpandableTableTest : View("Expandable Table") {
             minWidth = 400.0
             maxWidth = 400.0
 
-            fieldset("Table Resize Options") {
-
+            fieldset("Table Resize Options", labelPosition = VERTICAL) {
                 field("Resize Policy") {
                     combobox(model.resizePolicy, policies.keys.toList().observable())
+                }
+
+                table.columns.forEach { column ->
+                    field(if (column.text.isEmpty()) "Expander" else column.text) {
+                        val resizeTypeProperty = column.resizeTypeProperty()
+                        // Reset to default on change
+                        resizeTypeProperty.onChange {
+                            column.minWidth = 10.0
+                            column.maxWidth = 5000.0
+                        }
+                        val types = listOf(ResizeType.Default(), ResizeType.Content(), ResizeType.Fixed(75.0), ResizeType.Pct(0.0), ResizeType.Pref(75.0), ResizeType.Weight(1.0), ResizeType.Remaining())
+                                .filterNot { rt -> resizeTypeProperty.value.javaClass.isAssignableFrom(rt.javaClass) }
+                                .observable()
+                        types.add(resizeTypeProperty.value)
+                        types.sortBy { it.javaClass.toString() }
+
+                        combobox(resizeTypeProperty, types) {
+                            converter = ResizeTypeStringConverter()
+                        }
+                        hbox(10.0) {
+                            alignment = Pos.BASELINE_CENTER
+                            dynamicContent(resizeTypeProperty) { rt ->
+                                when (rt) {
+                                    is ResizeType.Fixed -> {
+                                        label("Width") { style { fontWeight = FontWeight.BOLD } }
+                                        textfield(rt.width.toString()) {
+                                            textProperty().onChange {
+                                                resizeTypeProperty.value = ResizeType.Fixed(it!!.toDouble())
+                                                column.minWidth = rt.width
+                                                column.maxWidth = rt.width
+                                                SmartResize.POLICY.call(TableView.ResizeFeatures(table, null, 0.0))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -102,6 +126,17 @@ class ExpandableTableTest : View("Expandable Table") {
             }
         }
     }
+}
+
+class ResizeTypeStringConverter : StringConverter<ResizeType>() {
+    override fun toString(rt: ResizeType?): String {
+        return rt.toString().substringAfter("$").substringBefore("@")
+    }
+
+    override fun fromString(string: String?): ResizeType {
+        throw UnsupportedOperationException("not implemented")
+    }
+
 }
 
 private fun makeOccupancy(count: Int) = (0..count).map {

@@ -793,10 +793,14 @@ fun TableView<*>.getContentWidth() = TableView::class.java.getDeclaredField("con
 }
 
 internal var TableColumn<*, *>.resizeType: ResizeType
-    get() = properties.getOrPut(SmartResize.ResizeTypeKey) { Default() } as ResizeType
+    get() = resizeTypeProperty().value
     set(value) {
-        properties[SmartResize.ResizeTypeKey] = value
+        resizeTypeProperty().value = value
     }
+
+@Suppress("UNCHECKED_CAST")
+internal fun TableColumn<*, *>.resizeTypeProperty() =
+    properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Default()) } as ObjectProperty<ResizeType>
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     minWidth = width

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.6-SNAPSHOT]
 
+- `dynamicContent` builder that will replace content in a Node when an observable value changes
 - Improved `TableView.column` builder with auto-conversion to observable value (`column { text = ""; value { it.value.someProperty })`
 - DataGrid component
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
