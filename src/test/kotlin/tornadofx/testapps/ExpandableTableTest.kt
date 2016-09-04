@@ -82,7 +82,8 @@ class ExpandableTableTest : View("Expandable Table") {
                 field("Resize Policy") {
                     val policies = listOf(TableView.CONSTRAINED_RESIZE_POLICY, TableView.UNCONSTRAINED_RESIZE_POLICY, SmartColumnResize.POLICY).observable()
 
-                    combobox(model.resizePolicy, policies) {
+                    combobox(model.resizePolicy) {
+                        items = policies
                         converter = PolicyToStringConverter()
                     }
                 }
