@@ -554,8 +554,8 @@ sealed class ResizeType(val isResizable: Boolean) {
     class Fixed(val width: Double) : ResizeType(false)
     class Weight(val value: Double) : ResizeType(true)
     class Pct(val value: Double) : ResizeType(true)
-    class Content : ResizeType(true)
-    class Default : ResizeType(true)
+    class Content(val padding: Double = 0.0, val useAsMin: Boolean = false, val useAsMax: Boolean = false, var minRecorded: Boolean = false, var maxRecorded: Boolean = false) : ResizeType(true)
+    class Default(val useAsMin: Boolean = false, val useAsMax: Boolean = false, var recordedDefault: Double? = null) : ResizeType(true)
     class Remaining : ResizeType(true)
 
     var delta: Double = 0.0
@@ -580,9 +580,25 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
 
                 // Honor default width columns
                 param.table.columns.filter { it.resizeType is Default }.forEach {
+                    val rt = it.resizeType as Default
+
+                    // Save recorded default width if it is previously unsaved and differs from the default width
+                    if (it.width != 80.0 && rt.recordedDefault == null)
+                        rt.recordedDefault = it.width
+
+                    val recordedDefault = rt.recordedDefault
+
                     // Restore default width if we are ever reduced below that size
-                    val defaultWidth = it.properties.getOrPut("tornadofx.defaultWidth", { it.width }) as Double
-                    if (defaultWidth > it.width) it.impl_setWidth(defaultWidth)
+                    if (recordedDefault != null) {
+                        if (recordedDefault > it.width) it.impl_setWidth(recordedDefault)
+
+                        if (rt.useAsMin)
+                            it.minWidth = recordedDefault
+
+                        if (rt.useAsMax)
+                            it.maxWidth = recordedDefault
+                    }
+
                     remainingWidth -= it.width
                 }
 
@@ -602,12 +618,24 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     remainingWidth -= it.width
                 }
 
-                // Content columns are resized to their content and adjusted for resize-delta that affetected them
+                // Content columns are resized to their content and adjusted for resize-delta that affected them
                 val contentColumns = param.table.columns.filter { it.resizeType is Content }
                 param.table.resizeColumnsToFitContent(contentColumns)
                 contentColumns.forEach {
-                    val rt = it.resizeType
-                    it.impl_setWidth(it.width + rt.delta)
+                    val rt = it.resizeType as Content
+
+                    it.impl_setWidth(it.width + rt.delta + rt.padding)
+
+                    if (rt.useAsMin && !rt.minRecorded) {
+                        it.minWidth = it.width
+                        rt.minRecorded = true
+                    }
+
+                    if (rt.useAsMax && !rt.maxRecorded) {
+                        it.maxWidth = it.width
+                        rt.maxRecorded = true
+                    }
+
                     remainingWidth -= it.width
                 }
 
@@ -649,9 +677,9 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     }
                 }
 
-                // Adjustment for where we didn't assign all width
+                // Adjustment if we didn't assign all width
                 if (remainingWidth > 0.0) {
-                    // Give remaining width to the right most resizable column
+                    // Give remaining width to the right-most resizable column
                     val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
                     rightMostResizable?.apply {
                         impl_setWidth(width + remainingWidth)
@@ -681,7 +709,10 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 }
             } else {
                 // Handle specific column size operation
-                if (!param.column.resizeType.isResizable) return false
+                val rt = param.column.resizeType
+
+                if (!rt.isResizable) return false
+
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
@@ -707,7 +738,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
 
                 // Apply delta and set new width for the resized column
                 with(param.column) {
-                    resizeType.delta += param.delta
+                    rt.delta += param.delta
                     impl_setWidth(width + param.delta)
                 }
 
@@ -800,7 +831,7 @@ internal var TableColumn<*, *>.resizeType: ResizeType
 
 @Suppress("UNCHECKED_CAST")
 internal fun TableColumn<*, *>.resizeTypeProperty() =
-    properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Default()) } as ObjectProperty<ResizeType>
+        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Default()) } as ObjectProperty<ResizeType>
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     minWidth = width
@@ -834,12 +865,24 @@ fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double): TableColumn<S, T> {
     return this
 }
 
-fun <S, T> TableColumn<S, T>.defaultWidth(): TableColumn<S, T> {
-    resizeType = ResizeType.Default()
+fun <S, T> TableColumn<S, T>.pctWidth(pct: Double): TableColumn<S, T> {
+    resizeType = ResizeType.Pct(pct)
     return this
 }
 
-fun <S, T> TableColumn<S, T>.contentWidth(): TableColumn<S, T> {
-    resizeType = ResizeType.Content()
+/**
+ * The column will keep it's default width, fitting the content
+ * that was there initially. Optionally make this the minimum width
+ */
+fun <S, T> TableColumn<S, T>.defaultWidth(useAsMin: Boolean = false, useAsMax: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Default(useAsMin, useAsMax)
+    return this
+}
+
+/**
+ * Make the column fit the content plus an optional padding width
+ */
+fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
     return this
 }

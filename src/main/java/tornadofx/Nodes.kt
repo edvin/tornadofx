@@ -26,6 +26,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
+import tornadofx.FX.Companion.log
 import tornadofx.osgi.OSGIConsole
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -241,10 +242,15 @@ var Region.usePrefSize: Boolean
 
 fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
-        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
+        try {
+            val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+            resizer.isAccessible = true
+            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+            afterResize?.invoke()
+        } catch (ex: Exception) {
+            // Silent for now, it is usually run multiple times
+            //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
+        }
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
