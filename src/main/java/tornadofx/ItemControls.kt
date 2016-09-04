@@ -561,7 +561,7 @@ sealed class ResizeType(val isResizable: Boolean) {
     var delta: Double = 0.0
 }
 
-class SmartColumnResize private constructor() : Callback<TableView.ResizeFeatures<out Any>, Boolean> {
+class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out Any>, Boolean> {
 
     @Suppress("DEPRECATION")
     override fun call(param: TableView.ResizeFeatures<out Any>): Boolean {
@@ -725,7 +725,7 @@ class SmartColumnResize private constructor() : Callback<TableView.ResizeFeature
         }
 
     companion object {
-        val POLICY = SmartColumnResize()
+        val POLICY = SmartResize()
         val ResizeTypeKey = "tornadofx.smartColumnResizeType"
 
         internal var TableView<*>.isSmartResizing: Boolean
@@ -793,9 +793,9 @@ fun TableView<*>.getContentWidth() = TableView::class.java.getDeclaredField("con
 }
 
 internal var TableColumn<*, *>.resizeType: ResizeType
-    get() = properties.getOrPut(SmartColumnResize.ResizeTypeKey) { Default() } as ResizeType
+    get() = properties.getOrPut(SmartResize.ResizeTypeKey) { Default() } as ResizeType
     set(value) {
-        properties[SmartColumnResize.ResizeTypeKey] = value
+        properties[SmartResize.ResizeTypeKey] = value
     }
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {

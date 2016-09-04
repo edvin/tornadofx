@@ -1,6 +1,6 @@
 package tornadofx.testapps
 
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ObservableList
 import javafx.scene.control.TableView
 import javafx.util.Callback
@@ -12,6 +12,12 @@ import java.util.*
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
 class ExpandableTableTest : View("Expandable Table") {
+    val policies = mapOf(
+            "CONSTRAINED_RESIZE_POLICY" to TableView.CONSTRAINED_RESIZE_POLICY,
+            "UNCONSTRAINED_RESIZE_POLICY" to TableView.UNCONSTRAINED_RESIZE_POLICY,
+            "SMART_RESIZE_POLICY" to SmartResize.POLICY
+    )
+
     // Makes sure equals/hashCode always returns the same value, or we can't track expanded state accurately
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
 
@@ -33,7 +39,7 @@ class ExpandableTableTest : View("Expandable Table") {
     private var table: TableView<Room> by singleAssign()
 
     private val model = object : ViewModel() {
-        val resizePolicy = bind { SimpleObjectProperty<Callback<TableView.ResizeFeatures<Any>, Boolean>>(TableView.UNCONSTRAINED_RESIZE_POLICY) }
+        val resizePolicy = bind { SimpleStringProperty("UNCONSTRAINED_RESIZE_POLICY") }
     }
 
     override val root = hbox {
@@ -61,7 +67,7 @@ class ExpandableTableTest : View("Expandable Table") {
                 minWidth(90.0)
             }
 
-            columnResizePolicy = SmartColumnResize.POLICY
+            columnResizePolicy = SmartResize.POLICY
 
             rowExpander {
                 tableview(it.occupancy) {
@@ -80,29 +86,21 @@ class ExpandableTableTest : View("Expandable Table") {
             fieldset("Table Resize Options") {
 
                 field("Resize Policy") {
-                    val policies = listOf(TableView.CONSTRAINED_RESIZE_POLICY, TableView.UNCONSTRAINED_RESIZE_POLICY, SmartColumnResize.POLICY).observable()
-
-                    combobox(model.resizePolicy) {
-                        items = policies
-                        converter = PolicyToStringConverter()
-                    }
+                    combobox(model.resizePolicy, policies.keys.toList().observable())
                 }
             }
         }
     }
 
     init {
-        table.columnResizePolicyProperty().bind(model.resizePolicy)
-    }
-}
-
-private class PolicyToStringConverter : StringConverter<Callback<TableView.ResizeFeatures<Any>, Boolean>?>() {
-    override fun toString(policy: Callback<TableView.ResizeFeatures<Any>, Boolean>?): String {
-        return policy.toString().toUpperCase().replace("TORNADOFX.", "").replace("-", "_").substringBefore("@") + "_POLICY"
-    }
-
-    override fun fromString(string: String): Callback<TableView.ResizeFeatures<Any>, Boolean> {
-        throw UnsupportedOperationException("not implemented")
+        model.resizePolicy.onChange {
+            table.columnResizePolicy = when (it) {
+                "CONSTRAINED_RESIZE_POLICY" -> TableView.CONSTRAINED_RESIZE_POLICY
+                "UNCONSTRAINED_RESIZE_POLICY" -> TableView.UNCONSTRAINED_RESIZE_POLICY
+                "SMART_RESIZE_POLICY" -> SmartResize.POLICY
+                else -> throw Error("Unknown policy")
+            }
+        }
     }
 }
 
