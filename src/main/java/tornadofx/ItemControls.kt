@@ -552,7 +552,7 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Double) : ResizeType(true)
     class Fixed(val width: Double) : ResizeType(false)
-    class Weight(val value: Double) : ResizeType(true)
+    class Weight(val weight: Double, val padding: Double = 0.0, val minContentWidth: Boolean = false, var minRecorded: Boolean = false) : ResizeType(true)
     class Pct(val value: Double) : ResizeType(true)
     class Content(val padding: Double = 0.0, val useAsMin: Boolean = false, val useAsMax: Boolean = false, var minRecorded: Boolean = false, var maxRecorded: Boolean = false) : ResizeType(true)
     class Default(val useAsMin: Boolean = false, val useAsMax: Boolean = false, var recordedDefault: Double? = null) : ResizeType(true)
@@ -656,12 +656,22 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 if (weightColumns.isNotEmpty()) {
                     val consideredColumns = weightColumns + param.table.columns.filter { it.resizeType is Remaining }
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
-                    fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.value ?: 1.0
+                    fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.weight ?: 1.0
 
                     val totalWeight = consideredColumns.map { it.weight() }.sum()
                     val perWeight = remainingWidth / totalWeight
+
                     consideredColumns.forEach {
-                        it.impl_setWidth((perWeight * it.weight()) + it.resizeType.delta)
+                        val rt = it.resizeType
+                        if (rt is Weight) {
+                            if (rt.minContentWidth && !rt.minRecorded) {
+                                rt.minRecorded = true
+                                it.minWidth = it.width + rt.padding
+                            }
+                            it.impl_setWidth(Math.max(it.minWidth, (perWeight * rt.weight) + rt.delta + rt.padding))
+                        } else {
+                            it.impl_setWidth(Math.max(it.minWidth, perWeight + rt.delta))
+                        }
                         remainingWidth -= it.width
                     }
 
@@ -860,8 +870,8 @@ fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
     return this
 }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double): TableColumn<S, T> {
-    resizeType = ResizeType.Weight(weight)
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Weight(weight, padding, minContentWidth)
     return this
 }
 
