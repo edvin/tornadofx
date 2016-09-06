@@ -11,7 +11,7 @@ class ExpandableTableTest : View("Smart Resize Demo") {
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
-    val rooms = listOf(
+    val rooms = mutableListOf(
             Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)),
             Room(2, "105", "Bedroom", "King", makeOccupancy(5)),
             Room(3, "106", "Bedroom", "King", makeOccupancy(5)),
@@ -20,17 +20,16 @@ class ExpandableTableTest : View("Smart Resize Demo") {
             Room(4, "109", "Conference Room", "Queen", makeOccupancy(5)),
             Room(4, "110", "Bedroom", "Queen", makeOccupancy(5)),
             Room(4, "111", "Playroom", "King", makeOccupancy(5)),
-            Room(4, "112", "Bedroom", "Queen", makeOccupancy(5)),
-            Room(4, "113", "Suite", "King", makeOccupancy(5))
+            Room(4, "112", "Bedroom", "Queen", makeOccupancy(5))
     ).observable()
 
     override val root = tableview(rooms) {
         prefWidth = 800.0
 
-        column("#", Room::id).defaultWidth(true, true)
-        column("Number", Room::number).weigthedWidth(1.0, minContentWidth = true)
-        column("Type", Room::type).weigthedWidth(30.0)
-        column("Bed", Room::bed).contentWidth(50.0, true, true)
+        column("#", Room::id)
+        column("Number", Room::number)
+        column("Bed", Room::bed)
+        column("Type", Room::type)
 
         columnResizePolicy = SmartResize.POLICY
 
@@ -42,42 +41,18 @@ class ExpandableTableTest : View("Smart Resize Demo") {
                 prefHeight = 100.0
             }
         }
-
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    init {
+        runAsync {
+            Thread.sleep(5000)
+        } ui {
+            root.items.add(Room(4, "113", "Suite", "King size long description", makeOccupancy(5)))
+            SmartResize.POLICY.requestResize(root)
+        }
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 private fun makeOccupancy(count: Int) = (0..count).map {
