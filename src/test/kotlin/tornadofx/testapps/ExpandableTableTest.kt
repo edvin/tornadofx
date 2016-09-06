@@ -1,31 +1,17 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
-import javafx.scene.control.Label
 import tornadofx.*
 import java.time.LocalDate
 import java.util.*
 
-class AccordionViewApp : App(AccordionView::class)
-
-class AccordionView : View() {
-    override val root = vbox {
-        accordion {
-            titledpane("TitledPane1", Label("Content 1"))
-            titledpane("TitledPane2", Label("Content 2"))
-        }
-    }
-}
-
 class ExpandableTableTestApp : App(ExpandableTableTest::class)
 
-class ExpandableTableTest : View("Expandable Table") {
-    // Makes sure equals/hashCode always returns the same value, or we can't track expanded state accurately
+class ExpandableTableTest : View("Smart Resize Demo") {
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
-
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)
 
-    val rooms = listOf(
+    val rooms = mutableListOf(
             Room(1, "104", "Bedroom", "Queen", makeOccupancy(5)),
             Room(2, "105", "Bedroom", "King", makeOccupancy(5)),
             Room(3, "106", "Bedroom", "King", makeOccupancy(5)),
@@ -34,15 +20,19 @@ class ExpandableTableTest : View("Expandable Table") {
             Room(4, "109", "Conference Room", "Queen", makeOccupancy(5)),
             Room(4, "110", "Bedroom", "Queen", makeOccupancy(5)),
             Room(4, "111", "Playroom", "King", makeOccupancy(5)),
-            Room(4, "112", "Bedroom", "Queen", makeOccupancy(5)),
-            Room(4, "113", "Suite", "King", makeOccupancy(5))
+            Room(4, "112", "Bedroom", "Queen", makeOccupancy(5))
     ).observable()
 
     override val root = tableview(rooms) {
+        prefWidth = 800.0
+
         column("#", Room::id)
         column("Number", Room::number)
-        column("Type", Room::type)
         column("Bed", Room::bed)
+        column("Type", Room::type)
+
+        columnResizePolicy = SmartResize.POLICY
+
         rowExpander {
             tableview(it.occupancy) {
                 column("Occupancy", Occupancy::id)
@@ -53,8 +43,18 @@ class ExpandableTableTest : View("Expandable Table") {
         }
     }
 
-    private fun makeOccupancy(count: Int) = (0..count).map {
-        Occupancy(Random().nextInt(100), LocalDate.now().minusDays(it.toLong()), Random().nextInt(100000))
-    }.observable()
+    init {
+        runAsync {
+            Thread.sleep(5000)
+        } ui {
+            root.items.add(Room(4, "113", "Suite", "King size long description", makeOccupancy(5)))
+            SmartResize.POLICY.requestResize(root)
+        }
+    }
 
 }
+
+
+private fun makeOccupancy(count: Int) = (0..count).map {
+    ExpandableTableTest.Occupancy(Random().nextInt(100), LocalDate.now().minusDays(it.toLong()), Random().nextInt(100000))
+}.observable()

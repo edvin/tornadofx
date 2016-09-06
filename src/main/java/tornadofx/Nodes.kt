@@ -2,6 +2,7 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
@@ -25,6 +26,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
+import tornadofx.FX.Companion.log
 import tornadofx.osgi.OSGIConsole
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -238,12 +240,17 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
-fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
-        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
+        try {
+            val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+            resizer.isAccessible = true
+            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+            afterResize?.invoke()
+        } catch (ex: Exception) {
+            // Silent for now, it is usually run multiple times
+            //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
+        }
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
@@ -309,12 +316,6 @@ val <T> ComboBox<T>.selectedItem: T?
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
-
-fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
-    minWidth = width
-    maxWidth = width
-    return this
-}
 
 fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TableColumn<S, T> ->
@@ -804,6 +805,22 @@ fun EventTarget.removeFromParent() {
     } else if (this is Node) {
         parent?.getChildList()?.remove(this)
     }
+}
+
+/**
+ * Listen for changes to an observable value and replace all content in this Node with the
+ * new content created by the onChangeBuilder. The builder operates on the node and receives
+ * the new value of the observable as it's only parameter.
+ *
+ * The onChangeBuilder is run immediately with the current value of the property.
+ */
+fun <S : EventTarget, T>S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
+    val onChange : (T?) -> Unit = {
+        getChildList()?.clear()
+        onChangeBuilder(this@dynamicContent, it)
+    }
+    property.onChange(onChange)
+    onChange(property.value)
 }
 
 const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
