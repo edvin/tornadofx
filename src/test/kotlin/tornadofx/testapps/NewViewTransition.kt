@@ -19,9 +19,9 @@ class NewViewTransitionRoot : App(NewViewTransitionMain::class, NewViewTransitio
 class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::class) {
     class VBoxRootView : View("Switching Sub Views In VBox") {
         override val root = vbox {
-            label("Top").addClass(NewViewTransitionStyles.topLabel)
+            label("Top").addClass(NewViewTransitionStyles.darkLabel)
             this += NewViewTransitionMain::class
-            label("Bottom").addClass(NewViewTransitionStyles.bottomLabel)
+            label("Bottom").addClass(NewViewTransitionStyles.lightLabel)
         }
     }
 }
@@ -34,10 +34,10 @@ class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::
 class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransitionStyles::class) {
     class BorderPaneRootView : View("Switching Sub Views In BorderPane") {
         override val root = borderpane {
-            top = label("Top") { addClass(NewViewTransitionStyles.topLabel) }
-            right = label("Right") { addClass(NewViewTransitionStyles.rightLabel) }
-            bottom = label("Bottom") { addClass(NewViewTransitionStyles.bottomLabel) }
-            left = label("Left") { addClass(NewViewTransitionStyles.leftLabel) }
+            top = label("Top") { addClass(NewViewTransitionStyles.darkLabel) }
+            right = label("Right") { addClass(NewViewTransitionStyles.redLabel) }
+            bottom = label("Bottom") { addClass(NewViewTransitionStyles.lightLabel) }
+            left = label("Left") { addClass(NewViewTransitionStyles.redLabel) }
             center(NewViewTransitionMain::class)
         }
     }
@@ -90,7 +90,7 @@ class NewViewTransitionController : Controller() {
             "Black" to Color.BLACK,
             "White" to Color.WHITE,
             "Red" to Color.RED,
-            "Fade" to LinearGradient(0.0, 1.0, 1.0, 0.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
+            "Fade" to LinearGradient(0.0, 0.0, 0.0, 1.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
             "Crazy" to RadialGradient(0.0, 0.0, 150.0, 100.0, 75.0, false, CycleMethod.REPEAT,
                     Stop(0.0, Color.RED), Stop(0.33, Color.RED),
                     Stop(0.33, Color.GREEN), Stop(0.66, Color.GREEN),
@@ -129,19 +129,26 @@ class NewViewTransitionStyles : Stylesheet() {
         val blue by cssclass()
         val bg by cssproperty<Paint>("-fx-background-color")
         val nuke by cssproperty<Paint>()
-        val topLabel by cssclass()
-        val rightLabel by cssclass()
-        val bottomLabel by cssclass()
-        val leftLabel by cssclass()
+        val darkLabel by cssclass()
+        val lightLabel by cssclass()
+        val redLabel by cssclass()
 
-        fun labelMix(gray: Double) = mixin {
+        val boxMix = mixin {
+            bg force nuke
+            button {
+                bg force raw("derive(${nuke.name}, -10%)")
+                and(hover) {
+                    bg force raw("derive(${nuke.name}, -15%)")
+                }
+            }
+        }
+
+        val labelMix = mixin {
             maxWidth = infinity
             maxHeight = infinity
             alignment = Pos.BASELINE_CENTER
             padding = box(12.px)
             fontSize = 24.px
-            backgroundColor += Color.gray(gray)
-            textFill = Color.gray(1 - gray)
         }
     }
 
@@ -157,15 +164,6 @@ class NewViewTransitionStyles : Stylesheet() {
                 fontWeight = FontWeight.BOLD
                 alignment = Pos.BASELINE_CENTER
             }
-            val boxMix = mixin {
-                bg force nuke
-                button {
-                    bg force raw("derive(${nuke.name}, -10%)")
-                    and(hover) {
-                        bg force raw("derive(${nuke.name}, -15%)")
-                    }
-                }
-            }
             and(red) {
                 nuke.value = Color(.75, .5, .5, 1.0)
                 +boxMix
@@ -175,17 +173,20 @@ class NewViewTransitionStyles : Stylesheet() {
                 +boxMix
             }
         }
-        topLabel {
-            +labelMix(0.0)
+        darkLabel {
+            +labelMix
+            backgroundColor += Color.BLACK
+            textFill = Color.WHITE
         }
-        rightLabel {
-            +labelMix(0.25)
+        lightLabel {
+            +labelMix
+            backgroundColor += Color.WHITE
+            textFill = Color.BLACK
         }
-        bottomLabel {
-            +labelMix(1.0)
-        }
-        leftLabel {
-            +labelMix(0.75)
+        redLabel {
+            +labelMix
+            backgroundColor += Color.RED
+            textFill = Color.WHITE
         }
     }
 }
