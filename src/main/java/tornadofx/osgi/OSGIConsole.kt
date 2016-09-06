@@ -21,20 +21,20 @@ class OSGIConsole : View() {
             tableview<Bundle>() {
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
-                column("ID") {
+                column("ID", Long::class) {
                     value { it.value.bundleId }
                     fixedWidth(75.0)
                 }
 
-                column("State") {
+                column("State", String::class) {
                     value { it.value.stateDescription }
                     fixedWidth(120.0)
                 }
-                column("Level") {
+                column("Level", Int::class) {
                     value { it.value.state }
                     fixedWidth(50.0)
                 }
-                column("Name") {
+                column("Name", String::class) {
                     value { it.value.description }
                 }
 

@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - TableView SmartResize Policy
 - `dynamicContent` builder that will replace content in a Node when an observable value changes
-- Improved `TableView.column` builder with auto-conversion to observable value (`column { text = ""; value { it.value.someProperty })`
+- Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
 - DataGrid component
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)

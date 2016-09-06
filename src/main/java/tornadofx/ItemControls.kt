@@ -20,6 +20,7 @@ import javafx.util.StringConverter
 import tornadofx.ResizeType.*
 import java.util.*
 import java.util.concurrent.Callable
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -345,13 +346,23 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S,
 }
 
 /**
- * Create a column with a title and operate on it. Inside the code block you can call
- * `value { it.value.someProperty }` to set up a cellValueFactory.
+ * Create a column with a title specified cell type and operate on it. Inside the code block you can call
+ * `value { it.value.someProperty }` to set up a cellValueFactory that must return T or ObservableValue<T>
  */
-fun <S> TableView<S>.column(title: String, op: (TableColumn<S, Any?>.() -> Unit)? = null): TableColumn<S, Any?> {
-    val column = TableColumn<S, Any?>(title)
+fun <S, T : Any> TableView<S>.column(title: String, cellType: KClass<T>, op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
     addColumnInternal(column)
     op?.invoke(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the value from the given callback.
+ */
+fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { valueProvider(it) }
+    columns.add(column)
     return column
 }
 
@@ -360,10 +371,10 @@ fun <S> TableView<S>.column(title: String, op: (TableColumn<S, Any?>.() -> Unit)
  * wrapped in a SimpleObjectProperty for convenience.
  */
 @Suppress("UNCHECKED_CAST")
-infix fun <S> TableColumn<S, Any?>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any?>) -> Any?): TableColumn<S, Any?> {
+infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any>) -> Any?): TableColumn<S, *> {
     this.cellValueFactory = Callback {
-        val createdValue = cellValueFactory(it)
-        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any?> else SimpleObjectProperty(createdValue)
+        val createdValue = cellValueFactory(it as TableColumn.CellDataFeatures<S, Any>)
+        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any> else SimpleObjectProperty(createdValue)
     }
     return this
 }
@@ -841,7 +852,7 @@ internal var TableColumn<*, *>.resizeType: ResizeType
 
 @Suppress("UNCHECKED_CAST")
 internal fun TableColumn<*, *>.resizeTypeProperty() =
-        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Default()) } as ObjectProperty<ResizeType>
+        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     minWidth = width

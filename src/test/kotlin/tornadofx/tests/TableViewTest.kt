@@ -1,5 +1,6 @@
 package tornadofx.tests
 
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
@@ -31,7 +32,7 @@ class TableViewTest {
                 tableview(TestList) {
                     makeIndexColumn()
                     column("A Column", TestObject::A)
-                    column("B Column") {
+                    column("B Column", Double::class) {
                         value { it.value.B }
                     }
                     column("C Column", TestObject::C)
