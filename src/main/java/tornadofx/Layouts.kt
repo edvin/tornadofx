@@ -184,7 +184,7 @@ fun <T : Node> Accordion.fold(title: String? = null, node: T, op: (T.() -> Unit)
     return fold
 }
 
-@Deprecated("Properties added to the container will be lost if you add only a single child Node", ReplaceWith("Accordion.fold(title, node, op)"), DeprecationLevel.WARNING)
+@Deprecated("Properties added to the container will be lost if you add only a single child Node. Use fold(title, node, op)")
 fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): TitledPane {
     val vbox = VBox()
     op?.invoke(vbox)
