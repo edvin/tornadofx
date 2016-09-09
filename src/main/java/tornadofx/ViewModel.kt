@@ -4,6 +4,8 @@ package tornadofx
 
 import com.sun.javafx.binding.BidirectionalBinding
 import com.sun.javafx.binding.ExpressionHelper
+import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -16,6 +18,8 @@ import javafx.scene.control.*
 import javafx.scene.paint.Paint
 import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
+import java.util.concurrent.Callable
+import kotlin.reflect.KProperty1
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -189,6 +193,11 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
         op?.invoke(this, newValue)
         rollback()
     }
+}
+
+fun <V: ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
+    val prop = modelField.get(this)
+    return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
 }
 
 fun <V : ViewModel, T> V.rebindOnTreeItemChange(observable: ObservableValue<TreeItem<T>>, op: V.(T?) -> Unit) {
