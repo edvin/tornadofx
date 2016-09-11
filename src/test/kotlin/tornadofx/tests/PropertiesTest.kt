@@ -186,4 +186,16 @@ class PropertiesTest {
         Assert.assertNotNull(converter)
         Assert.assertTrue(converter is IntegerStringConverter)
     }
+
+    @Test
+    fun stringConverterWithNullableInt() {
+        JFXPanel()  // Initialize javafx toolkit
+
+        val property = SimpleObjectProperty<Int?>(null)
+
+        val label = Label().apply { bind(property) }
+
+        property.value = null
+        Assert.assertEquals("", label.text)
+    }
 }
