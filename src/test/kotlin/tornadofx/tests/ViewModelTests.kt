@@ -16,7 +16,10 @@ open class ViewModelTests {
     @Test fun simple_commit() {
         val person = Person("John", 37)
         val model = PersonModel(person)
-
+        val isNameDirty = model.dirtyStateFor(PersonModel::name)
+        isNameDirty.onChange {
+            println("Name is dirty: $it")
+        }
         model.name.value = "Jay"
         assertEquals(person.name, "John")
         model.commit()
