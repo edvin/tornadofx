@@ -206,6 +206,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val even by csspseudoclass()
         val odd by csspseudoclass()
         val filled by csspseudoclass()
+        val empty by csspseudoclass()
 
         init {
             detectAndInstallUrlHandler()
