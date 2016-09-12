@@ -611,7 +611,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 contentColumns.forEach {
                     val rt = it.resizeType as Content
 
-                    it.setPrefWidth(it.width + rt.delta + rt.padding)
+                    it.prefWidth = it.width + rt.delta + rt.padding
 
                     // Save minWidth if different from default
                     if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
@@ -634,7 +634,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     val widthPerPct = contentWidth.toDouble() / 100.0
                     pctColumns.forEach {
                         val rt = it.resizeType as Pct
-                        it.setPrefWidth((widthPerPct * rt.value) + rt.delta)
+                        it.prefWidth = (widthPerPct * rt.value) + rt.delta
                         remainingWidth -= it.width
                     }
                 }
@@ -657,9 +657,9 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                                 rt.minRecorded = true
                                 it.minWidth = it.width + rt.padding
                             }
-                            it.setPrefWidth(Math.max(it.minWidth, (perWeight * rt.weight) + rt.delta + rt.padding))
+                            it.prefWidth = Math.max(it.minWidth, (perWeight * rt.weight) + rt.delta + rt.padding)
                         } else {
-                            it.setPrefWidth(Math.max(it.minWidth, perWeight + rt.delta))
+                            it.prefWidth = Math.max(it.minWidth, perWeight + rt.delta)
                         }
                         remainingWidth -= it.width
                     }
@@ -670,7 +670,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
                         val perColumn = remainingWidth / remainingColumns.size.toDouble()
                         remainingColumns.forEach {
-                            it.setPrefWidth(perColumn + it.resizeType.delta)
+                            it.prefWidth = perColumn + it.resizeType.delta
                             remainingWidth -= it.width
                         }
                     }
@@ -681,7 +681,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     // Give remaining width to the right-most resizable column
                     val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
                     rightMostResizable?.apply {
-                        setPrefWidth(width + remainingWidth)
+                        prefWidth = width + remainingWidth
                         remainingWidth -= width
                     }
                     // Adjustment for where we assigned more width that we have
@@ -701,7 +701,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                             val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
                             val toWidth = reduceableCandidate.width - reduceBy
                             reduceableCandidate.resizeType.delta -= reduceBy
-                            reduceableCandidate.setPrefWidth(toWidth)
+                            reduceableCandidate.prefWidth = toWidth
                             remainingWidth += reduceBy
                         }
                     }
@@ -732,13 +732,13 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 // Apply negative delta and set new with for the right column
                 with(rightCol) {
                     resizeType.delta += rightColDelta
-                    setPrefWidth(width + rightColDelta)
+                    prefWidth = width + rightColDelta
                 }
 
                 // Apply delta and set new width for the resized column
                 with(param.column) {
                     rt.delta += param.delta
-                    setPrefWidth(width + param.delta)
+                    prefWidth = width + param.delta
                 }
 
             }
