@@ -215,6 +215,7 @@ abstract class Component {
 abstract class Controller : Component(), Injectable
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
+
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
@@ -267,7 +268,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             } else {
                 modalStage = Stage(stageStyle)
                 // modalStage needs to be set before this code to make closeModal() work in blocking mode
-                with (modalStage!!) {
+                with(modalStage!!) {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
