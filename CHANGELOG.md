@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Fixed bug where image URLs defined in CSS were rendered wrong
 - Added support for skipping snake-casing in CSS rules (names still have to be valid css identifiers)
 - Fixed bug where CSS selectors defined with strings would have their capitalization changed (`".testThing"` => `".test-thing"`, `cssclass("testThing")` => `.test-thing`)
+- KotlinObjectProperty - similar to SimpleObjectProperty but gives greater control over nullability
 
 ## [1.5.5]
 
