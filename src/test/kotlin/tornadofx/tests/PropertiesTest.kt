@@ -12,8 +12,6 @@ import tornadofx.property
 import tornadofx.singleAssign
 import tornadofx.getValue
 import tornadofx.setValue
-import tornadofx.KotlinObjectProperty
-import kotlin.properties.ReadWriteProperty
 import kotlin.test.assertEquals
 
 class PropertiesTest {
@@ -159,32 +157,5 @@ class PropertiesTest {
         property.onChange { called = true }
         property.value = "Changed"
         assertTrue(called)
-    }
-
-    @Test
-    fun kotlinObjectProperty() {
-        val property = KotlinObjectProperty(3)
-
-        Assert.assertTrue(property is ReadWriteProperty<*, Int>)
-        Assert.assertNotNull(property.get())
-
-        // Here the kotlin compiler wouldn't compile : property.set(null)
-
-        property.set(42)
-        Assert.assertNotNull(property.get())
-        Assert.assertEquals(42, property.get())
-    }
-
-    @Test
-    fun kotlinObjectPropertyNullable() {
-        val property = KotlinObjectProperty<Int?>(null)
-        Assert.assertTrue(property is ReadWriteProperty<*, Int?>)
-
-        property.set(null)
-        Assert.assertNull(property.get())
-
-        property.set(42)
-        Assert.assertNotNull(property.get())
-        Assert.assertEquals(42, property.get())
     }
 }

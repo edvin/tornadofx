@@ -25,20 +25,6 @@ class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, 
 
 }
 
-class KotlinObjectProperty<T>(
-        initialValue: T,
-        bean: Any? = null,
-        name: String = ""
-): SimpleObjectProperty<T>(bean, name, initialValue), ReadWriteProperty<Any, T>{
-
-    override fun get(): T = super.get()
-    override fun set(newValue: T) = super.set(newValue)
-    override fun setValue(v: T) = super.setValue(v)
-
-    override fun getValue(thisRef: Any, property: KProperty<*>) = get()
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: T) = set(value)
-}
-
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
     val field = javaClass.findFieldByName("${prop.name}\$delegate")
