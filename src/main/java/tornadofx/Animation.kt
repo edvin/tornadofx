@@ -445,22 +445,14 @@ abstract class ViewTransition() {
         override fun reversed() = Swap(duration, direction.reversed(), scale).apply { setup = this@Swap.setup }
     }
 
-    class Flip(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
+    class Flip(duration: Duration, vertical: Boolean = false) : ViewTransition() {
         val halfTime = duration.divide(2.0)!!
-        val targetAxis = when (direction) {
-            Direction.UP, Direction.DOWN -> Rotate.X_AXIS
-            Direction.RIGHT, Direction.LEFT -> Rotate.Y_AXIS
-        }!!
-        val targetAngle = when (direction) {
-            Direction.UP, Direction.LEFT -> -90.0
-            Direction.RIGHT, Direction.DOWN -> 90.0
-        }
+        val targetAxis = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)!!
 
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
-            // FIXME: The rotation doesn't show perspective
-            return current.rotate(halfTime, targetAngle, easing = Interpolator.EASE_IN, play = false) {
+            return current.rotate(halfTime, 90.0, easing = Interpolator.EASE_IN, play = false) {
                 axis = targetAxis
-            }.then(replacement.rotate(halfTime, -targetAngle, easing = Interpolator.EASE_OUT, reversed = true, play = false) {
+            }.then(replacement.rotate(halfTime, 90.0, easing = Interpolator.EASE_OUT, reversed = true, play = false) {
                 axis = targetAxis
             })
         }
@@ -470,8 +462,6 @@ abstract class ViewTransition() {
             removed.rotationAxis = Rotate.Z_AXIS
             replacement.rotationAxis = Rotate.Z_AXIS
         }
-
-        override fun reversed() = Flip(duration, direction.reversed()).apply { setup = this@Flip.setup }
     }
 
     class NewsFlash(val duration: Duration, val rotations: Double = 2.0) : ViewTransition() {

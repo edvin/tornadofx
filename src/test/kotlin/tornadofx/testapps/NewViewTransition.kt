@@ -61,7 +61,7 @@ abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View
     }
 
     init {
-        val surprise = ViewTransition.Flip(.1.seconds, ViewTransition.Direction.DOWN)
+        val surprise = ViewTransition.Flip(.1.seconds, true)
         nameLabel.setOnMouseClicked { nameLabel.replaceWith(surpriseLabel, surprise) }
         surpriseLabel.setOnMouseClicked { surpriseLabel.replaceWith(nameLabel, surprise) }
     }
@@ -107,7 +107,8 @@ class NewViewTransitionController : Controller() {
             *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Metro $it" to ViewTransition.Metro(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Swap $it" to ViewTransition.Swap(doubleTime, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Flip $it" to ViewTransition.Flip(time, it) }.toTypedArray(),
+            "Flip Horizontal" to ViewTransition.Flip(time, false),
+            "Flip Vertical" to ViewTransition.Flip(time, true),
             "Explode" to ViewTransition.Explode(time),
             "Implode" to ViewTransition.Implode(time),
             "NewsFlash" to ViewTransition.NewsFlash(doubleTime, 2.0)
