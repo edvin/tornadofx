@@ -26,7 +26,6 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
-import tornadofx.FX.Companion.log
 import tornadofx.osgi.OSGIConsole
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -814,8 +813,8 @@ fun EventTarget.removeFromParent() {
  *
  * The onChangeBuilder is run immediately with the current value of the property.
  */
-fun <S : EventTarget, T>S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
-    val onChange : (T?) -> Unit = {
+fun <S : EventTarget, T> S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
+    val onChange: (T?) -> Unit = {
         getChildList()?.clear()
         onChangeBuilder(this@dynamicContent, it)
     }
