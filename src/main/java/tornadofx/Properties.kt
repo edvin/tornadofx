@@ -185,7 +185,9 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
     override fun isInitialized() = initialized
 }
 
-
+/**
+ * Binds this property to an observable, automatically unbinding it before if already bound.
+ */
 fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
     unbind()
     bind(observable)

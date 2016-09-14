@@ -378,6 +378,13 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         return replaceWith(find(component), transition)
     }
 
+    /**
+     * Replace this component with another, optionally using a transition animation.
+     *
+     * @param replacement The component that will replace this one
+     * @param transition The [ViewTransition] used to animate the transition
+     * @return Whether or not the transition will run
+     */
     fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
         return root.replaceWith(replacement.root, transition) {
             if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
