@@ -11,7 +11,6 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
@@ -215,6 +214,8 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
+const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
+
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
@@ -229,7 +230,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
 
     fun init() {
-        root.properties["tornadofx.uicomponent"] = this
+        root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null) callOnUndock()
@@ -267,7 +268,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             } else {
                 modalStage = Stage(stageStyle)
                 // modalStage needs to be set before this code to make closeModal() work in blocking mode
-                with (modalStage!!) {
+                with(modalStage!!) {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
@@ -373,15 +374,32 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
+        return replaceWith(find(component), transition)
+    }
+
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
+        return root.replaceWith(replacement.root, transition) {
+            if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
+        }
+    }
+
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("View Transitions are now created with the `ViewTransition` class")
     inline fun <reified T : View> replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        @Suppress("DEPRECATION")
         return replaceWith(find(view), transition)
     }
 
     @JvmName("replaceWithFragment")
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("View Transitions are now created with the `ViewTransition` class")
     inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
+        @Suppress("DEPRECATION")
         return replaceWith(find(fragment), transition)
     }
 
+    @Deprecated("View Transitions are now created with the ViewTransition class")
     fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
         if (root == root.scene?.root) {
             val scene = root.scene

@@ -185,6 +185,12 @@ private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
     override fun isInitialized() = initialized
 }
 
+
+fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
+    unbind()
+    bind(observable)
+}
+
 operator fun <T> ObservableValue<T>.getValue(thisRef: Any, property: KProperty<*>) = value
 operator fun <T> Property<T?>.setValue(thisRef: Any, property: KProperty<*>, value: T?) {
     this.value = value

@@ -26,7 +26,6 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
-import tornadofx.FX.Companion.log
 import tornadofx.osgi.OSGIConsole
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -185,7 +184,7 @@ operator fun EventTarget.plusAssign(node: Node) {
     addChildIfPossible(node)
 }
 
-fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
+fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
     getChildList()?.clear()
     op(this)
 }
@@ -272,20 +271,22 @@ fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boo
                 if (scrollTo) scrollTo(it)
             }
 }
+
 fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(0,it)
+        backingList.add(0, it)
         if (select) selectionModel.select(it)
     }
 }
+
 fun <T> TableView<T>.moveToBottomWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     val end = backingList.size - 1
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(end,it)
+        backingList.add(end, it)
         if (select) selectionModel.select(it)
 
     }
@@ -354,7 +355,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Un
 
     cellFactory = Callback { column: TableColumn<S, T> ->
         val cell = originalFactory.call(column)
-        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue)  }
+        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue) }
         cell
     }
 }
@@ -762,7 +763,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"] as? T
+inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children
@@ -796,7 +797,9 @@ inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Un
 }
 
 fun EventTarget.removeFromParent() {
-    if (this is Tab) {
+    if (this is UIComponent) {
+        root.removeFromParent()
+    } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
         parent?.getChildList()?.remove(this)
@@ -810,11 +813,84 @@ fun EventTarget.removeFromParent() {
  *
  * The onChangeBuilder is run immediately with the current value of the property.
  */
-fun <S : EventTarget, T>S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
-    val onChange : (T?) -> Unit = {
+fun <S : EventTarget, T> S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
+    val onChange: (T?) -> Unit = {
         getChildList()?.clear()
         onChangeBuilder(this@dynamicContent, it)
     }
     property.onChange(onChange)
     onChange(property.value)
+}
+
+const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
+internal var Node.isTransitioning: Boolean
+    get() {
+        val x = properties[TRANSITIONING_PROPERTY]
+        return x != null && (x !is Boolean || x != false)
+    }
+    set(value) {
+        properties[TRANSITIONING_PROPERTY] = value
+    }
+
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
+    if (isTransitioning || replacement.isTransitioning) {
+        return false
+    }
+    onTransit?.invoke()
+    if (this == scene?.root) {
+        val scene = scene!!
+        if (replacement !is Parent) {
+            throw IllegalArgumentException("Replacement scene root must be a Parent")
+        }
+
+        if (transition != null) {
+            transition.call(this, replacement) {
+                scene.root = it as Parent
+            }
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            scene.root = replacement
+        }
+        return true
+    } else if (parent is Pane) {
+        val parent = parent as Pane
+        val attach = if (parent is BorderPane) {
+            when (this) {
+                parent.top -> {
+                    { it: Node -> parent.top = it }
+                }
+                parent.right -> {
+                    { parent.right = it }
+                }
+                parent.bottom -> {
+                    { parent.bottom = it }
+                }
+                parent.left -> {
+                    { parent.left = it }
+                }
+                parent.center -> {
+                    { parent.center = it }
+                }
+                else -> {
+                    { throw IllegalStateException("Child of BorderPane not found in BorderPane") }
+                }
+            }
+        } else {
+            val children = parent.children
+            val index = children.indexOf(this);
+            { children.add(index, it) }
+        }
+
+        if (transition != null) {
+            transition.call(this, replacement, attach)
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            attach(replacement)
+        }
+        return true
+    } else {
+        return false
+    }
 }
