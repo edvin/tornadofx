@@ -213,7 +213,12 @@ abstract class ViewTransition() {
     abstract fun create(current: Node, replacement: Node, stack: StackPane): Animation
 
     open fun onComplete(removed: Node, replacement: Node) = Unit
+
     var setup: StackPane.() -> Unit = {}
+    /**
+     * This allows users to modify the generated stack after the the ViewTransition is generated (so they can add things
+     * like AnchorPane and VGrow/HGrow constraints).
+     */
     fun setup(setup: StackPane.() -> Unit) {
         this.setup = setup
     }

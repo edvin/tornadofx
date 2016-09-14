@@ -883,7 +883,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTr
         }
 
         if (transition != null) {
-            transition.call(this, replacement, attach = attach)
+            transition.call(this, replacement, attach)
         } else {
             removeFromParent()
             replacement.removeFromParent()

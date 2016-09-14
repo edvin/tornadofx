@@ -380,12 +380,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
         return root.replaceWith(replacement.root, transition) {
-            if (root == root.scene?.root) {
-                (root.scene.window as? Stage)?.titleProperty()?.apply {
-                    unbind()
-                    bind(replacement.titleProperty)
-                }
-            }
+            if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
         }
     }
 
