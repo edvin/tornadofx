@@ -1,9 +1,14 @@
 package tornadofx.testapps
 
+import javafx.animation.Animation
 import javafx.beans.property.SimpleStringProperty
+import javafx.geometry.Point2D
 import javafx.geometry.Pos
+import javafx.scene.Node
+import javafx.scene.layout.StackPane
 import javafx.scene.paint.*
 import javafx.scene.text.FontWeight
+import javafx.util.Duration
 import tornadofx.*
 
 /**
@@ -107,6 +112,7 @@ class NewViewTransitionController : Controller() {
             *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Metro $it" to ViewTransition.Metro(time, it) }.toTypedArray(),
             *ViewTransition.Direction.values().map { "Swap $it" to ViewTransition.Swap(doubleTime, it) }.toTypedArray(),
+            *ViewTransition.Direction.values().map { "Custom $it" to CustomViewTransition(doubleTime, it) }.toTypedArray(),
             "Flip Horizontal" to ViewTransition.Flip(time, false),
             "Flip Vertical" to ViewTransition.Flip(time, true),
             "Explode" to ViewTransition.Explode(time),
@@ -189,5 +195,32 @@ class NewViewTransitionStyles : Stylesheet() {
             backgroundColor += Color.RED
             textFill = Color.WHITE
         }
+    }
+}
+
+class CustomViewTransition(duration: Duration, val direction: Direction = ViewTransition.Direction.LEFT) : ViewTransition() {
+    val halfSpeed = duration.divide(2.0)!!
+    val scale = when (direction) {
+        Direction.UP, Direction.DOWN -> Point2D(1.0, 0.0)
+        Direction.LEFT, Direction.RIGHT -> Point2D(0.0, 1.0)
+    }
+
+    override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+        val bounds = current.boundsInLocal
+        val currentDestination = when (direction) {
+            Direction.UP -> Point2D(0.0, -bounds.height / 2)
+            Direction.RIGHT -> Point2D(bounds.width / 2, 0.0)
+            Direction.DOWN -> Point2D(0.0, bounds.height / 2)
+            Direction.LEFT -> Point2D(-bounds.width / 2, 0.0)
+        }
+        return replacement.transform(halfSpeed, currentDestination.multiply(-1.0), 0.0, scale, 1.0, reversed = true, play = false)
+                .and(current.transform(halfSpeed, currentDestination, 0.0, scale, 1.0, play = false))
+    }
+
+    override fun onComplete(removed: Node, replacement: Node) {
+        removed.translateX = 0.0
+        removed.translateY = 0.0
+        removed.scaleX = 1.0
+        removed.scaleY = 1.0
     }
 }
