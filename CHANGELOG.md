@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.6-SNAPSHOT]
 
-- TableView SmartResize Policy
+- TableView SmartResize Policy (https://github.com/edvin/tornadofx/wiki/TableView-SmartResize)
 - `dynamicContent` builder that will replace content in a Node when an observable value changes
 - Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
 - DataGrid component
@@ -17,7 +17,8 @@ All notable changes to this project will be documented in this file.
 - Updated the `ViewTransition` code to be more flexible (including now working with any `Node`, not just `View`s and `Fragment`s).
     - Also added several new built in `ViewTransition`s
 - Added new `Node` animation helper functions for various transformations
-
+- Introduce fxid(hasControllerAttribute = true) parameter to specify that the fx:controller attribute in the FXML file should be ignored (https://github.com/edvin/tornadofx/issues/179) 
+- 
 ## [1.5.5]
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
