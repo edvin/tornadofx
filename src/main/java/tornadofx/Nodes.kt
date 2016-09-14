@@ -823,6 +823,10 @@ fun <S : EventTarget, T> S.dynamicContent(property: ObservableValue<T>, onChange
 }
 
 const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
+/**
+ * Whether this node is currently being used in a [ViewTransition]. Used to determine whether it can be used in a
+ * transition. (Nodes can only exist once in the scenegraph, so it cannot be in two transitions at once.)
+ */
 internal var Node.isTransitioning: Boolean
     get() {
         val x = properties[TRANSITIONING_PROPERTY]
@@ -832,6 +836,13 @@ internal var Node.isTransitioning: Boolean
         properties[TRANSITIONING_PROPERTY] = value
     }
 
+/**
+ * Replace this [Node] with another, optionally using a transition animation.
+ *
+ * @param replacement The node that will replace this one
+ * @param transition The [ViewTransition] used to animate the transition
+ * @return Whether or not the transition will run
+ */
 fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
