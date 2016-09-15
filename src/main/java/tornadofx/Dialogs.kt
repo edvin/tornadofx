@@ -47,7 +47,7 @@ fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter
             val result = chooser.showOpenDialog(owner)
             if (result == null) emptyList() else listOf(result)
         }
-        Multi -> chooser.showOpenMultipleDialog(owner)
+        Multi -> chooser.showOpenMultipleDialog(owner) ?: emptyList()
         Save -> {
             val result = chooser.showSaveDialog(owner)
             if (result == null) emptyList() else listOf(result)
