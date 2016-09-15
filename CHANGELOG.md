@@ -18,7 +18,8 @@ All notable changes to this project will be documented in this file.
     - Also added several new built in `ViewTransition`s
 - Added new `Node` animation helper functions for various transformations
 - FXML files can now contain `fx:controller` attribute to help with content assist. It will be ignored by the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
-
+- Fix exception in chooseFile when user cancels in Multi mode
+- 
 ## [1.5.5]
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
