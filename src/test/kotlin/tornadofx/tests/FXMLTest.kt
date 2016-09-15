@@ -14,7 +14,7 @@ class FXMLTest {
     @Test(expected = IllegalArgumentException::class)
     fun wrongFXId() {
         object : Fragment() {
-            override val root: VBox by fxml("/tornadofx/tests/FXMLTest.fxml", true)
+            override val root: VBox by fxml("/tornadofx/tests/FXMLTest.fxml")
             val myLabelx : Label by fxid()
 
             init {
@@ -26,7 +26,7 @@ class FXMLTest {
     @Test(expected = IllegalArgumentException::class)
     fun wrongFXType() {
         object : Fragment() {
-            override val root: VBox by fxml("/tornadofx/tests/FXMLTest.fxml", true)
+            override val root: VBox by fxml("/tornadofx/tests/FXMLTest.fxml")
             val myLabel : TextField by fxid()
 
             init {

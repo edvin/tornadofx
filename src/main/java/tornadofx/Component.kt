@@ -1,5 +1,6 @@
 package tornadofx
 
+import com.sun.javafx.fxml.LoadListener
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -341,15 +342,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
-     * if not specified. If the FXML file specifies a controller (handy for content completion in FXML editors)
-     * set the `hasControllerAttribute` parameter to true. This ensures that the `fx:controller` attribute is ignored
-     * by the loader so that this UIComponent can still be the controller for the FXML file.
+     * if not specified.
      *
-     * Important: If you specify `hasControllerAttribute = true` when infact no `fx:controller` attribute is present,
-     * no controller will be set at all. Make sure to only specify this parameter if you actually have the `fx:controller`
-     * attribute in your FXML.
+     * The controller for the FXML file will always be this UIComponent, the `fx:controller` attribute, if present, is ignored.
      */
-    fun <T : Node> fxml(location: String? = null, hasControllerAttribute: Boolean = false): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+    fun <T : Node> fxml(location: String? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
         val value: T
 
         init {
@@ -360,11 +357,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
             fxmlLoader = FXMLLoader(fxml).apply {
                 resources = this@UIComponent.messages
-                if (hasControllerAttribute) {
-                    setControllerFactory { this@UIComponent }
-                } else {
-                    setController(this@UIComponent)
-                }
+                setControllerFactory { this@UIComponent }
+                @Suppress("DEPRECATION")
+                impl_setLoadListener(SneakyControllerLoadListener(this))
             }
 
             value = fxmlLoader!!.load()
@@ -373,6 +368,70 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
+    /**
+     * When the root element of the FXML file has been processed, the controller is assigned if it was not assigned
+     * as a result of the `fx:controller` attribute beeing present. In any case, our UIComponent is set,
+     * since the controllerFactory will only return our instance anyway.
+     */
+    internal class SneakyControllerLoadListener(val loader: FXMLLoader) : LoadListener {
+        override fun beginRootElement() {
+        }
+
+        override fun endElement(value: Any?) {
+            if (value is Node && value.parent == null) {
+                if (loader.getController<Any?>() == null)
+                    loader.setController(loader.controllerFactory.call(null))
+            }
+        }
+
+        override fun readLanguageProcessingInstruction(language: String?) {
+        }
+
+        override fun beginUnknownTypeElement(name: String?) {
+        }
+
+        override fun beginScriptElement() {
+        }
+
+        override fun beginUnknownStaticPropertyElement(name: String?) {
+        }
+
+        override fun beginReferenceElement() {
+        }
+
+        override fun readInternalAttribute(name: String?, value: String?) {
+        }
+
+        override fun readComment(comment: String?) {
+        }
+
+        override fun readPropertyAttribute(name: String?, sourceType: Class<*>?, value: String?) {
+        }
+
+        override fun beginInstanceDeclarationElement(type: Class<*>?) {
+        }
+
+        override fun readEventHandlerAttribute(name: String?, value: String?) {
+        }
+
+        override fun beginIncludeElement() {
+        }
+
+        override fun readImportProcessingInstruction(target: String?) {
+        }
+
+        override fun beginPropertyElement(name: String?, sourceType: Class<*>?) {
+        }
+
+        override fun readUnknownStaticPropertyAttribute(name: String?, value: String?) {
+        }
+
+        override fun beginDefineElement() {
+        }
+
+        override fun beginCopyElement() {
+        }
+    }
 
     inline fun <reified T : EventTarget> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {

@@ -17,8 +17,8 @@ All notable changes to this project will be documented in this file.
 - Updated the `ViewTransition` code to be more flexible (including now working with any `Node`, not just `View`s and `Fragment`s).
     - Also added several new built in `ViewTransition`s
 - Added new `Node` animation helper functions for various transformations
-- Introduce fxid(hasControllerAttribute = true) parameter to specify that the fx:controller attribute in the FXML file should be ignored (https://github.com/edvin/tornadofx/issues/179) 
-- 
+- FXML files can now contain `fx:controller` attribute to help with content assist. It will be ignored by the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
+
 ## [1.5.5]
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
