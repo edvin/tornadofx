@@ -194,34 +194,22 @@ fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
 }
 
 operator fun <T> ObservableValue<T>.getValue(thisRef: Any, property: KProperty<*>) = value
-operator fun <T> Property<T?>.setValue(thisRef: Any, property: KProperty<*>, value: T?) {
-    this.value = value
-}
+operator fun <T> Property<T?>.setValue(thisRef: Any, property: KProperty<*>, value: T?) = setValue(value)
 
-operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>): Double = value.toDouble()
-operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) {
-    this.value = value
-}
+operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>) = get()
+operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) = set(value)
 
-operator fun ObservableFloatValue.getValue(thisRef: Any, property: KProperty<*>): Float = value.toFloat()
-operator fun FloatProperty.setValue(thisRef: Any, property: KProperty<*>, value: Float) {
-    this.value = value
-}
+operator fun ObservableFloatValue.getValue(thisRef: Any, property: KProperty<*>) = get()
+operator fun FloatProperty.setValue(thisRef: Any, property: KProperty<*>, value: Float) = set(value)
 
-operator fun ObservableLongValue.getValue(thisRef: Any, property: KProperty<*>): Long = value.toLong()
-operator fun LongProperty.setValue(thisRef: Any, property: KProperty<*>, value: Long) {
-    this.value = value
-}
+operator fun ObservableLongValue.getValue(thisRef: Any, property: KProperty<*>) = get()
+operator fun LongProperty.setValue(thisRef: Any, property: KProperty<*>, value: Long)  = set(value)
 
-operator fun ObservableIntegerValue.getValue(thisRef: Any, property: KProperty<*>): Int = value.toInt()
-operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, value: Int) {
-    this.value = value
-}
+operator fun ObservableIntegerValue.getValue(thisRef: Any, property: KProperty<*>) = get()
+operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, value: Int) = set(value)
 
-operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>): Boolean = value
-operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) {
-    this.value = value
-}
+operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>) = get()
+operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) = set(value)
 
 fun <T> ObservableValue<T>.integerBinding(vararg dependencies: Observable, op: (T?) -> Int): IntegerBinding
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
