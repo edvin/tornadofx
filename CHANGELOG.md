@@ -7,10 +7,10 @@ All notable changes to this project will be documented in this file.
 - TableView SmartResize Policy (https://github.com/edvin/tornadofx/wiki/TableView-SmartResize)
 - `dynamicContent` builder that will replace content in a Node when an observable value changes
 - Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
-- DataGrid component
+- DataGrid component 
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)
-- TableView support for expanded row node (`rowExpander { // create node to show on expand here }`)
+- TableView support for expanded row node (`rowExpander { // create node to show on expand here }`) (https://edvin.gitbooks.io/tornadofx-guide/content/5.%20Builders%20II%20-%20Data%20Controls.html#row-expanders) 
 - Fixed bug where image URLs defined in CSS were rendered wrong
 - Added support for skipping snake-casing in CSS rules (names still have to be valid css identifiers)
 - Fixed bug where CSS selectors defined with strings would have their capitalization changed (`".testThing"` => `".test-thing"`, `cssclass("testThing")` => `.test-thing`)
