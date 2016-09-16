@@ -1,10 +1,14 @@
 package tornadofx.tests
 
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.embed.swing.JFXPanel
+import javafx.scene.control.Label
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.stage.Stage
+import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
@@ -104,6 +108,26 @@ open class ViewModelTests {
         }
         treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
+    }
+
+    @Test
+    fun bindNullableProperty() {
+
+        class MyClass {
+            var value by property<Int?>(null)
+            fun valueProperty() = getProperty(MyClass::value)
+        }
+
+        val obj = MyClass()
+
+        val model = object : ViewModel() {
+            val value = bind { obj.valueProperty() }
+        }
+
+        model.value.value = 42
+        assertEquals(obj.value, null)
+        model.commit()
+        assertEquals(obj.value, 42)
     }
 }
 
