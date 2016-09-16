@@ -6,23 +6,19 @@ import tornadofx.*
 class FormApp : App(FormView::class)
 
 class FormView : View("My Form") {
-    override val root = vbox {
-        label("Hello")
+    override val root = form {
+        fieldset("FieldSet") {
+            labelPosition = Orientation.VERTICAL
 
-        form {
-            fieldset("FieldSet") {
-                labelPosition = Orientation.VERTICAL
-
-                field("Field 1") {
-                    textarea() {
-                        prefRowCount = 2
-                    }
+            field("Field 1") {
+                textarea() {
+                    prefRowCount = 2
                 }
+            }
 
-                field("Field 2") {
-                    textarea() {
-                        prefRowCount = 10
-                    }
+            field("Field 2") {
+                textarea() {
+                    prefRowCount = 10
                 }
             }
         }
