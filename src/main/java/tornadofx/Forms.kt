@@ -244,7 +244,7 @@ class Field(text: String? = null) : Pane() {
 
                 labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), labelHeight)
 
-                val restHeight = labelHeight - contentHeight
+                val restHeight = contentHeight - labelHeight
 
                 inputContainer.resizeRelocate(contentX, contentY + labelHeight, contentWidth, restHeight)
             } else {

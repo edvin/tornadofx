@@ -26,7 +26,9 @@ import javafx.util.converter.DoubleStringConverter
 class LayoutDebugger : Fragment() {
     override val root = BorderPane()
 
-    lateinit var currentScene: Scene
+    lateinit var debuggingScene: Scene
+    private lateinit var debuggingRoot: Parent
+
     val hoveredNode = SimpleObjectProperty<Node>()
     val selectedNode = SimpleObjectProperty<Node>()
     var nodeTree: TreeView<Node> by singleAssign()
@@ -106,16 +108,14 @@ class LayoutDebugger : Fragment() {
     }
 
     override fun onDock() {
-        // Avoid duplicate ondock, since we redock inside this function
-        if (currentScene.root == stackpane) return
-
         // Prevent the debugger from being reloaded
         Platform.runLater {
             modalStage!!.scene.properties["javafx.layoutdebugger"] = this
         }
 
-        with(currentScene) {
-            title = "Layout Debugger [%s]".format(this)
+        title = "Layout Debugger [%s]".format(debuggingScene)
+
+        with(debuggingScene) {
             // Prevent the scene from being reloaded while the debugger is running
             properties["javafx.layoutdebugger"] = this@LayoutDebugger
             addEventFilter(MouseEvent.MOUSE_EXITED, sceneExitedHandler)
@@ -125,19 +125,18 @@ class LayoutDebugger : Fragment() {
 
         // Overlay has same size as scene
         overlay.widthProperty().unbind()
-        overlay.widthProperty().bind(currentScene.widthProperty())
-        overlay.heightProperty().bind(currentScene.heightProperty())
+        overlay.widthProperty().bind(debuggingScene.widthProperty())
+        overlay.heightProperty().bind(debuggingScene.heightProperty())
 
         // Stackpane becomes the new scene root and contains the currentScene.root and our overlay
-        //stackpane.scene?.root = null
-        val newSceneRoot = currentScene.root
-        currentScene.root = stackpane
-        stackpane += newSceneRoot
+        debuggingRoot = debuggingScene.root
+        stackpane += debuggingRoot
+        debuggingScene.root = stackpane
         overlay.toFront()
 
         // Populate the node tree
         with(nodeTree) {
-            root = NodeTreeItem(newSceneRoot)
+            root = NodeTreeItem(debuggingRoot)
             populate(
                     itemFactory = {
                         NodeTreeItem(it)
@@ -183,16 +182,16 @@ class LayoutDebugger : Fragment() {
     }
 
     override fun onUndock() {
-        val originalSceneRoot = stackpane.children.removeAt(0)
-        currentScene.root = originalSceneRoot as Parent
-        currentScene.properties["javafx.layoutdebugger"] = null
-        currentScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
-        currentScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
+        debuggingRoot.removeFromParent()
+        debuggingScene.root = debuggingRoot
+        debuggingScene.properties["javafx.layoutdebugger"] = null
+        debuggingScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
+        debuggingScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
     }
 
     companion object {
         fun debug(scene: Scene) = with(find<LayoutDebugger>()) {
-            currentScene = scene
+            debuggingScene = scene
             openModal(modality = Modality.NONE)
         }
     }
