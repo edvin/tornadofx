@@ -1,7 +1,6 @@
 package tornadofx
 
 import javafx.beans.property.Property
-import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
