@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
@@ -78,7 +79,14 @@ fun EventTarget.text(observable: ObservableValue<String>, op: (Text.() -> Unit)?
 }
 
 fun EventTarget.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
+
 fun EventTarget.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield().apply {
+    bind(property)
+    op?.invoke(this)
+}
+
+@JvmName("textfieldNumber")
+fun EventTarget.textfield(property: Property<Number>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     bind(property)
     op?.invoke(this)
 }
