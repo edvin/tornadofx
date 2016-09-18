@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Updated the `ViewTransition` code to be more flexible (including now working with any `Node`, not just `View`s and `Fragment`s).
     - Also added several new built in `ViewTransition`s
 - Added new `Node` animation helper functions for various transformations
-- FXML files can now contain `fx:controller` attribute to help with content assist. It will be ignored by the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
+- FXML files can now contain `fx:controller` attribute to help with content assist, if `hasControllerAttribute = true` is passwd to the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
 - Fix exception in chooseFile when user cancels in Multi mode
 
 ## [1.5.5]
