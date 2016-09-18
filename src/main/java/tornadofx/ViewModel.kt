@@ -117,11 +117,11 @@ open class ViewModel {
      * @param force Force flush even if validation fails
      */
     fun commit(force: Boolean = false, focusFirstError: Boolean = true, successFn: (() -> Unit)? = null): Boolean {
-        var commited = true
+        var committed = true
 
         runAndWait {
             if (!validate(focusFirstError) && !force) {
-                commited = false
+                committed = false
             } else {
                 for ((facade, propExtractor) in properties)
                     propExtractor().value = facade.value
@@ -130,8 +130,8 @@ open class ViewModel {
             }
         }
 
-        if (commited) successFn?.invoke()
-        return commited
+        if (committed) successFn?.invoke()
+        return committed
     }
 
     fun rollback() {
