@@ -113,6 +113,14 @@ open class ViewModel {
     fun validate(focusFirstError: Boolean = true): Boolean = validationContext.validate(focusFirstError)
 
     /**
+     * This function is called after a successful commit, right before the optional successFn call sent to the commit
+     * call is invoked.
+     */
+    open fun onCommit() {
+
+    }
+
+    /**
      * Perform validation and flush the values into the source object if validation passes.
      * @param force Force flush even if validation fails
      */
@@ -130,7 +138,10 @@ open class ViewModel {
             }
         }
 
-        if (committed) successFn?.invoke()
+        if (committed) {
+            onCommit()
+            successFn?.invoke()
+        }
         return committed
     }
 
