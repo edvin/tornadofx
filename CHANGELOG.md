@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.6-SNAPSHOT]
 
+- ViewModel.onCommit() function that will be called after a successful commit
 - TableView SmartResize Policy (https://github.com/edvin/tornadofx/wiki/TableView-SmartResize)
 - `dynamicContent` builder that will replace content in a Node when an observable value changes
 - Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
