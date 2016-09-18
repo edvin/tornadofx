@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - `dynamicContent` builder that will replace content in a Node when an observable value changes
 - Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
 - DataGrid component 
+- TableColumn `cellCache` provider to create a cached graphic node per item
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)
 - TableView support for expanded row node (`rowExpander { // create node to show on expand here }`) (https://edvin.gitbooks.io/tornadofx-guide/content/5.%20Builders%20II%20-%20Data%20Controls.html#row-expanders) 
@@ -19,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Added new `Node` animation helper functions for various transformations
 - FXML files can now contain `fx:controller` attribute to help with content assist. It will be ignored by the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
 - Fix exception in chooseFile when user cancels in Multi mode
-- 
+
 ## [1.5.5]
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)

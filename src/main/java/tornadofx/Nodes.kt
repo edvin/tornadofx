@@ -316,7 +316,29 @@ val <T> ComboBox<T>.selectedItem: T?
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
+class TableColumnCellCache<S, T>(private val cacheProvider: TableCell<S, T>.(T) -> Node) {
+    private val store = mutableMapOf<T, Node>()
+    fun getOrCreateNode(cell: TableCell<S, T>, value: T) = store.getOrPut(value, { cacheProvider(cell, value) })
+}
+
+/**
+ * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
+ *
+ * To support this feature, a custom cellFactory is automatically installed, unless an already
+ * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
+ * how to retrieve cached values.
+ */
+fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: TableCell<S, T>.(T) -> Node) {
+    properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
+    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.cellCacheCapable"] != true) {
+        cellFormat {  }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) {
+    properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -326,6 +348,11 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)
                     text = null
                     graphic = null
                 } else {
+                    // Consult the cell cache before calling the formatter function
+                    val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
+                    if (cellCache is TableColumnCellCache<*, *>) {
+                        graphic = (cellCache as TableColumnCellCache<S, T>).getOrCreateNode(this, item)
+                    }
                     formatter(this, item)
                 }
             }
@@ -333,7 +360,7 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)
     }
 }
 
-fun <T> ComboBox<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
+fun <T> ComboBox<T>.cellFormat(formatter: ListCell<T>.(T) -> Unit) {
     cellFactory = Callback { listView: ListView<T> ->
         object : ListCell<T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -350,7 +377,7 @@ fun <T> ComboBox<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
     }
 }
 
-fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Unit)) {
+fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Unit) {
     val originalFactory = cellFactory
 
     cellFactory = Callback { column: TableColumn<S, T> ->
