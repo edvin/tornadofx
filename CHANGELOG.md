@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.6-SNAPSHOT]
+## [1.5.6] - 2016-09-19
 
 - ViewModel.onCommit() function that will be called after a successful commit
 - TableView SmartResize Policy (https://github.com/edvin/tornadofx/wiki/TableView-SmartResize)
@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - FXML files can now contain `fx:controller` attribute to help with content assist, if `hasControllerAttribute = true` is passwd to the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
 - Fix exception in chooseFile when user cancels in Multi mode
 
-## [1.5.5]
+## [1.5.5] - 2016-08-19
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
 - Default constructor was re-added to `tornadofx.App` to support `Run View` in IDEA Plugin
