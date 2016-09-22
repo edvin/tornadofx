@@ -17,9 +17,9 @@ class PropertiesTest {
         d.onChange { assert((it + 7) is Double) }
 
         d.value = 100.0
-        d.value = null
         d.value = Double.POSITIVE_INFINITY
         d.value = Double.NaN
+        d.value = null
     }
 
     @Test
