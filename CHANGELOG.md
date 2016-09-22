@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [1.5.7-SNAPSHOT]
 
 - ListView `cellCache` provider to create a cached graphic node per item
- 
+- Kotlin 1.0.4
+
 ## [1.5.6] - 2016-09-19
 
 - ViewModel.onCommit() function that will be called after a successful commit
