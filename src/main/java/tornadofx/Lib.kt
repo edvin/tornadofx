@@ -1,7 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.value.ObservableValue
+import javafx.beans.value.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
@@ -124,7 +124,9 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
-fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) : ObservableValue<T> {
-    addListener { observable, oldValue, newValue -> op(newValue) }
-    return this
-}
+fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
+fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new) } }
+fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op(new.toInt()) } }
+fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op(new.toLong()) } }
+fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op(new.toFloat()) } }
+fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }
