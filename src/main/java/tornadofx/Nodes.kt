@@ -441,6 +441,7 @@ fun <T> ListView<T>.cellCache(cachedGraphicProvider: ListCell<T>.(T) -> Node) {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
     properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback {
@@ -460,7 +461,7 @@ fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
                 } else {
                     // Consult the cell cache before calling the formatter function
                     val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
-                    if (cellCache is TableColumnCellCache<*, *>) {
+                    if (cellCache is ListCellCache<*>) {
                         graphic = (cellCache as ListCellCache<T>).getOrCreateNode(this, item)
                     }
                     formatter(this, item)
