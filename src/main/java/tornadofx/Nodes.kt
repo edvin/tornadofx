@@ -321,6 +321,11 @@ class TableColumnCellCache<S, T>(private val cacheProvider: TableCell<S, T>.(T) 
     fun getOrCreateNode(cell: TableCell<S, T>, value: T) = store.getOrPut(value, { cacheProvider(cell, value) })
 }
 
+class ListCellCache<T>(private val cacheProvider: ListCell<T>.(T) -> Node) {
+    private val store = mutableMapOf<T, Node>()
+    fun getOrCreateNode(cell: ListCell<T>, value: T) = store.getOrPut(value, { cacheProvider(cell, value) })
+}
+
 /**
  * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
  *
@@ -421,7 +426,23 @@ fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) 
     }
 }
 
+/**
+ * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
+ *
+ * To support this feature, a custom cellFactory is automatically installed, unless an already
+ * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
+ * how to retrieve cached values.
+ */
+fun <T> ListView<T>.cellCache(cachedGraphicProvider: ListCell<T>.(T) -> Node) {
+    properties["tornadofx.cellCache"] = tornadofx.ListCellCache(cachedGraphicProvider)
+    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.cellCacheCapable"] != true) {
+        cellFormat {  }
+    }
+}
+
 fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
+    properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback {
         object : ListCell<T>() {
             override fun updateItem(item: T, empty: Boolean) {
@@ -437,6 +458,11 @@ fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
                         value = null
                     }
                 } else {
+                    // Consult the cell cache before calling the formatter function
+                    val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
+                    if (cellCache is TableColumnCellCache<*, *>) {
+                        graphic = (cellCache as ListCellCache<T>).getOrCreateNode(this, item)
+                    }
                     formatter(this, item)
                 }
             }
