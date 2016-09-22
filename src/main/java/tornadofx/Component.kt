@@ -119,7 +119,11 @@ abstract class Component {
     }
 
     inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
+        var injected: T? = null
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (injected == null) injected = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
+            return injected!!
+        }
     }
 
     val primaryStage: Stage get() = FX.primaryStage

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - ListView `cellCache` provider to create a cached graphic node per item
 - Kotlin 1.0.4
+- The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
 
 ## [1.5.6] - 2016-09-19
 
