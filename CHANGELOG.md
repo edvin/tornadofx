@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Kotlin 1.0.4
 - The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
 - The `fxid()` delegate can now inject any type, not just `EventTarget` subclasses
+- Added non-null `onChange` overrides for primitive `ObservableValue`s
 
 ## [1.5.6] - 2016-09-19
 
