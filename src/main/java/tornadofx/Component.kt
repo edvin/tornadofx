@@ -378,7 +378,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
-    inline fun <reified T : EventTarget> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
+    inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
             val value = thisRef.fxmlLoader!!.namespace[key]
