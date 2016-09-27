@@ -180,6 +180,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val treeTableView by cssclass()
         val treeView by cssclass()
         val webView by cssclass()
+        val text by cssclass()
 
         // Style classes used by Form Builder
         val form by cssclass()
