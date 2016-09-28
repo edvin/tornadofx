@@ -203,7 +203,7 @@ fun Node.fade(time: Duration, opacity: Double,
               op: (FadeTransition.() -> Unit)? = null): FadeTransition {
     val target: Double
     if (reversed) {
-        target = opacity
+        target = this.opacity
         this.opacity = opacity
     } else {
         target = opacity
