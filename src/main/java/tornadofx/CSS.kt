@@ -264,66 +264,62 @@ open class PropertyHolder {
     companion object {
         val selectionScope = ThreadLocal<CssSelectionBlock>()
         fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
-        fun <T> toCss(value: T): String {
-            when (value) {
-                null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
-                is MultiValue<*> -> return value.elements.joinToString { toCss(it) }
-                is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
-                is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
-                is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
-                is Cursor -> return if (value is ImageCursor) {
-                    value.image.javaClass.getDeclaredField("url").let {
-                        it.isAccessible = true
-                        it.get(value.image).toString()
-                    }
-                } else {
-                    value.toString()
+        fun <T> toCss(value: T): String = when (value) {
+            null -> ""  // This should only happen in a container (such as box(), Array<>(), Pair())
+            is MultiValue<*> -> value.elements.joinToString { toCss(it) }
+            is CssBox<*> -> "${toCss(value.top)} ${toCss(value.right)} ${toCss(value.bottom)} ${toCss(value.left)}"
+            is FontWeight -> "${value.weight}"  // Needs to come before `is Enum<*>`
+            is Enum<*> -> value.toString().toLowerCase().replace("_", "-")
+            is Font -> "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
+            is Cursor -> if (value is ImageCursor) {
+                value.image.javaClass.getDeclaredField("url").let {
+                    it.isAccessible = true
+                    it.get(value.image).toString()
                 }
-                is URI -> return "url(\"${value.toASCIIString()}\")"
-                is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
-                        "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
-                is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
-                    append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
-                    append(" ")
-                    append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
-                }
-                is BorderStrokeStyle -> return when (value) {
-                    BorderStrokeStyle.NONE -> "none"
-                    BorderStrokeStyle.DASHED -> "dashed"
-                    BorderStrokeStyle.DOTTED -> "dotted"
-                    BorderStrokeStyle.SOLID -> "solid"
-                    else -> buildString {
-                        // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
-                        append("segments(${value.dashArray.joinToString(separator = " ")}) ")
-                        append(toCss(value.type))
-                        append(" line-join ${toCss(value.lineJoin)} ")
-                        if (value.lineJoin == StrokeLineJoin.MITER) {
-                            append(value.miterLimit)
-                        }
-                        append(" line-cap ${toCss(value.lineCap)}")
-                    }
-                }
-                is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
-                is Array<*> -> return value.joinToString { toCss(it) }
-                is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
-                is KClass<*> -> return "\"${value.qualifiedName}\""
-                is CssProperty<*> -> return value.name
-                is Raw -> return value.name
-                is String -> return "\"$value\""
-                is Effect -> {
-                    // JavaFX currently only supports DropShadow and InnerShadow in CSS
-                    when (value) {
-                        is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                                "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
-                        is InnerShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                                "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
-                        else -> return "none"
-                    }
-                }
-                is Color -> return value.css
-                is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
+            } else {
+                value.toString()
             }
-            return value.toString()
+            is URI -> "url(\"${value.toASCIIString()}\")"
+            is BackgroundPosition -> "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
+                    "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
+            is BackgroundSize -> if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
+                append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
+                append(" ")
+                append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
+            }
+            is BorderStrokeStyle -> when (value) {
+                BorderStrokeStyle.NONE -> "none"
+                BorderStrokeStyle.DASHED -> "dashed"
+                BorderStrokeStyle.DOTTED -> "dotted"
+                BorderStrokeStyle.SOLID -> "solid"
+                else -> buildString {
+                    // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
+                    append("segments(${value.dashArray.joinToString(separator = " ")}) ")
+                    append(toCss(value.type))
+                    append(" line-join ${toCss(value.lineJoin)} ")
+                    if (value.lineJoin == StrokeLineJoin.MITER) {
+                        append(value.miterLimit)
+                    }
+                    append(" line-cap ${toCss(value.lineCap)}")
+                }
+            }
+            is BorderImageSlice -> toCss(value.widths) + if (value.filled) " fill" else ""
+            is Array<*> -> value.joinToString { toCss(it) }
+            is Pair<*, *> -> "${toCss(value.first)} ${toCss(value.second)}"
+            is KClass<*> -> "\"${value.qualifiedName}\""
+            is CssProperty<*> -> value.name
+            is Raw -> value.name
+            is String -> "\"$value\""
+            is Effect -> when (value) { // JavaFX currently only supports DropShadow and InnerShadow in CSS
+                is DropShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
+                is InnerShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
+                else -> "none"
+            }
+            is Color -> value.css
+            is Paint -> value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
+            else -> value.toString()
         }
     }
 
@@ -913,11 +909,11 @@ val Color.css: String get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toIn
 
 internal fun String.camelToSnake() = (get(0).toLowerCase() + substring(1)).replace(CssRule.upperCaseRegex, "-$1").toLowerCase()
 internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
-internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
+internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map(String::toRuleSet).toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
-    val rules = CssRule.subRuleRegex.findAll(this).map { match ->
-        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3], false), CssSubRule.Relation.of(match.groupValues[1]))
-    }.toList()
+    val rules = CssRule.subRuleRegex.findAll(this)
+            .map { CssSubRule(CssRule(it.groupValues[2], it.groupValues[3], false), CssSubRule.Relation.of(it.groupValues[1])) }
+            .toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
@@ -976,9 +972,7 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-open class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T) {
-    override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
-}
+data class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T)
 
 fun c(colorString: String, opacity: Double = 1.0): Color = try {
     Color.web(colorString, opacity)
