@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
 - The `fxid()` delegate can now inject any type, not just `EventTarget` subclasses
 - Added non-null `onChange` overrides for primitive `ObservableValue`s
+- Fixed bug with `Node.fade` reversed animations (was also affecting `ViewTransitions`)
 
 ## [1.5.6] - 2016-09-19
 
