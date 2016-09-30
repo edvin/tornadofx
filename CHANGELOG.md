@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- App MainView parameter can now be a `Fragment` as well as `View`
 - ListView `cellCache` provider to create a cached graphic node per item
 - Kotlin 1.0.4
 - The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup

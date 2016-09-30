@@ -9,13 +9,13 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
-    constructor(icon: Image, primaryView: KClass<out View>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
+open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+    constructor(icon: Image, primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
         addStageIcon(icon)
     }
     constructor() : this(null)
 
-    open val primaryView: KClass<out View> = primaryView ?: DeterminedByParameter::class
+    open val primaryView: KClass<out UIComponent> = primaryView ?: DeterminedByParameter::class
 
     init {
         Stylesheet.importServiceLoadedStylesheets()
@@ -42,14 +42,14 @@ open class App(primaryView: KClass<out View>? = null, vararg stylesheet: KClass<
         }
     }
 
-    open fun createPrimaryScene(view: View) = Scene(view.root)
+    open fun createPrimaryScene(view: UIComponent) = Scene(view.root)
 
     @Suppress("UNCHECKED_CAST")
-    private fun determinePrimaryView(): KClass<out View> {
+    private fun determinePrimaryView(): KClass<out UIComponent> {
         if (primaryView == DeterminedByParameter::class) {
             val viewClassName = parameters.named?.get("view-class") ?: throw IllegalArgumentException("No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View")
             val viewClass = Class.forName(viewClassName)
-            if (View::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out View>
+            if (UIComponent::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out UIComponent>
             throw IllegalArgumentException("Class specified by --class-name is not a subclass of tornadofx.View")
          } else {
             return primaryView
