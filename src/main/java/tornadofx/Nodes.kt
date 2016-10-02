@@ -450,7 +450,9 @@ fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Uni
     }
 }
 
-enum class EditEventType { StartEdit, CommitEdit, CancelEdit }
+enum class EditEventType(val editing: Boolean) {
+    StartEdit(true), CommitEdit(false), CancelEdit(false)
+}
 
 @Suppress("UNCHECKED_CAST")
 fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
