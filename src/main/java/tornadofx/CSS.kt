@@ -932,6 +932,12 @@ fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
 }
 
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
+    toggleClass(cssClass, observablePredicate.value ?: false)
+    observablePredicate.onChange {
+        toggleClass(cssClass, it ?: false)
+    }
+}
 
 fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }

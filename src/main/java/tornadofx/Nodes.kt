@@ -316,14 +316,14 @@ val <T> ComboBox<T>.selectedItem: T?
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-class TableColumnCellCache<S, T>(private val cacheProvider: TableCell<S, T>.(T) -> Node) {
+class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(cell: TableCell<S, T>, value: T) = store.getOrPut(value, { cacheProvider(cell, value) })
+    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
 }
 
-class ListCellCache<T>(private val cacheProvider: ListCell<T>.(T) -> Node) {
+class ListCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(cell: ListCell<T>, value: T) = store.getOrPut(value, { cacheProvider(cell, value) })
+    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
 }
 
 /**
@@ -333,7 +333,7 @@ class ListCellCache<T>(private val cacheProvider: ListCell<T>.(T) -> Node) {
  * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
  * how to retrieve cached values.
  */
-fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: TableCell<S, T>.(T) -> Node) {
+fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
     properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true) {
@@ -355,8 +355,8 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) 
                 } else {
                     // Consult the cell cache before calling the formatter function
                     val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
-                    if (cellCache is TableColumnCellCache<*, *>) {
-                        graphic = (cellCache as TableColumnCellCache<S, T>).getOrCreateNode(this, item)
+                    if (cellCache is TableColumnCellCache<*>) {
+                        graphic = (cellCache as TableColumnCellCache<T>).getOrCreateNode(item)
                     }
                     formatter(this, item)
                 }
@@ -433,8 +433,8 @@ fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) 
  * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
  * how to retrieve cached values.
  */
-fun <T> ListView<T>.cellCache(cachedGraphicProvider: ListCell<T>.(T) -> Node) {
-    properties["tornadofx.cellCache"] = tornadofx.ListCellCache(cachedGraphicProvider)
+fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
+    properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true) {
         cellFormat {  }
@@ -462,7 +462,7 @@ fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
                     // Consult the cell cache before calling the formatter function
                     val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
                     if (cellCache is ListCellCache<*>) {
-                        graphic = (cellCache as ListCellCache<T>).getOrCreateNode(this, item)
+                        graphic = (cellCache as ListCellCache<T>).getOrCreateNode(item)
                     }
                     formatter(this, item)
                 }
