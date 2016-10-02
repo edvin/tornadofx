@@ -1,13 +1,18 @@
 package tornadofx.tests
 
+import javafx.scene.control.Label
 import tornadofx.*
 
-class Item(val value: String)
+class Item(var value: String)
 
 class ItemFragment : Fragment() {
     override val root = hbox { }
+    var label: Label by singleAssign()
+    lateinit var item: Item
+
     fun load(item: Item) {
-        root.label(item.value)
+        this.item = item
+        label = root.label(item.value)
     }
 }
 

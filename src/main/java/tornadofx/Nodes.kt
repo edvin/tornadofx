@@ -441,11 +441,42 @@ fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
     }
 }
 
+fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
+    isEditable = true
+    properties["tornadofx.editSupport"] = eventListener
+    // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.editCapable"] != true) {
+        cellFormat { }
+    }
+}
+
+enum class EditEventType { StartEdit, CommitEdit, CancelEdit }
+
 @Suppress("UNCHECKED_CAST")
 fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
     properties["tornadofx.cellCacheCapable"] = true
+    properties["tornadofx.editCapable"] = true
+
     cellFactory = Callback {
         object : ListCell<T>() {
+            override fun startEdit() {
+                super.startEdit()
+                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
+                if (editSupport != null) editSupport(this, EditEventType.StartEdit, null)
+            }
+
+            override fun commitEdit(newValue: T) {
+                super.commitEdit(newValue)
+                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
+                if (editSupport != null) editSupport(this, EditEventType.CommitEdit, newValue)
+            }
+
+            override fun cancelEdit() {
+                super.cancelEdit()
+                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
+                if (editSupport != null) editSupport(this, EditEventType.CancelEdit, null)
+            }
+
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
@@ -817,7 +848,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
+inline fun <reified T : UIComponent> Node.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children
@@ -958,4 +989,15 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTr
     } else {
         return false
     }
+}
+
+
+fun Node.hide() {
+    isVisible = false
+    isManaged = false
+}
+
+fun Node.show() {
+    isVisible = true
+    isManaged = true
 }

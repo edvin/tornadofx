@@ -279,7 +279,7 @@ fun EventTarget.addChildIfPossible(node: Node) {
             tabs.add(tab)
         }
         is DataGrid<*> -> { }
-        else -> getChildList()?.add(node)
+        else -> getChildList()?.apply { if (!contains(node)) add(node) }
     }
 }
 

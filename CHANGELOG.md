@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- Node.hide and Node.show
 - Node.toggleClass(class, observableBooleanValue)
 - Removed cell as `this` for `cellCache`. The cell could change, so taking it into account was a mistake.
 - App MainView parameter can now be a `Fragment` as well as `View`
