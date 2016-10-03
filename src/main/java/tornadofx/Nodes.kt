@@ -307,9 +307,6 @@ fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeTableView<T>.selectFirst() = selectionModel.selectFirst()
 
-val <T> ListView<T>.selectedItem: T?
-    get() = selectionModel.selectedItem
-
 val <T> ComboBox<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
@@ -317,11 +314,6 @@ fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
 class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
-    private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
-}
-
-class ListCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
     fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
 }
@@ -366,19 +358,9 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) 
 }
 
 fun <T> ComboBox<T>.cellFormat(formatter: ListCell<T>.(T) -> Unit) {
-    cellFactory = Callback { listView: ListView<T> ->
-        object : ListCell<T>() {
-            override fun updateItem(item: T, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    text = null
-                    graphic = null
-                } else {
-                    formatter(this, item)
-                }
-            }
-        }
+    cellFactory = Callback {
+        it.properties["tornadofx.cellFormat"] = formatter
+        SmartListCell(it)
     }
 }
 
@@ -426,82 +408,8 @@ fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) 
     }
 }
 
-/**
- * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
- *
- * To support this feature, a custom cellFactory is automatically installed, unless an already
- * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
- * how to retrieve cached values.
- */
-fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
-    properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
-    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
-    if (properties["tornadofx.cellCacheCapable"] != true) {
-        cellFormat {  }
-    }
-}
-
-fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
-    isEditable = true
-    properties["tornadofx.editSupport"] = eventListener
-    // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
-    if (properties["tornadofx.editCapable"] != true) {
-        cellFormat { }
-    }
-}
-
 enum class EditEventType(val editing: Boolean) {
     StartEdit(true), CommitEdit(false), CancelEdit(false)
-}
-
-@Suppress("UNCHECKED_CAST")
-fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
-    properties["tornadofx.cellCacheCapable"] = true
-    properties["tornadofx.editCapable"] = true
-
-    cellFactory = Callback {
-        object : ListCell<T>() {
-            override fun startEdit() {
-                super.startEdit()
-                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
-                if (editSupport != null) editSupport(this, EditEventType.StartEdit, null)
-            }
-
-            override fun commitEdit(newValue: T) {
-                super.commitEdit(newValue)
-                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
-                if (editSupport != null) editSupport(this, EditEventType.CommitEdit, newValue)
-            }
-
-            override fun cancelEdit() {
-                super.cancelEdit()
-                val editSupport = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
-                if (editSupport != null) editSupport(this, EditEventType.CancelEdit, null)
-            }
-
-            override fun updateItem(item: T, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    with(textProperty()) {
-                        if (isBound) unbind()
-                        value = null
-                    }
-                    with(graphicProperty()) {
-                        if (isBound) unbind()
-                        value = null
-                    }
-                } else {
-                    // Consult the cell cache before calling the formatter function
-                    val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
-                    if (cellCache is ListCellCache<*>) {
-                        graphic = (cellCache as ListCellCache<T>).getOrCreateNode(item)
-                    }
-                    formatter(this, item)
-                }
-            }
-        }
-    }
 }
 
 /**
@@ -559,9 +467,6 @@ fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
 fun <T> TableView<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
-
 fun <T> ComboBox<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
@@ -579,37 +484,11 @@ fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     })
 }
 
-fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
-        if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
-            action(selectedItem!!)
-    })
-}
-
 fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
             action(selectedValue!!)
     })
-}
-
-/**
- * Execute action when the enter key is pressed or the mouse is clicked
-
- * @param clickCount The number of mouse clicks to trigger the action
- * *
- * @param action The runnable to execute on select
- */
-fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
-    addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-        if (event.clickCount == clickCount && selectedItem != null)
-            action(selectedItem!!)
-    }
-
-    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
-        if (event.code == KeyCode.ENTER && !event.isMetaDown && selectedItem != null)
-            action(selectedItem!!)
-    }
 }
 
 /**
