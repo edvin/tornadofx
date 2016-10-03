@@ -1,18 +1,18 @@
 package tornadofx.tests
 
-import javafx.scene.control.Label
+import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 
 class Item(var value: String)
 
 class MyItemFragment : ItemFragment<Item>() {
-    override val root = hbox { }
-    var label: Label by singleAssign()
-    lateinit var item: Item
+    val itemValue = SimpleStringProperty()
+    override val root = hbox {
+        label(itemValue)
+    }
 
     override fun updateItem(item: Item) {
-        this.item = item
-        label = root.label(item.value)
+        itemValue.set(item.value)
     }
 }
 
