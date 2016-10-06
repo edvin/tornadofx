@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.control.ListCell
@@ -75,12 +77,14 @@ class ListCellCache<T>(private val cacheProvider: (T) -> Node) {
     fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
 }
 
-/**
- * A specialized version of Fragment that can receieve an item of the specified type.
- * This is useful for Fragments used with Cell implementations.
- */
 abstract class ItemFragment<T> : Fragment() {
-    abstract fun updateItem(item: T)
+    val itemProperty: ObjectProperty<T> = SimpleObjectProperty()
+    var item by itemProperty
+}
+
+abstract class ListCellItemFragment<T> : ItemFragment<T>() {
+    val cellProperty: ObjectProperty<ListCell<T>> = SimpleObjectProperty()
+    var cell by cellProperty
 }
 
 fun <T, F: ItemFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
@@ -117,13 +121,6 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
         editSupport?.invoke(this, EditEventType.CancelEdit, null)
     }
 
-    /**
-     * Override to update the cell when an item is available. If this cell does not represent
-     * and item at render time, both text and graphic will automatically be empty.
-     */
-    open fun updateItem(item: T) {
-    }
-
     override fun updateItem(item: T, empty: Boolean) {
         super.updateItem(item, empty)
 
@@ -140,11 +137,12 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
             cellCache?.apply { graphic = getOrCreateNode(item) }
             cellFragment?.apply {
                 val fragment = find(this)
-                fragment.updateItem(item)
+                fragment.itemProperty.value = item
+                if (fragment is ListCellItemFragment<*>)
+                    fragment.cellProperty.value = this@SmartListCell
                 graphic = fragment.root
             }
             cellFormat?.invoke(this, item)
-            updateItem(item)
         }
     }
 

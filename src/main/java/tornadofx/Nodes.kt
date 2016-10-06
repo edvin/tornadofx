@@ -329,7 +329,7 @@ fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
     properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true) {
-        cellFormat {  }
+        cellFormat { }
     }
 }
 
@@ -387,6 +387,21 @@ fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
                     formatter(this, item)
                 }
             }
+        }
+    }
+}
+
+fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S?) -> Unit)) {
+    val originalFactory = cellFactory
+
+    if (originalFactory == null) cellFormat(decorator) else {
+        cellFactory = Callback { treeView: TreeView<S> ->
+            val cell = originalFactory.call(treeView)
+
+            cell.emptyProperty().onChange {
+                decorator(cell, cell.item)
+            }
+            cell
         }
     }
 }

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- Added TreeView.cellDecorator
 - Node.hide and Node.show
 - Node.toggleClass(class, observableBooleanValue)
 - Removed cell as `this` for `cellCache`. The cell could change, so taking it into account was a mistake.
