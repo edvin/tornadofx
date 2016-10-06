@@ -10,10 +10,6 @@ class MyItemFragment : ItemFragment<Item>() {
     override val root = hbox {
         label(itemValue)
     }
-
-    override fun updateItem(item: Item) {
-        itemValue.set(item.value)
-    }
 }
 
 class ListViewTestApp : App(ListViewTest::class)
