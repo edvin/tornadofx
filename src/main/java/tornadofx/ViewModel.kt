@@ -20,6 +20,7 @@ import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KProperty1
+import kotlin.reflect.jvm.jvmName
 
 open class ViewModel {
     val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
@@ -54,7 +55,7 @@ open class ViewModel {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(noinline op: () -> PropertyType): ResultType {
+    inline fun <PropertyType : Property<T>, reified T, ResultType : PropertyType> bind(noinline op: () -> PropertyType): ResultType {
         val prop = op()
         val value = prop.value
 
@@ -69,13 +70,13 @@ open class ViewModel {
         }
 
         if (facade == null) {
-            facade = when (T::class.javaPrimitiveType ?: T::class) {
-                Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop.name)
-                Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop.name)
-                Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop.name)
-                Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop.name)
-                Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop.name)
-                String::class -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop.name)
+            facade = when (Class.forName(T::class.jvmName)) {
+                Int::class.javaObjectType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop.name)
+                Long::class.javaObjectType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop.name)
+                Double::class.javaObjectType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop.name)
+                Float::class.javaObjectType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop.name)
+                Boolean::class.javaObjectType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop.name)
+                String::class.javaObjectType -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop.name)
                 is ObservableList<*> -> if (value != null) SimpleListProperty(this, prop.name, value as ObservableList<T>) else SimpleListProperty(this, prop.name)
                 is ObservableSet<*> -> if (value != null) SimpleSetProperty(this, prop.name, value as ObservableSet<T>) else SimpleSetProperty(this, prop.name)
                 is List<*> -> if (value != null) SimpleListProperty(this, prop.name, (value as List<T>).observable()) else SimpleListProperty(this, prop.name)
@@ -90,7 +91,7 @@ open class ViewModel {
         return facade as ResultType
     }
 
-    inline fun <reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
+    inline fun <reified T> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {

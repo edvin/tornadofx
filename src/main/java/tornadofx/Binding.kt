@@ -17,6 +17,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Callable
+import kotlin.reflect.KClass
+import kotlin.reflect.jvm.jvmName
 
 inline fun <reified T> ComboBoxBase<T>.bind(property: Property<T>, readonly: Boolean = false) =
     if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
@@ -36,19 +38,19 @@ fun CheckBox.bind(property: Property<Boolean>, readonly: Boolean = false) =
 fun Slider.bind(property: Property<Number>, readonly: Boolean = false) =
     if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
-inline fun <reified T : Any> Labeled.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
+inline fun <reified T> Labeled.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified T : Any> TitledPane.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
+inline fun <reified T> TitledPane.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified T : Any> Text.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
+inline fun <reified T> Text.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified T : Any> TextInputControl.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
+inline fun <reified T> TextInputControl.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
     bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: Property<T>, readonly: Boolean) {
+inline fun <reified T> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: Property<T>, readonly: Boolean) {
     if (stringProperty.isBound) stringProperty.unbind()
 
     if (T::class == String::class) {
@@ -80,20 +82,23 @@ inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, 
     }
 }
 
-inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
-    val converter: StringConverter<out Any>? = when (T::class.javaPrimitiveType ?: T::class) {
-        Int::class.javaPrimitiveType -> IntegerStringConverter()
-        Long::class.javaPrimitiveType -> LongStringConverter()
-        Double::class.javaPrimitiveType -> DoubleStringConverter()
-        Float::class.javaPrimitiveType -> FloatStringConverter()
-        Date::class -> DateStringConverter()
+inline fun <reified T> getDefaultConverter(): StringConverter<T>? {
+    val converter: StringConverter<out Any>? = when (Class.forName(T::class.jvmName)) {
+
+        Int::class.javaObjectType -> IntegerStringConverter()
+        Long::class.javaObjectType -> LongStringConverter()
+        Double::class.javaObjectType -> DoubleStringConverter()
+        Float::class.javaObjectType -> FloatStringConverter()
+        Date::class.javaObjectType -> DateStringConverter()
+        Boolean::class.javaObjectType -> BooleanStringConverter()
+
         BigDecimal::class -> BigDecimalStringConverter()
         BigInteger::class -> BigIntegerStringConverter()
         Number::class -> NumberStringConverter()
         LocalDate::class -> LocalDateStringConverter()
         LocalTime::class -> LocalTimeStringConverter()
         LocalDateTime::class -> LocalDateTimeStringConverter()
-        Boolean::class.javaPrimitiveType -> BooleanStringConverter() as StringConverter<T>
+
         else -> null
     }
     return if (converter != null) converter as StringConverter<T> else null

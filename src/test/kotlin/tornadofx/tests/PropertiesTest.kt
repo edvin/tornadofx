@@ -1,8 +1,14 @@
 package tornadofx.tests
 
+import com.sun.javafx.application.PlatformImpl
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.embed.swing.JFXPanel
+import javafx.scene.control.Label
+import javafx.util.StringConverter
+import javafx.util.converter.IntegerStringConverter
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -164,5 +170,44 @@ class PropertiesTest {
         property.onChange { called = true }
         property.value = "Changed"
         assertTrue(called)
+    }
+
+    @Test
+    fun bindNullableProperty() {
+        JFXPanel()  // Initialize javafx toolkit
+
+        val property = SimpleObjectProperty<String?>(null)
+
+        val label = Label().apply { bind(property) }
+
+        property.value = "Changed"
+        Assert.assertEquals("Changed", label.text)
+    }
+
+    @Test
+    fun defaultConverterForKotlinPrimitive() {
+        val converter = getDefaultConverter<Int>()
+        Assert.assertNotNull(converter)
+        Assert.assertTrue(converter is IntegerStringConverter)
+    }
+
+    @Test
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+    fun defaultConverterForJavaPrimitive() {
+        val converter = getDefaultConverter<Integer>()
+        Assert.assertNotNull(converter)
+        Assert.assertTrue(converter is IntegerStringConverter)
+    }
+
+    @Test
+    fun stringConverterWithNullableInt() {
+        JFXPanel()  // Initialize javafx toolkit
+
+        val property = SimpleObjectProperty<Int?>(null)
+
+        val label = Label().apply { bind(property) }
+
+        property.value = null
+        Assert.assertEquals("", label.text)
     }
 }
