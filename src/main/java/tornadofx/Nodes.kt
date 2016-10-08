@@ -397,10 +397,7 @@ fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S?) -> Unit)) {
     if (originalFactory == null) cellFormat(decorator) else {
         cellFactory = Callback { treeView: TreeView<S> ->
             val cell = originalFactory.call(treeView)
-
-            cell.emptyProperty().onChange {
-                decorator(cell, cell.item)
-            }
+            cell.itemProperty().onChange { decorator(cell, cell.item) }
             cell
         }
     }
