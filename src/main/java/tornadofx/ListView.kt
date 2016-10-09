@@ -82,7 +82,7 @@ abstract class ItemFragment<T> : Fragment() {
     var item by itemProperty
 }
 
-abstract class ListCellItemFragment<T> : ItemFragment<T>() {
+abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>> = SimpleObjectProperty()
     var cell by cellProperty
 }
@@ -138,7 +138,7 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
             cellFragment?.apply {
                 val fragment = find(this)
                 fragment.itemProperty.value = item
-                if (fragment is ListCellItemFragment<*>)
+                if (fragment is ListCellFragment<*>)
                     fragment.cellProperty.value = this@SmartListCell
                 graphic = fragment.root
             }
