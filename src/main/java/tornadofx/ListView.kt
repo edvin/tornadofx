@@ -90,15 +90,16 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 fun <T, F: ItemFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
-        cellFactory = Callback { SmartListCell(this@cellFragment) }
+        cellFactory = Callback { listView -> SmartListCell(listView) }
 }
 
 @Suppress("UNCHECKED_CAST")
 open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
-    val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
-    val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
-    val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
-    val cellFragment: KClass<ItemFragment<T>>? = listView.properties["tornadofx.cellFragment"] as KClass<ItemFragment<T>>?
+    private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
+    private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
+    private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
+    private var cellFragment: ItemFragment<T>? by singleAssign()
+    private var fresh = true
 
     init {
         listView.properties["tornadofx.cellFormatCapable"] = true
@@ -135,12 +136,16 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
             }
         } else {
             cellCache?.apply { graphic = getOrCreateNode(item) }
+            if (fresh) {
+                val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ItemFragment<T>>?
+                cellFragment = if (cellFragmentType != null) find(cellFragmentType) else null
+                fresh = false
+            }
             cellFragment?.apply {
-                val fragment = find(this)
-                fragment.itemProperty.value = item
-                if (fragment is ListCellFragment<*>)
-                    fragment.cellProperty.value = this@SmartListCell
-                graphic = fragment.root
+                itemProperty.value = item
+                if (this is ListCellFragment<*>)
+                    cellProperty.value = this@SmartListCell
+                graphic = root
             }
             cellFormat?.invoke(this, item)
         }
