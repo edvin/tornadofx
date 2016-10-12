@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- Mnemonic in Field labels (form -> field -> input.mnemonicTarget())
 - Added ItemFragment and ListCellFragment. Will add TableCellFragment etc shortly.
 - Added TreeView.cellDecorator
 - Node.hide and Node.show

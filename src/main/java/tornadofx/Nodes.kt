@@ -894,3 +894,10 @@ fun Node.show() {
     isVisible = true
     isManaged = true
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
+    if (parent == null) return null
+    if (parent.javaClass.kotlin == parentType) return parent as T
+    return parent!!.findParentOfType(parentType)
+}

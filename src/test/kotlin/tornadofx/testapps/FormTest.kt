@@ -10,9 +10,10 @@ class FormView : View("My Form") {
         fieldset("FieldSet") {
             labelPosition = Orientation.VERTICAL
 
-            field("Field 1") {
+            field("_Field 1") {
                 textarea() {
                     prefRowCount = 2
+                    mnemonicTarget()
                 }
             }
 

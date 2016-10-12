@@ -11,6 +11,7 @@ import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.Node
 import javafx.scene.control.Label
+import javafx.scene.control.PasswordField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
@@ -160,6 +161,17 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     companion object {
         private val HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal")
         private val VERTICAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("vertical")
+    }
+}
+
+/**
+ * Make this Node (presumably an input element) the mnemonicTarget for the field label. When the label
+ * of the field is activated, this input element will receive focus.
+ */
+fun Node.mnemonicTarget() {
+    findParentOfType(Field::class)?.apply {
+        label.isMnemonicParsing = true
+        label.labelFor = this@mnemonicTarget
     }
 }
 
