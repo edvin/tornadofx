@@ -13,6 +13,24 @@ import tornadofx.*
 open class ViewModelTests {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
+    @Test fun auto_commit() {
+        val person = Person("John", 37)
+        val model = PersonAutoModel(person)
+
+        assertEquals(person.name, "John")
+        model.name.value = "Jay"
+        assertEquals(person.name, "Jay")
+    }
+
+    @Test fun external_change() {
+        val person = Person("John", 37)
+        val model = PersonModel(person)
+
+        assertEquals(model.name.value, "John")
+        person.name = "Jay"
+        assertEquals(model.name.value, "Jay")
+    }
+
     @Test fun simple_commit() {
         val person = Person("John", 37)
         val model = PersonModel(person)
@@ -105,6 +123,10 @@ open class ViewModelTests {
         treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
     }
+}
+
+class PersonAutoModel(var person: Person) : ViewModel() {
+    val name = bind(autocommit = true) { person.nameProperty() }
 }
 
 // JavaFX Property

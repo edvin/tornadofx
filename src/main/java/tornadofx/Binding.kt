@@ -50,7 +50,6 @@ inline fun <reified T : Any> TextInputControl.bind(property: Property<T>, readon
 
 inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: Property<T>, readonly: Boolean) {
     if (stringProperty.isBound) stringProperty.unbind()
-    if (!readonly && property.isBound) property.unbind()
 
     if (T::class == String::class) {
         if (readonly)

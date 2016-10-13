@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- ViewModel detects changes to the source object and applies to the model counterpart automatically
+- ViewModel `bind(autocommit = true) { .. }` option
 - Mnemonic in Field labels (form -> field -> input.mnemonicTarget())
 - Added ItemFragment and ListCellFragment. Will add TableCellFragment etc shortly.
 - Added TreeView.cellDecorator
