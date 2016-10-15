@@ -1,5 +1,7 @@
 package tornadofx.tests
 
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeItem
@@ -12,6 +14,29 @@ import tornadofx.*
 
 open class ViewModelTests {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
+
+    @Test fun rebind_to_null_unbinds() {
+        val personProperty = SimpleObjectProperty<Person>()
+
+        val person1 = Person("John", 37)
+        val person2 = Person("Jay", 32)
+
+        val model = PersonAutoModel(null)
+        model.rebindOnChange(personProperty) {
+            model.person = it
+        }
+
+        model.name.onChange {
+            println("Person name changed to $it")
+        }
+
+        personProperty.value = person1
+        assertEquals("John", model.name.value)
+        personProperty.value = person2
+        assertEquals("Jay", model.name.value)
+        personProperty.value = null
+        assertNull(model.person)
+    }
 
     @Test fun auto_commit() {
         val person = Person("John", 37)
@@ -125,8 +150,8 @@ open class ViewModelTests {
     }
 }
 
-class PersonAutoModel(var person: Person) : ViewModel() {
-    val name = bind(autocommit = true) { person.nameProperty() }
+class PersonAutoModel(var person: Person? = null) : ViewModel() {
+    val name = bind(true) { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
 }
 
 // JavaFX Property

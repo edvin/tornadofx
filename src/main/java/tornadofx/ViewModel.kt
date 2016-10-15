@@ -22,9 +22,9 @@ import java.util.concurrent.Callable
 import kotlin.reflect.KProperty1
 
 open class ViewModel {
-    val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
+    val properties: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
-    val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<*>> = FXCollections.observableHashMap<Property<*>, ChangeListener<*>>()
+    val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
     private val dirtyStateProperty = SimpleBooleanProperty(false)
     fun dirtyStateProperty() = dirtyStateProperty
@@ -56,8 +56,8 @@ open class ViewModel {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, noinline op: () -> PropertyType): ResultType {
-        val prop = op()
+    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, noinline op: () -> PropertyType?): ResultType {
+        val prop = op() ?: SimpleObjectProperty<T>()
         val value = prop.value
 
         // Faster check where possible
@@ -91,17 +91,17 @@ open class ViewModel {
         propertyCache[facade] = prop
 
         // Listener that can track external changes for this facade
-        externalChangeListeners[facade] = ChangeListener<T> { observableValue, ov, nv ->
-            (facade as Property<*>).value = nv
+        externalChangeListeners[facade] = ChangeListener<Any> { observableValue, ov, nv ->
+            (facade as Property<Any>).value = nv
         }
 
         // Update facade when the property returned to us is changed externally
-        prop.addListener(externalChangeListeners[facade] as ChangeListener<T>)
+        prop.addListener(externalChangeListeners[facade]!!)
 
-        // Autocommit makes sure changes are written back to the underlying data model automatically. This bypasses validation.
+        // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
         if (autocommit) {
-            facade.onChange {
-                op().value = it as T?
+            facade.addListener { obs, ov, nv ->
+                properties[obs]!!.invoke()?.value = nv
             }
         }
 
@@ -112,7 +112,7 @@ open class ViewModel {
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (dirtyProperties.contains(property)) {
-            val sourceValue = properties[property]!!.invoke().value
+            val sourceValue = properties[property]!!.invoke()?.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
@@ -150,7 +150,7 @@ open class ViewModel {
                 committed = false
             } else {
                 for ((facade, propExtractor) in properties)
-                    propExtractor().value = facade.value
+                    propExtractor()?.value = facade.value
 
                 clearDirtyState()
             }
@@ -168,14 +168,16 @@ open class ViewModel {
         runAndWait {
             for ((facade, propExtractor) in properties) {
                 val prop = propExtractor()
-                // Rebind external change listener if the property returned is not the same instance
-                val oldProp = propertyCache[facade]!!
-                if (prop != oldProp) {
-                    val extListener = externalChangeListeners[facade]!!
-                    oldProp.removeListener(extListener as ChangeListener<Any>)
-                    prop.addListener(extListener)
+                // Rebind external change listener in case the source property changed
+                val oldProp = propertyCache[facade]
+                if (oldProp != prop) {
+                    val extListener = externalChangeListeners[facade] as ChangeListener<Any>
+                    oldProp?.removeListener(extListener)
+                    prop?.removeListener(extListener)
+                    prop?.addListener(extListener)
+                    propertyCache[facade] = prop
                 }
-                facade.value = prop.value
+                facade.value = prop?.value
             }
             clearDirtyState()
         }
@@ -234,7 +236,7 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
     }
 }
 
-fun <V: ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
+fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
     val prop = modelField.get(this)
     return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
 }
