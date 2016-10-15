@@ -293,7 +293,7 @@ Swap a View for another (change Scene root or embedded View)
 ```kotlin
 button("Go to next page") {
     setOnAction {
-    	replaceWith(PageTwo::class, ViewTransition.SlideIn)
+    	replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
     }
 }
 ```
