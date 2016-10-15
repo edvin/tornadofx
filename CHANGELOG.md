@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- SortedFilteredList now supports editing writeback to the underlying observable list
 - View.replaceWith now updates scene property to support Live Views (https://github.com/edvin/tornadofx/issues/191)
 - ViewModel bind return value is now optional to support eventually available items
 - ViewModel detects changes to the source object and applies to the model counterpart automatically

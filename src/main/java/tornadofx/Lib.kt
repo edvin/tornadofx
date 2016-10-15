@@ -1,6 +1,8 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -36,13 +38,28 @@ import java.util.function.Predicate
 class SortedFilteredList<T>(
         val items: ObservableList<T> = FXCollections.observableArrayList(),
         initialPredicate: (T) -> Boolean = { true },
-        final val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
-        final val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
+        val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
+        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
 
-    var predicate: (T) -> Boolean = initialPredicate
-        set(value) {
-            filteredItems.predicate = Predicate { value(it) }
+    /**
+     * Support editing of the sorted/filtered list. Useful to support editing support in ListView/TableView etc
+     */
+    override fun set(index: Int, element: T): T {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            items[backingIndex] = element
         }
+        return item
+    }
+
+    val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
+        override fun set(newValue: ((T) -> Boolean)) {
+            super.set(newValue)
+            filteredItems.predicate = Predicate { newValue(it) }
+        }
+    }
+    var predicate by predicateProperty
 
     /**
      * Bind this data object to the given TableView.

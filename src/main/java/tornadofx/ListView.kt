@@ -1,7 +1,6 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.control.ListCell
@@ -85,6 +84,19 @@ abstract class ItemFragment<T> : Fragment() {
 abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>?> = SimpleObjectProperty()
     var cell by cellProperty
+    val editingProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+
+    open fun startEdit() {
+        cell?.startEdit()
+    }
+
+    open fun commitEdit(newValue: T) {
+        cell?.commitEdit(newValue)
+    }
+
+    open fun cancelEdit() {
+        cell?.cancelEdit()
+    }
 }
 
 fun <T, F: ItemFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
@@ -98,7 +110,7 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
-    private var cellFragment: ItemFragment<T>? = null
+    private var cellFragment: ListCellFragment<T>? = null
     private var fresh = true
 
     init {
@@ -141,15 +153,17 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
         } else {
             cellCache?.apply { graphic = getOrCreateNode(item) }
             if (fresh) {
-                val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ItemFragment<T>>?
+                val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
                 cellFragment = if (cellFragmentType != null) find(cellFragmentType) else null
                 fresh = false
             }
             val cf = cellFragment
             if (cf != null) {
                 cf.itemProperty.value = item
-                if (cf is ListCellFragment<*>)
-                    cf.cellProperty.value = this
+                cf.cellProperty.value = this
+                with (cf.editingProperty as BooleanProperty) {
+                    cleanBind(editingProperty())
+                }
                 graphic = cf.root
             }
             cellFormat?.invoke(this, item)
@@ -159,8 +173,10 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
     private fun clearCellFragment() {
         cellFragment?.apply {
             itemProperty.value = null
-            if (this is ListCellFragment<*>)
-                cellProperty.value = null
+            cellProperty.value = null
+            with (editingProperty as BooleanProperty) {
+                unbind()
+            }
         }
     }
 
