@@ -447,6 +447,13 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     }
 }
 
+fun Node.onDoubleClick(action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == 2)
+            action()
+    }
+}
+
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
 

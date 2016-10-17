@@ -157,14 +157,13 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
                 cellFragment = if (cellFragmentType != null) find(cellFragmentType) else null
                 fresh = false
             }
-            val cf = cellFragment
-            if (cf != null) {
-                cf.itemProperty.value = item
-                cf.cellProperty.value = this
-                with (cf.editingProperty as BooleanProperty) {
+            cellFragment?.apply {
+                itemProperty.value = item
+                cellProperty.value = this@SmartListCell
+                with (editingProperty as BooleanProperty) {
                     cleanBind(editingProperty())
                 }
-                graphic = cf.root
+                graphic = root
             }
             cellFormat?.invoke(this, item)
         }

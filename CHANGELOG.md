@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- Node.onDoubleClick handler
 - chooseDirectory function
 - ListView.bindSelected(itemProperty) and ListView.bindSelected(itemViewModel)
 - TableView.bindSelected(itemProperty) and TableView.bindSelected(itemViewModel)

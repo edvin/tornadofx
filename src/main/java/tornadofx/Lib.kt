@@ -1,7 +1,9 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.binding.Bindings
 import javafx.beans.property.ObjectProperty
+import javafx.beans.property.ReadOnlyIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.*
 import javafx.collections.FXCollections
@@ -53,6 +55,7 @@ class SortedFilteredList<T>(
         return item
     }
 
+
     val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
         override fun set(newValue: ((T) -> Boolean)) {
             super.set(newValue)
@@ -69,7 +72,7 @@ class SortedFilteredList<T>(
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
     fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
-        tableView.items = sortedItems
+        tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
         return this
     }
@@ -81,7 +84,7 @@ class SortedFilteredList<T>(
      *
      */
     fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = sortedItems
+        listView.items = this
         return this
     }
 
