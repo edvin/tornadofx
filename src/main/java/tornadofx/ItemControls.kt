@@ -300,6 +300,8 @@ fun <T> TableView<T>.bindSelected(property: Property<T>) {
 fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
     model.itemProperty.bind(selectionModel.selectedItemProperty())
 }
+
+
 /**
  * Create a column with a value factory that extracts the value from the given mutable
  * property and converts the property to an observable value.
