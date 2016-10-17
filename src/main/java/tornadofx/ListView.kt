@@ -181,3 +181,11 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
     }
 
 }
+
+fun <T> ListView<T>.bindSelected(property: Property<T>) {
+    property.bind(selectionModel.selectedItemProperty())
+}
+
+fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>) {
+    model.itemProperty.bind(selectionModel.selectedItemProperty())
+}

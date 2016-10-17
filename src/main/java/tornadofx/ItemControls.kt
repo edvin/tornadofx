@@ -293,6 +293,13 @@ class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
     }
 }
 
+fun <T> TableView<T>.bindSelected(property: Property<T>) {
+    property.bind(selectionModel.selectedItemProperty())
+}
+
+fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
+    model.itemProperty.bind(selectionModel.selectedItemProperty())
+}
 /**
  * Create a column with a value factory that extracts the value from the given mutable
  * property and converts the property to an observable value.

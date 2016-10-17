@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- ListView.bindSelected(itemProperty) and ListView.bindSelected(itemViewModel)
+- TableView.bindSelected(itemProperty) and TableView.bindSelected(itemViewModel)
 - Added ItemViewModel to reduce boiler plate for ViewModels with one source object
 - SortedFilteredList now supports editing writeback to the underlying observable list
 - View.replaceWith now updates scene property to support Live Views (https://github.com/edvin/tornadofx/issues/191)
