@@ -378,3 +378,15 @@ val Property<*>.viewModel: ViewModel? get() {
 
     return null
 }
+
+open class ItemViewModel<T>  : ViewModel() {
+    val itemProperty = SimpleObjectProperty<T>()
+    var item by itemProperty
+
+    val empty = booleanBinding(this, itemProperty) { item == null }
+
+    init {
+        rebindOnChange(itemProperty)
+    }
+
+}
