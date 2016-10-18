@@ -695,10 +695,14 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
         this@CssSelectionBlock.mix(this)
     }
 
-    fun and(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector, op)
-    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = add(selector, *selectors, op = op)
-    fun add(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector.toSelector(), op = op)
-    fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+    @Deprecated("Use and() instead as it's clearer", ReplaceWith("and(selector, op)"))
+    fun add(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector, op)
+
+    @Deprecated("Use and() instead as it's clearer", ReplaceWith("and(selector, *selectors, op = op)"))
+    fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = and(selector, *selectors, op = op)
+
+    fun and(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector.toSelector(), op = op)
+    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
         val s = select(selector, *selectors)(op)
         selections[s] = true
         return s
