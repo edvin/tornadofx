@@ -31,7 +31,7 @@ class LayoutDebugger : Fragment() {
 
     val hoveredNode = SimpleObjectProperty<Node>()
     val selectedNode = SimpleObjectProperty<Node>()
-    var nodeTree: TreeView<Node> by singleAssign()
+    var nodeTree: TreeView<NodeContainer> by singleAssign()
     val propertyContainer = ScrollPane()
     val stackpane = StackPane()
     val overlay = Canvas()
@@ -47,7 +47,7 @@ class LayoutDebugger : Fragment() {
 
             center = splitpane {
                 setDividerPosition(0, 0.3)
-                treeview<Node> {
+                treeview<NodeContainer> {
                     nodeTree = this
                 }
                 this += propertyContainer.apply {
@@ -60,9 +60,8 @@ class LayoutDebugger : Fragment() {
     }
 
     private fun hookListeners() {
-        nodeTree.selectionModel.selectedItemProperty().addListener { observableValue, oldItem, newItem ->
-            if (newItem != null)
-                setSelectedNode(newItem.value)
+        nodeTree.selectionModel.selectedItemProperty().onChange {
+            if (it?.value != null) setSelectedNode(it!!.value.node)
         }
 
         // Position overlay over hovered node
@@ -102,57 +101,54 @@ class LayoutDebugger : Fragment() {
 
     private fun setSelectedNode(node: Node) {
         selectedNode.value = node
-        val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"] as TreeItem<Node>?
-        if (treeItem != null) nodeTree.selectionModel.select(treeItem)
-        propertyContainer.content = NodePropertyView(node)
+        val treeItem = selectedNode.value.properties["tornadofx.layoutdebugger.treeitem"]
+        if (treeItem is NodeTreeItem) {
+            nodeTree.selectionModel.select(treeItem)
+            propertyContainer.content = NodePropertyView(treeItem.value.node)
+        }
     }
 
     override fun onDock() {
         // Prevent the debugger from being reloaded
         Platform.runLater {
-            modalStage!!.scene.properties["javafx.layoutdebugger"] = this
+            modalStage!!.scene.properties["tornadofx.layoutdebugger"] = this
         }
 
         title = "Layout Debugger [%s]".format(debuggingScene)
 
         with(debuggingScene) {
             // Prevent the scene from being reloaded while the debugger is running
-            properties["javafx.layoutdebugger"] = this@LayoutDebugger
+            properties["tornadofx.layoutdebugger"] = this@LayoutDebugger
             addEventFilter(MouseEvent.MOUSE_EXITED, sceneExitedHandler)
             addEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
             addEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
         }
 
         // Overlay has same size as scene
-        overlay.widthProperty().unbind()
-        overlay.widthProperty().bind(debuggingScene.widthProperty())
-        overlay.heightProperty().bind(debuggingScene.heightProperty())
+        overlay.widthProperty().cleanBind(debuggingScene.widthProperty())
+        overlay.heightProperty().cleanBind(debuggingScene.heightProperty())
 
         // Stackpane becomes the new scene root and contains the currentScene.root and our overlay
         debuggingRoot = debuggingScene.root
+        stackpane += debuggingRoot
         stackpane += debuggingRoot
         debuggingScene.root = stackpane
         overlay.toFront()
 
         // Populate the node tree
         with(nodeTree) {
-            root = NodeTreeItem(debuggingRoot)
+            root = NodeTreeItem(NodeContainer(debuggingRoot))
             populate(
-                    itemFactory = {
-                        NodeTreeItem(it)
-                    },
-                    childFactory = {
-                        val value = it.value
-                        if (value is Parent) value.childrenUnmodifiable else null
-                    }
+                    itemFactory = { NodeTreeItem(it) },
+                    childFactory = { it.value.node.getChildList()?.map(::NodeContainer) }
             )
 
             // Hover on a node in the tree should visualize in the scene graph
             setCellFactory {
-                object : TreeCell<Node>() {
+                object : TreeCell<NodeContainer>() {
                     init {
                         addEventFilter(MouseEvent.MOUSE_ENTERED) {
-                            hoveredNode.value = item
+                            hoveredNode.value = item?.node
                             style {
                                 backgroundColor += gc.fill
                             }
@@ -165,16 +161,14 @@ class LayoutDebugger : Fragment() {
                         }
                     }
 
-                    override fun updateItem(item: Node?, empty: Boolean) {
+                    override fun updateItem(item: NodeContainer?, empty: Boolean) {
                         super.updateItem(item, empty)
 
                         graphic = null
                         text = null
 
                         if (!empty && item != null)
-                        // Avoid using javaClass.simpleName, because kotlin produces class names
-                        // that are failing the check in Class#getSimpleName
-                            text = item.javaClass.name.substringAfterLast("\\$").substringAfterLast(".")
+                            text = item.node.javaClass.name.substringAfterLast("\\$").substringAfterLast(".")
                     }
                 }
             }
@@ -184,7 +178,7 @@ class LayoutDebugger : Fragment() {
     override fun onUndock() {
         debuggingRoot.removeFromParent()
         debuggingScene.root = debuggingRoot
-        debuggingScene.properties["javafx.layoutdebugger"] = null
+        debuggingScene.properties["tornadofx.layoutdebugger"] = null
         debuggingScene.removeEventFilter(MouseEvent.MOUSE_MOVED, hoverHandler)
         debuggingScene.removeEventFilter(MouseEvent.MOUSE_CLICKED, clickHandler)
     }
@@ -196,9 +190,10 @@ class LayoutDebugger : Fragment() {
         }
     }
 
-    inner class NodeTreeItem(node: Node) : TreeItem<Node>(node) {
+    class NodeContainer(val node: Node)
+    inner class NodeTreeItem(container: NodeContainer) : TreeItem<NodeContainer>(container) {
         init {
-            value.properties["tornadofx.layoutdebugger.treeitem"] = this
+            container.node.properties["tornadofx.layoutdebugger.treeitem"] = this
         }
     }
 

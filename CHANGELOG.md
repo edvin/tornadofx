@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.7-SNAPSHOT]
 
+- Fixed LayoutDebugger not showing debugged scene correctly (https://github.com/edvin/tornadofx/issues/192)
 - App.shouldShowPrimaryStage() can be used to initially hide the primary stage
 - Node.onDoubleClick handler
 - chooseDirectory function

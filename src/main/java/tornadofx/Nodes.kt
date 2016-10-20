@@ -100,7 +100,7 @@ fun Scene.reloadStylesheets() {
 }
 
 fun Scene.reloadViews() {
-    if (properties["javafx.layoutdebugger"] == null) {
+    if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
             if (it.reloadInit) FX.replaceComponent(it)
             it.reloadInit = true
