@@ -34,13 +34,15 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
                 FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
                 hookGlobalShortcuts()
-                show()
+                if (shouldShowPrimaryStage()) show()
             }
             FX.initialized.value = true
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
     }
+
+    open fun shouldShowPrimaryStage() = true
 
     open fun createPrimaryScene(view: UIComponent) = Scene(view.root)
 
