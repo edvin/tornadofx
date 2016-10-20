@@ -201,7 +201,7 @@ class StylesheetTests {
     fun propertySelectionScope() {
         stylesheet {
             label {
-                add(":hover") {
+                and(":hover") {
                     base.value = c("blue")
                 }
                 base.value = c("red")
@@ -223,7 +223,7 @@ class StylesheetTests {
         stylesheet {
             "label     >.lab   #la:l          ,.label,.-la-la~*:red,           #fred    " {
                 textFill = Color.BLANCHEDALMOND
-                add(":hover") {
+                and(":hover") {
                     backgroundColor += Color.CHARTREUSE
                     base.value = c("green")
                 }
@@ -262,8 +262,8 @@ class StylesheetTests {
 
         stylesheet {
             s(a, b, c) {
-                add(d, e, f) {
-                    add(g, h, i) {
+                and(d, e, f) {
+                    and(g, h, i) {
                         textFill = Color.BLUE
                     }
                 }
@@ -278,7 +278,7 @@ class StylesheetTests {
 
         stylesheet {
             s(a, b, c) {
-                add(d, e, f) {
+                and(d, e, f) {
                     s(g, h, i) {
                         textFill = Color.BLUE
                     }
@@ -345,7 +345,7 @@ class StylesheetTests {
     fun nestedModifier_1() {
         stylesheet {
             s(label, text) {
-                add(hover, armed) {
+                and(hover, armed) {
                     backgroundColor += c("blue", 0.25)
                 }
             }
@@ -362,7 +362,7 @@ class StylesheetTests {
     fun gradientsWithErrorColor() {
         stylesheet {
             val hover = mixin {
-                add(hover) {
+                and(hover) {
                     backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
                 }
             }
