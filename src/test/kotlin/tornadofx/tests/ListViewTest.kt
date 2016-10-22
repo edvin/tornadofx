@@ -22,7 +22,7 @@ class MyItemFragment : ListCellFragment<Item>() {
 }
 
 class ListViewTest : View("ListCell Cache Test") {
-    val items = listOf(Item("One"), Item("Two"))
+    val items = listOf(Item("One"), Item("Two"), Item("Three"))
 
     override val root = listview(items.observable()) {
         cellFragment(MyItemFragment::class)
