@@ -99,7 +99,7 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
     }
 }
 
-fun <T, F: ItemFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
+fun <T, F: ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { listView -> SmartListCell(listView) }
