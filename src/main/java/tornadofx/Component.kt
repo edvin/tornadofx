@@ -24,6 +24,7 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
+import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -543,4 +544,5 @@ abstract class View(title: String? = null) : UIComponent(title), Injectable
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
+    fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
 }
