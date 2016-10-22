@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- ItemViewModel().bindTo(listCellFragment)
 
 ## [1.5.7] - 2016-10-21
 

@@ -236,6 +236,14 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
     }
 }
 
+/**
+ * Rebind the itemProperty of the ViewModel when the itemProperty in the ListCellFragment changes.
+ */
+fun <V : ItemViewModel<T>, T> V.bindTo(listCellFragment: ListCellFragment<T>): V {
+    itemProperty.bind(listCellFragment.itemProperty)
+    return this
+}
+
 fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
     val prop = modelField.get(this)
     return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
