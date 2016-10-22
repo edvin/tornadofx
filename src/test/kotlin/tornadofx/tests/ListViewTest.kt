@@ -14,15 +14,10 @@ class MyItemViewModel : ItemViewModel<Item>() {
 }
 
 class MyItemFragment : ListCellFragment<Item>() {
-    val model = MyItemViewModel()
+    val model = MyItemViewModel().bindTo(this)
 
     override val root = hbox {
         label(model.value)
-    }
-
-    init {
-        // When the item for this fragment is changed, rebind the model
-        model.itemProperty.bind(itemProperty)
     }
 }
 
