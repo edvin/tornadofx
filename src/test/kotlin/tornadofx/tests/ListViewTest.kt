@@ -3,12 +3,22 @@ package tornadofx.tests
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
 
-class Item(var value: String)
+class Item(value: String) {
+    val valueProperty = SimpleStringProperty( value )
+}
 
-class MyItemFragment : ItemFragment<Item>() {
-    val itemValue = SimpleStringProperty()
+class MyItemViewModel : ItemViewModel<Item>() {
+    val value = bind(autocommit = true) { item?.valueProperty }
+}
+
+class MyItemFragment : ListCellFragment<Item>() {
+    val model = MyItemViewModel()
     override val root = hbox {
-        label(itemValue)
+        label(model.value)
+    }
+    init {
+        // When the item for this fragment is changed, rebind the model
+        model.itemProperty.bind(itemProperty)
     }
 }
 
