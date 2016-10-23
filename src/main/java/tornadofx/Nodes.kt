@@ -5,6 +5,7 @@ import javafx.application.Platform
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
+import javafx.css.PseudoClass
 import javafx.event.EventTarget
 import javafx.geometry.HPos
 import javafx.geometry.Insets
@@ -45,8 +46,23 @@ fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
 }
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
+fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
+
 fun <T : Node> T.addClass(className: String): T {
-    styleClass.add(className); return this
+    styleClass.add(className)
+    return this
+}
+
+fun <T : Node> T.addPseudoClass(className: String): T {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    pseudoClassStateChanged(pseudoClass, true)
+    return this
+}
+
+fun <T : Node> T.removePseudoClass(className: String): T {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    pseudoClassStateChanged(pseudoClass, false)
+    return this
 }
 
 fun <T : Node> T.removeClass(className: String): T {
@@ -58,6 +74,15 @@ fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
         if (!hasClass(className)) addClass(className)
     } else {
         removeClass(className)
+    }
+    return this
+}
+
+fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean): T {
+    if (predicate) {
+        if (!hasPseudoClass(className)) addPseudoClass(className)
+    } else {
+        removePseudoClass(className)
     }
     return this
 }

@@ -924,18 +924,23 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
 
 // Style Class
 
-fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
+fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+
 fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
-    cssClass.forEach { addClass(it.name) }
+    cssClass.forEach {
+        if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
+    }
     return this
 }
 
 fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
-    cssClass.forEach { removeClass(it.name) }
+    cssClass.forEach {
+        if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
+    }
     return this
 }
 
-fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
 fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
     toggleClass(cssClass, observablePredicate.value ?: false)
     observablePredicate.onChange {

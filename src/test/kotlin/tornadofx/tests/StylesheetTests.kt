@@ -1,11 +1,15 @@
 package tornadofx.tests
 
+import javafx.css.PseudoClass
+import javafx.scene.control.Label
 import javafx.scene.layout.Pane
 import javafx.scene.paint.*
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
+import javafx.stage.Stage
 import org.junit.Assert
 import org.junit.Test
+import org.testfx.api.FxToolkit
 import tornadofx.*
 import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
@@ -14,6 +18,8 @@ import tornadofx.Stylesheet.Companion.star
 import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class StylesheetTests {
     val vbox by cssclass()
@@ -42,6 +48,21 @@ class StylesheetTests {
 
     val TestBox by cssclass()
     val TestBox2 by cssclass("TestBox")
+
+    val primaryStage: Stage = FxToolkit.registerPrimaryStage()
+
+    @Test
+    fun addRemovePseudoClass() {
+        val node = Label()
+        node.addClass(lumpyPseudoClass)
+        assertTrue(node.hasClass(lumpyPseudoClass))
+
+        assertFalse(node.styleClass.contains(lumpyPseudoClass.name))
+        assertTrue(node.pseudoClassStates.contains(PseudoClass.getPseudoClass(lumpyPseudoClass.name)))
+
+        node.toggleClass(lumpyPseudoClass, false)
+        assertFalse(node.hasClass(lumpyPseudoClass))
+    }
 
     @Test
     fun cssStringSnake() {
