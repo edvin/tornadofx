@@ -222,11 +222,6 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-@Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
-inline fun <reified T : Fragment> findFragment(): T = find(T::class)
-@Deprecated("No need for a separate findFragment function anymore", ReplaceWith("find"), DeprecationLevel.WARNING)
-fun <T : Fragment> findFragment(type: KClass<T>): T = find(type)
-
 inline fun <reified T : Component> find(): T = find(T::class)
 
 @Suppress("UNCHECKED_CAST")
