@@ -26,9 +26,10 @@ open class ViewModel {
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
-    private val dirtyStateProperty = SimpleBooleanProperty(false)
+    private val dirtyStateProperty = booleanBinding(dirtyProperties, dirtyProperties) { this.isNotEmpty() }
     fun dirtyStateProperty() = dirtyStateProperty
     val validationContext = ValidationContext()
+    val ignoreDirtyStateProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -111,18 +112,14 @@ open class ViewModel {
     inline fun <reified T : Any> property(autocommit: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
+        if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
+
         if (dirtyProperties.contains(property)) {
             val sourceValue = properties[property]!!.invoke()?.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
         }
-        updateDirtyState()
-    }
-
-    private fun updateDirtyState() {
-        val dirtyState = dirtyProperties.isNotEmpty()
-        if (dirtyState != dirtyStateProperty.value) dirtyStateProperty.value = dirtyState
     }
 
     val isDirty: Boolean get() = dirtyStateProperty.value
@@ -208,7 +205,6 @@ open class ViewModel {
 
     private fun clearDirtyState() {
         dirtyProperties.clear()
-        updateDirtyState()
     }
 }
 

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- ViewModel.ignoreDirtyStateProperties list of properties that should not be considered when calculating dirty state
 - Removed deprecated `replaceWith` overloads (https://github.com/edvin/tornadofx/issues/199)
 - Multitenancy support
 - addClass/removeClass/toggleClass now also works for pseudo classes (https://github.com/edvin/tornadofx/issues/198)
