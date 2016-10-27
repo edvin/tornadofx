@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Rest POST supports InputStream (https://github.com/edvin/tornadofx/pull/200)
 - Removed deprecated `findFragment` - use `find` instead
 - Removed deprecated `replaceWith` overloads (https://github.com/edvin/tornadofx/issues/199)
 - Multitenancy support
