@@ -8,8 +8,6 @@ import javafx.scene.control.ListView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
-import javafx.util.Callback
-import tornadofx.FX.Companion.DefaultScope
 import kotlin.reflect.KClass
 
 

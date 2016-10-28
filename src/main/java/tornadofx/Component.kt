@@ -26,7 +26,6 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
 import javafx.util.Callback
-import tornadofx.FX.Companion.DefaultScope
 import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files

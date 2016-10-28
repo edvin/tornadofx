@@ -5,7 +5,6 @@ import javafx.event.EventTarget
 import org.osgi.framework.BundleContext
 import org.osgi.framework.FrameworkUtil
 import tornadofx.FX
-import tornadofx.FX.Companion.DefaultScope
 import tornadofx.UIComponent
 import tornadofx.find
 import tornadofx.plusAssign

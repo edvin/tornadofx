@@ -5,7 +5,6 @@ import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
-import tornadofx.FX.Companion.DefaultScope
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty

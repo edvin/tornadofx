@@ -124,7 +124,7 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-fun Scene.reloadViews(scope: Scope = FX.DefaultScope) {
+fun Scene.reloadViews(scope: Scope = DefaultScope) {
     if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
             if (it.reloadInit) FX.replaceComponent(it, scope)

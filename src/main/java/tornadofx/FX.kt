@@ -20,7 +20,6 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
-import tornadofx.FX.Companion.DefaultScope
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
@@ -30,10 +29,10 @@ import java.util.logging.Logger
 import kotlin.reflect.KClass
 
 open class Scope
+val DefaultScope = Scope()
 
 class FX {
     companion object {
-        val DefaultScope = Scope()
         internal val inheritScopeHolder = ThreadLocal<Scope>()
 
         val log = Logger.getLogger("FX")
