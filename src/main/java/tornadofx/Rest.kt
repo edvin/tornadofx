@@ -58,6 +58,7 @@ open class Rest : Controller() {
 
     fun post(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
     fun post(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = post(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun post(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
 
     fun delete(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(DELETE, path, data, processor)
     fun delete(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = delete(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
@@ -83,7 +84,7 @@ open class Rest : Controller() {
 
     }
 
-    fun execute(method: Request.Method, target: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null): Response {
+    fun execute(method: Request.Method, target: String, data: Any? = null, processor: ((Request) -> Unit)? = null): Response {
         val request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
 
         if (processor != null)

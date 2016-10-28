@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Rest POST supports InputStream (https://github.com/edvin/tornadofx/pull/200)
+- Removed deprecated `findFragment` - use `find` instead
 - ViewModel.ignoreDirtyStateProperties list of properties that should not be considered when calculating dirty state
 - Removed deprecated `replaceWith` overloads (https://github.com/edvin/tornadofx/issues/199)
 - Multitenancy support
