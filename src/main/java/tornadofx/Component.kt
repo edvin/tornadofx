@@ -41,7 +41,7 @@ import kotlin.reflect.*
 interface Injectable
 
 abstract class Component {
-    var scope: Scope = DefaultScope
+    val scope = FX.inheritScopeHolder.get()
 
     val config: Properties
         get() = _config.value
@@ -111,15 +111,15 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, scope)
+    inline fun <reified T> inject(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope)
     }
 
-    inline fun <reified T : Fragment> fragment(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(T::class, scope)
+            if (fragment == null) fragment = find(T::class, overrideScope)
             return fragment!!
         }
     }

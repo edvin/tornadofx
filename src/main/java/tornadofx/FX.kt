@@ -21,6 +21,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
 import tornadofx.FX.Companion.DefaultScope
+import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
 import java.util.*
@@ -33,6 +34,7 @@ open class Scope
 class FX {
     companion object {
         val DefaultScope = Scope()
+        internal val inheritScopeHolder = ThreadLocal<Scope>()
 
         val log = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
@@ -100,6 +102,7 @@ class FX {
 
         init {
             locale = Locale.getDefault()
+            inheritScopeHolder.set(DefaultScope)
         }
 
         fun runAndWait(action: () -> Unit) {
@@ -245,9 +248,9 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
-    val components = FX.getComponents(scope)
-
+    inheritScopeHolder.set(scope)
     if (Injectable::class.java.isAssignableFrom(type.java)) {
+        val components = FX.getComponents(scope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
@@ -261,7 +264,6 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
     }
 
     val cmp = type.java.newInstance()
-    cmp.scope = scope
     if (cmp is Fragment) cmp.init()
     return cmp
 }
