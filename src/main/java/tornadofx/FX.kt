@@ -38,17 +38,19 @@ class FX {
         val initialized = SimpleBooleanProperty(false)
 
         private val primaryStages = HashMap<Scope, Stage>()
+        val primaryStage: Stage get() = primaryStages[DefaultScope]!!
         fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
         fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) { primaryStages[scope] = stage }
 
         private val applications = HashMap<Scope, Application>()
+        val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
         fun setApplication(scope: Scope = DefaultScope, application: Application) { applications[scope] = application }
 
         val stylesheets = FXCollections.observableArrayList<String>()
 
         private val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
-        fun getComponents(scope: Scope? = DefaultScope) = components.getOrPut(scope ?: DefaultScope) { HashMap() }
+        fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
 
         val lock = Any()
 
@@ -148,14 +150,14 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Component> find(scope: Scope = DefaultScope, componentType: Class<T>): T = find(scope, componentType.kotlin)
+        fun <T : Component> find(componentType: Class<T>, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope)
 
-        fun replaceComponent(scope: Scope? = DefaultScope, obsolete: UIComponent) {
+        fun replaceComponent(obsolete: UIComponent, scope: Scope = DefaultScope) {
             val replacement: UIComponent
 
             if (obsolete is View) {
                 getComponents(scope).remove(obsolete.javaClass.kotlin)
-                replacement = find(scope, obsolete.javaClass.kotlin)
+                replacement = find(obsolete.javaClass.kotlin, scope)
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
                 if (noArgsConstructor) {
@@ -199,7 +201,7 @@ class FX {
     }
 }
 
-fun addStageIcon(scope: Scope = DefaultScope, icon: Image) {
+fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
 }
@@ -239,10 +241,10 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope? = DefaultScope): T = find(scope, T::class)
+inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T::class, scope)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Component> find(scope: Scope? = DefaultScope, type: KClass<T>): T {
+fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
     val components = FX.getComponents(scope)
 
     if (Injectable::class.java.isAssignableFrom(type.java)) {
@@ -259,7 +261,7 @@ fun <T : Component> find(scope: Scope? = DefaultScope, type: KClass<T>): T {
     }
 
     val cmp = type.java.newInstance()
-    cmp.scope = scope ?: FX.DefaultScope
+    cmp.scope = scope
     if (cmp is Fragment) cmp.init()
     return cmp
 }

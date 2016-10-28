@@ -9,7 +9,6 @@ import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
-import tornadofx.FX.Companion.DefaultScope
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -32,9 +31,9 @@ class NodeTests {
 
     @Test
     fun findComponents() {
-        val view1 = find(DefaultScope, View1::class)
-        val view2 = find(DefaultScope, View2::class)
-        val view3 = find(DefaultScope, View3::class)
+        val view1 = find(View1::class)
+        val view2 = find(View2::class)
+        val view3 = find(View3::class)
 
         view1 += view2
         view1 += view3

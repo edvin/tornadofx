@@ -112,14 +112,14 @@ abstract class Component {
     }
 
     inline fun <reified T> inject(): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(scope, T::class)
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, scope)
     }
 
     inline fun <reified T : Fragment> fragment(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(scope, T::class)
+            if (fragment == null) fragment = find(T::class, scope)
             return fragment!!
         }
     }
@@ -142,7 +142,7 @@ abstract class Component {
      *
      * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
-    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(scope, T::class)) }
+    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(T::class, scope)) }
 
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
@@ -151,7 +151,7 @@ abstract class Component {
      */
     inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
             where InjectableType : Component, InjectableType : Injectable {
-        val t = task { invoke(find(scope, InjectableType::class)) }
+        val t = task { invoke(find(InjectableType::class, scope)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
     }
@@ -163,19 +163,19 @@ abstract class Component {
      */
     inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(scope, InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(scope, InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(scope, InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(scope, InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     /**
      * Find the given property inside the given Injectable. Useful for assigning a property from a View or Controller
@@ -185,13 +185,13 @@ abstract class Component {
      */
     inline fun <reified InjectableType, T> get(prop: KProperty1<InjectableType, T>): T
             where InjectableType : Component, InjectableType : Injectable {
-        val injectable = find(scope, InjectableType::class)
+        val injectable = find(InjectableType::class, scope)
         return prop.get(injectable)
     }
 
     inline fun <reified InjectableType, T> set(prop: KMutableProperty1<InjectableType, T>, value: T)
             where InjectableType : Component, InjectableType : Injectable {
-        val injectable = find(scope, InjectableType::class)
+        val injectable = find(InjectableType::class, scope)
         return prop.set(injectable, value)
     }
 
@@ -273,11 +273,12 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     // TODO: Helpers needing access to Scope must be defined here or they must take scope with default as parameter.
-    fun <C: UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
-    fun <C: UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
-    fun <C: UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
-    fun <C: UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
-    fun <C: UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
+    fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
+
+    fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
+    fun <C : UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
+    fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
+    fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
@@ -286,7 +287,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             cellFactory = Callback { SmartListCell(scope, this@cellFormat) }
     }
 
-    fun <T, F: ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
+    fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
         properties["tornadofx.cellFragment"] = fragment
         if (properties["tornadofx.cellFormatCapable"] != true)
             cellFactory = Callback { listView -> SmartListCell(scope, listView) }
@@ -310,7 +311,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
         // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
         if (properties["tornadofx.cellCacheCapable"] != true) {
-            cellFormat {  }
+            cellFormat { }
         }
     }
 
@@ -323,17 +324,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     @Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
     @JvmName("addView")
-    inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(scope, type).root)
+    inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
 
     @JvmName("addFragment")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(scope, type).root)
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
 
     @JvmName("plusView")
-    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(scope, type).root)
+    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
 
     @JvmName("plusFragment")
-    operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(scope, type).root)
-
+    operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
@@ -447,6 +447,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
+    inline fun <reified T : Component> find(): T = find(T::class, scope)
+    fun <T : Component> find(type: KClass<T>) = find(type, scope)
+
     inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
@@ -462,7 +465,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
-        return replaceWith(find(scope, component), transition)
+        return replaceWith(find(component, scope), transition)
     }
 
     /**

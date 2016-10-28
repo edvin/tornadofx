@@ -5,6 +5,7 @@ import javafx.event.EventTarget
 import org.osgi.framework.BundleContext
 import org.osgi.framework.FrameworkUtil
 import tornadofx.FX
+import tornadofx.FX.Companion.DefaultScope
 import tornadofx.UIComponent
 import tornadofx.find
 import tornadofx.plusAssign
@@ -25,7 +26,7 @@ interface ViewReceiver {
  */
 fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator: Any? = null) {
     val provider = object : ViewProvider {
-        override fun getView() = find(FX.DefaultScope, viewType)
+        override fun getView() = find(viewType)
         override val discriminator = discriminator
     }
     registerService(ViewProvider::class.java, provider, Hashtable<String, String>())

@@ -5,15 +5,16 @@ import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
+import tornadofx.FX.Companion.DefaultScope
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
-    var scope: Scope = FX.DefaultScope
+    var scope: Scope = DefaultScope
 
     constructor(icon: Image, primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
-        addStageIcon(scope, icon)
+        addStageIcon(icon, scope)
     }
     constructor() : this(null)
 
@@ -28,7 +29,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         FX.registerApplication(scope, this, stage)
 
         try {
-            val view = find(scope, determinePrimaryView())
+            val view = find(determinePrimaryView(), scope)
 
             stage.apply {
                 scene = createPrimaryScene(view)
@@ -61,8 +62,8 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(scope: Scope? = FX.DefaultScope): ReadOnlyProperty<App, T> where T : Component, T: Injectable = object : ReadOnlyProperty<App, T> {
-        override fun getValue(thisRef: App, property: KProperty<*>) = find(scope, T::class)
+    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T: Injectable = object : ReadOnlyProperty<App, T> {
+        override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class, scope)
     }
 
     class DeterminedByParameter : View() {

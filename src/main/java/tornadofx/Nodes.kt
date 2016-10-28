@@ -124,10 +124,10 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-fun Scene.reloadViews(scope: Scope? = FX.DefaultScope) {
+fun Scene.reloadViews(scope: Scope = FX.DefaultScope) {
     if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
-            if (it.reloadInit) FX.replaceComponent(scope, it)
+            if (it.reloadInit) FX.replaceComponent(it, scope)
             it.reloadInit = true
         }
     }
@@ -163,7 +163,7 @@ private fun Parent.clearViews() {
     if (uicmp is View) {
         FX.getComponents(uicmp.scope).remove(uicmp.javaClass.kotlin)
     } else {
-        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach { it.clearViews() }
+        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach(Parent::clearViews)
     }
 }
 
@@ -178,7 +178,7 @@ fun Stage.hookGlobalShortcuts() {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
         else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(FX.DefaultScope, OSGIConsole::class).openModal(modality = Modality.NONE)
+            find(OSGIConsole::class).openModal(modality = Modality.NONE)
     }
 }
 

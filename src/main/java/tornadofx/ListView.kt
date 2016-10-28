@@ -9,6 +9,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
 import javafx.util.Callback
+import tornadofx.FX.Companion.DefaultScope
 import kotlin.reflect.KClass
 
 
@@ -72,7 +73,7 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(val scope: Scope? = FX.DefaultScope, listView: ListView<T>) : ListCell<T>() {
+open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>) : ListCell<T>() {
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
@@ -120,7 +121,7 @@ open class SmartListCell<T>(val scope: Scope? = FX.DefaultScope, listView: ListV
             cellCache?.apply { graphic = getOrCreateNode(item) }
             if (fresh) {
                 val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
-                cellFragment = if (cellFragmentType != null) find(scope, cellFragmentType) else null
+                cellFragment = if (cellFragmentType != null) find(cellFragmentType, scope) else null
                 fresh = false
             }
             cellFragment?.apply {
