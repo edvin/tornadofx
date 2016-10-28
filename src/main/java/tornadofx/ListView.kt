@@ -11,27 +11,6 @@ import javafx.scene.input.MouseEvent
 import javafx.util.Callback
 import kotlin.reflect.KClass
 
-fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
-    isEditable = true
-    properties["tornadofx.editSupport"] = eventListener
-    // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
-    if (properties["tornadofx.editCapable"] != true) cellFormat { }
-}
-
-/**
- * Calculate a unique Node per item and set this Node as the graphic of the ListCell.
- *
- * To support this feature, a custom cellFactory is automatically installed, unless an already
- * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
- * how to retrieve cached values.
- */
-fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
-    properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
-    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
-    if (properties["tornadofx.cellCacheCapable"] != true) {
-        cellFormat {  }
-    }
-}
 
 
 /**
@@ -53,13 +32,6 @@ fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
 
 val <T> ListView<T>.selectedItem: T?
     get() = selectionModel.selectedItem
-
-@Suppress("UNCHECKED_CAST")
-fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
-    properties["tornadofx.cellFormat"] = formatter
-    if (properties["tornadofx.cellFormatCapable"] != true)
-        cellFactory = Callback { SmartListCell(this@cellFormat) }
-}
 
 fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = FXCollections.observableArrayList(it) else items.setAll(it) }
@@ -99,14 +71,8 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
     }
 }
 
-fun <T, F: ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
-    properties["tornadofx.cellFragment"] = fragment
-    if (properties["tornadofx.cellFormatCapable"] != true)
-        cellFactory = Callback { listView -> SmartListCell(listView) }
-}
-
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
+open class SmartListCell<T>(val scope: Scope? = FX.DefaultScope, listView: ListView<T>) : ListCell<T>() {
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
@@ -154,7 +120,7 @@ open class SmartListCell<T>(listView: ListView<T>) : ListCell<T>() {
             cellCache?.apply { graphic = getOrCreateNode(item) }
             if (fresh) {
                 val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
-                cellFragment = if (cellFragmentType != null) find(cellFragmentType) else null
+                cellFragment = if (cellFragmentType != null) find(scope, cellFragmentType) else null
                 fresh = false
             }
             cellFragment?.apply {

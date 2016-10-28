@@ -25,7 +25,7 @@ interface ViewReceiver {
  */
 fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator: Any? = null) {
     val provider = object : ViewProvider {
-        override fun getView() = find(viewType)
+        override fun getView() = find(FX.DefaultScope, viewType)
         override val discriminator = discriminator
     }
     registerService(ViewProvider::class.java, provider, Hashtable<String, String>())

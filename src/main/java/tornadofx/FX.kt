@@ -20,21 +20,38 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
+import tornadofx.FX.Companion.DefaultScope
+import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
+open class Scope
+
 class FX {
     companion object {
+        val DefaultScope = Scope()
+
         val log = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
-        lateinit var primaryStage: Stage
-        lateinit var application: Application
+
+        private val primaryStages = HashMap<Scope, Stage>()
+        fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
+        fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) { primaryStages[scope] = stage }
+
+        private val applications = HashMap<Scope, Application>()
+        fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
+        fun setApplication(scope: Scope = DefaultScope, application: Application) { applications[scope] = application }
+
         val stylesheets = FXCollections.observableArrayList<String>()
-        val components = HashMap<KClass<out Injectable>, Injectable>()
+
+        private val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
+        fun getComponents(scope: Scope? = DefaultScope) = components.getOrPut(scope ?: DefaultScope) { HashMap() }
+
         val lock = Any()
+
         @JvmStatic
         var dicontainer: DIContainer? = null
         var reloadStylesheetsOnFocus = false
@@ -108,10 +125,10 @@ class FX {
         }
 
         @JvmStatic
-        fun registerApplication(application: Application, primaryStage: Stage) {
+        fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
-            FX.primaryStage = primaryStage
-            FX.application = application
+            setPrimaryStage(scope, primaryStage)
+            setApplication(scope, application)
 
             if (application.parameters?.unnamed != null) {
                 with(application.parameters.unnamed) {
@@ -131,14 +148,14 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin)
+        fun <T : Component> find(scope: Scope = DefaultScope, componentType: Class<T>): T = find(scope, componentType.kotlin)
 
-        fun replaceComponent(obsolete: UIComponent) {
+        fun replaceComponent(scope: Scope? = DefaultScope, obsolete: UIComponent) {
             val replacement: UIComponent
 
             if (obsolete is View) {
-                components.remove(obsolete.javaClass.kotlin)
-                replacement = find(obsolete.javaClass.kotlin)
+                getComponents(scope).remove(obsolete.javaClass.kotlin)
+                replacement = find(scope, obsolete.javaClass.kotlin)
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
                 if (noArgsConstructor) {
@@ -182,8 +199,8 @@ class FX {
     }
 }
 
-fun addStageIcon(icon: Image) {
-    val adder = { FX.primaryStage.icons += icon }
+fun addStageIcon(scope: Scope = DefaultScope, icon: Image) {
+    val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
 }
 
@@ -201,7 +218,7 @@ fun reloadViewsOnFocus() {
 
 fun importStylesheet(stylesheet: String) {
     val css = FX::class.java.getResource(stylesheet)
-    FX.stylesheets.add(css.toExternalForm())
+    stylesheets.add(css.toExternalForm())
 }
 
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
@@ -222,24 +239,27 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(): T = find(T::class)
+inline fun <reified T : Component> find(scope: Scope? = DefaultScope): T = find(scope, T::class)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Component> find(type: KClass<T>): T {
+fun <T : Component> find(scope: Scope? = DefaultScope, type: KClass<T>): T {
+    val components = FX.getComponents(scope)
+
     if (Injectable::class.java.isAssignableFrom(type.java)) {
-        if (!FX.components.containsKey(type as KClass<out Injectable>)) {
+        if (!components.containsKey(type as KClass<out Injectable>)) {
             synchronized(FX.lock) {
-                if (!FX.components.containsKey(type)) {
+                if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
                     if (cmp is UIComponent) cmp.init()
-                    FX.components[type] = cmp
+                    components[type] = cmp
                 }
             }
         }
-        return FX.components[type] as T
+        return components[type] as T
     }
 
     val cmp = type.java.newInstance()
+    cmp.scope = scope ?: FX.DefaultScope
     if (cmp is Fragment) cmp.init()
     return cmp
 }

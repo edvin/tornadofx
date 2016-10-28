@@ -124,10 +124,10 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-fun Scene.reloadViews() {
+fun Scene.reloadViews(scope: Scope? = FX.DefaultScope) {
     if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
-            if (it.reloadInit) FX.replaceComponent(it)
+            if (it.reloadInit) FX.replaceComponent(scope, it)
             it.reloadInit = true
         }
     }
@@ -161,7 +161,7 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
 private fun Parent.clearViews() {
     val uicmp = uiComponent<UIComponent>()
     if (uicmp is View) {
-        FX.components.remove(uicmp.javaClass.kotlin)
+        FX.getComponents(uicmp.scope).remove(uicmp.javaClass.kotlin)
     } else {
         childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach { it.clearViews() }
     }
@@ -178,7 +178,7 @@ fun Stage.hookGlobalShortcuts() {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
         else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(OSGIConsole::class).openModal(modality = Modality.NONE)
+            find(FX.DefaultScope, OSGIConsole::class).openModal(modality = Modality.NONE)
     }
 }
 
@@ -214,20 +214,8 @@ fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
     op(this)
 }
 
-@Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
-@JvmName("addView")
-inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
-
-@JvmName("addFragment")
-inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 fun EventTarget.add(node: Node) = plusAssign(node)
-
-@JvmName("plusView")
-operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
-
-@JvmName("plusFragment")
-operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
 
 operator fun EventTarget.plusAssign(view: UIComponent) {
     if (this is UIComponent) {
@@ -379,13 +367,6 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) 
                 }
             }
         }
-    }
-}
-
-fun <T> ComboBox<T>.cellFormat(formatter: ListCell<T>.(T) -> Unit) {
-    cellFactory = Callback {
-        it.properties["tornadofx.cellFormat"] = formatter
-        SmartListCell(it)
     }
 }
 

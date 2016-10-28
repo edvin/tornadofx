@@ -10,8 +10,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+    var scope: Scope = FX.DefaultScope
+
     constructor(icon: Image, primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
-        addStageIcon(icon)
+        addStageIcon(scope, icon)
     }
     constructor() : this(null)
 
@@ -23,10 +25,10 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
     override fun start(stage: Stage) {
-        FX.registerApplication(this, stage)
+        FX.registerApplication(scope, this, stage)
 
         try {
-            val view = find(determinePrimaryView())
+            val view = find(scope, determinePrimaryView())
 
             stage.apply {
                 scene = createPrimaryScene(view)
@@ -59,8 +61,8 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(): ReadOnlyProperty<App, T> where T : Component, T: Injectable = object : ReadOnlyProperty<App, T> {
-        override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class)
+    inline fun <reified T> inject(scope: Scope? = FX.DefaultScope): ReadOnlyProperty<App, T> where T : Component, T: Injectable = object : ReadOnlyProperty<App, T> {
+        override fun getValue(thisRef: App, property: KProperty<*>) = find(scope, T::class)
     }
 
     class DeterminedByParameter : View() {
