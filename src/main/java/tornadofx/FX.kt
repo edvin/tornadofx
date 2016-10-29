@@ -28,7 +28,14 @@ import java.util.concurrent.CountDownLatch
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
-open class Scope
+open class Scope {
+    fun deregister() {
+        FX.primaryStages.remove(this)
+        FX.applications.remove(this)
+        FX.components.remove(this)
+    }
+}
+
 val DefaultScope = Scope()
 
 class FX {
@@ -38,19 +45,19 @@ class FX {
         val log = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
 
-        private val primaryStages = HashMap<Scope, Stage>()
+        internal val primaryStages = HashMap<Scope, Stage>()
         val primaryStage: Stage get() = primaryStages[DefaultScope]!!
         fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
         fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) { primaryStages[scope] = stage }
 
-        private val applications = HashMap<Scope, Application>()
+        internal val applications = HashMap<Scope, Application>()
         val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
         fun setApplication(scope: Scope = DefaultScope, application: Application) { applications[scope] = application }
 
         val stylesheets = FXCollections.observableArrayList<String>()
 
-        private val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
+        internal val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
         fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
 
         val lock = Any()

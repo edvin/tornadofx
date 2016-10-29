@@ -44,6 +44,10 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         }
     }
 
+    override fun stop() {
+        scope.deregister()
+    }
+
     open fun shouldShowPrimaryStage() = true
 
     open fun createPrimaryScene(view: UIComponent) = Scene(view.root)

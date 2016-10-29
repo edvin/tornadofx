@@ -15,7 +15,7 @@ class ScopeTests {
     class C : Controller()
 
     class F : Fragment() {
-        override val root = Label()
+        override val root = label()
         val c : C by inject()
         val vm: VM by inject()
     }
