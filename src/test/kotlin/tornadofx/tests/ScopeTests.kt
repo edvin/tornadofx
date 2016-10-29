@@ -17,7 +17,10 @@ class ScopeTests {
     class F : Fragment() {
         override val root = Label()
         val c : C by inject()
+        val vm: VM by inject()
     }
+
+    class VM : ViewModel(), Injectable
 
     @Test
     fun instanceCheck() {
@@ -36,18 +39,21 @@ class ScopeTests {
     }
 
     @Test
-    fun controllerPerScopeInInjectedFragments() {
+    fun controllerAndViewModelPerScopeInInjectedFragments() {
         val scope1 = Scope()
 
         val f1 = find(F::class, scope1)
         val f2 = find(F::class, scope1)
 
         assertEquals(f1.c, f2.c)
+        assertEquals(f1.vm, f2.vm)
 
         val scope2 = Scope()
 
         val f3 = find(F::class, scope2)
 
         assertNotEquals(f1.c, f3.c)
+        assertNotEquals(f1.vm, f3.vm)
     }
+
 }

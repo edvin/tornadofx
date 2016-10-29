@@ -8,7 +8,8 @@ All notable changes to this project will be documented in this file.
 - Removed deprecated `findFragment` - use `find` instead
 - ViewModel.ignoreDirtyStateProperties list of properties that should not be considered when calculating dirty state
 - Removed deprecated `replaceWith` overloads (https://github.com/edvin/tornadofx/issues/199)
-- Multitenancy support
+- Scope support
+- ViewModel is now Component so it supports injection. By inheriting `Injectable` it can also be injected/scoped.
 - addClass/removeClass/toggleClass now also works for pseudo classes (https://github.com/edvin/tornadofx/issues/198)
 - ItemViewModel().bindTo(listCellFragment)
 - resources.stream("some-resource") locates InputStream for resource

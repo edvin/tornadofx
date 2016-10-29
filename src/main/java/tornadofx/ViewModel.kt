@@ -21,8 +21,8 @@ import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KProperty1
 
-open class ViewModel {
-    val properties: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
+open class ViewModel : Component() {
+    val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
@@ -88,7 +88,7 @@ open class ViewModel {
         }
 
         (facade as Property<*>).addListener(dirtyListener)
-        properties[facade] = op
+        propertyMap[facade] = op
         propertyCache[facade] = prop
 
         // Listener that can track external changes for this facade
@@ -102,7 +102,7 @@ open class ViewModel {
         // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
         if (autocommit) {
             facade.addListener { obs, ov, nv ->
-                properties[obs]!!.invoke()?.value = nv
+                propertyMap[obs]!!.invoke()?.value = nv
             }
         }
 
@@ -115,7 +115,7 @@ open class ViewModel {
         if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
 
         if (dirtyProperties.contains(property)) {
-            val sourceValue = properties[property]!!.invoke()?.value
+            val sourceValue = propertyMap[property]!!.invoke()?.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
@@ -146,7 +146,7 @@ open class ViewModel {
             if (!validate(focusFirstError) && !force) {
                 committed = false
             } else {
-                for ((facade, propExtractor) in properties)
+                for ((facade, propExtractor) in propertyMap)
                     propExtractor()?.value = facade.value
 
                 clearDirtyState()
@@ -163,7 +163,7 @@ open class ViewModel {
     @Suppress("UNCHECKED_CAST")
     fun rollback() {
         runAndWait {
-            for ((facade, propExtractor) in properties) {
+            for ((facade, propExtractor) in propertyMap) {
                 val prop = propExtractor()
                 // Rebind external change listener in case the source property changed
                 val oldProp = propertyCache[facade]
@@ -198,7 +198,7 @@ open class ViewModel {
     /**
      * Extract the value of the corresponding source property
      */
-    fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
+    fun <T> backingValue(property: Property<T>) = propertyMap[property]?.invoke()?.value
 
     fun <T> isDirty(property: Property<T>) = backingValue(property) != property.value
     fun <T> isNotDirty(property: Property<T>) = !isDirty(property)
