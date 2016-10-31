@@ -2,6 +2,7 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
+import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
@@ -325,6 +326,14 @@ val <T> ComboBox<T>.selectedItem: T?
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
+
+fun <T> TreeView<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it?.value
+    }
+}
+
+fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
 class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
