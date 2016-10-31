@@ -255,24 +255,29 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
+    val oldScope = inheritScopeHolder.get()
     inheritScopeHolder.set(scope)
-    if (Injectable::class.java.isAssignableFrom(type.java)) {
-        val components = FX.getComponents(scope)
-        if (!components.containsKey(type as KClass<out Injectable>)) {
-            synchronized(FX.lock) {
-                if (!components.containsKey(type)) {
-                    val cmp = type.java.newInstance()
-                    if (cmp is UIComponent) cmp.init()
-                    components[type] = cmp
+    try {
+        if (Injectable::class.java.isAssignableFrom(type.java)) {
+            val components = FX.getComponents(scope)
+            if (!components.containsKey(type as KClass<out Injectable>)) {
+                synchronized(FX.lock) {
+                    if (!components.containsKey(type)) {
+                        val cmp = type.java.newInstance()
+                        if (cmp is UIComponent) cmp.init()
+                        components[type] = cmp
+                    }
                 }
             }
+            return components[type] as T
         }
-        return components[type] as T
-    }
 
-    val cmp = type.java.newInstance()
-    if (cmp is Fragment) cmp.init()
-    return cmp
+        val cmp = type.java.newInstance()
+        if (cmp is Fragment) cmp.init()
+        return cmp
+    } finally {
+        inheritScopeHolder.set(oldScope)
+    }
 }
 
 interface DIContainer {
