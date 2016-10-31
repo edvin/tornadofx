@@ -238,7 +238,8 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
         val bundleId = getBundleId(stylesheetType)
         if (bundleId != null) url.append("?$bundleId")
     }
-    FX.stylesheets.add(url.toString())
+    val urlString = url.toString()
+    if (!FX.stylesheets.contains(urlString)) FX.stylesheets.add(url.toString())
 }
 
 fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
