@@ -40,7 +40,8 @@ import kotlin.reflect.*
 interface Injectable
 
 abstract class Component {
-    val scope = FX.inheritScopeHolder.get()
+    private val inheritedScope: Scope get() = FX.inheritScopeHolder.get()
+    open val scope: Scope get() = inheritedScope
 
     val config: Properties
         get() = _config.value
