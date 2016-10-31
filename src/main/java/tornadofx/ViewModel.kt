@@ -21,7 +21,7 @@ import java.time.LocalDate
 import java.util.concurrent.Callable
 import kotlin.reflect.KProperty1
 
-open class ViewModel : Component() {
+open class ViewModel : Component(), Injectable {
     val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
