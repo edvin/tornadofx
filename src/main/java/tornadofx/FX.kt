@@ -260,7 +260,6 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
     inheritScopeHolder.set(scope)
-    println("Finding $type, Scope: $scope (default=${DefaultScope == scope})")
     if (Injectable::class.java.isAssignableFrom(type.java)) {
         val components = FX.getComponents(scope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
