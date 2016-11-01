@@ -41,7 +41,7 @@ interface Injectable
 
 abstract class Component {
     private val inheritedScope: Scope get() = FX.inheritScopeHolder.get()
-    open val scope: Scope get() = inheritedScope
+    open val scope: Scope = inheritedScope
 
     val config: Properties
         get() = _config.value

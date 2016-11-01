@@ -48,12 +48,16 @@ class FX {
         internal val primaryStages = HashMap<Scope, Stage>()
         val primaryStage: Stage get() = primaryStages[DefaultScope]!!
         fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
-        fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) { primaryStages[scope] = stage }
+        fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) {
+            primaryStages[scope] = stage
+        }
 
         internal val applications = HashMap<Scope, Application>()
         val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
-        fun setApplication(scope: Scope = DefaultScope, application: Application) { applications[scope] = application }
+        fun setApplication(scope: Scope = DefaultScope, application: Application) {
+            applications[scope] = application
+        }
 
         val stylesheets = FXCollections.observableArrayList<String>()
 
@@ -255,29 +259,25 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
-    val oldScope = inheritScopeHolder.get()
     inheritScopeHolder.set(scope)
-    try {
-        if (Injectable::class.java.isAssignableFrom(type.java)) {
-            val components = FX.getComponents(scope)
-            if (!components.containsKey(type as KClass<out Injectable>)) {
-                synchronized(FX.lock) {
-                    if (!components.containsKey(type)) {
-                        val cmp = type.java.newInstance()
-                        if (cmp is UIComponent) cmp.init()
-                        components[type] = cmp
-                    }
+    println("Finding $type, Scope: $scope (default=${DefaultScope == scope})")
+    if (Injectable::class.java.isAssignableFrom(type.java)) {
+        val components = FX.getComponents(scope)
+        if (!components.containsKey(type as KClass<out Injectable>)) {
+            synchronized(FX.lock) {
+                if (!components.containsKey(type)) {
+                    val cmp = type.java.newInstance()
+                    if (cmp is UIComponent) cmp.init()
+                    components[type] = cmp
                 }
             }
-            return components[type] as T
         }
-
-        val cmp = type.java.newInstance()
-        if (cmp is Fragment) cmp.init()
-        return cmp
-    } finally {
-        inheritScopeHolder.set(oldScope)
+        return components[type] as T
     }
+
+    val cmp = type.java.newInstance()
+    if (cmp is Fragment) cmp.init()
+    return cmp
 }
 
 interface DIContainer {
@@ -296,7 +296,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node) {
     when (this) {
-        // Only add if root is already created, else this will become the root
+    // Only add if root is already created, else this will become the root
         is UIComponent -> root?.addChildIfPossible(node)
         is BorderPane -> {
             val target = builderTarget
@@ -309,7 +309,8 @@ fun EventTarget.addChildIfPossible(node: Node) {
             val tab = Tab(uicmp?.title ?: node.toString(), node)
             tabs.add(tab)
         }
-        is DataGrid<*> -> { }
+        is DataGrid<*> -> {
+        }
         else -> getChildList()?.apply { if (!contains(node)) add(node) }
     }
 }
