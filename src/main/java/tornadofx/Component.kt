@@ -334,6 +334,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
+        = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
+
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {
