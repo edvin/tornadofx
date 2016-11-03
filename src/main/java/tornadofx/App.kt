@@ -12,9 +12,14 @@ import kotlin.reflect.KProperty
 open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
     var scope: Scope = DefaultScope
 
+    constructor(primaryView: KClass<out UIComponent>? = null, stylesheet: KClass<out Stylesheet>, scope: Scope = DefaultScope) : this(primaryView, *arrayOf(stylesheet)) {
+        this.scope = scope
+    }
+
     constructor(icon: Image, primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : this(primaryView, *stylesheet) {
         addStageIcon(icon, scope)
     }
+
     constructor() : this(null)
 
     open val primaryView: KClass<out UIComponent> = primaryView ?: DeterminedByParameter::class

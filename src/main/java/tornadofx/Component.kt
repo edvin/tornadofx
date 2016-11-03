@@ -362,7 +362,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                             }
 
                             FX.applyStylesheetsTo(this)
-                            icons += FX.getPrimaryStage(scope)!!.icons
+                            val primaryStage = FX.getPrimaryStage(scope)
+                            if (primaryStage != null) icons += primaryStage.icons
                             scene = this
                             this@UIComponent.properties["tornadofx.scene"] = this
                         }

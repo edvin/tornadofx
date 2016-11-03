@@ -36,7 +36,7 @@ open class Scope {
     }
 }
 
-val DefaultScope = Scope()
+var DefaultScope = Scope()
 
 class FX {
     companion object {
@@ -144,6 +144,11 @@ class FX {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
+
+            // If custom scope is activated for application itself, change DefaultScope to be the supplised scope
+            if (applications[DefaultScope] == null) {
+                DefaultScope = scope
+            }
 
             if (application.parameters?.unnamed != null) {
                 with(application.parameters.unnamed) {
