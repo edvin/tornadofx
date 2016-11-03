@@ -266,12 +266,16 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
     inheritScopeHolder.set(scope)
     if (Injectable::class.java.isAssignableFrom(type.java)) {
-        val components = FX.getComponents(scope)
+        var components = FX.getComponents(scope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
                     if (cmp is UIComponent) cmp.init()
+                    // if cmp.scope overrode from scope, inject into that instead
+                    if (cmp is Component && cmp.scope != scope) {
+                        components = FX.getComponents(scope)
+                    }
                     components[type] = cmp
                 }
             }
