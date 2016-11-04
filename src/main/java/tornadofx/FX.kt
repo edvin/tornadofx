@@ -272,7 +272,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
                     if (cmp is UIComponent) cmp.init()
-                    // if cmp.scope overrode from scope, inject into that instead
+                    // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != scope) {
                         components = FX.getComponents(scope)
                     }

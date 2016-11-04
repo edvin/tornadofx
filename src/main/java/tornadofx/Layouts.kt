@@ -6,6 +6,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import kotlin.reflect.KClass
@@ -163,6 +164,9 @@ fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = nu
     opcr(this, anchorpane, op)
     return anchorpane
 }
+
+fun EventTarget.canvas(width: Double = 0.0, height: Double = 0.0, op: (Canvas.() -> Unit)? = null) =
+    opcr(this, Canvas(width, height), op)
 
 fun EventTarget.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
     val accordion = Accordion()
