@@ -7,6 +7,7 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
+import java.net.URL
 
 class FloatingWindow(val view: UIComponent) : StackPane() {
     lateinit var window: BorderPane
@@ -14,8 +15,45 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
     var offsetX = 0.0
     var offsetY = 0.0
 
+    class Styles : Stylesheet() {
+        companion object {
+            val floatingWindowWrapper by cssclass()
+            val window by cssclass()
+            val top by cssclass()
+            val closebutton by cssclass()
+        }
+
+        init {
+            floatingWindowWrapper {
+                minWidth = 200.px
+                top {
+                    backgroundColor += Color.WHITE
+                    padding = box(0.px, 0.px, 0.px, 5.px)
+                    alignment = Pos.CENTER
+
+                    button {
+                        padding = box(4.px, 12.px)
+                        backgroundRadius += box(0.px)
+                        backgroundColor += Color.WHITE
+                        and(hover) {
+                            backgroundColor += Color.RED
+                            star {
+                                fill = Color.WHITE
+                            }
+                        }
+                        star {
+                            shape = "M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun getUserAgentStylesheet() = URL("css://${Styles::class.java.name}").toExternalForm()!!
+
     init {
-        addClass("floating-window-wrapper")
+        addClass(Styles.floatingWindowWrapper)
 
         canvas {
             graphicsContext2D.fill = c("#000", 0.4)
@@ -26,29 +64,23 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
         }
 
         borderpane {
-            addClass("floating-window")
+            addClass(Styles.window)
             window = this
             top {
-                addClass("floating-window-top")
                 hbox(5.0) {
-                    style {
-                        backgroundColor += Color.WHITE
-                        padding = box(2.px)
-                        alignment = Pos.CENTER
-                    }
+                    addClass(Styles.top)
                     label(view.titleProperty) {
                         isMouseTransparent = true
                     }
                     spacer() {
                         isMouseTransparent = true
                     }
-                    button("X") {
-                        style {
-                            backgroundInsets += box(0.px)
-                            backgroundColor += Color.TRANSPARENT
-                        }
-                        setOnAction {
+                    button {
+                        setOnMouseClicked {
                             close()
+                        }
+                        graphic = svgpath("M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z") {
+                            addClass(Styles.closebutton)
                         }
                     }
                 }
@@ -116,7 +148,8 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
         window.top.setOnMouseDragged { mouseEvent ->
             offsetX += mouseEvent.x - x
             offsetY += mouseEvent.y - y
-            requestLayout()
+            window.top.layoutX += mouseEvent.x - x
+            window.top.layoutY += mouseEvent.y - y
         }
     }
 

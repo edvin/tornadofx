@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import tornadofx.*
+import tornadofx.tests.TableViewTest
 
 class FloatingWindowTestApp : App(FloatingWindowTest::class)
 
@@ -24,7 +25,7 @@ class FloatingWindowTest : View("Floating Window") {
     }
 
     private fun openFloatingWindow() {
-        val containerView = find(ContainerView::class)
+        val containerView = find(ExpandableTableTest::class)
         FloatingWindow(containerView).openOver(root)
     }
 }
