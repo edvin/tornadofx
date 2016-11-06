@@ -10,10 +10,12 @@ import javafx.scene.paint.Color
 import java.net.URL
 
 class FloatingWindow(val view: UIComponent) : StackPane() {
-    lateinit var window: BorderPane
-    lateinit var coverNode: Node
-    var offsetX = 0.0
-    var offsetY = 0.0
+    private lateinit var window: BorderPane
+    private lateinit var coverNode: Node
+    private var indexInCoverParent: Int? = null
+    private var coverParent: Parent? = null
+    private var offsetX = 0.0
+    private var offsetY = 0.0
 
     class Styles : Stylesheet() {
         companion object {
@@ -25,7 +27,6 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
 
         init {
             floatingWindowWrapper {
-                minWidth = 200.px
                 top {
                     backgroundColor += Color.WHITE
                     padding = box(0.px, 0.px, 0.px, 5.px)
@@ -52,7 +53,7 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
 
     override fun getUserAgentStylesheet() = URL("css://${Styles::class.java.name}").toExternalForm()!!
 
-    init {
+    private fun doInit() {
         addClass(Styles.floatingWindowWrapper)
 
         canvas {
@@ -91,22 +92,24 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
 
     private fun Canvas.fillOverlay() {
         graphicsContext2D.apply {
-            clearRect(0.0, 0.0, width, height)
-            fillRect(0.0, 0.0, width, height)
+            val lb = coverNode.layoutBounds
+            clearRect(0.0, 0.0, lb.width, lb.height)
+            fillRect(0.0, 0.0, lb.width, lb.height)
         }
     }
 
     fun openOver(coverNode: Node) {
         this.coverNode = coverNode
-        val coverParent = coverNode.parent
+        coverParent = coverNode.parent
         if (coverParent != null) {
-            val indexInCoverParent = coverParent.getChildList()!!.indexOf(coverNode)
+            indexInCoverParent = coverParent!!.getChildList()!!.indexOf(coverNode)
             coverNode.removeFromParent()
-            coverParent.getChildList()!!.add(indexInCoverParent, this)
+            coverParent!!.getChildList()!!.add(indexInCoverParent!!, this)
         } else {
             val scene = coverNode.scene
             scene.root = this
         }
+        doInit()
         window.center = stackpane {
             this += view
             addClass("floating-window-content")
@@ -121,19 +124,22 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
     fun close() {
         coverNode.removeFromParent()
         removeFromParent()
-        if (scene != null) {
+        if (indexInCoverParent != null) {
+            coverParent!!.getChildList()!!.add(indexInCoverParent!!, coverNode)
+        } else {
             scene.root = coverNode as Parent
         }
     }
 
     override fun layoutChildren() {
-        val prefHeight = window.prefHeight(width)
-        val prefWidth = window.prefWidth(height)
-        val x = (width - prefWidth) / 2
-        val y = (height - prefHeight) / 2
+        val lb = coverNode.layoutBounds
+        val prefHeight = window.prefHeight(lb.width)
+        val prefWidth = window.prefWidth(lb.height)
+        val x = (lb.width - prefWidth) / 2
+        val y = (lb.height - prefHeight) / 2
 
-        coverNode.resizeRelocate(0.0, 0.0, width, height)
-        window.resizeRelocate(Math.max(0.0, x + offsetX), Math.max(0.0, y + offsetY), prefWidth, prefHeight)
+        coverNode.resizeRelocate(0.0, 0.0, lb.width, lb.height)
+        window.resizeRelocate(Math.max(0.0, x + offsetX), Math.max(0.0, y + offsetY), Math.min(prefWidth, lb.width), Math.min(prefHeight, lb.height))
     }
 
     private fun moveWindowOnDrag() {
