@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- ComboBox.cellFormat also formats button cell by default with option to override
 - UIComponent.openWindow() opens a new modeless Window
 - TreeView.bindSelected(itemProperty) and TreeView.bindSelected(itemViewModel)
 - Rest POST supports InputStream (https://github.com/edvin/tornadofx/pull/200)
