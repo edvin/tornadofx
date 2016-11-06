@@ -663,8 +663,8 @@ class HBoxConstraint(
     }
 }
 
-var Node.hgrow: Priority get() = HBox.getHgrow(this); set(value) { HBox.setHgrow(this, value) }
-var Node.vgrow: Priority get() = VBox.getVgrow(this); set(value) { VBox.setVgrow(this, value) }
+var Node.hgrow: Priority? get() = HBox.getHgrow(this); set(value) { HBox.setHgrow(this, value) }
+var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) { VBox.setVgrow(this, value) }
 
 fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()
