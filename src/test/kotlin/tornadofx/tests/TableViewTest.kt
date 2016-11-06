@@ -23,7 +23,7 @@ class TableViewTest {
         val C = SimpleStringProperty("Test string $i")
     }
 
-    val TestList = FXCollections.observableArrayList(Array(5, { TestObject(it) }).asList())
+    val TestList = FXCollections.observableArrayList(Array(5, ::TestObject).asList())
 
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 

@@ -139,7 +139,15 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
         val y = (lb.height - prefHeight) / 2
 
         coverNode.resizeRelocate(0.0, 0.0, lb.width, lb.height)
-        window.resizeRelocate(Math.max(0.0, x + offsetX), Math.max(0.0, y + offsetY), Math.min(prefWidth, lb.width), Math.min(prefHeight, lb.height))
+
+        var windowX = Math.max(0.0, x + offsetX)
+        var windowY = Math.max(0.0, y + offsetY)
+        val windowWidth = Math.min(prefWidth, lb.width - windowX)
+        val windowHeight = Math.min(prefHeight, lb.height - windowY)
+
+        while (windowX > 0 && prefWidth < windowWidth) windowX--
+        while (windowY > 0 && prefHeight < windowHeight) windowY--
+        window.resizeRelocate(windowX, windowY, windowWidth, windowHeight)
     }
 
     private fun moveWindowOnDrag() {
