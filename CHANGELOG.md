@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Added `Node.alignment` property that knows how to apply alignment depending on the parent
+- Added `Node.margin` property that knows how to apply margin depending on the parent
 - canvas builder
 - All constraint builders no longer set default values for properties that are not overridden
 - Kotlin 1.0.5

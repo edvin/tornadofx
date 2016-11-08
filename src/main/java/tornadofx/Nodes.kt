@@ -554,8 +554,8 @@ fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T
 }
 
 class BorderPaneConstraint(node: Node,
-        override var margin: Insets? = BorderPane.getMargin(node),
-        var alignment: Pos? = null
+                           override var margin: Insets? = BorderPane.getMargin(node),
+                           var alignment: Pos? = null
 ) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
         margin.let { BorderPane.setMargin(node, it) }
@@ -563,6 +563,30 @@ class BorderPaneConstraint(node: Node,
         return node
     }
 }
+
+var Node.margin: Insets?
+    get() = when (parent) {
+        is HBox -> HBox.getMargin(this)
+        is VBox -> VBox.getMargin(this)
+        is StackPane -> StackPane.getMargin(this)
+        else -> null
+    }
+    set(value) = when (parent) {
+        is HBox -> HBox.setMargin(this, value)
+        is VBox -> VBox.setMargin(this, value)
+        is StackPane -> StackPane.setMargin(this, value)
+        else -> { }
+    }
+
+var Node.alignment: Pos?
+    get() = when (parent) {
+        is StackPane -> StackPane.getAlignment(this)
+        else -> null
+    }
+    set (value) = when (parent) {
+        is StackPane -> StackPane.setAlignment(this, value)
+        else -> { }
+    }
 
 /**
  * Access GridPane constraints to manipulate and apply on this control
@@ -574,17 +598,17 @@ fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
 }
 
 class GridPaneConstraint(node: Node,
-        var columnIndex: Int? = null,
-        var rowIndex: Int? = null,
-        var hGrow: Priority? = null,
-        var vGrow: Priority? = null,
-        override var margin: Insets? = GridPane.getMargin(node),
-        var fillHeight: Boolean? = null,
-        var fillWidth: Boolean? = null,
-        var hAlignment: HPos? = null,
-        var vAlignment: VPos? = null,
-        var columnSpan: Int? = null,
-        var rowSpan: Int? = null
+                         var columnIndex: Int? = null,
+                         var rowIndex: Int? = null,
+                         var hGrow: Priority? = null,
+                         var vGrow: Priority? = null,
+                         override var margin: Insets? = GridPane.getMargin(node),
+                         var fillHeight: Boolean? = null,
+                         var fillWidth: Boolean? = null,
+                         var hAlignment: HPos? = null,
+                         var vAlignment: VPos? = null,
+                         var columnSpan: Int? = null,
+                         var rowSpan: Int? = null
 
 ) : MarginableConstraints() {
     var vhGrow: Priority? = null
