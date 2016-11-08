@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [1.5.8-SNAPSHOT]
 
 - Added canvas() builder
+- Kotlin 1.0.5
+- Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
+- Added `Node.hgrow` and `Node.vgrow` properties (https://github.com/edvin/tornadofx/issues/204)
+- ComboBox.cellFormat also formats button cell by default with option to override
 - UIComponent.openWindow() opens a new modeless Window
 - TreeView.bindSelected(itemProperty) and TreeView.bindSelected(itemViewModel)
 - Rest POST supports InputStream (https://github.com/edvin/tornadofx/pull/200)

@@ -633,6 +633,12 @@ fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
     return c.applyToNode(this)
 }
 
+fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
+    val c = StackpaneConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
 class VBoxConstraint(
         override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
         var vGrow: Priority? = null
@@ -641,6 +647,18 @@ class VBoxConstraint(
     fun <T : Node> applyToNode(node: T): T {
         margin.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
+        return node
+    }
+}
+
+class StackpaneConstraint(
+        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
+        var alignment: Pos? = null
+
+) : MarginableConstraints() {
+    fun <T : Node> applyToNode(node: T): T {
+        margin.let { StackPane.setMargin(node, it) }
+        alignment?.let { StackPane.setAlignment(node, it) }
         return node
     }
 }
@@ -662,6 +680,9 @@ class HBoxConstraint(
         return node
     }
 }
+
+var Node.hgrow: Priority? get() = HBox.getHgrow(this); set(value) { HBox.setHgrow(this, value) }
+var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) { VBox.setVgrow(this, value) }
 
 fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()

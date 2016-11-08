@@ -11,7 +11,6 @@ import javafx.scene.input.MouseEvent
 import kotlin.reflect.KClass
 
 
-
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
  * @param clickCount The number of mouse clicks to trigger the action
@@ -71,7 +70,7 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>) : ListCell<T>() {
+open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>?) : ListCell<T>() {
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
@@ -79,9 +78,11 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
     private var fresh = true
 
     init {
-        listView.properties["tornadofx.cellFormatCapable"] = true
-        listView.properties["tornadofx.cellCacheCapable"] = true
-        listView.properties["tornadofx.editCapable"] = true
+        if (listView != null) {
+            listView.properties["tornadofx.cellFormatCapable"] = true
+            listView.properties["tornadofx.cellCacheCapable"] = true
+            listView.properties["tornadofx.editCapable"] = true
+        }
         indexProperty().onChange {
             if (it == -1) clearCellFragment()
         }
@@ -125,7 +126,7 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
             cellFragment?.apply {
                 itemProperty.value = item
                 cellProperty.value = this@SmartListCell
-                with (editingProperty as BooleanProperty) {
+                with(editingProperty as BooleanProperty) {
                     cleanBind(editingProperty())
                 }
                 graphic = root
@@ -138,7 +139,7 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
         cellFragment?.apply {
             itemProperty.value = null
             cellProperty.value = null
-            with (editingProperty as BooleanProperty) {
+            with(editingProperty as BooleanProperty) {
                 unbind()
             }
         }

@@ -314,10 +314,13 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    fun <T> ComboBox<T>.cellFormat(formatter: ListCell<T>.(T) -> Unit) {
+    fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
         cellFactory = Callback {
-            it.properties["tornadofx.cellFormat"] = formatter
+            it?.properties?.put("tornadofx.cellFormat", formatter)
             SmartListCell(scope, it)
+        }
+        if (formatButtonCell) {
+            buttonCell = cellFactory.call(null)
         }
     }
 
