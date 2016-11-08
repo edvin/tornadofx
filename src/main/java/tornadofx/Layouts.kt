@@ -6,6 +6,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import kotlin.reflect.KClass
@@ -156,6 +157,9 @@ fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null
 
 @Deprecated("No need to wrap splitpane items in items{} anymore. Remove the wrapper and all builder items will still be added as before.", ReplaceWith("no items{} wrapper"), DeprecationLevel.WARNING)
 fun SplitPane.items(op: (SplitPane.() -> Unit)) = op(this)
+
+fun EventTarget.canvas(width: Double = 0.0, height: Double = 0.0, op: (Canvas.() -> Unit)? = null) =
+        opcr(this, Canvas(width, height), op)
 
 fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): AnchorPane {
     val anchorpane = AnchorPane()

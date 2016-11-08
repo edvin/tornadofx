@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- canvas builder
 - All constraint builders no longer set default values for properties that are not overridden
 - Kotlin 1.0.5
 - Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
