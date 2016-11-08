@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
-- Added `stackpaneConstraints` builder (margin/alignment)
+- Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
 - Added `Node.hgrow` and `Node.vgrow` properties (https://github.com/edvin/tornadofx/issues/204)
 - ComboBox.cellFormat also formats button cell by default with option to override
 - UIComponent.openWindow() opens a new modeless Window
