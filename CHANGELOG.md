@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
-- Collection<Node>.style will apply styles to all elements in collection
+- Iterable<Node>.style will apply styles to all elements in collection
 - Added `Node.alignment` property that knows how to apply alignment depending on the parent
 - Added `Node.margin` property that knows how to apply margin depending on the parent
 - canvas builder

@@ -798,7 +798,7 @@ class InlineCss : PropertyHolder(), Rendered {
     override fun render() = mergedProperties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
 }
 
-fun Collection<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
+fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
