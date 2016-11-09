@@ -81,6 +81,7 @@ fun EventTarget.separator(orientation: Orientation = Orientation.HORIZONTAL, op:
 fun EventTarget.group(initialChildren: Iterable<Node>? = null, op: (Group.() -> Unit)? = null) = opcr(this, Group().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun EventTarget.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun EventTarget.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
+fun EventTarget.pane(op: (Pane.() -> Unit)? = null) = opcr(this, Pane(), op)
 fun EventTarget.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
 fun EventTarget.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun EventTarget.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
