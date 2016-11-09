@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Added `Node.alignment` property that knows how to apply alignment depending on the parent
+- Added `Node.margin` property that knows how to apply margin depending on the parent
+- canvas builder
+- All constraint builders no longer set default values for properties that are not overridden
+- Kotlin 1.0.5
+- Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
+- Added `Node.hgrow` and `Node.vgrow` properties (https://github.com/edvin/tornadofx/issues/204)
 - ComboBox.cellFormat also formats button cell by default with option to override
 - UIComponent.openWindow() opens a new modeless Window
 - TreeView.bindSelected(itemProperty) and TreeView.bindSelected(itemViewModel)

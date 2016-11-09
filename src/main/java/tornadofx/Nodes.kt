@@ -548,14 +548,14 @@ fun EventTarget.isInsideTableRow(): Boolean {
  * Access BorderPane constraints to manipulate and apply on this control
  */
 fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
-    val bpc = BorderPaneConstraint()
+    val bpc = BorderPaneConstraint(this)
     bpc.op()
     return bpc.applyToNode(this)
 }
 
-class BorderPaneConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var alignment: Pos? = null
+class BorderPaneConstraint(node: Node,
+                           override var margin: Insets? = BorderPane.getMargin(node),
+                           var alignment: Pos? = null
 ) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
         margin.let { BorderPane.setMargin(node, it) }
@@ -564,27 +564,51 @@ class BorderPaneConstraint(
     }
 }
 
+var Node.margin: Insets?
+    get() = when (parent) {
+        is HBox -> HBox.getMargin(this)
+        is VBox -> VBox.getMargin(this)
+        is StackPane -> StackPane.getMargin(this)
+        else -> null
+    }
+    set(value) = when (parent) {
+        is HBox -> HBox.setMargin(this, value)
+        is VBox -> VBox.setMargin(this, value)
+        is StackPane -> StackPane.setMargin(this, value)
+        else -> { }
+    }
+
+var Node.alignment: Pos?
+    get() = when (parent) {
+        is StackPane -> StackPane.getAlignment(this)
+        else -> null
+    }
+    set (value) = when (parent) {
+        is StackPane -> StackPane.setAlignment(this, value)
+        else -> { }
+    }
+
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
 fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
-    val gpc = GridPaneConstraint()
+    val gpc = GridPaneConstraint(this)
     gpc.op()
     return gpc.applyToNode(this)
 }
 
-class GridPaneConstraint(
-        var columnIndex: Int? = null,
-        var rowIndex: Int? = null,
-        var hGrow: Priority? = null,
-        var vGrow: Priority? = null,
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var fillHeight: Boolean? = null,
-        var fillWidth: Boolean? = null,
-        var hAlignment: HPos? = null,
-        var vAlignment: VPos? = null,
-        var columnSpan: Int? = null,
-        var rowSpan: Int? = null
+class GridPaneConstraint(node: Node,
+                         var columnIndex: Int? = null,
+                         var rowIndex: Int? = null,
+                         var hGrow: Priority? = null,
+                         var vGrow: Priority? = null,
+                         override var margin: Insets? = GridPane.getMargin(node),
+                         var fillHeight: Boolean? = null,
+                         var fillWidth: Boolean? = null,
+                         var hAlignment: HPos? = null,
+                         var vAlignment: VPos? = null,
+                         var columnSpan: Int? = null,
+                         var rowSpan: Int? = null
 
 ) : MarginableConstraints() {
     var vhGrow: Priority? = null
@@ -628,39 +652,64 @@ class GridPaneConstraint(
 }
 
 fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
-    val c = VBoxConstraint()
+    val c = VBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-class VBoxConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var vGrow: Priority? = null
+fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
+    val c = StackpaneConstraint(this)
+    c.op()
+    return c.applyToNode(this)
+}
+
+class VBoxConstraint(node: Node,
+                     override var margin: Insets? = VBox.getMargin(node),
+                     var vGrow: Priority? = null
 
 ) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
-        margin.let { VBox.setMargin(node, it) }
+        margin?.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
         return node
     }
 }
 
+class StackpaneConstraint(node: Node,
+                          override var margin: Insets? = StackPane.getMargin(node),
+                          var alignment: Pos? = null
+
+) : MarginableConstraints() {
+    fun <T : Node> applyToNode(node: T): T {
+        margin?.let { StackPane.setMargin(node, it) }
+        alignment?.let { StackPane.setAlignment(node, it) }
+        return node
+    }
+}
+
 fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
-    val c = HBoxConstraint()
+    val c = HBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-class HBoxConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var hGrow: Priority? = null
+class HBoxConstraint(node: Node,
+                     override var margin: Insets? = HBox.getMargin(node),
+                     var hGrow: Priority? = null
 ) : MarginableConstraints() {
 
     fun <T : Node> applyToNode(node: T): T {
-        margin.let { HBox.setMargin(node, it) }
+        margin?.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
         return node
     }
+}
+
+var Node.hgrow: Priority? get() = HBox.getHgrow(this); set(value) {
+    HBox.setHgrow(this, value)
+}
+var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) {
+    VBox.setVgrow(this, value)
 }
 
 fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
@@ -685,29 +734,29 @@ class AnchorPaneConstraint(
 }
 
 abstract class MarginableConstraints {
-    abstract var margin: Insets
+    abstract var margin: Insets?
     var marginTop: Double
-        get() = margin.top
+        get() = margin?.top ?: 0.0
         set(value) {
-            margin = margin.let { Insets(value, it.right, it.bottom, it.left) }
+            margin = Insets(value, margin?.right ?: 0.0, margin?.bottom ?: 0.0, margin?.left ?: 0.0)
         }
 
     var marginRight: Double
-        get() = margin.right
+        get() = margin?.right ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, value, it.bottom, it.left) }
+            margin = Insets(margin?.top ?: 0.0, value, margin?.bottom ?: 0.0, margin?.left ?: 0.0)
         }
 
     var marginBottom: Double
-        get() = margin.bottom
+        get() = margin?.bottom ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, it.right, value, it.left) }
+            margin = Insets(margin?.top ?: 0.0, margin?.right ?: 0.0, value, margin?.left ?: 0.0)
         }
 
     var marginLeft: Double
-        get() = margin.left
+        get() = margin?.left ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, it.right, it.bottom, value) }
+            margin = Insets(margin?.top ?: 0.0, margin?.right ?: 0.0, margin?.bottom ?: 0.0, value)
         }
 
     fun marginTopBottom(value: Double) {
