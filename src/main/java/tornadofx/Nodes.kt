@@ -575,7 +575,9 @@ var Node.margin: Insets?
         is HBox -> HBox.setMargin(this, value)
         is VBox -> VBox.setMargin(this, value)
         is StackPane -> StackPane.setMargin(this, value)
-        else -> { }
+        else -> {
+            FX.log.warning("Setting margin=$value on $this failed because parent doesn't support it ($parent)")
+        }
     }
 
 var Node.alignment: Pos?
@@ -585,7 +587,9 @@ var Node.alignment: Pos?
     }
     set (value) = when (parent) {
         is StackPane -> StackPane.setAlignment(this, value)
-        else -> { }
+        else -> {
+            FX.log.warning("Setting alignment=$value on $this failed because parent doesn't support it ($parent)")
+        }
     }
 
 /**
