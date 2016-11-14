@@ -10,6 +10,7 @@ import javafx.scene.control.Tooltip
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.*
 import org.apache.http.client.protocol.HttpClientContext
 import org.apache.http.entity.InputStreamEntity
@@ -20,9 +21,7 @@ import org.apache.http.util.EntityUtils
 import tornadofx.Rest.Request.Method.*
 import java.io.InputStream
 import java.io.StringReader
-import java.net.HttpURLConnection
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.*
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -35,17 +34,18 @@ import javax.json.JsonValue
 
 open class Rest : Controller() {
     companion object {
-        var engineProvider: (Rest) -> Engine = { HttpURLEngine(it) }
+        var engineProvider: (Rest) -> Engine = ::HttpURLEngine
         val ongoingRequests = FXCollections.observableArrayList<Request>()
         val atomicseq = AtomicLong()
 
         fun useApacheHttpClient() {
-            engineProvider = { rest -> HttpClientEngine(rest) }
+            engineProvider = ::HttpClientEngine
         }
     }
 
     var engine = engineProvider(this)
     var baseURI: String? = null
+    var proxy: Proxy? = null
 
     fun setBasicAuth(username: String, password: String) = engine.setBasicAuth(username, password)
     fun reset() = engine.reset()
@@ -189,7 +189,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     val headers = mutableMapOf<String, String>()
 
     init {
-        connection = uri.toURL().openConnection() as HttpURLConnection
+        val url = uri.toURL()
+        connection = (if (engine.rest.proxy != null) url.openConnection(engine.rest.proxy) else url.openConnection()) as HttpURLConnection
         headers += "Accept-Encoding" to "gzip, deflate"
         headers += "Content-Type" to "application/json"
         headers += "Accept" to "application/json"
@@ -198,8 +199,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     override fun execute(): Rest.Response {
         engine.authInterceptor?.invoke(this)
 
-        for (header in headers)
-            connection.addRequestProperty(header.key, header.value)
+        for ((key, value) in headers)
+            connection.addRequestProperty(key, value)
 
         connection.requestMethod = method.toString()
 
@@ -310,6 +311,15 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
     }
 
     override fun execute(): Rest.Response {
+        if (engine.rest.proxy != null) {
+            val hp = engine.rest.proxy as Proxy
+            val sa = hp.address() as? InetSocketAddress
+            if (sa != null) {
+                val scheme = if (engine.rest.baseURI?.startsWith("https") ?: false) "https" else "http"
+                val proxy = HttpHost(sa.address, sa.port,  scheme)
+                request.config = RequestConfig.custom().setProxy(proxy).build()
+            }
+        }
         engine.authInterceptor?.invoke(this)
 
         if (entity != null && request is HttpEntityEnclosingRequestBase) {
