@@ -337,6 +337,12 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
+        InternalWindow(modal, escapeClosesWindow, closeButton).open(find(view, scope), owner)
+
+    protected fun openInternalWindow(view: UIComponent, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
+        InternalWindow(modal, escapeClosesWindow, closeButton).open(view, owner)
+
     fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
         = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
 

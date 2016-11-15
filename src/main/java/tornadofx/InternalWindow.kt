@@ -1,22 +1,84 @@
 package tornadofx
 
+import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
 import javafx.scene.effect.DropShadow
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import java.net.URL
 
-class FloatingWindow(val modal: Boolean, val view: UIComponent) : StackPane() {
+internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
+    private var titleProperty = SimpleStringProperty()
+    var overlay: Canvas? = null
     private var indexInCoverParent: Int? = null
     private var coverParent: Parent? = null
     private var offsetX = 0.0
     private var offsetY = 0.0
+
+    init {
+        if (escapeClosesWindow) {
+            addEventFilter(KeyEvent.KEY_PRESSED) {
+                if (it.code == KeyCode.ESCAPE)
+                    close()
+            }
+        }
+
+        addClass(Styles.floatingWindowWrapper)
+
+        if (modal) {
+            canvas {
+                overlay = this
+                graphicsContext2D.fill = c("#000", 0.4)
+                widthProperty().bind(this@InternalWindow.widthProperty())
+                heightProperty().bind(this@InternalWindow.heightProperty())
+                widthProperty().onChange { fillOverlay() }
+                heightProperty().onChange { fillOverlay() }
+            }
+        }
+
+        borderpane {
+            addClass(Styles.window)
+            window = this
+            top {
+                hbox(5.0) {
+                    addClass(Styles.top)
+                    label(titleProperty) {
+                        isMouseTransparent = true
+                    }
+                    spacer {
+                        isMouseTransparent = true
+                    }
+                    if (closeButton) {
+                        button {
+                            setOnMouseClicked {
+                                close()
+                            }
+                            graphic = svgpath("M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z") {
+                                addClass(Styles.closebutton)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        moveWindowOnDrag()
+
+        window.center = stackpane {
+            addClass("floating-window-content")
+            style {
+                backgroundColor += Color.WHITE
+                padding = box(5.px)
+            }
+        }
+    }
 
     class Styles : Stylesheet() {
         companion object {
@@ -29,7 +91,6 @@ class FloatingWindow(val modal: Boolean, val view: UIComponent) : StackPane() {
         init {
             floatingWindowWrapper {
                 window {
-                    borderColor += box(Color.LIGHTBLUE)
                     effect = DropShadow()
                 }
 
@@ -59,75 +120,33 @@ class FloatingWindow(val modal: Boolean, val view: UIComponent) : StackPane() {
 
     override fun getUserAgentStylesheet() = URL("css://${Styles::class.java.name}").toExternalForm()!!
 
-    private fun doInit() {
-        addClass(Styles.floatingWindowWrapper)
-
-        if (modal) {
-            canvas {
-                graphicsContext2D.fill = c("#000", 0.4)
-                widthProperty().bind(this@FloatingWindow.widthProperty())
-                heightProperty().bind(this@FloatingWindow.heightProperty())
-                widthProperty().onChange { fillOverlay() }
-                heightProperty().onChange { fillOverlay() }
-                fillOverlay()
-            }
-        }
-
-        borderpane {
-            addClass(Styles.window)
-            window = this
-            top {
-                hbox(5.0) {
-                    addClass(Styles.top)
-                    label(view.titleProperty) {
-                        isMouseTransparent = true
-                    }
-                    spacer {
-                        isMouseTransparent = true
-                    }
-                    button {
-                        setOnMouseClicked {
-                            close()
-                        }
-                        graphic = svgpath("M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z") {
-                            addClass(Styles.closebutton)
-                        }
-                    }
-                }
-            }
-        }
-        moveWindowOnDrag()
-    }
-
-    private fun Canvas.fillOverlay() {
-        graphicsContext2D.apply {
+    fun fillOverlay() {
+        overlay?.graphicsContext2D.apply {
             val lb = coverNode.layoutBounds
-            clearRect(0.0, 0.0, lb.width, lb.height)
-            fillRect(0.0, 0.0, lb.width, lb.height)
+            this?.clearRect(0.0, 0.0, lb.width, lb.height)
+            this?.fillRect(0.0, 0.0, lb.width, lb.height)
         }
     }
 
-    fun openOver(coverNode: Node) {
-        this.coverNode = coverNode
-        coverParent = coverNode.parent
+    fun open(view: UIComponent, owner: Node) {
+        if (owner.parent is InternalWindow) return
+        this.coverNode = owner
+        this.coverParent = owner.parent
+        this.titleProperty.bind(view.titleProperty)
+
         if (coverParent != null) {
-            indexInCoverParent = coverParent!!.getChildList()!!.indexOf(coverNode)
-            coverNode.removeFromParent()
+            indexInCoverParent = coverParent!!.getChildList()!!.indexOf(owner)
+            owner.removeFromParent()
             coverParent!!.getChildList()!!.add(indexInCoverParent!!, this)
         } else {
-            val scene = coverNode.scene
+            val scene = owner.scene
             scene.root = this
         }
-        doInit()
-        window.center = stackpane {
-            this += view
-            addClass("floating-window-content")
-            style {
-                backgroundColor += Color.WHITE
-                padding = box(5.px)
-            }
-        }
-        children.add(0, coverNode)
+
+        (window.center as Parent) += view
+
+        children.add(0, owner)
+        fillOverlay()
     }
 
     fun close() {

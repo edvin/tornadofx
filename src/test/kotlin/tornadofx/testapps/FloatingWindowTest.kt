@@ -24,7 +24,6 @@ class FloatingWindowTest : View("Floating Window") {
     }
 
     private fun openFloatingWindow() {
-        val containerView = find(ExpandableTableTest::class)
-        FloatingWindow(false, containerView).openOver(root)
+        openInternalWindow(ExpandableTableTest::class)
     }
 }

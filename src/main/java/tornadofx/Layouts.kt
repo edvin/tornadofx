@@ -169,9 +169,6 @@ fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = nu
     return anchorpane
 }
 
-fun EventTarget.canvas(width: Double = 0.0, height: Double = 0.0, op: (Canvas.() -> Unit)? = null) =
-    opcr(this, Canvas(width, height), op)
-
 fun EventTarget.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? = null): Accordion {
     val accordion = Accordion()
     if (panes.isNotEmpty()) accordion.panes.addAll(panes)
