@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- openInternalWindow(SomeOtherView::class) opens a window ontop of the current scene graph
 - bindStringProperty respects given format (https://github.com/edvin/tornadofx/issues/210)
 - Proxy support for Rest client (Set `client.proxy = Proxy()`)
 - Pane builder (https://github.com/edvin/tornadofx/issues/208)
