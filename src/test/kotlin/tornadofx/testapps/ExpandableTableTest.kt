@@ -24,7 +24,7 @@ class ExpandableTableTest : View("Smart Resize Demo") {
     ).observable()
 
     override val root = tableview(rooms) {
-        prefWidth = 800.0
+        prefWidth = 600.0
 
         column("#", Room::id).contentWidth(10.0, true, true)
         column("Number", Room::number).weigthedWidth(1.0)

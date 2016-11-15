@@ -17,7 +17,6 @@ class FloatingWindowTest : View("Floating Window") {
             }
         }
         button("Open floating window") {
-            setPrefSize(400.0, 400.0)
             setOnAction {
                 openFloatingWindow()
             }
@@ -26,6 +25,6 @@ class FloatingWindowTest : View("Floating Window") {
 
     private fun openFloatingWindow() {
         val containerView = find(ExpandableTableTest::class)
-        FloatingWindow(containerView).openOver(root.lookup(".button"))
+        FloatingWindow(false, containerView).openOver(root)
     }
 }

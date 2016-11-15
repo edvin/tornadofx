@@ -4,12 +4,13 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
+import javafx.scene.effect.DropShadow
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import java.net.URL
 
-class FloatingWindow(val view: UIComponent) : StackPane() {
+class FloatingWindow(val modal: Boolean, val view: UIComponent) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private var indexInCoverParent: Int? = null
@@ -27,6 +28,11 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
 
         init {
             floatingWindowWrapper {
+                window {
+                    borderColor += box(Color.LIGHTBLUE)
+                    effect = DropShadow()
+                }
+
                 top {
                     backgroundColor += Color.WHITE
                     padding = box(0.px, 0.px, 0.px, 5.px)
@@ -56,12 +62,15 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
     private fun doInit() {
         addClass(Styles.floatingWindowWrapper)
 
-        canvas {
-            graphicsContext2D.fill = c("#000", 0.4)
-            widthProperty().bind(this@FloatingWindow.widthProperty())
-            heightProperty().bind(this@FloatingWindow.heightProperty())
-            widthProperty().onChange { fillOverlay() }
-            heightProperty().onChange { fillOverlay() }
+        if (modal) {
+            canvas {
+                graphicsContext2D.fill = c("#000", 0.4)
+                widthProperty().bind(this@FloatingWindow.widthProperty())
+                heightProperty().bind(this@FloatingWindow.heightProperty())
+                widthProperty().onChange { fillOverlay() }
+                heightProperty().onChange { fillOverlay() }
+                fillOverlay()
+            }
         }
 
         borderpane {
@@ -73,7 +82,7 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
                     label(view.titleProperty) {
                         isMouseTransparent = true
                     }
-                    spacer() {
+                    spacer {
                         isMouseTransparent = true
                     }
                     button {
@@ -140,14 +149,17 @@ class FloatingWindow(val view: UIComponent) : StackPane() {
 
         coverNode.resizeRelocate(0.0, 0.0, lb.width, lb.height)
 
-        var windowX = Math.max(0.0, x + offsetX)
-        var windowY = Math.max(0.0, y + offsetY)
-        val windowWidth = Math.min(prefWidth, lb.width - windowX)
-        val windowHeight = Math.min(prefHeight, lb.height - windowY)
+        if (offsetX != 0.0 || offsetY != 0.0) {
+            val windowX = x + offsetX
+            val windowY = y + offsetY
 
-        while (windowX > 0 && prefWidth < windowWidth) windowX--
-        while (windowY > 0 && prefHeight < windowHeight) windowY--
-        window.resizeRelocate(windowX, windowY, windowWidth, windowHeight)
+            window.resizeRelocate(windowX, windowY, window.width, window.height)
+        } else {
+            val windowWidth = Math.min(prefWidth, lb.width)
+            val windowHeight = Math.min(prefHeight, lb.height)
+
+            window.resizeRelocate(Math.max(0.0, x), Math.max(0.0, y), windowWidth, windowHeight)
+        }
     }
 
     private fun moveWindowOnDrag() {
