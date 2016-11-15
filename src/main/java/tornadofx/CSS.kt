@@ -323,9 +323,9 @@ open class PropertyHolder {
         }
     }
 
-    val properties = linkedMapOf<String, Any>()
+    val properties = linkedMapOf<String, Pair<Any, ((Any) -> String)?>>()
     val unsafeProperties = linkedMapOf<String, Any>()
-    val mergedProperties: Map<String, Any> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties) }
+    val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties.mapValues { it.value to null }) }
 
     // Root
     var focusColor: Paint by cssprop("-fx-focus-color")
@@ -600,36 +600,36 @@ open class PropertyHolder {
         return object : ReadWriteProperty<PropertyHolder, V> {
             override fun getValue(thisRef: PropertyHolder, property: KProperty<*>): V {
                 if (!properties.containsKey(key) && MultiValue::class.java.isAssignableFrom(V::class.java))
-                    properties[key] = MultiValue<V>()
-                return properties[key] as V
+                    properties[key] = MultiValue<V>() to null
+                return properties[key]?.first as V
             }
 
             override fun setValue(thisRef: PropertyHolder, property: KProperty<*>, value: V) {
-                properties[key] = value as Any
+                properties[key] = value as Any to properties[key]?.second
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    class CssProperty<T>(name: String, val multiValue: Boolean) {
+    class CssProperty<T>(name: String, val multiValue: Boolean, val renderer: ((T) -> String)? = null) {
         val name = name.camelToSnake()
         var value: T
             get() {
                 val props = selectionScope.get().properties
 
                 if (!props.containsKey(name) && multiValue)
-                    props[name] = MultiValue<T>()
+                    props[name] = MultiValue<T>() to renderer as ((Any) -> String)?
 
-                return selectionScope.get().properties[name] as T
+                return selectionScope.get().properties[name]?.first as T
             }
             set(value) {
-                selectionScope.get().properties.put(name, value as Any)
+                selectionScope.get().properties.put(name, value as Any to renderer as ((Any) -> String)?)
             }
     }
 
     infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
     fun <T : Any> setProperty(property: CssProperty<T>, value: T) {
-        properties[property.name] = value
+        properties[property.name] = value to properties[property.name]?.second
     }
 
     class Raw(val name: String)
@@ -646,10 +646,11 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
     fun render(parents: List<String>, refine: Boolean): String = buildString {
         val ruleStrings = selector.strings(parents, refine)
         block.mergedProperties.let {
-            if (it.size > 0) {
+            // TODO: Handle custom renderer
+            if (it.isNotEmpty()) {
                 append("${ruleStrings.joinToString()} {\n")
                 for ((name, value) in it) {
-                    append("    $name: ${PropertyHolder.toCss(value)};\n")
+                    append("    $name: ${value.second?.invoke(value.first) ?: PropertyHolder.toCss(value.first)};\n")
                 }
                 append("}\n")
             }
@@ -663,7 +664,7 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
 class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     companion object {
         fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
-        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.size == 0) this else
+        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.isEmpty()) this else
             parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
     }
 
@@ -711,8 +712,8 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
         mixin.properties.forEach { k, v ->
-            if (properties[k] is MultiValue<*>)
-                (properties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
+            if (properties[k]?.first is MultiValue<*>)
+                (properties[k]?.first as MultiValue<Any>).addAll(v.first as MultiValue<Any>)
             else
                 properties[k] = v
         }
@@ -795,7 +796,10 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 // Inline CSS
 
 class InlineCss : PropertyHolder(), Rendered {
-    override fun render() = mergedProperties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
+    // TODO: Handle custom renderer
+    override fun render() = mergedProperties.entries.joinToString(separator = "") {
+        " ${it.key}: ${it.value.second?.invoke(it.value.first) ?: toCss(it.value.first)};"
+    }
 }
 
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
@@ -814,7 +818,7 @@ fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssE
 fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
 fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
 fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
-inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
+inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
 
 class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
@@ -832,8 +836,8 @@ class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = name ==
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name, snakeCase)
 }
 
-class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name, multiValue)
+class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean, val renderer: ((T) -> String)? = null) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name, multiValue, renderer)
 }
 
 // Dimensions
