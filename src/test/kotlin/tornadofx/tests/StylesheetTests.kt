@@ -51,6 +51,34 @@ class StylesheetTests {
 
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
+    val renderedProp by cssproperty<String> { "${it.toUpperCase()}!!!" }
+    val renderedBool by cssproperty<Bool> { it.name }
+    val renderedMulti by cssproperty<MultiValue<String>> { it.elements.joinToString { "${it.toUpperCase()}!!!" } }
+
+    enum class Bool { TRUE, FALSE, FILE_NOT_FOUND }
+
+    @Test
+    fun useCustomRenderer() {
+        stylesheet {
+            label {
+                renderedProp.value = "bang"
+                renderedBool.value = Bool.FILE_NOT_FOUND
+                renderedMulti.value += "car"
+                renderedMulti.value += "truck"
+                renderedMulti.value += "van"
+                renderedMulti.value += "suv"
+            }
+        }.shouldEqual {
+            """
+            .label {
+                rendered-prop: BANG!!!;
+                rendered-bool: FILE_NOT_FOUND;
+                rendered-multi: CAR!!!, TRUCK!!!, VAN!!!, SUV!!!;
+            }
+            """
+        }
+    }
+
     @Test
     fun addRemovePseudoClass() {
         val node = Label()

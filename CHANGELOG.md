@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - addClass/removeClass/toggleClass now also works for pseudo classes (https://github.com/edvin/tornadofx/issues/198)
 - ItemViewModel().bindTo(listCellFragment)
 - resources.stream("some-resource") locates InputStream for resource
+- Added custom renderers to custom CSS Properties (https://github.com/edvin/tornadofx/issues/203)
 
 ## [1.5.7] - 2016-10-21
 
