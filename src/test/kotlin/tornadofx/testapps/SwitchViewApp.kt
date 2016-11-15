@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.geometry.Insets
 import tornadofx.*
 
 class SwitchViewApp : App(ContainerView::class)
@@ -31,5 +32,7 @@ class SubView1 : View("SubView2") {
 }
 
 class SubView2 : View("SubView2") {
-    override val root = hbox { label("I'm subview 2") }
+    override val root = hbox {
+        label("I'm subview 2")
+    }
 }

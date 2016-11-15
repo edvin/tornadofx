@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Proxy support for Rest client (Set `client.proxy = Proxy()`)
+- Pane builder (https://github.com/edvin/tornadofx/issues/208)
+- Iterable<Node>.style will apply styles to all elements in collection
+- Added `Node.alignment` property that knows how to apply alignment depending on the parent
+- Added `Node.margin` property that knows how to apply margin depending on the parent
+- canvas builder
+- All constraint builders no longer set default values for properties that are not overridden
 - Added canvas() builder
 - Kotlin 1.0.5
 - Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
