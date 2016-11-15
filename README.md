@@ -67,7 +67,9 @@ Create a View
 
 ```kotlin
 class HelloWorld : View() {
-	override val root = HBox(Label("Hello world")) 
+	override val root = hbox {
+	    label("Hello world")
+	}
 }
 ```
     
@@ -118,6 +120,7 @@ class MyView : View() {
             column("Name", Person::name)
             column("Birthday", Person::birthday)
             column("Age", Person::age)
+            columnResizePolicy = SmartResize.POLICY
         }
     }
 }
@@ -294,6 +297,16 @@ Swap a View for another (change Scene root or embedded View)
 button("Go to next page") {
     setOnAction {
     	replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
+    }
+}
+```
+
+Open a View in an internal window over the current scene graph
+
+```kotlin
+button("Open") {
+    setOnAction {
+        openInternalWindow(MyOtherView::class)
     }
 }
 ```
