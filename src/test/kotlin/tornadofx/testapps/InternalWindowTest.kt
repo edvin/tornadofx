@@ -20,6 +20,7 @@ class Editor : View("Editor") {
         prefWidth = 300.0
 
         fieldset("Editor") {
+
             field("First field") {
                 textfield()
             }

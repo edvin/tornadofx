@@ -13,7 +13,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import java.net.URL
 
-internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
+internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private var titleProperty = SimpleStringProperty()
@@ -51,6 +51,7 @@ internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, close
                 hbox(5.0) {
                     addClass(Styles.top)
                     label(titleProperty) {
+                        graphic = icon
                         isMouseTransparent = true
                     }
                     spacer {
@@ -72,17 +73,14 @@ internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, close
         moveWindowOnDrag()
 
         window.center = stackpane {
-            addClass("floating-window-content")
-            style {
-                backgroundColor += Color.WHITE
-                padding = box(5.px)
-            }
+            addClass(Styles.floatingWindowContent)
         }
     }
 
     class Styles : Stylesheet() {
         companion object {
             val floatingWindowWrapper by cssclass()
+            val floatingWindowContent by cssclass()
             val window by cssclass()
             val top by cssclass()
             val closebutton by cssclass()
@@ -96,7 +94,10 @@ internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, close
 
                 top {
                     backgroundColor += Color.WHITE
-                    padding = box(0.px, 0.px, 0.px, 5.px)
+                    padding = box(1.px, 1.px, 2.px, 5.px)
+                    borderColor += box(Color.TRANSPARENT, Color.TRANSPARENT, Color.GRAY, Color.TRANSPARENT)
+                    borderWidth += box(0.2.px)
+
                     alignment = Pos.CENTER
 
                     button {
@@ -113,6 +114,11 @@ internal class InternalWindow(modal: Boolean, escapeClosesWindow: Boolean, close
                             shape = "M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"
                         }
                     }
+                }
+
+                floatingWindowContent {
+                    backgroundColor += c(244, 244, 244)
+                    padding = box(5.px)
                 }
             }
         }
