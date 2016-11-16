@@ -161,7 +161,7 @@ internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: B
         if (indexInCoverParent != null) {
             coverParent!!.getChildList()!!.add(indexInCoverParent!!, coverNode)
         } else {
-            scene.root = coverNode as Parent
+            scene?.root = coverNode as Parent?
         }
     }
 
