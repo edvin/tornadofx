@@ -8,6 +8,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import tornadofx.ViewTransition.Direction.RIGHT
@@ -24,6 +25,12 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
 
     val currentSlideProperty: ObjectProperty<Slide?> = SimpleObjectProperty()
     var currentSlide by currentSlideProperty
+
+    val nextKeyProperty: ObjectProperty<KeyCombination> = SimpleObjectProperty(KeyCombination.valueOf("Alt+Right"))
+    var nextKey by nextKeyProperty
+
+    val previousKeyProperty: ObjectProperty<KeyCombination> = SimpleObjectProperty(KeyCombination.valueOf("Alt+Left"))
+    var previousKey by previousKeyProperty
 
     private val realIndexProperty = SimpleIntegerProperty(-1)
     val indexProperty: ReadOnlyIntegerProperty = ReadOnlyIntegerProperty.readOnlyIntegerProperty(realIndexProperty)
@@ -54,13 +61,10 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
         isFocusTraversable = true
 
         sceneProperty().onChange {
-            scene?.addEventFilter(KeyEvent.KEY_PRESSED) {
-                if (!it.isConsumed && it.isAltDown) {
-                    @Suppress("NON_EXHAUSTIVE_WHEN")
-                    when (it.code) {
-                        KeyCode.LEFT -> previous()
-                        KeyCode.RIGHT -> next()
-                    }
+            scene?.addEventHandler(KeyEvent.KEY_PRESSED) {
+                if (!it.isConsumed) {
+                    if (nextKey.match(it)) next()
+                    else if (previousKey.match(it)) previous()
                 }
             }
         }

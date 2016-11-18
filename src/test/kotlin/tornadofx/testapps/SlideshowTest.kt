@@ -14,7 +14,7 @@ class SlideshowTest : View("Slideshow") {
 
 class Slide1 : View("Slide 1") {
     override val root = stackpane {
-        label(titleProperty)
+        textfield(titleProperty)
         addClass(NewViewTransitionStyles.box, NewViewTransitionStyles.blue)
     }
 }
