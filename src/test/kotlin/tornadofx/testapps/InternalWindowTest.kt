@@ -9,9 +9,10 @@ class InternalWindowTest : View("Internal Window") {
         setPrefSize(600.0, 400.0)
         button("Open editor") {
             setOnAction {
-                openInternalWindow(Editor::class, modal = false)
+                openInternalWindow(Editor::class, modal = false, icon = FX.icon)
             }
         }
+
     }
 }
 
@@ -20,6 +21,7 @@ class Editor : View("Editor") {
         prefWidth = 300.0
 
         fieldset("Editor") {
+
             field("First field") {
                 textfield()
             }
