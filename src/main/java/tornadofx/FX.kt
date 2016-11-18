@@ -307,8 +307,7 @@ fun EventTarget.addChildIfPossible(node: Node) {
     // Only add if root is already created, else this will become the root
         is UIComponent -> root?.addChildIfPossible(node)
         is BorderPane -> {
-            val target = builderTarget
-            if (target != null) target.invoke(this).value = node
+            builderTarget?.invoke(this)?.value = node
         }
         is ScrollPane -> content = node
         is Tab -> content = node

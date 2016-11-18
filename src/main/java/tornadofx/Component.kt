@@ -299,6 +299,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         if (properties["tornadofx.editCapable"] != true) cellFormat { }
     }
 
+    fun EventTarget.slideshow(scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope), op)
+
     /**
      * Calculate a unique Node per item and set this Node as the graphic of the ListCell.
      *

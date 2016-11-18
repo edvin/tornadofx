@@ -96,7 +96,7 @@ fun BorderPane.bottom(op: BorderPane.() -> Unit) = region(BorderPane::bottomProp
 fun BorderPane.left(op: BorderPane.() -> Unit) = region(BorderPane::leftProperty, op)
 fun BorderPane.right(op: BorderPane.() -> Unit) = region(BorderPane::rightProperty, op)
 fun BorderPane.center(op: BorderPane.() -> Unit) = region(BorderPane::centerProperty, op)
-internal fun BorderPane.region(region: KFunction1<BorderPane, ObjectProperty<Node>>, op: BorderPane.() -> Unit) {
+internal fun BorderPane.region(region: KFunction1<BorderPane, ObjectProperty<Node>>?, op: BorderPane.() -> Unit) {
     builderTarget = region
     op()
     builderTarget = null
