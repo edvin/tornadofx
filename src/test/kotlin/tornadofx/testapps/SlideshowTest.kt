@@ -1,38 +1,34 @@
 package tornadofx.testapps
 
-import javafx.scene.control.Label
-import javafx.scene.paint.Color
 import tornadofx.*
-import tornadofx.ViewTransition.Fade
-import tornadofx.ViewTransition.NewsFlash
 
-class SlideshowTestApp : App(SlideshowTest::class)
+class SlideshowTestApp : App(SlideshowTest::class, NewViewTransitionStyles::class)
 
 class SlideshowTest : View("Slideshow") {
     override val root = slideshow {
-        setPrefSize(400.0, 400.0)
         slide(Slide1::class)
-        slide(Slide2::class, NewsFlash(.5.seconds))
-        slide(Slide3::class, Fade(.5.seconds))
+        slide(Slide2::class)
+        slide(Slide3::class)
     }
 }
 
 class Slide1 : View("Slide 1") {
     override val root = stackpane {
-        textfield(titleProperty)
+        label(titleProperty)
+        addClass(NewViewTransitionStyles.box, NewViewTransitionStyles.blue)
     }
 }
 
 class Slide2 : View("Slide 2") {
-    override val root = stackpane { label(titleProperty) }
-
-    init {
-        root.style {
-            backgroundColor += Color.LIGHTCORAL
-        }
+    override val root = stackpane {
+        label(titleProperty)
+        addClass(NewViewTransitionStyles.box, NewViewTransitionStyles.red)
     }
 }
 
 class Slide3 : View("Slide 3") {
-    override val root = stackpane { label(titleProperty) }
+    override val root = stackpane {
+        label(titleProperty)
+        addClass(NewViewTransitionStyles.box, NewViewTransitionStyles.blue)
+    }
 }

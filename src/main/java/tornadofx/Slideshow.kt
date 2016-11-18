@@ -10,13 +10,17 @@ import javafx.collections.ObservableList
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
+import tornadofx.ViewTransition.Direction.RIGHT
 import kotlin.reflect.KClass
 
 class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     val slides: ObservableList<Slide> = FXCollections.observableArrayList<Slide>()
 
-    val defaultTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Slide(0.5.seconds, ViewTransition.Direction.LEFT))
+    val defaultTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds))
     var defaultTransition: ViewTransition? by defaultTransitionProperty
+
+    val defaultBackTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds, RIGHT))
+    var defaultBackTransition: ViewTransition? by defaultBackTransitionProperty
 
     val currentSlideProperty: ObjectProperty<Slide?> = SimpleObjectProperty()
     var currentSlide by currentSlideProperty
@@ -68,7 +72,7 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
         if (center == null) {
             center = nextUI.root
         } else {
-            val transition = if (forward) slide.transition ?: defaultTransition else null
+            val transition = if (forward) slide.transition ?: defaultTransition else defaultBackTransition
             center.replaceWith(nextUI.root, transition)
         }
 
