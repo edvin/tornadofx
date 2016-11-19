@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
@@ -24,13 +23,13 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     var defaultBackTransition: ViewTransition? by defaultBackTransitionProperty
 
     val currentSlideProperty: ObjectProperty<Slide?> = SimpleObjectProperty()
-    var currentSlide by currentSlideProperty
+    var currentSlide: Slide? by currentSlideProperty
 
     val nextKeyProperty: ObjectProperty<KeyCombination> = SimpleObjectProperty(KeyCombination.valueOf("Alt+Right"))
-    var nextKey by nextKeyProperty
+    var nextKey: KeyCombination by nextKeyProperty
 
     val previousKeyProperty: ObjectProperty<KeyCombination> = SimpleObjectProperty(KeyCombination.valueOf("Alt+Left"))
-    var previousKey by previousKeyProperty
+    var previousKey: KeyCombination by previousKeyProperty
 
     private val realIndexProperty = SimpleIntegerProperty(-1)
     val indexProperty: ReadOnlyIntegerProperty = ReadOnlyIntegerProperty.readOnlyIntegerProperty(realIndexProperty)
@@ -51,21 +50,26 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     }
 
     init {
-        slides.addListener { change: ListChangeListener.Change<out Slide> ->
-            while (change.next()) {
-                if (change.wasAdded() && currentSlide == null)
-                    next()
-            }
-        }
+        showFirstSlideWhenAvailable()
+        hookNavigationShortcuts()
+    }
 
-        isFocusTraversable = true
-
+    private fun hookNavigationShortcuts() {
         sceneProperty().onChange {
             scene?.addEventHandler(KeyEvent.KEY_PRESSED) {
                 if (!it.isConsumed) {
                     if (nextKey.match(it)) next()
                     else if (previousKey.match(it)) previous()
                 }
+            }
+        }
+    }
+
+    private fun showFirstSlideWhenAvailable() {
+        slides.addListener { change: ListChangeListener.Change<out Slide> ->
+            while (change.next()) {
+                if (change.wasAdded() && currentSlide == null)
+                    next()
             }
         }
     }
