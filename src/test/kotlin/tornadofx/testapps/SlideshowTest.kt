@@ -7,7 +7,7 @@ class SlideshowTestApp : App(SlideshowTest::class, NewViewTransitionStyles::clas
 class SlideshowTest : View("Slideshow") {
     override val root = slideshow {
         slide(Slide1::class)
-        slide(Slide2::class)
+        slide(Slide2::class, ViewTransition.Fade(2.seconds))
         slide(Slide3::class)
     }
 }

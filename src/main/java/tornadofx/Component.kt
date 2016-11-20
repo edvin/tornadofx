@@ -3,9 +3,12 @@ package tornadofx
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -21,10 +24,7 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
-import javafx.stage.Modality
-import javafx.stage.Stage
-import javafx.stage.StageStyle
-import javafx.stage.Window
+import javafx.stage.*
 import javafx.util.Callback
 import java.io.InputStream
 import java.net.URL
@@ -340,13 +340,13 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
     protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
-        InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope), owner)
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope), owner)
 
     protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
-        InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
 
     fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
-        = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
+            = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
 
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
@@ -385,25 +385,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     showingProperty().onChange {
                         if (it == true) {
                             callOnDock()
+                            if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                                configureReloading()
+                            }
                         } else {
                             modalStage = null
                             callOnUndock()
                         }
                     }
 
-                    if (block) {
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                            thread(true) {
-                                Thread.sleep(5000)
-                                configureReloading()
-                            }
-                        }
-                        showAndWait()
-                    } else {
-                        show()
-                        configureReloading()
-                    }
-
+                    if (block) showAndWait() else show()
                 }
             }
         } else {

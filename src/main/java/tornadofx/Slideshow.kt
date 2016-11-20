@@ -81,6 +81,7 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
             center = nextUI.root
         } else {
             val transition = if (forward) slide.transition ?: defaultTransition else defaultBackTransition
+            nextUI.root.removeFromParent()
             center.replaceWith(nextUI.root, transition)
         }
 

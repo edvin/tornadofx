@@ -169,8 +169,11 @@ private fun Parent.clearViews() {
 }
 
 fun Stage.reloadStylesheetsOnFocus() {
-    focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene?.reloadStylesheets()
+    if (properties["tornadofx.reloadStylesheetsListener"] == null) {
+        focusedProperty().addListener { obs, old, focused ->
+            if (focused && FX.initialized.value) scene?.reloadStylesheets()
+        }
+        properties["tornadofx.reloadStylesheetsListener"] = true
     }
 }
 
@@ -184,8 +187,11 @@ fun Stage.hookGlobalShortcuts() {
 }
 
 fun Stage.reloadViewsOnFocus() {
-    focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene?.reloadViews()
+    if (properties["tornadofx.reloadViewsListener"] == null) {
+        focusedProperty().addListener { obs, old, focused ->
+            if (focused && FX.initialized.value) scene?.reloadViews()
+        }
+        properties["tornadofx.reloadViewsListener"] = true
     }
 }
 
