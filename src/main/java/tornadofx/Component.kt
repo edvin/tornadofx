@@ -270,6 +270,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         onUndockListeners?.forEach { it.invoke(this) }
     }
 
+    fun Button.accelerator(combo: String) = accelerator(KeyCombination.valueOf(combo))
 
     /**
      * Add the key combination as an accelerator for this Button. The accelerator

@@ -31,7 +31,7 @@ class Editor : View("Editor") {
                 textfield()
             }
             button("Save") {
-                accelerator(KeyCodeCombination.valueOf("Alt+S"))
+                accelerator("Alt+S")
                 setOnAction {
                     alert(CONFIRMATION, "Saved!", "You did it!")
                 }
