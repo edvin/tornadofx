@@ -12,11 +12,11 @@ import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
+import javafx.scene.Scene
+import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
-import javafx.scene.input.Clipboard
-import javafx.scene.input.ClipboardContent
-import javafx.scene.input.DataFormat
+import javafx.scene.input.*
 import java.io.File
 import java.util.function.Predicate
 

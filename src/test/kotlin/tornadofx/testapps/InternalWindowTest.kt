@@ -1,5 +1,7 @@
 package tornadofx.testapps
 
+import javafx.scene.control.Alert.AlertType.CONFIRMATION
+import javafx.scene.input.KeyCodeCombination
 import tornadofx.*
 
 class InternalWindowTestApp : App(InternalWindowTest::class)
@@ -28,7 +30,12 @@ class Editor : View("Editor") {
             field("Second field") {
                 textfield()
             }
-            button("Save")
+            button("Save") {
+                accelerator(KeyCodeCombination.valueOf("Alt+S"))
+                setOnAction {
+                    alert(CONFIRMATION, "Saved!", "You did it!")
+                }
+            }
         }
     }
 }

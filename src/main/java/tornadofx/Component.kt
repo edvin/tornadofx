@@ -14,12 +14,10 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.ComboBox
-import javafx.scene.control.ListCell
-import javafx.scene.control.ListView
-import javafx.scene.control.ProgressIndicator
+import javafx.scene.control.*
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
@@ -238,6 +236,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     abstract val root: Parent
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
+    var accelerators = HashMap<KeyCombination, Runnable>()
 
     fun init() {
         root.properties[UI_COMPONENT_PROPERTY] = this
@@ -269,6 +268,29 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         if (muteDocking) return
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
+    }
+
+
+    /**
+     * Add the key combination as an accelerator for this Button. The accelerator
+     * will be applied and reapplied when the UIComponent is docked and undocked.
+     */
+    fun Button.accelerator(combo: KeyCombination) {
+        var oldCombo: Runnable? = null
+        var currentScene: Scene? = null
+        whenDocked {
+            scene?.accelerators?.apply {
+                currentScene = scene
+                oldCombo = get(combo)
+                put(combo, Runnable { fire() })
+            }
+        }
+        whenUndocked {
+            currentScene?.accelerators?.apply {
+                if (oldCombo != null) put(combo, oldCombo)
+                else remove(combo)
+            }
+        }
     }
 
     // TODO: Helpers needing access to Scope must be defined here or they must take scope with default as parameter.

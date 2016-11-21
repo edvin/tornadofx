@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.8-SNAPSHOT]
 
+- Button.accelerator(KeyCombination) adds shortcuts to buttons (https://github.com/edvin/tornadofx/issues/205)
 - Slideshow component and slideshow builder
 - openInternalWindow(SomeOtherView::class) opens a window ontop of the current scene graph
 - bindStringProperty respects given format (https://github.com/edvin/tornadofx/issues/210)
