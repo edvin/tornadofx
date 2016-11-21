@@ -7,14 +7,14 @@ class SlideshowTestApp : App(SlideshowTest::class, NewViewTransitionStyles::clas
 class SlideshowTest : View("Slideshow") {
     override val root = slideshow {
         slide(Slide1::class)
-        slide(Slide2::class, ViewTransition.Fade(2.seconds))
+        slide(Slide2::class, ViewTransition.Fade(0.3.seconds))
         slide(Slide3::class)
     }
 }
 
 class Slide1 : View("Slide 1") {
     override val root = stackpane {
-        textfield(titleProperty)
+        label(titleProperty)
         addClass(NewViewTransitionStyles.box, NewViewTransitionStyles.blue)
     }
 }
