@@ -16,6 +16,7 @@ import java.net.URL
 internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
+    private lateinit var view: UIComponent
     private var titleProperty = SimpleStringProperty()
     var overlay: Canvas? = null
     private var indexInCoverParent: Int? = null
@@ -136,9 +137,12 @@ internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: B
 
     fun open(view: UIComponent, owner: Node) {
         if (owner.parent is InternalWindow) return
+        this.view = view
         this.coverNode = owner
         this.coverParent = owner.parent
         this.titleProperty.bind(view.titleProperty)
+
+        coverNode.uiComponent<UIComponent>()?.muteDocking = true
 
         if (coverParent != null) {
             indexInCoverParent = coverParent!!.getChildList()!!.indexOf(owner)
@@ -149,13 +153,18 @@ internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: B
             scene.root = this
         }
 
+        coverNode.uiComponent<UIComponent>()?.muteDocking = false
+
         (window.center as Parent) += view
 
         children.add(0, owner)
         fillOverlay()
+        view.callOnDock()
     }
 
     fun close() {
+        coverNode.uiComponent<UIComponent>()?.muteDocking = true
+
         coverNode.removeFromParent()
         removeFromParent()
         if (indexInCoverParent != null) {
@@ -163,6 +172,9 @@ internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: B
         } else {
             scene?.root = coverNode as Parent?
         }
+        coverNode.uiComponent<UIComponent>()?.muteDocking = false
+
+        view.callOnUndock()
     }
 
     override fun layoutChildren() {
