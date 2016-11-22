@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - canvas builder
 - All constraint builders no longer set default values for properties that are not overridden
 - Added canvas() builder
-- Kotlin 1.0.5
+- Kotlin 1.0.5-2
 - Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
 - Added `Node.hgrow` and `Node.vgrow` properties (https://github.com/edvin/tornadofx/issues/204)
 - ComboBox.cellFormat also formats button cell by default with option to override
