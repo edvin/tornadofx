@@ -1,6 +1,8 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
+import javafx.geometry.Insets
+import javafx.scene.layout.Background.EMPTY
 import tornadofx.*
 import java.time.LocalDate
 import java.util.*
@@ -28,7 +30,18 @@ class ExpandableTableTest : View("Smart Resize Demo") {
 
         column("#", Room::id).contentWidth(10.0, true, true)
         column("Number", Room::number).weigthedWidth(1.0)
-        column("Bed", Room::bed).weigthedWidth(2.0)
+        column("Bed", Room::bed).apply {
+            weigthedWidth(2.0)
+            cellFormat {
+                graphicProperty().assignIfNull {
+                    textfield(itemProperty()) {
+                        isEditable = false
+                        padding = Insets(0.0)
+                        background = EMPTY
+                    }
+                }
+            }
+        }
         column("Type", Room::type).weigthedWidth(2.0)
 
         columnResizePolicy = SmartResize.POLICY

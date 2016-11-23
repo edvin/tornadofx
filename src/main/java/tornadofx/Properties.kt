@@ -252,3 +252,10 @@ fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op:
 
 fun <T : Any, R> objectBinding(receiver: T, vararg dependencies: Observable, op: T.() -> R?): ObjectBinding<R?>
         = Bindings.createObjectBinding(Callable { receiver.op() }, *dependencies)
+
+/**
+ * Assign the value from the creator to this WritableValue if and only if it is currently null
+ */
+fun <T> WritableValue<T>.assignIfNull(creator: () -> T) {
+    if (value == null) value = creator() else println("Already have")
+}
