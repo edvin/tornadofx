@@ -370,12 +370,15 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) 
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
+                    textProperty().unbind()
+                    graphicProperty().unbind()
                     text = null
                     graphic = null
                 } else {
                     // Consult the cell cache before calling the formatter function
                     val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
                     if (cellCache is TableColumnCellCache<*>) {
+                        graphicProperty().unbind()
                         graphic = (cellCache as TableColumnCellCache<T>).getOrCreateNode(item)
                     }
                     formatter(this, item)
