@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.8-SNAPSHOT]
+## [1.5.9-SNAPSHOT]
+
+
+## [1.5.8] - 2016-11-24
 
 - WritableValue<T>.assignIfNull(creatorFn) assigns to the value by calling creator unless it is already non-null
 - Button.accelerator(KeyCombination) adds shortcuts to buttons (https://github.com/edvin/tornadofx/issues/205)
