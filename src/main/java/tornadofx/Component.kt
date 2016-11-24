@@ -3,27 +3,28 @@ package tornadofx
 import javafx.application.Platform
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Label
-import javafx.scene.control.ProgressIndicator
+import javafx.scene.control.*
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
-import javafx.scene.layout.StackPane
-import javafx.stage.Modality
-import javafx.stage.Stage
-import javafx.stage.StageStyle
-import javafx.stage.Window
+import javafx.stage.*
+import javafx.util.Callback
+import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -37,6 +38,8 @@ import kotlin.reflect.*
 interface Injectable
 
 abstract class Component {
+    open val scope: Scope = FX.inheritScopeHolder.get()
+
     val config: Properties
         get() = _config.value
 
@@ -66,7 +69,7 @@ abstract class Component {
      * </ul>
      */
     fun preferences(nodename: String? = null, op: Preferences.() -> Unit) {
-        val node = if (nodename != null) Preferences.userRoot().node(nodename) else Preferences.userNodeForPackage(FX.application.javaClass)
+        val node = if (nodename != null) Preferences.userRoot().node(nodename) else Preferences.userNodeForPackage(FX.getApplication(scope)!!.javaClass)
         op(node)
     }
 
@@ -105,24 +108,28 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class)
+    inline fun <reified T> inject(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope)
     }
 
-    inline fun <reified T : Fragment> fragment(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(T::class)
+            if (fragment == null) fragment = find(T::class, overrideScope)
             return fragment!!
         }
     }
 
     inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
+        var injected: T? = null
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
+            if (injected == null) injected = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
+            return injected!!
+        }
     }
 
-    val primaryStage: Stage get() = FX.primaryStage
+    val primaryStage: Stage get() = FX.getPrimaryStage(scope)!!
 
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: () -> T) = task(func)
@@ -132,7 +139,7 @@ abstract class Component {
      *
      * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
-    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(T::class)) }
+    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(T::class, scope)) }
 
     /**
      * Perform the given operation on an Injectable class function member asynchronousyly.
@@ -141,7 +148,7 @@ abstract class Component {
      */
     inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
             where InjectableType : Component, InjectableType : Injectable {
-        val t = task { invoke(find(InjectableType::class)) }
+        val t = task { invoke(find(InjectableType::class, scope)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
     }
@@ -153,19 +160,19 @@ abstract class Component {
      */
     inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(InjectableType::class), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(InjectableType::class), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(InjectableType::class), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : Injectable
-            = task { invoke(find(InjectableType::class), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(InjectableType::class, scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     /**
      * Find the given property inside the given Injectable. Useful for assigning a property from a View or Controller
@@ -175,13 +182,13 @@ abstract class Component {
      */
     inline fun <reified InjectableType, T> get(prop: KProperty1<InjectableType, T>): T
             where InjectableType : Component, InjectableType : Injectable {
-        val injectable = find(InjectableType::class)
+        val injectable = find(InjectableType::class, scope)
         return prop.get(injectable)
     }
 
     inline fun <reified InjectableType, T> set(prop: KMutableProperty1<InjectableType, T>, value: T)
             where InjectableType : Component, InjectableType : Injectable {
-        val injectable = find(InjectableType::class)
+        val injectable = find(InjectableType::class, scope)
         return prop.set(injectable, value)
     }
 
@@ -215,6 +222,8 @@ abstract class Component {
 
 abstract class Controller : Component(), Injectable
 
+const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
+
 abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
@@ -227,9 +236,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     abstract val root: Parent
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
+    var accelerators = HashMap<KeyCombination, Runnable>()
 
     fun init() {
-        root.properties["tornadofx.uicomponent"] = this
+        root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null) callOnUndock()
@@ -260,6 +270,107 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         onUndockListeners?.forEach { it.invoke(this) }
     }
 
+    fun Button.accelerator(combo: String) = accelerator(KeyCombination.valueOf(combo))
+
+    /**
+     * Add the key combination as an accelerator for this Button. The accelerator
+     * will be applied and reapplied when the UIComponent is docked and undocked.
+     */
+    fun Button.accelerator(combo: KeyCombination) {
+        var oldCombo: Runnable? = null
+        var currentScene: Scene? = null
+        whenDocked {
+            scene?.accelerators?.apply {
+                currentScene = scene
+                oldCombo = get(combo)
+                put(combo, Runnable { fire() })
+            }
+        }
+        whenUndocked {
+            currentScene?.accelerators?.apply {
+                if (oldCombo != null) put(combo, oldCombo)
+                else remove(combo)
+            }
+        }
+    }
+
+    // TODO: Helpers needing access to Scope must be defined here or they must take scope with default as parameter.
+    fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
+
+    fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
+    fun <C : UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
+    fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
+    fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
+        properties["tornadofx.cellFormat"] = formatter
+        if (properties["tornadofx.cellFormatCapable"] != true)
+            cellFactory = Callback { SmartListCell(scope, this@cellFormat) }
+    }
+
+    fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
+        properties["tornadofx.cellFragment"] = fragment
+        if (properties["tornadofx.cellFormatCapable"] != true)
+            cellFactory = Callback { listView -> SmartListCell(scope, listView) }
+    }
+
+    fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
+        isEditable = true
+        properties["tornadofx.editSupport"] = eventListener
+        // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
+        if (properties["tornadofx.editCapable"] != true) cellFormat { }
+    }
+
+    fun EventTarget.slideshow(scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope), op)
+
+    /**
+     * Calculate a unique Node per item and set this Node as the graphic of the ListCell.
+     *
+     * To support this feature, a custom cellFactory is automatically installed, unless an already
+     * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
+     * how to retrieve cached values.
+     */
+    fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
+        properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
+        // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
+        if (properties["tornadofx.cellCacheCapable"] != true) {
+            cellFormat { }
+        }
+    }
+
+    fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
+        cellFactory = Callback {
+            it?.properties?.put("tornadofx.cellFormat", formatter)
+            SmartListCell(scope, it)
+        }
+        if (formatButtonCell) {
+            buttonCell = cellFactory.call(null)
+        }
+    }
+
+    @Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
+    @JvmName("addView")
+    inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+
+    @JvmName("addFragment")
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+
+    @JvmName("plusView")
+    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+
+    @JvmName("plusFragment")
+    operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
+
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope), owner)
+
+    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
+
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
+            = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
+
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {
@@ -267,7 +378,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             } else {
                 modalStage = Stage(stageStyle)
                 // modalStage needs to be set before this code to make closeModal() work in blocking mode
-                with (modalStage!!) {
+                with(modalStage!!) {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
@@ -285,7 +396,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                             }
 
                             FX.applyStylesheetsTo(this)
-                            icons += FX.primaryStage.icons
+                            val primaryStage = FX.getPrimaryStage(scope)
+                            if (primaryStage != null) icons += primaryStage.icons
                             scene = this
                             this@UIComponent.properties["tornadofx.scene"] = this
                         }
@@ -296,25 +408,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     showingProperty().onChange {
                         if (it == true) {
                             callOnDock()
+                            if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                                configureReloading()
+                            }
                         } else {
                             modalStage = null
                             callOnUndock()
                         }
                     }
 
-                    if (block) {
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                            thread(true) {
-                                Thread.sleep(5000)
-                                configureReloading()
-                            }
-                        }
-                        showAndWait()
-                    } else {
-                        show()
-                        configureReloading()
-                    }
-
+                    if (block) showAndWait() else show()
                 }
             }
         } else {
@@ -338,7 +441,17 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
 
-    fun <T : Node> fxml(location: String? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+    /**
+     * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
+     * if not specified. If the FXML file specifies a controller (handy for content completion in FXML editors)
+     * set the `hasControllerAttribute` parameter to true. This ensures that the `fx:controller` attribute is ignored
+     * by the loader so that this UIComponent can still be the controller for the FXML file.
+     *
+     * Important: If you specify `hasControllerAttribute = true` when infact no `fx:controller` attribute is present,
+     * no controller will be set at all. Make sure to only specify this parameter if you actually have the `fx:controller`
+     * attribute in your FXML.
+     */
+    fun <T : Node> fxml(location: String? = null, hasControllerAttribute: Boolean = false): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
         val value: T
 
         init {
@@ -349,7 +462,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
             fxmlLoader = FXMLLoader(fxml).apply {
                 resources = this@UIComponent.messages
-                setController(this@UIComponent)
+                if (hasControllerAttribute) {
+                    setControllerFactory { this@UIComponent }
+                } else {
+                    setController(this@UIComponent)
+                }
             }
 
             value = fxmlLoader!!.load()
@@ -358,8 +475,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
+    inline fun <reified T : Component> find(): T = find(T::class, scope)
+    fun <T : Component> find(type: KClass<T>) = find(type, scope)
 
-    inline fun <reified T : EventTarget> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
+    inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
             val value = thisRef.fxmlLoader!!.namespace[key]
@@ -373,106 +492,21 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    inline fun <reified T : View> replaceWith(view: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        return replaceWith(find(view), transition)
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
+        return replaceWith(find(component, scope), transition)
     }
 
-    @JvmName("replaceWithFragment")
-    inline fun <reified T : Fragment> replaceWith(fragment: KClass<T>, noinline transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        return replaceWith(find(fragment), transition)
-    }
-
-    fun replaceWith(replacement: UIComponent, transition: ((UIComponent, UIComponent, transitionCompleteCallback: () -> Unit) -> Unit)? = null): Boolean {
-        if (root == root.scene?.root) {
-            val scene = root.scene
-
-            if (scene.window is Stage) {
-                val stage = scene.window as Stage
-                stage.titleProperty().unbind()
-                stage.titleProperty().bind(replacement.titleProperty)
-            }
-
-            if (transition != null) {
-                muteDocking = true
-                replacement.muteDocking = true
-
-                val temp = StackPane(root, replacement.root)
-                scene.root = temp
-
-                transition.invoke(this@UIComponent, replacement, {
-                    temp.children.remove(replacement.root)
-                    undockFromParent(replacement)
-                    replacement.muteDocking = false
-                    muteDocking = false
-                    scene.root = replacement.root
-                })
-
-                return true
-            } else {
-                undockFromParent(replacement)
-                root.scene.root = replacement.root
-            }
-
-            return true
-        } else if (root.parent is Pane) {
-            var unwrapper: ((Node) -> Unit)? = null
-
-            val replaceDelegate = if (root.parent is BorderPane) {
-                val borderpane = root.parent as BorderPane
-                val tempParent = StackPane()
-                if (borderpane.top == root) {
-                    borderpane.top = tempParent
-                    unwrapper = { borderpane.top = it }
-                }
-                if (borderpane.bottom == root) {
-                    borderpane.bottom = tempParent
-                    unwrapper = { borderpane.bottom = it }
-                }
-                if (borderpane.center == root) {
-                    borderpane.center = tempParent
-                    unwrapper = { borderpane.center = it }
-                }
-                if (borderpane.left == root) {
-                    borderpane.left = tempParent
-                    unwrapper = { borderpane.left = it }
-                }
-                if (borderpane.right == root) {
-                    borderpane.right = tempParent
-                    unwrapper = { borderpane.right = it }
-                }
-                root.removeFromParent()
-                tempParent.add(root)
-                tempParent
-            } else {
-                root.parent as Pane
-            }
-            replaceDelegate.apply {
-                val childList = getChildList()!!
-
-                val index = childList.indexOf(root)
-                root.removeFromParent()
-
-                if (transition != null) {
-                    val temp = StackPane(root, replacement.root)
-                    childList.add(index, temp)
-
-                    transition.invoke(this@UIComponent, replacement, {
-                        root.removeFromParent()
-                        replacement.root.removeFromParent()
-                        temp.removeFromParent()
-                        childList.add(index, replacement.root)
-                        unwrapper?.invoke(replacement.root)
-                    })
-                } else {
-                    replacement.root.removeFromParent()
-                    childList.add(index, replacement.root)
-                    unwrapper?.invoke(replacement.root)
-                }
-                return true
-            }
+    /**
+     * Replace this component with another, optionally using a transition animation.
+     *
+     * @param replacement The component that will replace this one
+     * @param transition The [ViewTransition] used to animate the transition
+     * @return Whether or not the transition will run
+     */
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
+        return root.replaceWith(replacement.root, transition) {
+            if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
         }
-
-        return false
     }
 
     private fun undockFromParent(replacement: UIComponent) {
@@ -500,4 +534,5 @@ abstract class View(title: String? = null) : UIComponent(title), Injectable
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
+    fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
 }

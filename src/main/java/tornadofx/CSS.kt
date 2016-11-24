@@ -180,6 +180,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val treeTableView by cssclass()
         val treeView by cssclass()
         val webView by cssclass()
+        val text by cssclass()
 
         // Style classes used by Form Builder
         val form by cssclass()
@@ -206,6 +207,7 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val even by csspseudoclass()
         val odd by csspseudoclass()
         val filled by csspseudoclass()
+        val empty by csspseudoclass()
 
         init {
             detectAndInstallUrlHandler()
@@ -262,72 +264,68 @@ open class PropertyHolder {
     companion object {
         val selectionScope = ThreadLocal<CssSelectionBlock>()
         fun Double.pos(relative: Boolean) = if (relative) "${fiveDigits.format(this * 100)}%" else "${fiveDigits.format(this)}px"
-        fun <T> toCss(value: T): String {
-            when (value) {
-                null -> return ""  // This should only happen in a container (such as box(), Array<>(), Pair())
-                is MultiValue<*> -> return value.elements.joinToString { toCss(it) }
-                is FontWeight -> return "${value.weight}"  // Needs to come before `is Enum<*>`
-                is Enum<*> -> return value.toString().toLowerCase().replace("_", "-")
-                is Font -> return "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
-                is Cursor -> return if (value is ImageCursor) {
-                    value.image.javaClass.getDeclaredField("url").let {
-                        it.isAccessible = true
-                        it.get(value.image).toString()
-                    }
-                } else {
-                    value.toString()
+        fun <T> toCss(value: T): String = when (value) {
+            null -> ""  // This should only happen in a container (such as box(), Array<>(), Pair())
+            is MultiValue<*> -> value.elements.joinToString { toCss(it) }
+            is CssBox<*> -> "${toCss(value.top)} ${toCss(value.right)} ${toCss(value.bottom)} ${toCss(value.left)}"
+            is FontWeight -> "${value.weight}"  // Needs to come before `is Enum<*>`
+            is Enum<*> -> value.toString().toLowerCase().replace("_", "-")
+            is Font -> "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
+            is Cursor -> if (value is ImageCursor) {
+                value.image.javaClass.getDeclaredField("url").let {
+                    it.isAccessible = true
+                    it.get(value.image).toString()
                 }
-                is URI -> return "url(\"${value.toASCIIString()}\")"
-                is BackgroundPosition -> return "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
-                        "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
-                is BackgroundSize -> return if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
-                    append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
-                    append(" ")
-                    append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
-                }
-                is BorderStrokeStyle -> return when (value) {
-                    BorderStrokeStyle.NONE -> "none"
-                    BorderStrokeStyle.DASHED -> "dashed"
-                    BorderStrokeStyle.DOTTED -> "dotted"
-                    BorderStrokeStyle.SOLID -> "solid"
-                    else -> buildString {
-                        // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
-                        append("segments(${value.dashArray.joinToString(separator = " ")}) ")
-                        append(toCss(value.type))
-                        append(" line-join ${toCss(value.lineJoin)} ")
-                        if (value.lineJoin == StrokeLineJoin.MITER) {
-                            append(value.miterLimit)
-                        }
-                        append(" line-cap ${toCss(value.lineCap)}")
-                    }
-                }
-                is BorderImageSlice -> return "${toCss(value.widths)}" + if (value.filled) " fill" else ""
-                is Array<*> -> return value.joinToString { toCss(it) }
-                is Pair<*, *> -> return "${toCss(value.first)} ${toCss(value.second)}"
-                is KClass<*> -> return "\"${value.qualifiedName}\""
-                is CssProperty<*> -> return value.name
-                is Raw -> return value.name
-                is String -> return "\"$value\""
-                is Effect -> {
-                    // JavaFX currently only supports DropShadow and InnerShadow in CSS
-                    when (value) {
-                        is DropShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                                "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
-                        is InnerShadow -> return "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
-                                "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
-                        else -> return "none"
-                    }
-                }
-                is Color -> return value.css
-                is Paint -> return value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
+            } else {
+                value.toString()
             }
-            return value.toString()
+            is URI -> "url(\"${value.toASCIIString()}\")"
+            is BackgroundPosition -> "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
+                    "${value.verticalSide} ${value.verticalPosition.pos(value.isVerticalAsPercentage)}"
+            is BackgroundSize -> if (value.isContain) "contain" else if (value.isCover) "cover" else buildString {
+                append(if (value.width == BackgroundSize.AUTO) "auto" else value.width.pos(value.isWidthAsPercentage))
+                append(" ")
+                append(if (value.height == BackgroundSize.AUTO) "auto" else value.height.pos(value.isHeightAsPercentage))
+            }
+            is BorderStrokeStyle -> when (value) {
+                BorderStrokeStyle.NONE -> "none"
+                BorderStrokeStyle.DASHED -> "dashed"
+                BorderStrokeStyle.DOTTED -> "dotted"
+                BorderStrokeStyle.SOLID -> "solid"
+                else -> buildString {
+                    // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
+                    append("segments(${value.dashArray.joinToString(separator = " ")}) ")
+                    append(toCss(value.type))
+                    append(" line-join ${toCss(value.lineJoin)} ")
+                    if (value.lineJoin == StrokeLineJoin.MITER) {
+                        append(value.miterLimit)
+                    }
+                    append(" line-cap ${toCss(value.lineCap)}")
+                }
+            }
+            is BorderImageSlice -> toCss(value.widths) + if (value.filled) " fill" else ""
+            is Array<*> -> value.joinToString { toCss(it) }
+            is Pair<*, *> -> "${toCss(value.first)} ${toCss(value.second)}"
+            is KClass<*> -> "\"${value.qualifiedName}\""
+            is CssProperty<*> -> value.name
+            is Raw -> value.name
+            is String -> "\"$value\""
+            is Effect -> when (value) { // JavaFX currently only supports DropShadow and InnerShadow in CSS
+                is DropShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
+                is InnerShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                        "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
+                else -> "none"
+            }
+            is Color -> value.css
+            is Paint -> value.toString().replace(Regex("0x[0-9a-f]{8}")) { Color.web(it.groupValues[0]).css }
+            else -> value.toString()
         }
     }
 
-    val properties = linkedMapOf<String, Any>()
+    val properties = linkedMapOf<String, Pair<Any, ((Any) -> String)?>>()
     val unsafeProperties = linkedMapOf<String, Any>()
-    val mergedProperties: Map<String, Any> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties) }
+    val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties.mapValues { it.value to null }) }
 
     // Root
     var focusColor: Paint by cssprop("-fx-focus-color")
@@ -602,36 +600,36 @@ open class PropertyHolder {
         return object : ReadWriteProperty<PropertyHolder, V> {
             override fun getValue(thisRef: PropertyHolder, property: KProperty<*>): V {
                 if (!properties.containsKey(key) && MultiValue::class.java.isAssignableFrom(V::class.java))
-                    properties[key] = MultiValue<V>()
-                return properties[key] as V
+                    properties[key] = MultiValue<V>() to null
+                return properties[key]?.first as V
             }
 
             override fun setValue(thisRef: PropertyHolder, property: KProperty<*>, value: V) {
-                properties[key] = value as Any
+                properties[key] = value as Any to properties[key]?.second
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    class CssProperty<T>(name: String, val multiValue: Boolean) {
+    class CssProperty<T>(name: String, val multiValue: Boolean, val renderer: ((T) -> String)? = null) {
         val name = name.camelToSnake()
         var value: T
             get() {
                 val props = selectionScope.get().properties
 
                 if (!props.containsKey(name) && multiValue)
-                    props[name] = MultiValue<T>()
+                    props[name] = MultiValue<T>() to renderer as ((Any) -> String)?
 
-                return selectionScope.get().properties[name] as T
+                return selectionScope.get().properties[name]?.first as T
             }
             set(value) {
-                selectionScope.get().properties.put(name, value as Any)
+                selectionScope.get().properties.put(name, value as Any to renderer as ((Any) -> String)?)
             }
     }
 
     infix fun <T : Any> CssProperty<T>.set(value: T) = setProperty(this, value)
     fun <T : Any> setProperty(property: CssProperty<T>, value: T) {
-        properties[property.name] = value
+        properties[property.name] = value to properties[property.name]?.second
     }
 
     class Raw(val name: String)
@@ -648,10 +646,11 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
     fun render(parents: List<String>, refine: Boolean): String = buildString {
         val ruleStrings = selector.strings(parents, refine)
         block.mergedProperties.let {
-            if (it.size > 0) {
+            // TODO: Handle custom renderer
+            if (it.isNotEmpty()) {
                 append("${ruleStrings.joinToString()} {\n")
                 for ((name, value) in it) {
-                    append("    $name: ${PropertyHolder.toCss(value)};\n")
+                    append("    $name: ${value.second?.invoke(value.first) ?: PropertyHolder.toCss(value.first)};\n")
                 }
                 append("}\n")
             }
@@ -665,7 +664,7 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
 class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     companion object {
         fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
-        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.size == 0) this else
+        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.isEmpty()) this else
             parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
     }
 
@@ -697,10 +696,14 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
         this@CssSelectionBlock.mix(this)
     }
 
-    fun and(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector, op)
-    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = add(selector, *selectors, op = op)
-    fun add(selector: String, op: CssSelectionBlock.() -> Unit) = add(selector.toSelector(), op = op)
-    fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+    @Deprecated("Use and() instead as it's clearer", ReplaceWith("and(selector, op)"))
+    fun add(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector, op)
+
+    @Deprecated("Use and() instead as it's clearer", ReplaceWith("and(selector, *selectors, op = op)"))
+    fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = and(selector, *selectors, op = op)
+
+    fun and(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector.toSelector(), op = op)
+    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
         val s = select(selector, *selectors)(op)
         selections[s] = true
         return s
@@ -709,8 +712,8 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
         mixin.properties.forEach { k, v ->
-            if (properties[k] is MultiValue<*>)
-                (properties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
+            if (properties[k]?.first is MultiValue<*>)
+                (properties[k]?.first as MultiValue<Any>).addAll(v.first as MultiValue<Any>)
             else
                 properties[k] = v
         }
@@ -793,9 +796,13 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 // Inline CSS
 
 class InlineCss : PropertyHolder(), Rendered {
-    override fun render() = mergedProperties.entries.joinToString(separator = "") { " ${it.key}: ${toCss(it.value)};" }
+    // TODO: Handle custom renderer
+    override fun render() = mergedProperties.entries.joinToString(separator = "") {
+        " ${it.key}: ${it.value.second?.invoke(it.value.first) ?: toCss(it.value.first)};"
+    }
 }
 
+fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
@@ -811,7 +818,7 @@ fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssE
 fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
 fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
 fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
-inline fun <reified T : Any> cssproperty(value: String? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java))
+inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
 
 class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
@@ -829,8 +836,8 @@ class CssPseudoClassDelegate(val name: String?, val snakeCase: Boolean = name ==
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.pc(name ?: property.name, snakeCase)
 }
 
-class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name, multiValue)
+class CssPropertyDelegate<T : Any>(val name: String?, val multiValue: Boolean, val renderer: ((T) -> String)? = null) : ReadOnlyProperty<Any, PropertyHolder.CssProperty<T>> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = PropertyHolder.CssProperty<T>(name ?: property.name, multiValue, renderer)
 }
 
 // Dimensions
@@ -911,29 +918,40 @@ val Color.css: String get() = "rgba(${(red * 255).toInt()}, ${(green * 255).toIn
 
 internal fun String.camelToSnake() = (get(0).toLowerCase() + substring(1)).replace(CssRule.upperCaseRegex, "-$1").toLowerCase()
 internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else throw IllegalArgumentException("Invalid CSS Name: $this")
-internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map { it.toRuleSet() }.toTypedArray())
+internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map(String::toRuleSet).toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
-    val rules = CssRule.subRuleRegex.findAll(this).map { match ->
-        CssSubRule(CssRule(match.groupValues[2], match.groupValues[3], false), CssSubRule.Relation.of(match.groupValues[1]))
-    }.toList()
+    val rules = CssRule.subRuleRegex.findAll(this)
+            .map { CssSubRule(CssRule(it.groupValues[2], it.groupValues[3], false), CssSubRule.Relation.of(it.groupValues[1])) }
+            .toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
 
 // Style Class
 
-fun Node.hasClass(cssClass: CssRule) = hasClass(cssClass.name)
+fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+
 fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
-    cssClass.forEach { addClass(it.name) }
+    cssClass.forEach {
+        if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
+    }
     return this
 }
 
 fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
-    cssClass.forEach { removeClass(it.name) }
+    cssClass.forEach {
+        if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
+    }
     return this
 }
 
-fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = toggleClass(cssClass.name, predicate)
+fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
+    toggleClass(cssClass, observablePredicate.value ?: false)
+    observablePredicate.onChange {
+        toggleClass(cssClass, it ?: false)
+    }
+}
 
 fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
@@ -974,9 +992,7 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 fun <T> box(all: T) = CssBox(all, all, all, all)
 fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
-open class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T) {
-    override fun toString() = "${PropertyHolder.toCss(top)} ${PropertyHolder.toCss(right)} ${PropertyHolder.toCss(bottom)} ${PropertyHolder.toCss(left)}"
-}
+data class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T)
 
 fun c(colorString: String, opacity: Double = 1.0): Color = try {
     Color.web(colorString, opacity)

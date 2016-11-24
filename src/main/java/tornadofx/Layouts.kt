@@ -6,6 +6,7 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
 import kotlin.reflect.KClass
@@ -80,6 +81,7 @@ fun EventTarget.separator(orientation: Orientation = Orientation.HORIZONTAL, op:
 fun EventTarget.group(initialChildren: Iterable<Node>? = null, op: (Group.() -> Unit)? = null) = opcr(this, Group().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun EventTarget.stackpane(initialChildren: Iterable<Node>? = null, op: (StackPane.() -> Unit)? = null) = opcr(this, StackPane().apply { if (initialChildren != null) children.addAll(initialChildren) }, op)
 fun EventTarget.gridpane(op: (GridPane.() -> Unit)? = null) = opcr(this, GridPane(), op)
+fun EventTarget.pane(op: (Pane.() -> Unit)? = null) = opcr(this, Pane(), op)
 fun EventTarget.flowpane(op: (FlowPane.() -> Unit)? = null) = opcr(this, FlowPane(), op)
 fun EventTarget.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePane(), op)
 fun EventTarget.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
@@ -94,7 +96,7 @@ fun BorderPane.bottom(op: BorderPane.() -> Unit) = region(BorderPane::bottomProp
 fun BorderPane.left(op: BorderPane.() -> Unit) = region(BorderPane::leftProperty, op)
 fun BorderPane.right(op: BorderPane.() -> Unit) = region(BorderPane::rightProperty, op)
 fun BorderPane.center(op: BorderPane.() -> Unit) = region(BorderPane::centerProperty, op)
-internal fun BorderPane.region(region: KFunction1<BorderPane, ObjectProperty<Node>>, op: BorderPane.() -> Unit) {
+internal fun BorderPane.region(region: KFunction1<BorderPane, ObjectProperty<Node>>?, op: BorderPane.() -> Unit) {
     builderTarget = region
     op()
     builderTarget = null
@@ -106,16 +108,10 @@ fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     return opcr(this, topNode, op)
 }
 
-internal fun <C: UIComponent> BorderPane.setRegion(region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
-    region.invoke(this).value = find(nodeType).root
+internal fun <C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
+    region.invoke(this).value = find(nodeType, scope).root
     return this
 }
-
-fun <C: UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(BorderPane::topProperty, nodeType)
-fun <C: UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(BorderPane::rightProperty, nodeType)
-fun <C: UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(BorderPane::bottomProperty, nodeType)
-fun <C: UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(BorderPane::leftProperty, nodeType)
-fun <C: UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(BorderPane::centerProperty, nodeType)
 
 @Deprecated("Use bottom = node {} instead")
 fun <T : Node> BorderPane.bottom(bottomNode: T, op: (T.() -> Unit)? = null): T {
@@ -162,6 +158,9 @@ fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null
 
 @Deprecated("No need to wrap splitpane items in items{} anymore. Remove the wrapper and all builder items will still be added as before.", ReplaceWith("no items{} wrapper"), DeprecationLevel.WARNING)
 fun SplitPane.items(op: (SplitPane.() -> Unit)) = op(this)
+
+fun EventTarget.canvas(width: Double = 0.0, height: Double = 0.0, op: (Canvas.() -> Unit)? = null) =
+        opcr(this, Canvas(width, height), op)
 
 fun EventTarget.anchorpane(vararg nodes: Node, op: (AnchorPane.() -> Unit)? = null): AnchorPane {
     val anchorpane = AnchorPane()

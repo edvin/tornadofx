@@ -1,18 +1,22 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.value.ObservableValue
+import javafx.beans.binding.Bindings
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.ReadOnlyIntegerProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
+import javafx.scene.Scene
+import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
-import javafx.scene.input.Clipboard
-import javafx.scene.input.ClipboardContent
-import javafx.scene.input.DataFormat
+import javafx.scene.input.*
 import java.io.File
 import java.util.function.Predicate
 
@@ -36,13 +40,29 @@ import java.util.function.Predicate
 class SortedFilteredList<T>(
         val items: ObservableList<T> = FXCollections.observableArrayList(),
         initialPredicate: (T) -> Boolean = { true },
-        final val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
-        final val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
+        val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
+        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
 
-    var predicate: (T) -> Boolean = initialPredicate
-        set(value) {
-            filteredItems.predicate = Predicate { value(it) }
+    /**
+     * Support editing of the sorted/filtered list. Useful to support editing support in ListView/TableView etc
+     */
+    override fun set(index: Int, element: T): T {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            items[backingIndex] = element
         }
+        return item
+    }
+
+
+    val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
+        override fun set(newValue: ((T) -> Boolean)) {
+            super.set(newValue)
+            filteredItems.predicate = Predicate { newValue(it) }
+        }
+    }
+    var predicate by predicateProperty
 
     /**
      * Bind this data object to the given TableView.
@@ -52,7 +72,7 @@ class SortedFilteredList<T>(
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
     fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
-        tableView.items = sortedItems
+        tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
         return this
     }
@@ -64,7 +84,7 @@ class SortedFilteredList<T>(
      *
      */
     fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = sortedItems
+        listView.items = this
         return this
     }
 
@@ -124,7 +144,9 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
-fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) : ObservableValue<T> {
-    addListener { observable, oldValue, newValue -> op(newValue) }
-    return this
-}
+fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
+fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new) } }
+fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op(new.toInt()) } }
+fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op(new.toLong()) } }
+fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op(new.toFloat()) } }
+fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }

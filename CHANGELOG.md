@@ -2,18 +2,88 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.6-SNAPSHOT]
+## [1.5.8-SNAPSHOT]
 
-- Improved `TableView.column` builder with auto-conversion to observable value (`column { text = ""; value { it.value.someProperty })`
-- DataGrid component
+- WritableValue<T>.assignIfNull(creatorFn) assigns to the value by calling creator unless it is already non-null
+- Button.accelerator(KeyCombination) adds shortcuts to buttons (https://github.com/edvin/tornadofx/issues/205)
+- Slideshow component and slideshow builder
+- openInternalWindow(SomeOtherView::class) opens a window ontop of the current scene graph
+- bindStringProperty respects given format (https://github.com/edvin/tornadofx/issues/210)
+- Proxy support for Rest client (Set `client.proxy = Proxy()`)
+- Pane builder (https://github.com/edvin/tornadofx/issues/208)
+- Iterable<Node>.style will apply styles to all elements in collection
+- Added `Node.alignment` property that knows how to apply alignment depending on the parent
+- Added `Node.margin` property that knows how to apply margin depending on the parent
+- canvas builder
+- All constraint builders no longer set default values for properties that are not overridden
+- Added canvas() builder
+- Kotlin 1.0.5-2
+- Added `stackpaneConstraints` builder (margin/alignment) (https://github.com/edvin/tornadofx/issues/206)
+- Added `Node.hgrow` and `Node.vgrow` properties (https://github.com/edvin/tornadofx/issues/204)
+- ComboBox.cellFormat also formats button cell by default with option to override
+- UIComponent.openWindow() opens a new modeless Window
+- TreeView.bindSelected(itemProperty) and TreeView.bindSelected(itemViewModel)
+- Rest POST supports InputStream (https://github.com/edvin/tornadofx/pull/200)
+- Removed deprecated `findFragment` - use `find` instead
+- ViewModel.ignoreDirtyStateProperties list of properties that should not be considered when calculating dirty state
+- Removed deprecated `replaceWith` overloads (https://github.com/edvin/tornadofx/issues/199)
+- Scope support
+- ViewModel is now `Component` and `Injectable` so it supports injection.
+- addClass/removeClass/toggleClass now also works for pseudo classes (https://github.com/edvin/tornadofx/issues/198)
+- ItemViewModel().bindTo(listCellFragment)
+- resources.stream("some-resource") locates InputStream for resource
+- Added custom renderers to custom CSS Properties (https://github.com/edvin/tornadofx/issues/203)
+
+## [1.5.7] - 2016-10-21
+
+- Fixed LayoutDebugger not showing debugged scene correctly (https://github.com/edvin/tornadofx/issues/192)
+- App.shouldShowPrimaryStage() can be used to initially hide the primary stage
+- Node.onDoubleClick handler
+- chooseDirectory function
+- ListView.bindSelected(itemProperty) and ListView.bindSelected(itemViewModel)
+- TableView.bindSelected(itemProperty) and TableView.bindSelected(itemViewModel)
+- Added ItemViewModel to reduce boiler plate for ViewModels with one source object
+- SortedFilteredList now supports editing writeback to the underlying observable list
+- View.replaceWith now updates scene property to support Live Views (https://github.com/edvin/tornadofx/issues/191)
+- ViewModel bind return value is now optional to support eventually available items
+- ViewModel detects changes to the source object and applies to the model counterpart automatically
+- ViewModel `bind(autocommit = true) { .. }` option
+- Mnemonic in Field labels (form -> field -> input.mnemonicTarget())
+- Added ItemFragment and ListCellFragment. Will add TableCellFragment etc shortly.
+- Added TreeView.cellDecorator
+- Node.hide and Node.show
+- Node.toggleClass(class, observableBooleanValue)
+- Removed cell as `this` for `cellCache`. The cell could change, so taking it into account was a mistake.
+- App MainView parameter can now be a `Fragment` as well as `View`
+- ListView `cellCache` provider to create a cached graphic node per item
+- Kotlin 1.0.4
+- The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
+- The `fxid()` delegate can now inject any type, not just `EventTarget` subclasses
+- Added non-null `onChange` overrides for primitive `ObservableValue`s
+- Fixed bug with `Node.fade` reversed animations (was also affecting `ViewTransitions`)
+- Deprecated confusing CSS `add` function if favor of `and`
+
+## [1.5.6] - 2016-09-19
+
+- ViewModel.onCommit() function that will be called after a successful commit
+- TableView SmartResize Policy (https://github.com/edvin/tornadofx/wiki/TableView-SmartResize)
+- `dynamicContent` builder that will replace content in a Node when an observable value changes
+- Alternative `TableView.column` builder with auto-conversion to observable value (`column("Title", ReturnType::class) { value { it.value.somePropertyOrValue })`
+- DataGrid component 
+- TableColumn `cellCache` provider to create a cached graphic node per item
 - Padding shortcuts (paddingRight, paddingLeft, paddingTop, paddingBottom) to Region
 - TableView support for Nested Columns (`nestedColumn(title) { // add child columns here }`)
-- TableView support for expanded row node (`rowExpander { // create node to show on expand here }`)
+- TableView support for expanded row node (`rowExpander { // create node to show on expand here }`) (https://edvin.gitbooks.io/tornadofx-guide/content/5.%20Builders%20II%20-%20Data%20Controls.html#row-expanders) 
 - Fixed bug where image URLs defined in CSS were rendered wrong
 - Added support for skipping snake-casing in CSS rules (names still have to be valid css identifiers)
 - Fixed bug where CSS selectors defined with strings would have their capitalization changed (`".testThing"` => `".test-thing"`, `cssclass("testThing")` => `.test-thing`)
+- Updated the `ViewTransition` code to be more flexible (including now working with any `Node`, not just `View`s and `Fragment`s).
+    - Also added several new built in `ViewTransition`s
+- Added new `Node` animation helper functions for various transformations
+- FXML files can now contain `fx:controller` attribute to help with content assist, if `hasControllerAttribute = true` is passed to the `fxml` delegate (https://github.com/edvin/tornadofx/issues/179)
+- Fix exception in chooseFile when user cancels in Multi mode
 
-## [1.5.5]
+## [1.5.5] - 2016-08-19
 
 - Stylesheets can be loaded via ServiceLoader (`META-INF/services/tornadofx.Stylesheet` with reference to the stylesheet class)
 - Default constructor was re-added to `tornadofx.App` to support `Run View` in IDEA Plugin

@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
+import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import javafx.stage.Window
 import tornadofx.FileChooserMode.*
@@ -47,11 +48,19 @@ fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter
             val result = chooser.showOpenDialog(owner)
             if (result == null) emptyList() else listOf(result)
         }
-        Multi -> chooser.showOpenMultipleDialog(owner)
+        Multi -> chooser.showOpenMultipleDialog(owner) ?: emptyList()
         Save -> {
             val result = chooser.showSaveDialog(owner)
             if (result == null) emptyList() else listOf(result)
         }
         else -> emptyList()
     }
+}
+
+fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner: Window? = null, op: (DirectoryChooser.() -> Unit)? = null): File? {
+    val chooser = DirectoryChooser()
+    if (title != null) chooser.title = title
+    if (initialDirectory != null) chooser.initialDirectory = initialDirectory
+    op?.invoke(chooser)
+    return chooser.showDialog(owner)
 }

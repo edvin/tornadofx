@@ -23,7 +23,7 @@ class TableViewTest {
         val C = SimpleStringProperty("Test string $i")
     }
 
-    val TestList = FXCollections.observableArrayList(Array(5, { TestObject(it) }).asList())
+    val TestList = FXCollections.observableArrayList(Array(5, ::TestObject).asList())
 
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
@@ -34,8 +34,7 @@ class TableViewTest {
                 tableview(TestList) {
                     makeIndexColumn()
                     column("A Column", TestObject::A)
-                    column {
-                        text = "B Column"
+                    column("B Column", Double::class) {
                         value { it.value.B }
                     }
                     column("C Column", TestObject::C)

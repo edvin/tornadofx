@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.geometry.Insets
 import tornadofx.*
 
 class SwitchViewApp : App(ContainerView::class)
@@ -12,9 +13,9 @@ class ContainerView : View("ContainerView") {
         top {
             button("Switch view").setOnAction {
                 if (center.lookup("#view1") != null)
-                    subView1.replaceWith(subView2, ViewTransition.SlideIn)
+                    subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
                 else
-                    subView2.replaceWith(subView1, ViewTransition.SlideOut)
+                    subView2.replaceWith(subView1, ViewTransition.Slide(0.2.seconds, ViewTransition.Direction.RIGHT))
             }
         }
         center {
@@ -31,5 +32,7 @@ class SubView1 : View("SubView2") {
 }
 
 class SubView2 : View("SubView2") {
-    override val root = hbox { label("I'm subview 2") }
+    override val root = hbox {
+        label("I'm subview 2")
+    }
 }

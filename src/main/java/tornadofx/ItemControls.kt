@@ -1,21 +1,18 @@
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TableColumnHeader
 import com.sun.javafx.scene.control.skin.TableRowSkin
-import com.sun.javafx.scene.control.skin.TableViewSkin
-import javafx.beans.InvalidationListener
 import javafx.beans.binding.Bindings
 import javafx.beans.property.*
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
-import javafx.event.EventType
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
-import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
 import javafx.util.Callback
@@ -23,6 +20,7 @@ import javafx.util.StringConverter
 import tornadofx.ResizeType.*
 import java.util.*
 import java.util.concurrent.Callable
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -183,16 +181,6 @@ fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
     return this
 }
 
-/**
- * Create a column with a value factory that extracts the value from the given callback.
- */
-fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
-    val column = TableColumn<S, T>(title)
-    column.cellValueFactory = Callback { valueProvider(it) }
-    columns.add(column)
-    return column
-}
-
 @Suppress("UNCHECKED_CAST")
 fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = null) {
     val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>> ?: columns
@@ -216,10 +204,11 @@ fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? 
 /**
  * Create a column using the propertyName of the attribute you want shown.
  */
-fun <S, T> TableView<S>.column(title: String, propertyName: String): TableColumn<S, T> {
+fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = PropertyValueFactory<S, T>(propertyName)
     addColumnInternal(column)
+    op?.invoke(column)
     return column
 }
 
@@ -304,21 +293,32 @@ class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
     }
 }
 
+fun <T> TableView<T>.bindSelected(property: Property<T>) {
+    property.bind(selectionModel.selectedItemProperty())
+}
+
+fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
+    model.itemProperty.bind(selectionModel.selectedItemProperty())
+}
+
+
 /**
  * Create a column with a value factory that extracts the value from the given mutable
  * property and converts the property to an observable value.
  */
-inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutableProperty1<S, T>, noinline op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
     addColumnInternal(column)
+    op?.invoke(column)
     return column
 }
 
-inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>, noinline op: (TreeTableColumn<S, T>.() -> Unit)? = null): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
     columns.add(column)
+    op?.invoke(column)
     return column
 }
 
@@ -326,17 +326,19 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableP
  * Create a column with a value factory that extracts the value from the given property and
  * converts the property to an observable value.
  */
-inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>, noinline op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
     addColumnInternal(column)
+    op?.invoke(column)
     return column
 }
 
-inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>): TreeTableColumn<S, T> {
+inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>, noinline op: (TreeTableColumn<S, T>.() -> Unit)? = null): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
     columns.add(column)
+    op?.invoke(column)
     return column
 }
 
@@ -344,21 +346,33 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
  * Create a column with a value factory that extracts the value from the given ObservableValue property.
  */
 @JvmName(name = "columnForObservableProperty")
-inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>, noinline op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value) }
     addColumnInternal(column)
+    op?.invoke(column)
     return column
 }
 
 /**
- * Create a column and operate on it. Inside the code block you can assign the column text
- * and call `value { it.value.someProperty }` to set up a cellValueFactory.
+ * Create a column with a title specified cell type and operate on it. Inside the code block you can call
+ * `value { it.value.someProperty }` to set up a cellValueFactory that must return T or ObservableValue<T>
  */
-fun <S> TableView<S>.column(op: (TableColumn<S, Any?>).() -> Unit): TableColumn<S, Any?> {
-    val column = TableColumn<S, Any?>()
-    op(column)
+@Suppress("UNUSED_PARAMETER")
+fun <S, T : Any> TableView<S>.column(title: String, cellType: KClass<T>, op: (TableColumn<S, T>.() -> Unit)? = null): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
     addColumnInternal(column)
+    op?.invoke(column)
+    return column
+}
+
+/**
+ * Create a column with a value factory that extracts the value from the given callback.
+ */
+fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
+    val column = TableColumn<S, T>(title)
+    column.cellValueFactory = Callback { valueProvider(it) }
+    columns.add(column)
     return column
 }
 
@@ -367,12 +381,12 @@ fun <S> TableView<S>.column(op: (TableColumn<S, Any?>).() -> Unit): TableColumn<
  * wrapped in a SimpleObjectProperty for convenience.
  */
 @Suppress("UNCHECKED_CAST")
-fun <S> TableColumn<S, Any?>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any?>) -> Any?) {
+infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any>) -> Any?): TableColumn<S, *> {
     this.cellValueFactory = Callback {
-        val createdValue = cellValueFactory(it)
-
-        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any?> else SimpleObjectProperty(createdValue)
+        val createdValue = cellValueFactory(it as TableColumn.CellDataFeatures<S, Any>)
+        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any> else SimpleObjectProperty(createdValue)
     }
+    return this
 }
 
 @JvmName(name = "columnForObservableProperty")
@@ -559,21 +573,19 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Double) : ResizeType(true)
     class Fixed(val width: Double) : ResizeType(false)
-    class Weight(val value: Double) : ResizeType(true)
+    class Weight(val weight: Double, val padding: Double = 0.0, val minContentWidth: Boolean = false, var minRecorded: Boolean = false) : ResizeType(true)
     class Pct(val value: Double) : ResizeType(true)
-    class Content : ResizeType(true)
-    class Default : ResizeType(true)
+    class Content(val padding: Double = 0.0, val useAsMin: Boolean = false, val useAsMax: Boolean = false, var minRecorded: Boolean = false, var maxRecorded: Boolean = false) : ResizeType(true)
     class Remaining : ResizeType(true)
 
     var delta: Double = 0.0
 }
 
-class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeatures<S>, Boolean> {
-    var resizing = false
+class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out Any>, Boolean> {
 
     @Suppress("DEPRECATION")
-    override fun call(param: TableView.ResizeFeatures<S>): Boolean {
-        resizing = true
+    override fun call(param: TableView.ResizeFeatures<out Any>): Boolean {
+        param.table.isSmartResizing = true
 
         try {
             if (param.column == null) {
@@ -582,41 +594,15 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 val contentWidth = param.table.getContentWidth()
                 if (contentWidth == 0.0) return false
 
-                if (param.table.properties["tornadofx.smartResizeInitialized"] == null) {
-                    param.table.properties["tornadofx.smartResizeInitialized"] = true
-
-                    // Listen to outside column width changes and adjust column delta accordingly
-                    // This happens if you double click between column headers of programmatically change column width
-                    // TODO: Dynamically add/remove listeners as param.table.columnsProperty() changes
-                    param.table.columns.forEach {
-                        it.widthProperty().addListener { obs, oldValue, newValue ->
-                            if (!resizing) {
-                                @Suppress("UNCHECKED_CAST")
-                                val column = (obs as ReadOnlyProperty<*>).bean as TableColumn<S, *>
-                                val rt = column.resizeType
-                                val diff = oldValue.toDouble() - newValue.toDouble()
-                                rt.delta -= diff
-                                call(TableView.ResizeFeatures(param.table, null, 0.0))
-                            }
-                        }
-                    }
-                }
+                if (!isPolicyInstalled(param.table)) install(param.table)
 
                 var remainingWidth = contentWidth
-
-                // Honor default width columns
-                param.table.columns.filter { it.resizeType is Default }.forEach {
-                    // Restore default width if we are ever reduced below that size
-                    val defaultWidth = it.properties.getOrPut("tornadofx.defaultWidth", { it.width }) as Double
-                    if (defaultWidth > it.width) it.impl_setWidth(defaultWidth)
-                    remainingWidth -= it.width
-                }
 
                 // Fixed columns always keep their size
                 val fixedColumns = param.table.columns.filter { it.resizeType is Fixed }
                 fixedColumns.forEach {
                     val rt = it.resizeType as Fixed
-                    it.impl_setWidth(rt.width)
+                    it.prefWidth = rt.width
                     remainingWidth -= it.width
                 }
 
@@ -624,16 +610,30 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 val prefColumns = param.table.columns.filter { it.resizeType is Pref }
                 prefColumns.forEach {
                     val rt = it.resizeType as Pref
-                    it.impl_setWidth(rt.width + rt.delta)
+                    it.prefWidth = rt.width + rt.delta
                     remainingWidth -= it.width
                 }
 
-                // Content columns are resized to their content and adjusted for resize-delta that affetected them
+                // Content columns are resized to their content and adjusted for resize-delta that affected them
                 val contentColumns = param.table.columns.filter { it.resizeType is Content }
                 param.table.resizeColumnsToFitContent(contentColumns)
                 contentColumns.forEach {
-                    val rt = it.resizeType
-                    it.impl_setWidth(it.width + rt.delta)
+                    val rt = it.resizeType as Content
+
+                    it.prefWidth = it.width + rt.delta + rt.padding
+
+                    // Save minWidth if different from default
+                    if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
+                        it.minWidth = it.width
+                        rt.minRecorded = true
+                    }
+
+                    // Save maxWidth if different from default
+                    if (rt.useAsMax && !rt.maxRecorded && it.width != 80.0) {
+                        it.maxWidth = it.width
+                        rt.maxRecorded = true
+                    }
+
                     remainingWidth -= it.width
                 }
 
@@ -643,7 +643,7 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     val widthPerPct = contentWidth.toDouble() / 100.0
                     pctColumns.forEach {
                         val rt = it.resizeType as Pct
-                        it.impl_setWidth((widthPerPct * rt.value) + rt.delta)
+                        it.prefWidth = (widthPerPct * rt.value) + rt.delta
                         remainingWidth -= it.width
                     }
                 }
@@ -654,12 +654,22 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 if (weightColumns.isNotEmpty()) {
                     val consideredColumns = weightColumns + param.table.columns.filter { it.resizeType is Remaining }
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
-                    fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.value ?: 1.0
+                    fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.weight ?: 1.0
 
                     val totalWeight = consideredColumns.map { it.weight() }.sum()
                     val perWeight = remainingWidth / totalWeight
+
                     consideredColumns.forEach {
-                        it.impl_setWidth((perWeight * it.weight()) + it.resizeType.delta)
+                        val rt = it.resizeType
+                        if (rt is Weight) {
+                            if (rt.minContentWidth && !rt.minRecorded) {
+                                rt.minRecorded = true
+                                it.minWidth = it.width + rt.padding
+                            }
+                            it.prefWidth = Math.max(it.minWidth, (perWeight * rt.weight) + rt.delta + rt.padding)
+                        } else {
+                            it.prefWidth = Math.max(it.minWidth, perWeight + rt.delta)
+                        }
                         remainingWidth -= it.width
                     }
 
@@ -669,21 +679,21 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                     if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
                         val perColumn = remainingWidth / remainingColumns.size.toDouble()
                         remainingColumns.forEach {
-                            it.impl_setWidth(perColumn + it.resizeType.delta)
+                            it.prefWidth = perColumn + it.resizeType.delta
                             remainingWidth -= it.width
                         }
                     }
                 }
 
-                // Adjustment for where we didn't assign all width
+                // Adjustment if we didn't assign all width
                 if (remainingWidth > 0.0) {
-                    // Give remaining width to the right most resizable column
+                    // Give remaining width to the right-most resizable column
                     val rightMostResizable = param.table.columns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
                     rightMostResizable?.apply {
-                        impl_setWidth(width + remainingWidth)
+                        prefWidth = width + remainingWidth
                         remainingWidth -= width
                     }
-                // Adjustment for where we assigned more width that we have
+                    // Adjustment for where we assigned more width that we have
                 } else if (remainingWidth < 0.0) {
                     // Reduce from resizable columns, for now we reduce the column with largest reduction potential
                     // We should consider reducing based on the resize type of the column as well
@@ -700,14 +710,17 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                             val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
                             val toWidth = reduceableCandidate.width - reduceBy
                             reduceableCandidate.resizeType.delta -= reduceBy
-                            reduceableCandidate.impl_setWidth(toWidth)
+                            reduceableCandidate.prefWidth = toWidth
                             remainingWidth += reduceBy
                         }
                     }
                 }
             } else {
                 // Handle specific column size operation
-                if (!param.column.resizeType.isResizable) return false
+                val rt = param.column.resizeType
+
+                if (!rt.isResizable) return false
+
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
@@ -728,25 +741,89 @@ class SmartColumnResize<S> private constructor() : Callback<TableView.ResizeFeat
                 // Apply negative delta and set new with for the right column
                 with(rightCol) {
                     resizeType.delta += rightColDelta
-                    impl_setWidth(width + rightColDelta)
+                    prefWidth = width + rightColDelta
                 }
 
                 // Apply delta and set new width for the resized column
                 with(param.column) {
-                    resizeType.delta += param.delta
-                    impl_setWidth(width + param.delta)
+                    rt.delta += param.delta
+                    prefWidth = width + param.delta
                 }
 
             }
             return true
         } finally {
-            resizing = false
+            param.table.isSmartResizing = false
         }
     }
 
+    var TableView<*>.isSmartResizing: Boolean
+        get() = properties["tornadofx.isSmartResizing"] == true
+        set(value) {
+            properties["tornadofx.isSmartResizing"] = value
+        }
+
+    fun requestResize(table: TableView<*>) {
+        call(TableView.ResizeFeatures(table, null, 0.0))
+    }
+
     companion object {
-        val POLICY = SmartColumnResize<Any>()
+        val POLICY = SmartResize()
         val ResizeTypeKey = "tornadofx.smartColumnResizeType"
+
+        internal var TableView<*>.isSmartResizing: Boolean
+            get() = properties["tornadofx.isSmartResizing"] == true
+            set(value) {
+                properties["tornadofx.isSmartResizing"] = value
+            }
+
+        private val policyChangeListener = ChangeListener<Callback<TableView.ResizeFeatures<*>, Boolean>> { observable, oldValue, newValue ->
+            val table = (observable as ObjectProperty<*>).bean as TableView<*>
+            if (newValue == POLICY) install(table) else uninstall(table)
+        }
+
+        private val columnsChangeListener = ListChangeListener<TableColumn<*, *>> { s ->
+            while (s.next()) {
+                if (s.wasAdded()) s.addedSubList.forEach {
+                    it.widthProperty().addListener(columnWidthChangeListener)
+                }
+                if (s.wasRemoved()) s.removed.forEach {
+                    it.widthProperty().removeListener(columnWidthChangeListener)
+                }
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        private val columnWidthChangeListener = ChangeListener<Number> { observable, oldValue, newValue ->
+            val column = (observable as ReadOnlyProperty<*>).bean as TableColumn<*, *>
+            val table: TableView<out Any>? = column.tableView
+
+            if (table != null && !table.isSmartResizing) {
+                val rt = column.resizeType
+                val diff = oldValue.toDouble() - newValue.toDouble()
+                rt.delta -= diff
+                POLICY.call(TableView.ResizeFeatures<Any>(table as TableView<Any>?, null, 0.0))
+            }
+
+        }
+
+        private fun isPolicyInstalled(table: TableView<*>): Boolean {
+            return table.properties["tornadofx.smartResizeInstalled"] == true
+        }
+
+        private fun install(table: TableView<*>) {
+            table.columnResizePolicyProperty().addListener(policyChangeListener)
+            table.columns.addListener(columnsChangeListener)
+            table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
+            table.properties["tornadofx.smartResizeInstalled"] = true
+        }
+
+        private fun uninstall(table: TableView<*>) {
+            table.columnResizePolicyProperty().removeListener(policyChangeListener)
+            table.columns.removeListener(columnsChangeListener)
+            table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
+            table.properties.remove("tornadofx.smartResizeInstalled")
+        }
     }
 }
 
@@ -759,10 +836,14 @@ fun TableView<*>.getContentWidth() = TableView::class.java.getDeclaredField("con
 }
 
 internal var TableColumn<*, *>.resizeType: ResizeType
-    get() = properties.getOrPut(SmartColumnResize.ResizeTypeKey) { Default() } as ResizeType
+    get() = resizeTypeProperty().value
     set(value) {
-        properties[SmartColumnResize.ResizeTypeKey] = value
+        resizeTypeProperty().value = value
     }
+
+@Suppress("UNCHECKED_CAST")
+internal fun TableColumn<*, *>.resizeTypeProperty() =
+        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
     minWidth = width
@@ -791,17 +872,20 @@ fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
     return this
 }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double): TableColumn<S, T> {
-    resizeType = ResizeType.Weight(weight)
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Weight(weight, padding, minContentWidth)
     return this
 }
 
-fun <S, T> TableColumn<S, T>.defaultWidth(): TableColumn<S, T> {
-    resizeType = ResizeType.Default()
+fun <S, T> TableColumn<S, T>.pctWidth(pct: Double): TableColumn<S, T> {
+    resizeType = ResizeType.Pct(pct)
     return this
 }
 
-fun <S, T> TableColumn<S, T>.contentWidth(): TableColumn<S, T> {
-    resizeType = ResizeType.Content()
+/**
+ * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
+ */
+fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
     return this
 }

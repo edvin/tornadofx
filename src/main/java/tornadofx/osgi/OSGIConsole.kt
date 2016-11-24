@@ -1,6 +1,5 @@
 package tornadofx.osgi
 
-import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.control.TableView
 import javafx.scene.control.TextInputDialog
 import javafx.scene.input.TransferMode
@@ -22,10 +21,22 @@ class OSGIConsole : View() {
             tableview<Bundle>() {
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
-                column<Bundle, Long>("ID", { SimpleObjectProperty(it.value.bundleId) }).fixedWidth(75.0)
-                column<Bundle, String>("State", { SimpleObjectProperty(it.value.stateDescription) }).fixedWidth(120.0)
-                column<Bundle, Int>("Level", { SimpleObjectProperty(it.value.state) }).fixedWidth(50.0)
-                column<Bundle, String>("Name", { SimpleObjectProperty(it.value.description) })
+                column("ID", Long::class) {
+                    value { it.value.bundleId }
+                    fixedWidth(75.0)
+                }
+
+                column("State", String::class) {
+                    value { it.value.stateDescription }
+                    fixedWidth(120.0)
+                }
+                column("Level", Int::class) {
+                    value { it.value.state }
+                    fixedWidth(50.0)
+                }
+                column("Name", String::class) {
+                    value { it.value.description }
+                }
 
                 items.setAll(fxBundleContext.bundles.toList())
 

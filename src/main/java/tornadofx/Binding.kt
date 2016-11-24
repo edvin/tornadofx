@@ -57,7 +57,7 @@ inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, 
         else
             stringProperty.bindBidirectional(property as Property<String>)
     } else {
-        val effectiveConverter = converter ?: getDefaultConverter<T>()
+        val effectiveConverter = if (format != null) null else converter ?: getDefaultConverter<T>()
         if (readonly) {
             val toStringConverter = Callable {
                 if (converter != null)

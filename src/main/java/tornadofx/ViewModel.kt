@@ -4,6 +4,8 @@ package tornadofx
 
 import com.sun.javafx.binding.BidirectionalBinding
 import com.sun.javafx.binding.ExpressionHelper
+import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -16,13 +18,18 @@ import javafx.scene.control.*
 import javafx.scene.paint.Paint
 import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
+import java.util.concurrent.Callable
+import kotlin.reflect.KProperty1
 
-open class ViewModel {
-    val properties: ObservableMap<Property<*>, () -> Property<*>> = FXCollections.observableHashMap<Property<*>, () -> Property<*>>()
+open class ViewModel : Component(), Injectable {
+    val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
+    val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
+    val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
-    private val dirtyStateProperty = SimpleBooleanProperty(false)
+    private val dirtyStateProperty = booleanBinding(dirtyProperties, dirtyProperties) { this.isNotEmpty() }
     fun dirtyStateProperty() = dirtyStateProperty
     val validationContext = ValidationContext()
+    val ignoreDirtyStateProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -50,8 +57,8 @@ open class ViewModel {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(noinline op: () -> PropertyType): ResultType {
-        val prop = op()
+    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, noinline op: () -> PropertyType?): ResultType {
+        val prop = op() ?: SimpleObjectProperty<T>()
         val value = prop.value
 
         // Faster check where possible
@@ -81,26 +88,38 @@ open class ViewModel {
         }
 
         (facade as Property<*>).addListener(dirtyListener)
-        properties[facade] = op
+        propertyMap[facade] = op
+        propertyCache[facade] = prop
+
+        // Listener that can track external changes for this facade
+        externalChangeListeners[facade] = ChangeListener<Any> { observableValue, ov, nv ->
+            (facade as Property<Any>).value = nv
+        }
+
+        // Update facade when the property returned to us is changed externally
+        prop.addListener(externalChangeListeners[facade]!!)
+
+        // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
+        if (autocommit) {
+            facade.addListener { obs, ov, nv ->
+                propertyMap[obs]!!.invoke()?.value = nv
+            }
+        }
 
         return facade as ResultType
     }
 
-    inline fun <reified T : Any> property(noinline op: () -> Property<T>) = PropertyDelegate(bind(op))
+    inline fun <reified T : Any> property(autocommit: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
+        if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
+
         if (dirtyProperties.contains(property)) {
-            val sourceValue = properties[property]!!.invoke().value
+            val sourceValue = propertyMap[property]!!.invoke()?.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
         } else {
             dirtyProperties.add(property)
         }
-        updateDirtyState()
-    }
-
-    private fun updateDirtyState() {
-        val dirtyState = dirtyProperties.isNotEmpty()
-        if (dirtyState != dirtyStateProperty.value) dirtyStateProperty.value = dirtyState
     }
 
     val isDirty: Boolean get() = dirtyStateProperty.value
@@ -109,31 +128,54 @@ open class ViewModel {
     fun validate(focusFirstError: Boolean = true): Boolean = validationContext.validate(focusFirstError)
 
     /**
+     * This function is called after a successful commit, right before the optional successFn call sent to the commit
+     * call is invoked.
+     */
+    open fun onCommit() {
+
+    }
+
+    /**
      * Perform validation and flush the values into the source object if validation passes.
      * @param force Force flush even if validation fails
      */
     fun commit(force: Boolean = false, focusFirstError: Boolean = true, successFn: (() -> Unit)? = null): Boolean {
-        var commited = true
+        var committed = true
 
         runAndWait {
             if (!validate(focusFirstError) && !force) {
-                commited = false
+                committed = false
             } else {
-                for ((facade, propExtractor) in properties)
-                    propExtractor().value = facade.value
+                for ((facade, propExtractor) in propertyMap)
+                    propExtractor()?.value = facade.value
 
                 clearDirtyState()
             }
         }
 
-        if (commited) successFn?.invoke()
-        return commited
+        if (committed) {
+            onCommit()
+            successFn?.invoke()
+        }
+        return committed
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun rollback() {
         runAndWait {
-            for ((facade, propExtractor) in properties)
-                facade.value = propExtractor().value
+            for ((facade, propExtractor) in propertyMap) {
+                val prop = propExtractor()
+                // Rebind external change listener in case the source property changed
+                val oldProp = propertyCache[facade]
+                if (oldProp != prop) {
+                    val extListener = externalChangeListeners[facade] as ChangeListener<Any>
+                    oldProp?.removeListener(extListener)
+                    prop?.removeListener(extListener)
+                    prop?.addListener(extListener)
+                    propertyCache[facade] = prop
+                }
+                facade.value = prop?.value
+            }
             clearDirtyState()
         }
     }
@@ -156,14 +198,13 @@ open class ViewModel {
     /**
      * Extract the value of the corresponding source property
      */
-    fun <T> backingValue(property: Property<T>) = properties[property]?.invoke()?.value
+    fun <T> backingValue(property: Property<T>) = propertyMap[property]?.invoke()?.value
 
     fun <T> isDirty(property: Property<T>) = backingValue(property) != property.value
     fun <T> isNotDirty(property: Property<T>) = !isDirty(property)
 
     private fun clearDirtyState() {
         dirtyProperties.clear()
-        updateDirtyState()
     }
 }
 
@@ -189,6 +230,19 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
         op?.invoke(this, newValue)
         rollback()
     }
+}
+
+/**
+ * Rebind the itemProperty of the ViewModel when the itemProperty in the ListCellFragment changes.
+ */
+fun <V : ItemViewModel<T>, T> V.bindTo(listCellFragment: ListCellFragment<T>): V {
+    itemProperty.bind(listCellFragment.itemProperty)
+    return this
+}
+
+fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
+    val prop = modelField.get(this)
+    return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
 }
 
 fun <V : ViewModel, T> V.rebindOnTreeItemChange(observable: ObservableValue<TreeItem<T>>, op: V.(T?) -> Unit) {
@@ -327,4 +381,16 @@ val Property<*>.viewModel: ViewModel? get() {
     }
 
     return null
+}
+
+open class ItemViewModel<T>  : ViewModel() {
+    val itemProperty = SimpleObjectProperty<T>()
+    var item by itemProperty
+
+    val empty = booleanBinding(this, itemProperty) { item == null }
+
+    init {
+        rebindOnChange(itemProperty)
+    }
+
 }

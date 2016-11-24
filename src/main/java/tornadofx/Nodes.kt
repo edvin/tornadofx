@@ -2,8 +2,11 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
+import javafx.beans.property.Property
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
+import javafx.css.PseudoClass
 import javafx.event.EventTarget
 import javafx.geometry.HPos
 import javafx.geometry.Insets
@@ -44,8 +47,23 @@ fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
 }
 
 fun Node.hasClass(className: String) = styleClass.contains(className)
+fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
+
 fun <T : Node> T.addClass(className: String): T {
-    styleClass.add(className); return this
+    styleClass.add(className)
+    return this
+}
+
+fun <T : Node> T.addPseudoClass(className: String): T {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    pseudoClassStateChanged(pseudoClass, true)
+    return this
+}
+
+fun <T : Node> T.removePseudoClass(className: String): T {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    pseudoClassStateChanged(pseudoClass, false)
+    return this
 }
 
 fun <T : Node> T.removeClass(className: String): T {
@@ -57,6 +75,15 @@ fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
         if (!hasClass(className)) addClass(className)
     } else {
         removeClass(className)
+    }
+    return this
+}
+
+fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean): T {
+    if (predicate) {
+        if (!hasPseudoClass(className)) addPseudoClass(className)
+    } else {
+        removePseudoClass(className)
     }
     return this
 }
@@ -98,10 +125,10 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-fun Scene.reloadViews() {
-    if (properties["javafx.layoutdebugger"] == null) {
+fun Scene.reloadViews(scope: Scope = DefaultScope) {
+    if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
-            if (it.reloadInit) FX.replaceComponent(it)
+            if (it.reloadInit) FX.replaceComponent(it, scope)
             it.reloadInit = true
         }
     }
@@ -135,15 +162,18 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
 private fun Parent.clearViews() {
     val uicmp = uiComponent<UIComponent>()
     if (uicmp is View) {
-        FX.components.remove(uicmp.javaClass.kotlin)
+        FX.getComponents(uicmp.scope).remove(uicmp.javaClass.kotlin)
     } else {
-        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach { it.clearViews() }
+        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach(Parent::clearViews)
     }
 }
 
 fun Stage.reloadStylesheetsOnFocus() {
-    focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene?.reloadStylesheets()
+    if (properties["tornadofx.reloadStylesheetsListener"] == null) {
+        focusedProperty().addListener { obs, old, focused ->
+            if (focused && FX.initialized.value) scene?.reloadStylesheets()
+        }
+        properties["tornadofx.reloadStylesheetsListener"] = true
     }
 }
 
@@ -157,8 +187,11 @@ fun Stage.hookGlobalShortcuts() {
 }
 
 fun Stage.reloadViewsOnFocus() {
-    focusedProperty().addListener { obs, old, focused ->
-        if (focused && FX.initialized.value) scene?.reloadViews()
+    if (properties["tornadofx.reloadViewsListener"] == null) {
+        focusedProperty().addListener { obs, old, focused ->
+            if (focused && FX.initialized.value) scene?.reloadViews()
+        }
+        properties["tornadofx.reloadViewsListener"] = true
     }
 }
 
@@ -183,25 +216,13 @@ operator fun EventTarget.plusAssign(node: Node) {
     addChildIfPossible(node)
 }
 
-fun <T: EventTarget> T.replaceChildren(op: T.() -> Unit) {
+fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
     getChildList()?.clear()
     op(this)
 }
 
-@Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
-@JvmName("addView")
-inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
-
-@JvmName("addFragment")
-inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type).root)
 
 fun EventTarget.add(node: Node) = plusAssign(node)
-
-@JvmName("plusView")
-operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type).root)
-
-@JvmName("plusFragment")
-operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type).root)
 
 operator fun EventTarget.plusAssign(view: UIComponent) {
     if (this is UIComponent) {
@@ -238,12 +259,17 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
-fun <T> TableView<T>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<T, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
-        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
+        try {
+            val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+            resizer.isAccessible = true
+            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+            afterResize?.invoke()
+        } catch (ex: Exception) {
+            // Silent for now, it is usually run multiple times
+            //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
+        }
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
@@ -265,20 +291,22 @@ fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boo
                 if (scrollTo) scrollTo(it)
             }
 }
+
 fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(0,it)
+        backingList.add(0, it)
         if (select) selectionModel.select(it)
     }
 }
+
 fun <T> TableView<T>.moveToBottomWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     val end = backingList.size - 1
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
         backingList.remove(it)
-        backingList.add(end,it)
+        backingList.add(end, it)
         if (select) selectionModel.select(it)
 
     }
@@ -299,25 +327,60 @@ fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeTableView<T>.selectFirst() = selectionModel.selectFirst()
 
-val <T> ListView<T>.selectedItem: T?
-    get() = selectionModel.selectedItem
-
 val <T> ComboBox<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
+fun <T> TreeView<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it?.value
+    }
+}
+
+fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+
+class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
+    private val store = mutableMapOf<T, Node>()
+    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
+}
+
+/**
+ * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
+ *
+ * To support this feature, a custom cellFactory is automatically installed, unless an already
+ * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
+ * how to retrieve cached values.
+ */
+fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
+    properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
+    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.cellCacheCapable"] != true) {
+        cellFormat { }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) {
+    properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback { column: TableColumn<S, T> ->
         object : TableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
+                    textProperty().unbind()
+                    graphicProperty().unbind()
                     text = null
                     graphic = null
                 } else {
+                    // Consult the cell cache before calling the formatter function
+                    val cellCache = this@cellFormat.properties["tornadofx.cellCache"]
+                    if (cellCache is TableColumnCellCache<*>) {
+                        graphicProperty().unbind()
+                        graphic = (cellCache as TableColumnCellCache<T>).getOrCreateNode(item)
+                    }
                     formatter(this, item)
                 }
             }
@@ -325,29 +388,12 @@ fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)
     }
 }
 
-fun <T> ComboBox<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
-    cellFactory = Callback { listView: ListView<T> ->
-        object : ListCell<T>() {
-            override fun updateItem(item: T, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    text = null
-                    graphic = null
-                } else {
-                    formatter(this, item)
-                }
-            }
-        }
-    }
-}
-
-fun <S, T> TableColumn<S, T>.cellDecorator(decorator: (TableCell<S, T>.(T) -> Unit)) {
+fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Unit) {
     val originalFactory = cellFactory
 
     cellFactory = Callback { column: TableColumn<S, T> ->
         val cell = originalFactory.call(column)
-        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue)  }
+        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue) }
         cell
     }
 }
@@ -369,6 +415,18 @@ fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
     }
 }
 
+fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S?) -> Unit)) {
+    val originalFactory = cellFactory
+
+    if (originalFactory == null) cellFormat(decorator) else {
+        cellFactory = Callback { treeView: TreeView<S> ->
+            val cell = originalFactory.call(treeView)
+            cell.itemProperty().onChange { decorator(cell, cell.item) }
+            cell
+        }
+    }
+}
+
 fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
@@ -386,27 +444,8 @@ fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) 
     }
 }
 
-fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
-    cellFactory = Callback {
-        object : ListCell<T>() {
-            override fun updateItem(item: T, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    with(textProperty()) {
-                        if (isBound) unbind()
-                        value = null
-                    }
-                    with(graphicProperty()) {
-                        if (isBound) unbind()
-                        value = null
-                    }
-                } else {
-                    formatter(this, item)
-                }
-            }
-        }
-    }
+enum class EditEventType(val editing: Boolean) {
+    StartEdit(true), CommitEdit(false), CancelEdit(false)
 }
 
 /**
@@ -429,6 +468,13 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
         if (event.code == KeyCode.ENTER && !event.isMetaDown && isSelected(event))
             action(selectedItem!!)
+    }
+}
+
+fun Node.onDoubleClick(action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == 2)
+            action()
     }
 }
 
@@ -464,9 +510,6 @@ fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
 fun <T> TableView<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
-
 fun <T> ComboBox<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
@@ -484,37 +527,11 @@ fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     })
 }
 
-fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
-        if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
-            action(selectedItem!!)
-    })
-}
-
 fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
             action(selectedValue!!)
     })
-}
-
-/**
- * Execute action when the enter key is pressed or the mouse is clicked
-
- * @param clickCount The number of mouse clicks to trigger the action
- * *
- * @param action The runnable to execute on select
- */
-fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
-    addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-        if (event.clickCount == clickCount && selectedItem != null)
-            action(selectedItem!!)
-    }
-
-    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
-        if (event.code == KeyCode.ENTER && !event.isMetaDown && selectedItem != null)
-            action(selectedItem!!)
-    }
 }
 
 /**
@@ -540,14 +557,14 @@ fun EventTarget.isInsideTableRow(): Boolean {
  * Access BorderPane constraints to manipulate and apply on this control
  */
 fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
-    val bpc = BorderPaneConstraint()
+    val bpc = BorderPaneConstraint(this)
     bpc.op()
     return bpc.applyToNode(this)
 }
 
-class BorderPaneConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var alignment: Pos? = null
+class BorderPaneConstraint(node: Node,
+                           override var margin: Insets? = BorderPane.getMargin(node),
+                           var alignment: Pos? = null
 ) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
         margin.let { BorderPane.setMargin(node, it) }
@@ -556,27 +573,55 @@ class BorderPaneConstraint(
     }
 }
 
+var Node.margin: Insets?
+    get() = when (parent) {
+        is HBox -> HBox.getMargin(this)
+        is VBox -> VBox.getMargin(this)
+        is StackPane -> StackPane.getMargin(this)
+        else -> null
+    }
+    set(value) = when (parent) {
+        is HBox -> HBox.setMargin(this, value)
+        is VBox -> VBox.setMargin(this, value)
+        is StackPane -> StackPane.setMargin(this, value)
+        else -> {
+            FX.log.warning("Setting margin=$value on $this failed because parent doesn't support it ($parent)")
+        }
+    }
+
+var Node.alignment: Pos?
+    get() = when (parent) {
+        is StackPane -> StackPane.getAlignment(this)
+        else -> null
+    }
+    set (value) = when (parent) {
+        is StackPane -> StackPane.setAlignment(this, value)
+        else -> {
+            FX.log.warning("Setting alignment=$value on $this failed because parent doesn't support it ($parent)")
+        }
+    }
+
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
 fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
-    val gpc = GridPaneConstraint()
+    val gpc = GridPaneConstraint(this)
     gpc.op()
     return gpc.applyToNode(this)
 }
 
-class GridPaneConstraint(
-        var columnIndex: Int? = null,
-        var rowIndex: Int? = null,
-        var hGrow: Priority? = null,
-        var vGrow: Priority? = null,
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var fillHeight: Boolean? = null,
-        var fillWidth: Boolean? = null,
-        var hAlignment: HPos? = null,
-        var vAlignment: VPos? = null,
-        var columnSpan: Int? = null,
-        var rowSpan: Int? = null
+class GridPaneConstraint(node: Node,
+                         var columnIndex: Int? = null,
+                         var rowIndex: Int? = null,
+                         var hGrow: Priority? = null,
+                         var vGrow: Priority? = null,
+                         override var margin: Insets? = GridPane.getMargin(node),
+                         var fillHeight: Boolean? = null,
+                         var fillWidth: Boolean? = null,
+                         var hAlignment: HPos? = null,
+                         var vAlignment: VPos? = null,
+                         var columnSpan: Int? = null,
+                         var rowSpan: Int? = null
 
 ) : MarginableConstraints() {
     var vhGrow: Priority? = null
@@ -620,39 +665,64 @@ class GridPaneConstraint(
 }
 
 fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
-    val c = VBoxConstraint()
+    val c = VBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-class VBoxConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var vGrow: Priority? = null
+fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
+    val c = StackpaneConstraint(this)
+    c.op()
+    return c.applyToNode(this)
+}
+
+class VBoxConstraint(node: Node,
+                     override var margin: Insets? = VBox.getMargin(node),
+                     var vGrow: Priority? = null
 
 ) : MarginableConstraints() {
     fun <T : Node> applyToNode(node: T): T {
-        margin.let { VBox.setMargin(node, it) }
+        margin?.let { VBox.setMargin(node, it) }
         vGrow?.let { VBox.setVgrow(node, it) }
         return node
     }
 }
 
+class StackpaneConstraint(node: Node,
+                          override var margin: Insets? = StackPane.getMargin(node),
+                          var alignment: Pos? = null
+
+) : MarginableConstraints() {
+    fun <T : Node> applyToNode(node: T): T {
+        margin?.let { StackPane.setMargin(node, it) }
+        alignment?.let { StackPane.setAlignment(node, it) }
+        return node
+    }
+}
+
 fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
-    val c = HBoxConstraint()
+    val c = HBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-class HBoxConstraint(
-        override var margin: Insets = Insets(0.0, 0.0, 0.0, 0.0),
-        var hGrow: Priority? = null
+class HBoxConstraint(node: Node,
+                     override var margin: Insets? = HBox.getMargin(node),
+                     var hGrow: Priority? = null
 ) : MarginableConstraints() {
 
     fun <T : Node> applyToNode(node: T): T {
-        margin.let { HBox.setMargin(node, it) }
+        margin?.let { HBox.setMargin(node, it) }
         hGrow?.let { HBox.setHgrow(node, it) }
         return node
     }
+}
+
+var Node.hgrow: Priority? get() = HBox.getHgrow(this); set(value) {
+    HBox.setHgrow(this, value)
+}
+var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) {
+    VBox.setVgrow(this, value)
 }
 
 fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
@@ -677,29 +747,29 @@ class AnchorPaneConstraint(
 }
 
 abstract class MarginableConstraints {
-    abstract var margin: Insets
+    abstract var margin: Insets?
     var marginTop: Double
-        get() = margin.top
+        get() = margin?.top ?: 0.0
         set(value) {
-            margin = margin.let { Insets(value, it.right, it.bottom, it.left) }
+            margin = Insets(value, margin?.right ?: 0.0, margin?.bottom ?: 0.0, margin?.left ?: 0.0)
         }
 
     var marginRight: Double
-        get() = margin.right
+        get() = margin?.right ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, value, it.bottom, it.left) }
+            margin = Insets(margin?.top ?: 0.0, value, margin?.bottom ?: 0.0, margin?.left ?: 0.0)
         }
 
     var marginBottom: Double
-        get() = margin.bottom
+        get() = margin?.bottom ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, it.right, value, it.left) }
+            margin = Insets(margin?.top ?: 0.0, margin?.right ?: 0.0, value, margin?.left ?: 0.0)
         }
 
     var marginLeft: Double
-        get() = margin.left
+        get() = margin?.left ?: 0.0
         set(value) {
-            margin = margin.let { Insets(it.top, it.right, it.bottom, value) }
+            margin = Insets(margin?.top ?: 0.0, margin?.right ?: 0.0, margin?.bottom ?: 0.0, value)
         }
 
     fun marginTopBottom(value: Double) {
@@ -755,7 +825,7 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 /**
  * Return the UIComponent (View or Fragment) that owns this Parent
  */
-inline fun <reified T : UIComponent> Parent.uiComponent(): T? = properties["tornadofx.uicomponent"] as? T
+inline fun <reified T : UIComponent> Node.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
 
 /**
  * Find all UIComponents of the specified type that owns any of this node's children
@@ -789,9 +859,132 @@ inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Un
 }
 
 fun EventTarget.removeFromParent() {
-    if (this is Tab) {
+    if (this is UIComponent) {
+        root.removeFromParent()
+    } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
         parent?.getChildList()?.remove(this)
     }
+}
+
+/**
+ * Listen for changes to an observable value and replace all content in this Node with the
+ * new content created by the onChangeBuilder. The builder operates on the node and receives
+ * the new value of the observable as it's only parameter.
+ *
+ * The onChangeBuilder is run immediately with the current value of the property.
+ */
+fun <S : EventTarget, T> S.dynamicContent(property: ObservableValue<T>, onChangeBuilder: S.(T?) -> Unit) {
+    val onChange: (T?) -> Unit = {
+        getChildList()?.clear()
+        onChangeBuilder(this@dynamicContent, it)
+    }
+    property.onChange(onChange)
+    onChange(property.value)
+}
+
+const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
+/**
+ * Whether this node is currently being used in a [ViewTransition]. Used to determine whether it can be used in a
+ * transition. (Nodes can only exist once in the scenegraph, so it cannot be in two transitions at once.)
+ */
+internal var Node.isTransitioning: Boolean
+    get() {
+        val x = properties[TRANSITIONING_PROPERTY]
+        return x != null && (x !is Boolean || x != false)
+    }
+    set(value) {
+        properties[TRANSITIONING_PROPERTY] = value
+    }
+
+/**
+ * Replace this [Node] with another, optionally using a transition animation.
+ *
+ * @param replacement The node that will replace this one
+ * @param transition The [ViewTransition] used to animate the transition
+ * @return Whether or not the transition will run
+ */
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
+    if (isTransitioning || replacement.isTransitioning) {
+        return false
+    }
+    onTransit?.invoke()
+    if (this == scene?.root) {
+        val scene = scene!!
+        if (replacement !is Parent) {
+            throw IllegalArgumentException("Replacement scene root must be a Parent")
+        }
+
+        // Update scene property to support Live Views
+        replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
+
+        if (transition != null) {
+            transition.call(this, replacement) {
+                scene.root = it as Parent
+            }
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            scene.root = replacement
+        }
+        return true
+    } else if (parent is Pane) {
+        val parent = parent as Pane
+        val attach = if (parent is BorderPane) {
+            when (this) {
+                parent.top -> {
+                    { it: Node -> parent.top = it }
+                }
+                parent.right -> {
+                    { parent.right = it }
+                }
+                parent.bottom -> {
+                    { parent.bottom = it }
+                }
+                parent.left -> {
+                    { parent.left = it }
+                }
+                parent.center -> {
+                    { parent.center = it }
+                }
+                else -> {
+                    { throw IllegalStateException("Child of BorderPane not found in BorderPane") }
+                }
+            }
+        } else {
+            val children = parent.children
+            val index = children.indexOf(this);
+            { children.add(index, it) }
+        }
+
+        if (transition != null) {
+            transition.call(this, replacement, attach)
+        } else {
+            removeFromParent()
+            replacement.removeFromParent()
+            attach(replacement)
+        }
+        return true
+    } else {
+        return false
+    }
+}
+
+
+fun Node.hide() {
+    isVisible = false
+    isManaged = false
+}
+
+fun Node.show() {
+    isVisible = true
+    isManaged = true
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
+    if (parent == null) return null
+    if (parent.javaClass.kotlin == parentType) return parent as T
+    return parent!!.findParentOfType(parentType)
 }

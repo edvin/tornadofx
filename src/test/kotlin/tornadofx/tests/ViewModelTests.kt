@@ -1,5 +1,7 @@
 package tornadofx.tests
 
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableView
 import javafx.scene.control.TreeItem
@@ -13,10 +15,54 @@ import tornadofx.*
 open class ViewModelTests {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
-    @Test fun simple_commit() {
+    @Test fun rebind_to_null_unbinds() {
+        val personProperty = SimpleObjectProperty<Person>()
+
+        val person1 = Person("John", 37)
+        val person2 = Person("Jay", 32)
+
+        val model = PersonAutoModel(null)
+        model.rebindOnChange(personProperty) {
+            model.person = it
+        }
+
+        model.name.onChange {
+            println("Person name changed to $it")
+        }
+
+        personProperty.value = person1
+        assertEquals("John", model.name.value)
+        personProperty.value = person2
+        assertEquals("Jay", model.name.value)
+        personProperty.value = null
+        assertNull(model.person)
+    }
+
+    @Test fun auto_commit() {
+        val person = Person("John", 37)
+        val model = PersonAutoModel(person)
+
+        assertEquals(person.name, "John")
+        model.name.value = "Jay"
+        assertEquals(person.name, "Jay")
+    }
+
+    @Test fun external_change() {
         val person = Person("John", 37)
         val model = PersonModel(person)
 
+        assertEquals(model.name.value, "John")
+        person.name = "Jay"
+        assertEquals(model.name.value, "Jay")
+    }
+
+    @Test fun simple_commit() {
+        val person = Person("John", 37)
+        val model = PersonModel(person)
+        val isNameDirty = model.dirtyStateFor(PersonModel::name)
+        isNameDirty.onChange {
+            println("Name is dirty: $it")
+        }
         model.name.value = "Jay"
         assertEquals(person.name, "John")
         model.commit()
@@ -102,6 +148,10 @@ open class ViewModelTests {
         treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
     }
+}
+
+class PersonAutoModel(var person: Person? = null) : ViewModel() {
+    val name = bind(true) { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
 }
 
 // JavaFX Property

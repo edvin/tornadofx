@@ -2,19 +2,27 @@ package tornadofx.tests
 
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import tornadofx.observable
-import tornadofx.onChange
-import tornadofx.property
-import tornadofx.singleAssign
-import tornadofx.getValue
-import tornadofx.setValue
+import tornadofx.*
 import kotlin.test.assertEquals
 
 class PropertiesTest {
+    @Test
+    fun primitiveOnChange() {
+        val d = SimpleDoubleProperty()
+        // Ensure getting the value does not throw an NPE
+        d.onChange { assert((it + 7) is Double) }
+
+        d.value = 100.0
+        d.value = Double.POSITIVE_INFINITY
+        d.value = Double.NaN
+        d.value = null
+    }
+
     @Test
     fun property_delegation() {
         // given:
@@ -157,5 +165,14 @@ class PropertiesTest {
         property.onChange { called = true }
         property.value = "Changed"
         assertTrue(called)
+    }
+
+    @Test fun assign_if_null() {
+        val has = SimpleObjectProperty("Hello")
+        has.assignIfNull { "World" }
+        assertEquals(has.value, "Hello")
+        val hasNot = SimpleObjectProperty<String>()
+        hasNot.assignIfNull { "World" }
+        assertEquals(hasNot.value, "World")
     }
 }

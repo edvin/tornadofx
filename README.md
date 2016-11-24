@@ -23,7 +23,7 @@ Lightweight JavaFX Framework for Kotlin
 ## Getting started
 
 - [Screencasts](https://www.youtube.com/user/MrEdvinsyse)
-- [Book (EAP)](https://edvin.gitbooks.io/tornadofx-guide/content/)
+- [Book (EAP)](https://edvin.gitbooks.io/tornadofx-guide/content/) We are gradually migrating all information from the Wiki into the Guide
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
 - [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
@@ -40,7 +40,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.5.4
+  -DarchetypeVersion=1.5.7
 ```
 
 ### Add TornadoFX to your project
@@ -51,14 +51,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.5.5</version>
+	<version>1.5.7</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.5.5'
+compile 'no.tornado:tornadofx:1.5.7'
 ```
 
 ### What does it look like? (Code snippets)
@@ -67,7 +67,9 @@ Create a View
 
 ```kotlin
 class HelloWorld : View() {
-	override val root = HBox(Label("Hello world")) 
+	override val root = hbox {
+	    label("Hello world")
+	}
 }
 ```
     
@@ -105,20 +107,19 @@ Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Build
 
 ```kotlin
 class MyView : View() {
-    private val persons = FXCollections.observableArrayList<Person>(
+    private val persons = FXCollections.observableArrayList(
             Person(1, "Samantha Stuart", LocalDate.of(1981,12,4)),
             Person(2, "Tom Marks", LocalDate.of(2001,1,23)),
             Person(3, "Stuart Gills", LocalDate.of(1989,5,23)),
             Person(3, "Nicole Williams", LocalDate.of(1998,8,11))
     )
 
-    override val root = vbox {
-        tableview(persons) {
-            column("ID", Person::id)
-            column("Name", Person::name)
-            column("Birthday", Person::birthday)
-            column("Age", Person::age)
-        }
+    override val root = tableview(persons) {
+        column("ID", Person::id)
+        column("Name", Person::name)
+        column("Birthday", Person::birthday)
+        column("Age", Person::age)
+        columnResizePolicy = SmartResize.POLICY
     }
 }
 ```
@@ -293,7 +294,17 @@ Swap a View for another (change Scene root or embedded View)
 ```kotlin
 button("Go to next page") {
     setOnAction {
-    	replaceWith(PageTwo::class, ViewTransition.SlideIn)
+    	replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
+    }
+}
+```
+
+Open a View in an internal window over the current scene graph
+
+```kotlin
+button("Open") {
+    setOnAction {
+        openInternalWindow(MyOtherView::class)
     }
 }
 ```
