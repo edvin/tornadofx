@@ -528,6 +528,7 @@ open class PropertyHolder {
     // TextArea
     var prefColumnCount: Int by cssprop("-fx-pref-column-count")
     var prefRowCount: Int by cssprop("-fx-pref-row-count")
+    var textBoxBorder: Paint by cssprop("-fx-text-box-border")
 
     // TextInputControl
     var promptTextFill: Paint by cssprop("-fx-prompt-text-fill")
