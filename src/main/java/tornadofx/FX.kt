@@ -27,6 +27,7 @@ import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
 import java.util.*
 import java.util.concurrent.CountDownLatch
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
@@ -251,7 +252,10 @@ fun reloadViewsOnFocus() {
 
 fun importStylesheet(stylesheet: String) {
     val css = FX::class.java.getResource(stylesheet)
-    stylesheets.add(css.toExternalForm())
+    if (css != null)
+        stylesheets.add(css.toExternalForm())
+    else
+        FX.log.log(Level.WARNING, "Unable to find stylesheet at $stylesheet - check that the path is correct")
 }
 
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
