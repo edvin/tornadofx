@@ -1,6 +1,7 @@
 package tornadofx.tests
 
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.collections.FXCollections
 import javafx.scene.control.Label
 import javafx.stage.Stage
 import org.junit.Assert
@@ -22,6 +23,16 @@ class BindingTests {
         label.bind(property, format = DecimalFormat("#0.0", DecimalFormatSymbols.getInstance(Locale.ENGLISH)))
 
         Assert.assertEquals("3.1", label.text)
+    }
+
+    @Test
+    fun observableListBinding() {
+        val elements = FXCollections.observableArrayList("Hello", "World")
+        val binding = tornadofx.stringBinding(elements, elements) { this.joinToString(" ")}
+        val uielement = Label().apply { bind(binding) }
+        Assert.assertEquals("Hello World", uielement.text)
+        elements.setAll("Hello", "Changed")
+        Assert.assertEquals("Hello Changed", uielement.text)
     }
 
 }
