@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.5.9-SNAPSHOT]
 
 - Allow Labeled.bind() to work on ObservableValue<T> instead of just Property<T>
+- HttpClientEngine now adds default json headers to request
 
 ## [1.5.8] - 2016-11-24
 

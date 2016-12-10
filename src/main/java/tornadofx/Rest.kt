@@ -308,6 +308,9 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
             POST -> request = HttpPost(uri)
             DELETE -> request = HttpDelete(uri)
         }
+        addHeader("Accept-Encoding", "gzip, deflate")
+        addHeader("Content-Type", "application/json")
+        addHeader("Accept", "application/json")
     }
 
     override fun execute(): Rest.Response {
