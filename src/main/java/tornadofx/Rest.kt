@@ -223,7 +223,16 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
         }
 
         val response = HttpURLResponse(this)
+
         engine.responseInterceptor?.invoke(response)
+
+        if (connection.doOutput) {
+            connection.outputStream.flush()
+            connection.outputStream.close()
+            // Read bytes preemptively to ensure that POST is always performed even if the user forgets to consume()
+            response.bytes()
+        }
+
         return response
     }
 
@@ -234,9 +243,20 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
 class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override val statusCode: Int get() = request.connection.responseCode
+    private var bytesRead: ByteArray? = null
 
     override fun consume(): Rest.Response {
-        request.connection.disconnect()
+        if (bytesRead == null) {
+            bytes()
+            return this
+        }
+        try {
+            with(request.connection) {
+                if (doInput) inputStream.close()
+            }
+        } catch (ignored: Throwable) {
+            ignored.printStackTrace()
+        }
         Platform.runLater { Rest.ongoingRequests.remove(request) }
         return this
     }
@@ -248,6 +268,8 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override fun content() = request.connection.inputStream
 
     override fun bytes(): ByteArray {
+        if (bytesRead != null) return bytesRead!!
+
         try {
             val connection = request.connection
             val unwrapped = when (connection.contentEncoding) {
@@ -255,7 +277,8 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
                 "deflate" -> DeflaterInputStream(connection.inputStream)
                 else -> connection.inputStream
             }
-            return unwrapped.readBytes()
+            bytesRead = unwrapped.readBytes()
+            return bytesRead!!
         } finally {
             consume()
         }
