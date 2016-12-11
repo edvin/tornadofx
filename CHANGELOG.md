@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Allow Labeled.bind() to work on ObservableValue<T> instead of just Property<T>
 - HttpClientEngine now adds default json headers to request
 - Bug: Unconsumed POST requests are not posted to the server completely
+- Add Connection: Keep-Alive and User-Agent headers to the default rest client engine
 
 ## [1.5.8] - 2016-11-24
 

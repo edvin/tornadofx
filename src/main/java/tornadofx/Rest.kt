@@ -194,6 +194,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
         headers += "Accept-Encoding" to "gzip, deflate"
         headers += "Content-Type" to "application/json"
         headers += "Accept" to "application/json"
+        headers += "User-Agent" to "TornadoFX/Java ${System.getProperty("java.version")}"
+        headers += "Connection" to "Keep-Alive"
     }
 
     override fun execute(): Rest.Response {
