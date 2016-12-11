@@ -210,28 +210,25 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
             connection.doOutput = true
 
-            connection.connect()
-
-            when (entity) {
-                is JsonModel -> connection.outputStream.write(entity.toJSON().toString().toByteArray(UTF_8))
-                is JsonValue -> connection.outputStream.write(entity.toString().toByteArray(UTF_8))
-                is InputStream -> connection.outputStream.write(entity.readBytes())
+            val data = when (entity) {
+                is JsonModel -> entity.toJSON().toString().toByteArray(UTF_8)
+                is JsonValue -> entity.toString().toByteArray(UTF_8)
+                is InputStream -> entity.readBytes()
                 else -> throw IllegalArgumentException("Don't know how to handle entity of type ${entity.javaClass}")
             }
+            connection.addRequestProperty("Content-Length", data.size.toString())
+            connection.connect()
+            connection.outputStream.write(data)
+            connection.outputStream.flush()
+            connection.outputStream.close()
         } else {
             connection.connect()
         }
 
         val response = HttpURLResponse(this)
+        if (connection.doOutput) response.bytes()
 
         engine.responseInterceptor?.invoke(response)
-
-        if (connection.doOutput) {
-            // Read response preemptively to ensure that output is always delivered even if the user forgets to consume()
-            connection.outputStream.flush()
-            connection.outputStream.close()
-            response.bytes()
-        }
 
         return response
     }
