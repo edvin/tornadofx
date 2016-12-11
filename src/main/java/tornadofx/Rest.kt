@@ -227,9 +227,9 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
         engine.responseInterceptor?.invoke(response)
 
         if (connection.doOutput) {
+            // Read response preemptively to ensure that output is always delivered even if the user forgets to consume()
             connection.outputStream.flush()
             connection.outputStream.close()
-            // Read bytes preemptively to ensure that POST is always performed even if the user forgets to consume()
             response.bytes()
         }
 
