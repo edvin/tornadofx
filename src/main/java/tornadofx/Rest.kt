@@ -278,10 +278,13 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
                 else -> connection.inputStream
             }
             bytesRead = unwrapped.readBytes()
-            return bytesRead!!
+        } catch (error: Exception) {
+            bytesRead = ByteArray(0)
+            throw error
         } finally {
             consume()
         }
+        return bytesRead!!
     }
 }
 
