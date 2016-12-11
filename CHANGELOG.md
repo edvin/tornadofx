@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.9-SNAPSHOT]
 
+- `setInScope(value, scope)` allows you to preemptively configure an injectable property
 - Allow Labeled.bind() to work on ObservableValue<T> instead of just Property<T>
 - HttpClientEngine now adds default json headers to request
 - Bug: Unconsumed POST requests are not posted to the server completely
