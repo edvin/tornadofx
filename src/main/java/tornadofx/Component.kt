@@ -431,9 +431,12 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
     }
 
-    fun closeModal() = modalStage?.apply {
-        close()
-        modalStage = null
+    fun closeModal() {
+        modalStage?.apply {
+            close()
+            modalStage = null
+        }
+        root.findParentOfType(InternalWindow::class)?.close()
     }
 
     val titleProperty = SimpleStringProperty(viewTitle)

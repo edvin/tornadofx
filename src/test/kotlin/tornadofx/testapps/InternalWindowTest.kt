@@ -33,9 +33,14 @@ class Editor : View("Editor") {
             button("Save") {
                 accelerator("Alt+S")
                 setOnAction {
-                    alert(CONFIRMATION, "Saved!", "You did it!")
+                    save()
                 }
             }
         }
+    }
+
+    private fun save() {
+        alert(CONFIRMATION, "Saved!", "You did it!")
+        root.findParentOfType(InternalWindow::class)?.close()
     }
 }

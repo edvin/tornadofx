@@ -13,7 +13,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import java.net.URL
 
-internal class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
+class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private lateinit var view: UIComponent
