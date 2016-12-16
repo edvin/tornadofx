@@ -42,7 +42,7 @@ abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val dockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
     val docked by dockedProperty
-    internal val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
+    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
 
     val config: Properties
         get() = _config.value
@@ -224,15 +224,15 @@ abstract class Component {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : FXEvent> subscribe(event: KClass<T>, action: (T) -> Unit) {
-        subscribedEvents.computeIfAbsent(event, { ArrayList() }).add(action as (FXEvent) -> Unit)
-        if (docked) FX.eventbus.subscribe(event, action)
+    inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
+        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
+        if (docked) FX.eventbus.subscribe(T::class, action)
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : FXEvent> unsubscribe(event: T, action: (T) -> Unit) {
-        subscribedEvents[event.javaClass.kotlin]?.remove(action)
-        FX.eventbus.unsubscribe(event.javaClass.kotlin, action)
+    inline fun <reified T : FXEvent> unsubscribe(noinline action: (T) -> Unit) {
+        subscribedEvents[T::class]?.remove(action)
+        FX.eventbus.unsubscribe(T::class, action)
     }
 
     fun <T : FXEvent> fire(event: T) {

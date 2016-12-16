@@ -14,7 +14,7 @@ class EventBusTestView : View("Data Event Table") {
             column("Value", String::class) {
                 value { it.value }
             }
-            subscribe(MyDataEvent::class) {
+            subscribe<MyDataEvent> {
                 items.setAll(it.data)
                 selectionModel.select(0)
                 requestFocus()
