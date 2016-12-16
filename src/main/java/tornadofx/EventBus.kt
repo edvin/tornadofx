@@ -15,6 +15,12 @@ class EventBus {
     fun <T : FXEvent> subscribe(event: KClass<T>, action: (T) -> Unit) =
         subscriptions.computeIfAbsent(event, { HashSet() }).add(action as (FXEvent) -> Unit)
 
+    fun <T : FXEvent> subscribe(event: Class<T>, action: (T) -> Unit) =
+        subscriptions.computeIfAbsent(event.kotlin, { HashSet() }).add(action as (FXEvent) -> Unit)
+
+    fun <T : FXEvent> unsubscribe(event: Class<T>, action: (T) -> Unit) =
+        subscriptions[event.kotlin]?.remove(action)
+
     fun <T : FXEvent> unsubscribe(event: KClass<T>, action: (T) -> Unit) =
         subscriptions[event]?.remove(action)
 
