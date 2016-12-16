@@ -40,8 +40,6 @@ interface Injectable
 
 abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
-    val dockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
-    val docked by dockedProperty
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
 
     val config: Properties
@@ -226,7 +224,8 @@ abstract class Component {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
-        if (docked) FX.eventbus.subscribe(T::class, action)
+        val fireNow = if (this is UIComponent) docked else true
+        if (fireNow) FX.eventbus.subscribe(T::class, action)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -250,6 +249,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         throw UnsupportedOperationException("not implemented")
     }
 
+    val dockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val docked by dockedProperty
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
     internal var reloadInit = false

@@ -2,12 +2,16 @@ package tornadofx.testapps
 
 import tornadofx.*
 
-class EventBusTestApp : App(EventBusTestView::class)
+class EventBusTestApp : App(EventBusTestView::class) {
+    init {
+        find<MyController>()
+    }
+}
 
 class MyDataEvent(val data: List<String>) : FXEvent()
+object GiveMeData : FXEvent(runOnFxApplicationThread = false)
 
 class EventBusTestView : View("Data Event Table") {
-    val ctrl: MyController by inject()
 
     override val root = vbox {
         tableview<String> {
@@ -22,16 +26,16 @@ class EventBusTestView : View("Data Event Table") {
         }
         button("Load data") {
             setOnAction {
-                runAsync {
-                    ctrl.loadData()
-                }
+                fire(GiveMeData)
             }
         }
     }
 }
 
 class MyController : Controller() {
-    fun loadData() {
-        fire(MyDataEvent(listOf("Simulate", "Data", "Loaded", "From", "The", "Database")))
+    init {
+        subscribe<GiveMeData> {
+            fire(MyDataEvent(listOf("Simulate", "Data", "Loaded", "From", "The", "Database")))
+        }
     }
 }
