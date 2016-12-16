@@ -238,14 +238,18 @@ fun <T : Any> floatBinding(receiver: T, vararg dependencies: Observable, op: T.(
 fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding
         = Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding
-        = Bindings.createBooleanBinding(Callable { receiver.op() }, *dependencies)
+fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding {
+    val deps = if (receiver is ObservableValue<*>) arrayOf(receiver, *dependencies) else dependencies
+    return Bindings.createBooleanBinding(Callable { receiver.op() }, *deps)
+}
 
 fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding
-        = Bindings.createStringBinding(Callable { receiver.op() }, *dependencies)
+fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding {
+    val deps = if (receiver is ObservableValue<*>) arrayOf(receiver, *dependencies) else dependencies
+    return Bindings.createStringBinding(Callable { receiver.op() }, *deps)
+}
 
 fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)

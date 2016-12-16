@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.9-SNAPSHOT]
 
+- booleanBinding and stringBinding should add observable receiver as dependency
 - Eventbus: `FXEvent` class with `subscribe()`, `unsubscribe` and `fire` functions
 - InternalWindow is public, closeModal() will also close InternalWindow
 - `setInScope(value, scope)` allows you to preemptively configure an injectable property
