@@ -20,7 +20,6 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
-import javafx.scene.shape.SVGPath
 import javafx.stage.Stage
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -56,6 +55,7 @@ class FX {
             }
         }
 
+        val eventbus = EventBus()
         val log = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
 

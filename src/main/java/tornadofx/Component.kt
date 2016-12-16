@@ -1,6 +1,8 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
@@ -39,6 +41,9 @@ interface Injectable
 
 abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
+    val dockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val docked by dockedProperty
+    internal val subscribedEvents = HashMap<FXEvent, ArrayList<(FXEvent) -> Unit>>()
 
     val config: Properties
         get() = _config.value
@@ -218,6 +223,23 @@ abstract class Component {
     }
 
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T : FXEvent> subscribe(event: T, action: (T) -> Unit) {
+        subscribedEvents.computeIfAbsent(event, { ArrayList() }).add(action as (FXEvent) -> Unit)
+        if (docked) FX.eventbus.subscribe(event, action)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T : FXEvent> unsubscribe(event: T, action: (T) -> Unit) {
+        subscribedEvents[event]?.remove(action)
+        FX.eventbus.unsubscribe(event, action)
+    }
+
+    fun <T : FXEvent> fire(event: T) {
+        FX.eventbus.fire(event)
+    }
+
 }
 
 abstract class Controller : Component(), Injectable
@@ -260,15 +282,36 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     internal fun callOnDock() {
         if (muteDocking) return
+        if (!docked) attachLocalEventBusListeners()
+        (dockedProperty as SimpleBooleanProperty).value = true
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
 
+    private fun attachLocalEventBusListeners() {
+        subscribedEvents.forEach { event, actions ->
+            actions.forEach {
+                FX.eventbus.subscribe(event, it)
+            }
+        }
+    }
+
+    private fun detachLocalEventBusListeners() {
+        subscribedEvents.forEach { event, actions ->
+            actions.forEach {
+                FX.eventbus.unsubscribe(event, it)
+            }
+        }
+    }
+
     internal fun callOnUndock() {
         if (muteDocking) return
+        detachLocalEventBusListeners()
+        (dockedProperty as SimpleBooleanProperty).value = false
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
     }
+
 
     fun Button.accelerator(combo: String) = accelerator(KeyCombination.valueOf(combo))
 
