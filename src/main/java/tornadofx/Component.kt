@@ -40,6 +40,7 @@ interface Injectable
 
 abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
+    val params: Map<String, Any> = FX.inheritParamHolder.get() ?: mapOf()
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
 
     val config: Properties
@@ -52,6 +53,7 @@ abstract class Component {
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
     fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
+
 
     private val _config = lazy {
         Properties().apply {
@@ -110,15 +112,15 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope)
+    inline fun <reified T> inject(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, *params)
     }
 
-    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(T::class, overrideScope)
+            if (fragment == null) fragment = find(T::class, overrideScope, *params)
             return fragment!!
         }
     }
@@ -394,10 +396,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     @Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
     @JvmName("addView")
-    inline fun <reified T : View> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+    inline fun <reified T : View> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
 
     @JvmName("addFragment")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
 
     @JvmName("plusView")
     operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
@@ -405,8 +407,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope), owner)
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, vararg params: Pair<String, Any>) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope, *params), owner)
 
     protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
@@ -521,8 +523,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
-    inline fun <reified T : Component> find(): T = find(T::class, scope)
-    fun <T : Component> find(type: KClass<T>) = find(type, scope)
+    inline fun <reified T : Component> find(vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
+    fun <T : Component> find(type: KClass<T>, vararg params: Pair<String, Any>) = find(type, scope, *params)
 
     inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {

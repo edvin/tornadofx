@@ -21,6 +21,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.stage.Stage
+import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
@@ -43,6 +44,7 @@ var DefaultScope = Scope()
 class FX {
     companion object {
         internal val inheritScopeHolder = ThreadLocal<Scope>()
+        internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
 
         val icon: Node get() = Pane().apply {
             style {
@@ -277,13 +279,14 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T::class, scope)
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
 
 inline fun <reified T: Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(T::class, value)
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope): T {
+fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
     inheritScopeHolder.set(scope)
+    inheritParamHolder.set(params.toMap())
     if (Injectable::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(scope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
