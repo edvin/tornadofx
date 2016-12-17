@@ -116,6 +116,10 @@ abstract class Component {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, *params)
     }
 
+    inline fun <reified T> param(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = params[property.name] as T
+    }
+
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
