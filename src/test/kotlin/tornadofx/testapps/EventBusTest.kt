@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import tornadofx.*
+import tornadofx.EventBus.RunOn.BackgroundThread
 
 class EventBusTestApp : App(EventBusTestView::class) {
     init {
@@ -9,7 +10,7 @@ class EventBusTestApp : App(EventBusTestView::class) {
 }
 
 class MyDataEvent(val data: List<String>) : FXEvent()
-object GiveMeData : FXEvent(runOnFxApplicationThread = false)
+object GiveMeData : FXEvent(BackgroundThread)
 
 class EventBusTestView : View("Data Event Table") {
 

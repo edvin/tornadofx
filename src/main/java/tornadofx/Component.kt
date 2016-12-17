@@ -225,7 +225,7 @@ abstract class Component {
     inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
         val fireNow = if (this is UIComponent) docked else true
-        if (fireNow) FX.eventbus.subscribe(T::class, action)
+        if (fireNow) FX.eventbus.subscribe(T::class, scope, action)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -291,7 +291,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     private fun attachLocalEventBusListeners() {
         subscribedEvents.forEach { event, actions ->
             actions.forEach {
-                FX.eventbus.subscribe(event, it)
+                FX.eventbus.subscribe(event, scope, it)
             }
         }
     }
