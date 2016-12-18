@@ -9,18 +9,21 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Features
 
+- Supports both MVC, MVP and their derivatives
 - Dependency injection
 - Type safe GUI builders
 - First class FXML support
 - Type safe CSS builders
 - Async task execution
 - Hot reload of Views and Stylesheets
+- Strong OSGi support
 - REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
 ## Getting started
 
-- [Screencast introduction](https://www.youtube.com/watch?v=rjc8_HGHy3c)
+- [Screencasts](https://www.youtube.com/user/MrEdvinsyse)
+- [Book (EAP)](https://edvin.gitbooks.io/tornadofx-guide/content/) We are gradually migrating all information from the Wiki into the Guide
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
 - [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
@@ -37,9 +40,8 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.0.3
+  -DarchetypeVersion=1.5.8
 ```
-> Remember to update version to 1.4.7 in pom.xml
 
 ### Add TornadoFX to your project
 
@@ -49,14 +51,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.4.8</version>
+	<version>1.5.8</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.4.8'
+compile 'no.tornado:tornadofx:1.5.8'
 ```
 
 ### What does it look like? (Code snippets)
@@ -65,7 +67,9 @@ Create a View
 
 ```kotlin
 class HelloWorld : View() {
-	override val root = HBox(Label("Hello world")) 
+	override val root = hbox {
+	    label("Hello world")
+	}
 }
 ```
     
@@ -82,42 +86,40 @@ class HelloWorld : View() {
 }
 ```
 
-Start your application and show the primary `View` by extending the `App` class
+Start your application and show the primary `View` and add a type safe stylesheet
     
 ```kotlin
-class HelloWorldApp : App {
-	override val primaryView = HelloWorld::class
+class HelloWorldApp : App(HelloWorld::class, Styles::class)
 
-	init {
-		importStylesheet("/styles.css")
-	}
+class Styles : Stylesheet() {
+    init {
+        label {
+            fontSize = 20.px
+            fontWeight = FontWeight.BOLD
+            backgroundColor += c("#cecece")
+        }    
+    }    
 }
 ```
-> Start app and load a stylesheet
+> Start app and load a type safe stylesheet
 
 Use [Type Safe Builders](https://github.com/edvin/tornadofx/wiki/Type-Safe-Builders) to quickly create complex user interfaces
 
 ```kotlin
 class MyView : View() {
-
-    override val root = VBox()
-
-    private val persons = FXCollections.observableArrayList<Person>(
+    private val persons = FXCollections.observableArrayList(
             Person(1, "Samantha Stuart", LocalDate.of(1981,12,4)),
             Person(2, "Tom Marks", LocalDate.of(2001,1,23)),
             Person(3, "Stuart Gills", LocalDate.of(1989,5,23)),
             Person(3, "Nicole Williams", LocalDate.of(1998,8,11))
     )
 
-    init {
-        with(root) {
-            tableview(persons) {
-                column("ID", Person::id)
-                column("Name", Person::name)
-                column("Birthday", Person::birthday)
-                column("Age", Person::age)
-            }
-        }
+    override val root = tableview(persons) {
+        column("ID", Person::id)
+        column("Name", Person::name)
+        column("Birthday", Person::birthday)
+        column("Age", Person::age)
+        columnResizePolicy = SmartResize.POLICY
     }
 }
 ```
@@ -126,15 +128,18 @@ class MyView : View() {
 
 ![](https://i.imgur.com/AGMCP8S.png)
 
-Create a Customer model object that can be converted to and from JSON and complies with JavaFX Property guidelines:
-    
-```kotlin
-class Customer : JsonModel {
-    var id by property<Int>()
-    fun idProperty() = getProperty(Customer::id)
+Create a Customer model object that can be converted to and from JSON and exposes both a JavaFX Property and getter/setter pairs:
 
-    var name by property<String>()
-    fun nameProperty() = getProperty(Customer::name)
+```kotlin
+import tornadofx.getValue
+import tornadofx.setValue
+
+class Customer : JsonModel {
+    val idProperty = SimpleIntegerProperty()
+    var id by idProperty
+
+    val nameProperty = SimpleStringProperty()
+    var name by nameProperty
 
     override fun updateModel(json: JsonObject) {
         with(json) {
@@ -201,20 +206,20 @@ class Styles : Stylesheet() {
     }
 
     init {
-		s(heading) {
+		heading {
 		    textFill = mainColor
 		    fontSize = 20.px
 		    fontWeight = BOLD
 		}
-
-        val flat = mixin {
-            backgroundInsets = box(0.px)
-            borderColor = box(Color.DARKGRAY)
-        }
         
-        s(button) {
+        button {
             padding = box(10.px, 20.px)
             fontWeight = BOLD
+        }
+
+        val flat = mixin {
+            backgroundInsets += box(0.px)
+            borderColor += box(Color.DARKGRAY)
         }
 
         s(button, textInput) {
@@ -252,19 +257,20 @@ with (config) {
 }
 ```
 	
-Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View`is, so you will
+Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View` is, so you will
 create a new instance and you can reuse the Fragment in multiple ui locations simultaneously.
  	
 ```kotlin
 class MyFragment : Fragment() {
-	override val root = Hbox(..)
+	override val root = hbox {
+	}
 }
 ```
  	
 Open it in a Modal Window:
  		 	 	
 ```kotlin
-MyFragment().openModal()
+find(MyFragment::class).openModal()
 ``` 
 	 	
 Lookup and embed a `View` inside another `Pane` in one go
@@ -280,5 +286,25 @@ val myView: MyView by inject()
  
 init {
 	root += myFragment
+}
+```
+
+Swap a View for another (change Scene root or embedded View)
+
+```kotlin
+button("Go to next page") {
+    setOnAction {
+    	replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
+    }
+}
+```
+
+Open a View in an internal window over the current scene graph
+
+```kotlin
+button("Open") {
+    setOnAction {
+        openInternalWindow(MyOtherView::class)
+    }
 }
 ```

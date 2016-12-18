@@ -11,6 +11,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import javax.json.*
+import javax.json.JsonValue.ValueType.NULL
 import javax.json.stream.JsonGenerator
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.javaField
@@ -87,33 +88,49 @@ interface JsonModel {
 
 }
 
-fun JsonObject.string(key: String) = if (containsKey(key)) getString(key) else null
+/**
+ * Nullable getters are lowercase, not null getters are prependend with get + camelcase
+ * JsonObject already provide some not null getters like getString, getBoolean etc, the rest
+ * are added here
+ */
 
-fun JsonObject.double(key: String) = if (containsKey(key)) getJsonNumber(key).doubleValue() else null
+fun JsonObject.isNotNullOrNULL(key: String) = containsKey(key) && get(key)?.valueType != NULL
 
-fun JsonObject.bigdecimal(key: String) = if (containsKey(key)) getJsonNumber(key).bigDecimalValue() else null
+fun JsonObject.string(key: String) = if (isNotNullOrNULL(key)) getString(key) else null
 
-fun JsonObject.long(key: String) = if (containsKey(key)) getJsonNumber(key).longValue() else null
+fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getDouble(key) else null
+fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
 
-fun JsonObject.bool(key: String): Boolean? = if (containsKey(key)) getBoolean(key) else null
+fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
+fun JsonObject.getBigDecimal(key: String) : BigDecimal = getJsonNumber(key).bigDecimalValue()
 
-fun JsonObject.date(key: String) = if (containsKey(key)) LocalDate.parse(getString(key)) else null
+fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getLong(key) else null
+fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
 
-fun JsonObject.datetime(key: String) = if (containsKey(key))
-    LocalDateTime.ofEpochSecond(getJsonNumber(key).longValue(), 0, ZoneOffset.UTC) else null
+fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolean(key) else null
+fun JsonObject.boolean(key: String) = bool(key) // Alias
 
-fun JsonObject.uuid(key: String) = if (containsKey(key)) UUID.fromString(getString(key)) else null
+fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
+fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
 
-fun JsonObject.int(key: String) = if (containsKey(key)) getInt(key) else null
+fun JsonNumber.datetime() = LocalDateTime.ofEpochSecond(longValue(), 0, ZoneOffset.UTC)
+fun JsonObject.getDateTime(key: String): LocalDateTime = getJsonNumber(key).datetime()
+fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key)) getDateTime(key) else null
 
-fun JsonObject.jsonObject(key: String) = if (containsKey(key)) getJsonObject(key) else null
+fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) getUUID(key) else null
+fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
 
-fun JsonObject.jsonArray(key: String) = if (containsKey(key)) getJsonArray(key) else null
+fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
+
+fun JsonObject.jsonObject(key: String) = if (isNotNullOrNULL(key)) getJsonObject(key) else null
+inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
+
+fun JsonObject.jsonArray(key: String) = if (isNotNullOrNULL(key)) getJsonArray(key) else null
 
 class JsonBuilder {
-    private val delegate : JsonObjectBuilder = Json.createObjectBuilder()
+    private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
 
-    fun <S, T: ObservableValue<S>>add(key: String, observable: T) {
+    fun <S, T : ObservableValue<S>> add(key: String, observable: T) {
         observable.value?.apply {
             when (this) {
                 is Int -> add(key, this)
@@ -125,6 +142,7 @@ class JsonBuilder {
                 is LocalDate -> add(key, this)
                 is LocalDateTime -> add(key, this)
                 is String -> add(key, this)
+                is JsonModel -> add(key, this)
             }
         }
     }
@@ -213,6 +231,13 @@ class JsonBuilder {
         return this
     }
 
+    fun add(key: String, value: JsonModel?): JsonBuilder {
+        if (value != null)
+            add(key, value.toJSON())
+
+        return this
+    }
+
     fun add(key: String, value: JsonArrayBuilder?): JsonBuilder {
         if (value != null) {
             val built = value.build()
@@ -240,7 +265,7 @@ class JsonBuilder {
 /**
  * Requires kotlin-reflect on classpath
  */
-private fun <T> KProperty<T>.generic() : Class<*> =
+private fun <T> KProperty<T>.generic(): Class<*> =
         (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
 /**
@@ -268,7 +293,7 @@ interface JsonModelAuto : JsonModel {
                     val Array = pr as ObservableList<Any>
 
                     val arrayObject = json.getJsonArray(it.name)
-                    arrayObject?.forEach {jsonObj ->
+                    arrayObject?.forEach { jsonObj ->
                         val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
                         Array.add(New.apply { updateModel(jsonObj as JsonObject) })
                     }
@@ -278,7 +303,7 @@ interface JsonModelAuto : JsonModel {
     }
 
     override fun toJSON(json: JsonBuilder) {
-        with (json) {
+        with(json) {
             val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
             props.forEach {
                 val pr = it.get(this@JsonModelAuto)
@@ -301,7 +326,7 @@ interface JsonModelAuto : JsonModel {
                     is Boolean -> add(it.name, pr)
                     is ObservableList<*> -> {
                         val Array = pr as ObservableList<JsonModel>
-                        val jsonArray = Json.createArrayBuilder();
+                        val jsonArray = Json.createArrayBuilder()
                         Array.forEach { jsonArray.add(it.toJSON()) }
                         add(it.name, jsonArray.build())
                     }
@@ -324,3 +349,5 @@ fun JsonStructure.toString(vararg options: String): String {
     jsonWriter.close()
     return stringWriter.toString()
 }
+
+fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()

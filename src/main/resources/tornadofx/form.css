@@ -1,3 +1,7 @@
+.form {
+    -fx-padding: 10;
+}
+
 .form .fieldset .label-container {
     -fx-alignment: center-left;
 }

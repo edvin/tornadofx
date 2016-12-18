@@ -1,4 +1,4 @@
-package tornadofx;
+package tornadofx.tests;
 
 public class JavaPerson {
     private Integer id;

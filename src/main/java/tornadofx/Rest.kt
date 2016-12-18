@@ -10,6 +10,7 @@ import javafx.scene.control.Tooltip
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.*
 import org.apache.http.client.protocol.HttpClientContext
 import org.apache.http.entity.InputStreamEntity
@@ -20,12 +21,12 @@ import org.apache.http.util.EntityUtils
 import tornadofx.Rest.Request.Method.*
 import java.io.InputStream
 import java.io.StringReader
-import java.net.HttpURLConnection
-import java.net.URI
-import java.net.URISyntaxException
+import java.net.*
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.zip.DeflaterInputStream
+import java.util.zip.GZIPInputStream
 import javax.json.Json
 import javax.json.JsonArray
 import javax.json.JsonObject
@@ -33,17 +34,18 @@ import javax.json.JsonValue
 
 open class Rest : Controller() {
     companion object {
-        var engineProvider: (Rest) -> Engine = { HttpURLEngine(it) }
+        var engineProvider: (Rest) -> Engine = ::HttpURLEngine
         val ongoingRequests = FXCollections.observableArrayList<Request>()
         val atomicseq = AtomicLong()
 
         fun useApacheHttpClient() {
-            engineProvider = { rest -> HttpClientEngine(rest) }
+            engineProvider = ::HttpClientEngine
         }
     }
 
     var engine = engineProvider(this)
     var baseURI: String? = null
+    var proxy: Proxy? = null
 
     fun setBasicAuth(username: String, password: String) = engine.setBasicAuth(username, password)
     fun reset() = engine.reset()
@@ -56,6 +58,7 @@ open class Rest : Controller() {
 
     fun post(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
     fun post(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = post(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun post(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
 
     fun delete(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(DELETE, path, data, processor)
     fun delete(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = delete(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
@@ -81,7 +84,7 @@ open class Rest : Controller() {
 
     }
 
-    fun execute(method: Request.Method, target: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null): Response {
+    fun execute(method: Request.Method, target: String, data: Any? = null, processor: ((Request) -> Unit)? = null): Response {
         val request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
 
         if (processor != null)
@@ -186,14 +189,20 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     val headers = mutableMapOf<String, String>()
 
     init {
-        connection = uri.toURL().openConnection() as HttpURLConnection
+        val url = uri.toURL()
+        connection = (if (engine.rest.proxy != null) url.openConnection(engine.rest.proxy) else url.openConnection()) as HttpURLConnection
+        headers += "Accept-Encoding" to "gzip, deflate"
+        headers += "Content-Type" to "application/json"
+        headers += "Accept" to "application/json"
+        headers += "User-Agent" to "TornadoFX/Java ${System.getProperty("java.version")}"
+        headers += "Connection" to "Keep-Alive"
     }
 
     override fun execute(): Rest.Response {
         engine.authInterceptor?.invoke(this)
 
-        for (header in headers)
-            connection.addRequestProperty(header.key, header.value)
+        for ((key, value) in headers)
+            connection.addRequestProperty(key, value)
 
         connection.requestMethod = method.toString()
 
@@ -203,20 +212,26 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
             connection.doOutput = true
 
-            connection.connect()
-
-            when (entity) {
-                is JsonModel -> connection.outputStream.write(entity.toJSON().toString().toByteArray(UTF_8))
-                is JsonValue -> connection.outputStream.write(entity.toString().toByteArray(UTF_8))
-                is InputStream -> connection.outputStream.write(entity.readBytes())
+            val data = when (entity) {
+                is JsonModel -> entity.toJSON().toString().toByteArray(UTF_8)
+                is JsonValue -> entity.toString().toByteArray(UTF_8)
+                is InputStream -> entity.readBytes()
                 else -> throw IllegalArgumentException("Don't know how to handle entity of type ${entity.javaClass}")
             }
+            connection.addRequestProperty("Content-Length", data.size.toString())
+            connection.connect()
+            connection.outputStream.write(data)
+            connection.outputStream.flush()
+            connection.outputStream.close()
         } else {
             connection.connect()
         }
 
         val response = HttpURLResponse(this)
+        if (connection.doOutput) response.bytes()
+
         engine.responseInterceptor?.invoke(response)
+
         return response
     }
 
@@ -227,9 +242,20 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
 
 class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override val statusCode: Int get() = request.connection.responseCode
+    private var bytesRead: ByteArray? = null
 
     override fun consume(): Rest.Response {
-        request.connection.disconnect()
+        if (bytesRead == null) {
+            bytes()
+            return this
+        }
+        try {
+            with(request.connection) {
+                if (doInput) inputStream.close()
+            }
+        } catch (ignored: Throwable) {
+            ignored.printStackTrace()
+        }
         Platform.runLater { Rest.ongoingRequests.remove(request) }
         return this
     }
@@ -241,11 +267,23 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override fun content() = request.connection.inputStream
 
     override fun bytes(): ByteArray {
+        if (bytesRead != null) return bytesRead!!
+
         try {
-            return request.connection.inputStream.readBytes()
+            val connection = request.connection
+            val unwrapped = when (connection.contentEncoding) {
+                "gzip" -> GZIPInputStream(connection.inputStream)
+                "deflate" -> DeflaterInputStream(connection.inputStream)
+                else -> connection.inputStream
+            }
+            bytesRead = unwrapped.readBytes()
+        } catch (error: Exception) {
+            bytesRead = ByteArray(0)
+            throw error
         } finally {
             consume()
         }
+        return bytesRead!!
     }
 }
 
@@ -295,15 +333,24 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
             POST -> request = HttpPost(uri)
             DELETE -> request = HttpDelete(uri)
         }
+        addHeader("Accept-Encoding", "gzip, deflate")
+        addHeader("Content-Type", "application/json")
+        addHeader("Accept", "application/json")
     }
 
     override fun execute(): Rest.Response {
+        if (engine.rest.proxy != null) {
+            val hp = engine.rest.proxy as Proxy
+            val sa = hp.address() as? InetSocketAddress
+            if (sa != null) {
+                val scheme = if (engine.rest.baseURI?.startsWith("https") ?: false) "https" else "http"
+                val proxy = HttpHost(sa.address, sa.port,  scheme)
+                request.config = RequestConfig.custom().setProxy(proxy).build()
+            }
+        }
         engine.authInterceptor?.invoke(this)
 
         if (entity != null && request is HttpEntityEnclosingRequestBase) {
-
-            if (!request.containsHeader("Content-Type"))
-                addHeader("Content-Type", "application/json")
 
             when (entity) {
                 is JsonModel -> request.entity = StringEntity(entity.toJSON().toString(), UTF_8)

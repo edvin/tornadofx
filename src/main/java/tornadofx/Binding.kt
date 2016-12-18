@@ -5,6 +5,7 @@ package tornadofx
 import javafx.beans.binding.Bindings
 import javafx.beans.property.Property
 import javafx.beans.property.StringProperty
+import javafx.beans.value.ObservableValue
 import javafx.scene.control.*
 import javafx.scene.text.Text
 import javafx.util.StringConverter
@@ -36,7 +37,7 @@ fun CheckBox.bind(property: Property<Boolean>, readonly: Boolean = false) =
 fun Slider.bind(property: Property<Number>, readonly: Boolean = false) =
     if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
-inline fun <reified T : Any> Labeled.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
+inline fun <reified T : Any> Labeled.bind(property: ObservableValue<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
 
 inline fun <reified T : Any> TitledPane.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
@@ -48,15 +49,18 @@ inline fun <reified T : Any> Text.bind(property: Property<T>, readonly: Boolean 
 inline fun <reified T : Any> TextInputControl.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
     bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: Property<T>, readonly: Boolean) {
+inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: ObservableValue<T>, readonly: Boolean) {
+    if (stringProperty.isBound) stringProperty.unbind()
+    val effectiveReadonly = if (readonly) readonly else property !is Property<T>
+
     if (T::class == String::class) {
-        if (readonly)
-            stringProperty.bind(property as Property<String>)
+        if (effectiveReadonly)
+            stringProperty.bind(property as ObservableValue<String>)
         else
             stringProperty.bindBidirectional(property as Property<String>)
     } else {
-        val effectiveConverter = converter ?: getDefaultConverter<T>()
-        if (readonly) {
+        val effectiveConverter = if (format != null) null else converter ?: getDefaultConverter<T>()
+        if (effectiveReadonly) {
             val toStringConverter = Callable {
                 if (converter != null)
                     converter.toString(property.value)
@@ -68,9 +72,9 @@ inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, 
             stringProperty.bind(stringBinding)
         } else {
             if (effectiveConverter != null) {
-                stringProperty.bindBidirectional(property, effectiveConverter)
+                stringProperty.bindBidirectional(property as Property<T>, effectiveConverter)
             } else if (format != null) {
-                stringProperty.bindBidirectional(property, format)
+                stringProperty.bindBidirectional(property as Property<T>, format)
             } else {
                 throw IllegalArgumentException("Cannot convert from ${T::class} to String without an explicit converter or format")
             }
@@ -83,6 +87,7 @@ inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
         Int::class.javaPrimitiveType -> IntegerStringConverter()
         Long::class.javaPrimitiveType -> LongStringConverter()
         Double::class.javaPrimitiveType -> DoubleStringConverter()
+        Float::class.javaPrimitiveType -> FloatStringConverter()
         Date::class -> DateStringConverter()
         BigDecimal::class -> BigDecimalStringConverter()
         BigInteger::class -> BigIntegerStringConverter()

@@ -5,21 +5,30 @@ import javafx.beans.binding.Bindings.createObjectBinding
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
+import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.Node
 import javafx.scene.control.Label
+import javafx.scene.control.PasswordField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
 import javafx.scene.layout.VBox
 import java.util.concurrent.Callable
 
-fun Pane.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
+fun EventTarget.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
 
-class Form : VBox() {
+fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
+    val fieldset = Fieldset(text ?: "")
+    if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
+    if (labelPosition != null) fieldset.labelPosition = labelPosition
+    if (icon != null) fieldset.icon = icon
+    return opcr(this, fieldset, op)
+}
 
+open class Form : VBox() {
     init {
         addClass(Stylesheet.form)
     }
@@ -28,21 +37,10 @@ class Form : VBox() {
         get() = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-1.0) }.max() ?: 0.0
 
     val fieldsets: List<Fieldset>
-        get() = children.filter { it is Fieldset }.map { it as Fieldset }
+        get() = children.filterIsInstance<Fieldset>()
 
     override fun getUserAgentStylesheet() =
-            Form::class.java.getResource("form.css").toExternalForm()
-
-    fun fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
-        val fieldset = Fieldset(text ?: "")
-        if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
-        children.add(fieldset)
-        if (labelPosition != null) fieldset.labelPosition = labelPosition
-        if (icon != null) fieldset.icon = icon
-        op?.invoke(fieldset)
-        return fieldset
-    }
-
+            Form::class.java.getResource("form.css").toExternalForm()!!
 }
 
 @DefaultProperty("children")
@@ -65,7 +63,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun field(text: String? = null, op: (Pane.() -> Unit)? = null): Field {
+    fun field(text: String? = null, op: (HBox.() -> Unit)? = null): Field {
         val field = Field(text ?: "")
         children.add(field)
         op?.invoke(field.inputContainer)
@@ -79,7 +77,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         syncOrientationState()
 
         // Add legend label when text is populated
-        textProperty().addListener { observable, oldValue, newValue -> if (newValue != null) addLegend() }
+        textProperty().addListener { observable, oldValue, newValue -> if (!newValue.isNullOrBlank()) addLegend() }
 
         // Add legend when icon is populated
         iconProperty().addListener { observable1, oldValue1, newValue -> if (newValue != null) addLegend() }
@@ -96,7 +94,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         children.addListener(ListChangeListener { c ->
             while (c.next()) {
                 if (c.wasAdded()) {
-                    c.addedSubList.filter { it is Field }.map { it as Field }.forEach { added ->
+                    c.addedSubList.asSequence().filterIsInstance<Field>().forEach { added ->
 
                         // Configure hgrow for current children
                         added.inputContainer.children.forEach { this.configureHgrow(it) }
@@ -110,7 +108,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().addListener { observable, oldValue, newValue ->
-            children.filter { it is Field }.map { it as Field }.forEach {
+            children.asSequence().filterIsInstance<Field>().forEach {
                 it.inputContainer.children.forEach { this.configureHgrow(it) }
             }
         }
@@ -158,11 +156,22 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     val form: Form get() = parent as Form
 
     internal val fields: List<Field>
-        get() = children.filter { it is Field }.map { it as Field }
+        get() = children.filterIsInstance<Field>()
 
     companion object {
         private val HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal")
         private val VERTICAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("vertical")
+    }
+}
+
+/**
+ * Make this Node (presumably an input element) the mnemonicTarget for the field label. When the label
+ * of the field is activated, this input element will receive focus.
+ */
+fun Node.mnemonicTarget() {
+    findParentOfType(Field::class)?.apply {
+        label.isMnemonicParsing = true
+        label.labelFor = this@mnemonicTarget
     }
 }
 
@@ -222,7 +231,7 @@ class Field(text: String? = null) : Pane() {
         val labelHasContent = text.isNotBlank()
 
         val insets = insets
-        var contentX = insets.left
+        val contentX = insets.left
         val contentY = insets.top
         val contentWidth = width - insets.left - insets.right
         val contentHeight = height - insets.top - insets.bottom
@@ -247,7 +256,7 @@ class Field(text: String? = null) : Pane() {
 
                 labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), labelHeight)
 
-                val restHeight = labelHeight - contentHeight
+                val restHeight = contentHeight - labelHeight
 
                 inputContainer.resizeRelocate(contentX, contentY + labelHeight, contentWidth, restHeight)
             } else {

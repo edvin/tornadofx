@@ -1,11 +1,67 @@
-package tornadofx
+package tornadofx.tests
 
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import tornadofx.*
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class PropertiesTest {
+    @Test
+    fun primitiveOnChange() {
+        val d = SimpleDoubleProperty()
+        // Ensure getting the value does not throw an NPE
+        d.onChange { assert((it + 7) is Double) }
+
+        d.value = 100.0
+        d.value = Double.POSITIVE_INFINITY
+        d.value = Double.NaN
+        d.value = null
+    }
+
+    @Test
+    fun property_delegation() {
+        // given:
+        val fixture = object {
+            val nameProperty = SimpleStringProperty("Alice")
+            var name by nameProperty
+
+            val ageProperty = SimpleDoubleProperty(1.0)
+            var age by ageProperty
+
+            val dirtyProperty = SimpleBooleanProperty(false)
+            var dirty by dirtyProperty
+        }
+        // expect:
+        assertEquals("Alice", fixture.name)
+        assertEquals("Alice", fixture.nameProperty.value)
+
+        assertEquals(1.0, fixture.age)
+        assertEquals(1.0, fixture.ageProperty.value)
+
+        assertEquals(false, fixture.dirty)
+        assertEquals(false, fixture.dirtyProperty.value)
+
+        // when:
+        fixture.name = "Bob"
+        fixture.age = 100.0
+        fixture.dirty = true
+
+        // expect:
+        assertEquals("Bob", fixture.name)
+        assertEquals("Bob", fixture.nameProperty.value)
+
+        assertEquals(100.0, fixture.age)
+        assertEquals(100.0, fixture.ageProperty.value)
+
+        assertEquals(true, fixture.dirty)
+        assertEquals(true, fixture.dirtyProperty.value)
+    }
+
     @Test
     fun property_get_should_read_value() {
         // given:
@@ -43,6 +99,7 @@ class PropertiesTest {
         assertEquals(42, fixture.integer)
         assertEquals(42, fixture.integerDefault)
     }
+
     class TestClass {
         var myProperty: String by singleAssign()
     }
@@ -59,12 +116,14 @@ class PropertiesTest {
         }
         assertTrue(failed)
     }
+
     @Test
     fun succeedAssignment() {
         val instance = TestClass()
         instance.myProperty = "foo"
         instance.myProperty
     }
+
     @Test
     fun failDoubleAssignment() {
 
@@ -79,6 +138,7 @@ class PropertiesTest {
         }
         assertTrue(failed)
     }
+
     @Test
     fun pojoWritableObservable() {
         val person = JavaPerson()
@@ -97,5 +157,22 @@ class PropertiesTest {
         person.id = 5
         idObservable.refresh()
         Assert.assertEquals(5, idObservable.value)
+    }
+
+    @Test fun property_on_change() {
+        var called = false
+        val property = SimpleStringProperty("Hello World")
+        property.onChange { called = true }
+        property.value = "Changed"
+        assertTrue(called)
+    }
+
+    @Test fun assign_if_null() {
+        val has = SimpleObjectProperty("Hello")
+        has.assignIfNull { "World" }
+        assertEquals(has.value, "Hello")
+        val hasNot = SimpleObjectProperty<String>()
+        hasNot.assignIfNull { "World" }
+        assertEquals(hasNot.value, "World")
     }
 }

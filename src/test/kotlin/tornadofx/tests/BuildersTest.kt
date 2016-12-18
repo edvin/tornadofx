@@ -1,4 +1,4 @@
-package tornadofx
+package tornadofx.tests
 
 import javafx.scene.layout.StackPane
 import javafx.scene.text.Text
@@ -9,9 +9,9 @@ import org.junit.Test
 import org.testfx.api.FxAssert.verifyThat
 import org.testfx.api.FxToolkit
 import org.testfx.matcher.base.NodeMatchers
+import tornadofx.text
 
 class BuildersTest {
-
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     lateinit var pane: StackPane

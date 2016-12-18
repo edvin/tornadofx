@@ -6,7 +6,7 @@
 
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.4.8</version>
+    <version>1.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>TornadoFX</name>
     <description>Lightweight JavaFX Framework for Kotlin</description>
@@ -17,12 +17,6 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>1.0.4</version>
-        </dependency>
-        <dependency>
-            <groupId>no.tornado</groupId>
-            <artifactId>tornadofx-controls</artifactId>
-            <version>1.0.4</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -39,7 +33,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
             <version>${kotlin.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -64,6 +57,12 @@
             <artifactId>testfx-junit</artifactId>
             <version>4.0.4-alpha</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>5.4.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -100,6 +99,12 @@
 			<organization>Southwest Airlines</organization>
 			<organizationUrl>https://www.southwest.com/</organizationUrl>
 	</developer>
+        <developer>
+            <name>Matthew Turnblom</name>
+            <email>uberawesomeemailaddressofdoom@gmail.com</email>
+            <organization>Xactware</organization>
+            <organizationUrl>https://www.xactware.com/</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
@@ -185,6 +190,15 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.10.3</version>
@@ -197,6 +211,26 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Activator>tornadofx.osgi.impl.Activator</Bundle-Activator>
+                        <Bundle-SymbolicName>no.tornado.tornadofx</Bundle-SymbolicName>
+                    </instructions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -216,8 +250,8 @@
     </build>
 
     <properties>
-        <kotlin.version>1.0.2</kotlin.version>
-        <dokka.version>0.9.8</dokka.version>
+        <kotlin.version>1.0.5-2</kotlin.version>
+        <dokka.version>0.9.9</dokka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

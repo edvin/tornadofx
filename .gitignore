@@ -6,3 +6,11 @@ target/
 *.iml
 *.ipr
 *.iws
+
+# Eclipse
+.settings/
+.project
+.classpath
+
+# TornadoFX Tests
+example-table.png

@@ -1,13 +1,14 @@
 package tornadofx
 
 import javafx.collections.ObservableList
+import javafx.event.EventTarget
 import javafx.scene.chart.*
 import javafx.scene.layout.Pane
 
 /**
  * Create a PieChart with optional title data and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun Pane.piechart(title: String? = null, data: ObservableList<PieChart.Data>? = null, op: PieChart.() -> Unit): PieChart {
+fun EventTarget.piechart(title: String? = null, data: ObservableList<PieChart.Data>? = null, op: (PieChart.() -> Unit)? = null): PieChart {
     val chart = if (data != null) PieChart(data) else PieChart()
     chart.title = title
     return opcr(this, chart, op)
@@ -33,7 +34,7 @@ fun PieChart.data(value: Map<String, Double>) = value.forEach { data(it.key, it.
 /**
  * Create a LineChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (LineChart<X, Y>.() -> Unit)? = null): LineChart<X, Y> {
+fun <X, Y> EventTarget.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (LineChart<X, Y>.() -> Unit)? = null): LineChart<X, Y> {
     val chart = LineChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -42,7 +43,7 @@ fun <X, Y> Pane.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (Li
 /**
  * Create an AreaChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (AreaChart<X, Y>.() -> Unit)? = null): AreaChart<X, Y> {
+fun <X, Y> EventTarget.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (AreaChart<X, Y>.() -> Unit)? = null): AreaChart<X, Y> {
     val chart = AreaChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -51,7 +52,7 @@ fun <X, Y> Pane.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (Ar
 /**
  * Create a BubbleChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BubbleChart<X, Y>.() -> Unit)? = null): BubbleChart<X, Y> {
+fun <X, Y> EventTarget.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BubbleChart<X, Y>.() -> Unit)? = null): BubbleChart<X, Y> {
     val chart = BubbleChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -60,7 +61,7 @@ fun <X, Y> Pane.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (
 /**
  * Create a ScatterChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (ScatterChart<X, Y>.() -> Unit)? = null): ScatterChart<X, Y> {
+fun <X, Y> EventTarget.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (ScatterChart<X, Y>.() -> Unit)? = null): ScatterChart<X, Y> {
     val chart = ScatterChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -69,7 +70,7 @@ fun <X, Y> Pane.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: 
 /**
  * Create a BarChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BarChart<X, Y>.() -> Unit)? = null): BarChart<X, Y> {
+fun <X, Y> EventTarget.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (BarChart<X, Y>.() -> Unit)? = null): BarChart<X, Y> {
     val chart = BarChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -78,7 +79,7 @@ fun <X, Y> Pane.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (Bar
 /**
  * Create a BarChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> Pane.stackedbarchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (StackedBarChart<X, Y>.() -> Unit)? = null): StackedBarChart<X, Y> {
+fun <X, Y> EventTarget.stackedbarchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: (StackedBarChart<X, Y>.() -> Unit)? = null): StackedBarChart<X, Y> {
     val chart = StackedBarChart(x, y)
     chart.title = title
     return opcr(this, chart, op)
@@ -120,7 +121,7 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
 }
 
 /**
- * Add multiple series XYChart.Series wihh data in one go. Specify a list of names for the series
+ * Add multiple series XYChart.Series with data in one go. Specify a list of names for the series
  * and then add values in the op. Example:
  * <pre>
  * multiseries("Portfolio 1", "Portfolio 2") {
@@ -131,10 +132,10 @@ class MultiSeries<X, Y>(val series: List<XYChart.Series<X, Y>>, val chart: XYCha
  * }
  * </pre>
  */
-fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: (MultiSeries<X, Y>).() -> Unit): MultiSeries<X, Y> {
+fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String, op: ((MultiSeries<X, Y>).() -> Unit)? = null): MultiSeries<X, Y> {
     val series = names.map { XYChart.Series<X, Y>().apply { name = it } }
     val multiseries = MultiSeries(series, this)
-    op(multiseries)
+    op?.invoke(multiseries)
     data.addAll(series)
     return multiseries
 }

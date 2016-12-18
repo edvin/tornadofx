@@ -1,7 +1,5 @@
-package tornadofx
+package tornadofx.tests
 
-import javafx.application.Platform
-import javafx.scene.Parent
 import javafx.scene.control.Label
 import javafx.scene.control.TableColumn
 import javafx.scene.layout.HBox
@@ -10,6 +8,7 @@ import javafx.stage.Stage
 import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -39,8 +38,8 @@ class NodeTests {
         view1 += view2
         view1 += view3
 
-        assertEquals(view2, view1.find<View2>())
-        assertEquals(view3, view1.find<View3>())
+        assertEquals(view2, view1.lookup<View2>())
+        assertEquals(view3, view1.lookup<View3>())
         assertEquals(2, view1.findAll<View>().size)
     }
 
