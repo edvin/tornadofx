@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.collections.ObservableList
+import javafx.scene.control.TableView
 import java.util.*
 
 /**
@@ -115,6 +117,23 @@ inline fun <T> MutableList<T>.moveUpAll(crossinline predicate: (T) -> Boolean)  
 inline fun <T> MutableList<T>.moveDownAll(crossinline predicate: (T) -> Boolean)  = asSequence().withIndex()
         .filter { predicate.invoke(it.value) }
         .forEach { moveDownAt(it.index) }
+
+
+fun <T> MutableList<T>.moveToTopWhere(predicate: (T) -> Boolean) {
+    asSequence().filter(predicate).toList().asSequence().forEach {
+        remove(it)
+        add(0, it)
+    }
+}
+
+fun <T> MutableList<T>.moveToBottomWhere(predicate: (T) -> Boolean) {
+    val end = size - 1
+    asSequence().filter(predicate).toList().asSequence().forEach {
+        remove(it)
+        add(end, it)
+    }
+}
+
 
 /**
  * Swaps the position of two items at two respective indices
