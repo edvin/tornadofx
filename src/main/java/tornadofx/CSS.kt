@@ -406,16 +406,16 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
         val disabled by csspseudoclass()
+        val empty by csspseudoclass()
+        val even by csspseudoclass()
+        val filled by csspseudoclass()
         val focused by csspseudoclass()
         val hover by csspseudoclass()
-        val pressed by csspseudoclass()
-        val showMnemonics by csspseudoclass()
-        val selected by csspseudoclass()
-        val visited by csspseudoclass()
-        val even by csspseudoclass()
         val odd by csspseudoclass()
-        val filled by csspseudoclass()
-        val empty by csspseudoclass()
+        val pressed by csspseudoclass()
+        val selected by csspseudoclass()
+        val showMnemonics by csspseudoclass()
+        val visited by csspseudoclass()
 
         init {
             detectAndInstallUrlHandler()
