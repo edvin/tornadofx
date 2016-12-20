@@ -292,6 +292,15 @@ fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boo
             }
 }
 
+
+fun <T> ListView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boolean) {
+    items.asSequence().filter(condition)
+            .forEach {
+                selectionModel.select(it)
+                if (scrollTo) scrollTo(it)
+            }
+}
+
 fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     if (select) selectionModel.clearSelection()
     backingList.asSequence().filter(predicate).toList().asSequence().forEach {
