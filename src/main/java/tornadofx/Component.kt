@@ -230,7 +230,7 @@ abstract class Component {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
-        val fireNow = if (this is UIComponent) docked else true
+        val fireNow = if (this is UIComponent) isDocked else true
         if (fireNow) FX.eventbus.subscribe(T::class, scope, action)
     }
 
@@ -255,8 +255,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         throw UnsupportedOperationException("not implemented")
     }
 
-    val dockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
-    val docked by dockedProperty
+    val isDockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val isDocked by isDockedProperty
+
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
     internal var reloadInit = false
@@ -288,8 +289,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     internal fun callOnDock() {
         if (muteDocking) return
-        if (!docked) attachLocalEventBusListeners()
-        (dockedProperty as SimpleBooleanProperty).value = true
+        if (!isDocked) attachLocalEventBusListeners()
+        (isDockedProperty as SimpleBooleanProperty).value = true
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
@@ -313,7 +314,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal fun callOnUndock() {
         if (muteDocking) return
         detachLocalEventBusListeners()
-        (dockedProperty as SimpleBooleanProperty).value = false
+        (isDockedProperty as SimpleBooleanProperty).value = false
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
     }

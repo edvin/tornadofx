@@ -4,14 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.9-SNAPSHOT]
 
-- component.params contains Map<String, Any> of parameters passed to find or inject when the component was created
-- booleanBinding and stringBinding should add observable receiver as dependency
-- Eventbus: `FXEvent` class with `subscribe()`, `unsubscribe` and `fire` functions
+- UIComponent has `isdockedProperty` and `isDocked` boolean telling you if the ui component is currently docked
+- Added CSS elements to type safe stylesheets so you can now target f.ex HBox even if it doesn't have a CSS class
+- Pass parameters to ui components using inject/find. Inject params via `val myParam : Int by param()` in target view.
+- booleanBinding and stringBinding now adds observable receiver as dependency
+- Eventbus: `FXEvent` class with `subscribe()`, `unsubscribe` and `fire` functions (https://edvin.gitbooks.io/tornadofx-guide/content/15.%20EventBus.html)
 - InternalWindow is public, closeModal() will also close InternalWindow
 - `setInScope(value, scope)` allows you to preemptively configure an injectable property
 - Allow Labeled.bind() to work on ObservableValue<T> instead of just Property<T>
 - HttpClientEngine now adds default json headers to request
-- Bug: Unconsumed POST requests are not posted to the server completely
+- Fixed Bug: Unconsumed POST requests are not posted to the server completely
 - Add Connection: Keep-Alive and User-Agent headers to the default rest client engine
 
 ## [1.5.8] - 2016-11-24
