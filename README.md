@@ -12,11 +12,12 @@ Lightweight JavaFX Framework for Kotlin
 - Supports both MVC, MVP and their derivatives
 - Dependency injection
 - Type safe GUI builders
-- First class FXML support
 - Type safe CSS builders
+- First class FXML support
 - Async task execution
+- EventBus with thread targeting
 - Hot reload of Views and Stylesheets
-- Strong OSGi support
+- OSGi support
 - REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
@@ -40,7 +41,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.5.8
+  -DarchetypeVersion=1.5.9
 ```
 
 ### Add TornadoFX to your project
@@ -51,14 +52,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.5.8</version>
+	<version>1.5.9</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.5.8'
+compile 'no.tornado:tornadofx:1.5.9'
 ```
 
 ### What does it look like? (Code snippets)

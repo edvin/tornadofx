@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.9-SNAPSHOT]
+## [1.5.10-SNAPSHOT]
+
+
+## [1.5.9]
 
 - UIComponent has `isdockedProperty` and `isDocked` boolean telling you if the ui component is currently docked
 - Added CSS elements to type safe stylesheets so you can now target f.ex HBox even if it doesn't have a CSS class
