@@ -45,7 +45,7 @@ class FX {
     companion object {
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
-        internal var ignoreAddChild: Boolean = false
+        internal var ignoreParentForFirstBuilder: Boolean = false
             get() {
                 if (field) {
                     field = false
@@ -245,11 +245,11 @@ class FX {
 }
 
 fun ignoreParentForFirstBuilder(op: () -> Unit) {
-    FX.ignoreAddChild = true
+    FX.ignoreParentForFirstBuilder = true
     try {
         op()
     } finally {
-        FX.ignoreAddChild = false
+        FX.ignoreParentForFirstBuilder = false
     }
 }
 
@@ -343,7 +343,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node) {
-    if (FX.ignoreAddChild) return
+    if (FX.ignoreParentForFirstBuilder) return
     if (this is Node) {
         val target = builderTarget
         if (target != null) {
