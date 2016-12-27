@@ -137,7 +137,7 @@ fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
     return opcr(this, centerNode, op)
 }
 
-fun EventTarget.titledpane(title: String, node: Node? = null, op: ((TitledPane).() -> Unit)? = null): TitledPane {
+fun EventTarget.titledpane(title: String? = null, node: Node? = null, op: ((TitledPane).() -> Unit)? = null): TitledPane {
     val titledPane = TitledPane(title, node)
     opcr(this, titledPane, op)
     return titledPane
