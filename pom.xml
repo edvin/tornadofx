@@ -250,7 +250,7 @@
     </build>
 
     <properties>
-        <kotlin.version>1.0.5-2</kotlin.version>
+        <kotlin.version>1.0.6</kotlin.version>
         <dokka.version>0.9.9</dokka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
