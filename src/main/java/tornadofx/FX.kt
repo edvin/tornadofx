@@ -45,7 +45,7 @@ class FX {
     companion object {
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
-        var ignoreAddChild: Boolean = false
+        internal var ignoreAddChild: Boolean = false
             get() {
                 if (field) {
                     field = false
