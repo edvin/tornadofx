@@ -17,8 +17,8 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
-import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.stage.Stage
 import tornadofx.FX.Companion.inheritParamHolder
@@ -362,6 +362,17 @@ fun EventTarget.addChildIfPossible(node: Node) {
             val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
             val tab = Tab(uicmp?.title ?: node.toString(), node)
             tabs.add(tab)
+        }
+        is TitledPane -> {
+            if (content is Parent) {
+                content.addChildIfPossible(node)
+            } else if (content is Node) {
+                val container = VBox()
+                container.children.addAll(content, node)
+                content = container
+            } else {
+                content = node
+            }
         }
         is DataGrid<*> -> {
         }

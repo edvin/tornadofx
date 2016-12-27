@@ -221,6 +221,10 @@ fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
     op(this)
 }
 
+fun Node.wrapIn(wrapper: Parent) {
+    parent?.replaceWith(wrapper)
+    wrapper.addChildIfPossible(this)
+}
 
 fun EventTarget.add(node: Node) = plusAssign(node)
 

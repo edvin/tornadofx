@@ -137,7 +137,11 @@ fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
     return opcr(this, centerNode, op)
 }
 
-fun EventTarget.titledpane(title: String, node: Node): TitledPane = opcr(this, TitledPane(title, node))
+fun EventTarget.titledpane(title: String, node: Node? = null, op: ((TitledPane).() -> Unit)? = null): TitledPane {
+    val titledPane = TitledPane(title, node)
+    opcr(this, titledPane, op)
+    return titledPane
+}
 
 fun EventTarget.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (Pagination.() -> Unit)? = null): Pagination {
     val pagination = Pagination()
