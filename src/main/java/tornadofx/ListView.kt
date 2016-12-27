@@ -8,6 +8,7 @@ import javafx.scene.control.ListView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.VBox
 import kotlin.reflect.KClass
 
 
@@ -117,7 +118,9 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
             }
             clearCellFragment()
         } else {
-            cellCache?.apply { graphic = getOrCreateNode(item) }
+            ignoreParentForFirstBuilder {
+                cellCache?.apply { graphic = getOrCreateNode(item) }
+            }
             if (fresh) {
                 val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
                 cellFragment = if (cellFragmentType != null) find(cellFragmentType, scope) else null

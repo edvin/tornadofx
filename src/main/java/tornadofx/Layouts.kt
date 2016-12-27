@@ -87,8 +87,8 @@ fun EventTarget.tilepane(op: (TilePane.() -> Unit)? = null) = opcr(this, TilePan
 fun EventTarget.borderpane(op: (BorderPane.() -> Unit)? = null) = opcr(this, BorderPane(), op)
 
 @Suppress("UNCHECKED_CAST")
-internal var BorderPane.builderTarget : KFunction1<BorderPane, ObjectProperty<Node>>?
-    get() = properties["tornadofx.builderTarget"] as KFunction1<BorderPane, ObjectProperty<Node>>?
+var Node.builderTarget : KFunction1<*, ObjectProperty<Node>>?
+    get() = properties["tornadofx.builderTarget"] as KFunction1<Any, ObjectProperty<Node>>?
     set(value) { properties["tornadofx.builderTarget"] = value }
 
 fun BorderPane.top(op: BorderPane.() -> Unit) = region(BorderPane::topProperty, op)

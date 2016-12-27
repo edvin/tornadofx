@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `cellCache` supports builders. Earlier, builders would be appended to the ListView, creating undesirable results
+- `Scene.reloadViews()` is removed from the public API, no need to call it manually
 
 ## [1.5.9]
 

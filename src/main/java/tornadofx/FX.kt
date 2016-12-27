@@ -45,6 +45,15 @@ class FX {
     companion object {
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
+        var ignoreAddChild: Boolean = false
+            get() {
+                if (field) {
+                    field = false
+                    return true
+                } else {
+                    return false
+                }
+            }
 
         val icon: Node get() = Pane().apply {
             style {
@@ -235,6 +244,15 @@ class FX {
     }
 }
 
+fun ignoreParentForFirstBuilder(op: () -> Unit) {
+    FX.ignoreAddChild = true
+    try {
+        op()
+    } finally {
+        FX.ignoreAddChild = false
+    }
+}
+
 fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
@@ -281,7 +299,7 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
 
-inline fun <reified T: Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(T::class, value)
+inline fun <reified T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(T::class, value)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
@@ -325,12 +343,19 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node) {
+    if (FX.ignoreAddChild) return
+    if (this is Node) {
+        val target = builderTarget
+        if (target != null) {
+            // Trick to get around the disallowed use of invoke on out projected types
+            @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+            target!!(this).value = node
+            return
+        }
+    }
     when (this) {
     // Only add if root is already created, else this will become the root
         is UIComponent -> root?.addChildIfPossible(node)
-        is BorderPane -> {
-            builderTarget?.invoke(this)?.value = node
-        }
         is ScrollPane -> content = node
         is Tab -> content = node
         is TabPane -> {
