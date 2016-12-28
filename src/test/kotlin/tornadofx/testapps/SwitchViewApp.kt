@@ -1,37 +1,46 @@
 package tornadofx.testapps
 
-import javafx.geometry.Insets
+import javafx.scene.control.Alert
+import javafx.scene.control.Alert.AlertType.ERROR
 import tornadofx.*
 
-class SwitchViewApp : App(ContainerView::class)
+class GotoViewApp : App(GotoContainerView::class)
 
-class ContainerView : View("ContainerView") {
-    val subView1: SubView1 by inject()
-    val subView2: SubView2 by inject()
+class GotoContainerView : View("ContainerView") {
+    val gotoSubView1: GotoSubView1 by inject()
+    val gotoSubView2: GotoSubView2 by inject()
 
     override val root = borderpane {
         top {
-            button("Switch view").setOnAction {
+            button("Goto view").setOnAction {
                 if (center.lookup("#view1") != null)
-                    subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
+                    gotoSubView1.goto(gotoSubView2)
                 else
-                    subView2.replaceWith(subView1, ViewTransition.Slide(0.2.seconds, ViewTransition.Direction.RIGHT))
+                    gotoSubView2.goto(gotoSubView1)
             }
         }
         center {
-            this += subView1
+            this += gotoSubView1
         }
     }
 }
 
-class SubView1 : View("SubView2") {
+class GotoSubView1 : View("GotoSubView2") {
     override val root = hbox {
         id = "view1"
         label("I'm subview 1")
     }
+
+    override fun onGoto(source: UIComponent) {
+        when (source) {
+            is GotoSubView2 -> if (source.isDocked) source.replaceWith(this) else openModal()
+            is GotoSubView1 -> source.replaceWith(this)
+            else -> alert(ERROR, "I refuse!", "Not going to happen")
+        }
+    }
 }
 
-class SubView2 : View("SubView2") {
+class GotoSubView2 : View("GotoSubView2") {
     override val root = hbox {
         label("I'm subview 2")
     }

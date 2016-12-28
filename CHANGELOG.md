@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Added `squeezebox` builder. SqueezeBox is an accordion that allows multiple open titledpanes, added using `fold()`
 - `cellCache` supports builders. Earlier, builders would be appended to the ListView, creating undesirable results
 - `Scene.reloadViews()` is removed from the public API, no need to call it manually
 - `titledpane` builder now accepts op parameter like every other builder. node parameter is now optional

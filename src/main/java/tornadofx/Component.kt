@@ -287,6 +287,12 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     open fun onDock() {
     }
 
+    open fun onGoto(source: UIComponent) { source.replaceWith(this) }
+
+    fun goto(target: UIComponent) { target.onGoto(this) }
+
+    inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any>) = find<T>(*params).onGoto(this)
+
     internal fun callOnDock() {
         if (muteDocking) return
         if (!isDocked) attachLocalEventBusListeners()

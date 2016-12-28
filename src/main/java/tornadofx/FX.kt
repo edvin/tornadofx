@@ -364,7 +364,7 @@ fun EventTarget.addChildIfPossible(node: Node) {
             tabs.add(tab)
         }
         is TitledPane -> {
-            if (content is Parent) {
+            if (content is Pane) {
                 content.addChildIfPossible(node)
             } else if (content is Node) {
                 val container = VBox()
@@ -373,6 +373,10 @@ fun EventTarget.addChildIfPossible(node: Node) {
             } else {
                 content = node
             }
+        }
+        is SqueezeBox -> {
+            if (node is TitledPane)
+                panes += node
         }
         is DataGrid<*> -> {
         }
