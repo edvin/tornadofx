@@ -5,13 +5,13 @@ import com.sun.javafx.scene.control.skin.BehaviorSkinBase
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
-import javafx.scene.Node
-import javafx.scene.control.Accordion
 import javafx.scene.control.Control
 import javafx.scene.control.TitledPane
 
 class SqueezeBox : Control() {
     val panes: ObservableList<TitledPane> = FXCollections.observableArrayList()
+
+    fun expandedPanes() = panes.filter { it.isExpanded }
 
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
@@ -24,7 +24,13 @@ class SqueezeBoxSkin(control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squeeze
     init {
         registerChangeListener(skinnable.widthProperty(), "WIDTH")
         registerChangeListener(skinnable.heightProperty(), "HEIGHT")
+        trackPanes()
         children.addAll(control.panes)
+    }
+
+    fun trackPanes() {
+        // TODO: Add and remove panes from children when they are altered on the control
+
     }
 
     override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
