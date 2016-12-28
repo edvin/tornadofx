@@ -2,35 +2,27 @@ package tornadofx
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.scene.control.Control
 import javafx.scene.control.TitledPane
 
 class SqueezeBox : Control() {
-    val panes: ObservableList<TitledPane> = FXCollections.observableArrayList()
-
-    fun expandedPanes() = panes.filter { it.isExpanded }
-
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
     }
 
     override fun createDefaultSkin() = SqueezeBoxSkin(this)
+
+    internal fun addPane(pane: TitledPane) {
+        children.addAll(pane)
+    }
+
 }
 
 class SqueezeBoxSkin(control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, SqueezeBoxBehavior>(control, SqueezeBoxBehavior(control)) {
     init {
         registerChangeListener(skinnable.widthProperty(), "WIDTH")
         registerChangeListener(skinnable.heightProperty(), "HEIGHT")
-        trackPanes()
-        children.addAll(control.panes)
-    }
-
-    fun trackPanes() {
-        // TODO: Add and remove panes from children when they are altered on the control
-
     }
 
     override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
@@ -42,11 +34,11 @@ class SqueezeBoxSkin(control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squeeze
     }
 
     override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.minWidth(height) }.sum() + leftInset + rightInset
+        return children.map { it.minWidth(height) }.max() ?: 0.0 + leftInset + rightInset
     }
 
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.prefWidth(height) }.sum() + leftInset + rightInset
+        return children.map { it.prefWidth(height) }.max() ?: 0.0 + leftInset + rightInset
     }
 
     override fun layoutChildren(contentX: Double, contentY: Double, contentWidth: Double, contentHeight: Double) {
@@ -68,7 +60,7 @@ fun EventTarget.squeezebox(op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(),
 fun SqueezeBox.fold(title: String? = null, expanded: Boolean = false, op: TitledPane.() -> Unit): TitledPane {
     val fold = TitledPane(title, null)
     fold.isExpanded = expanded
-    panes += fold
+    addPane(fold)
     op.invoke(fold)
     return fold
 }
