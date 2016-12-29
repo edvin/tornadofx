@@ -93,7 +93,9 @@ open class ViewModel : Component(), Injectable {
 
         // Listener that can track external changes for this facade
         externalChangeListeners[facade] = ChangeListener<Any> { observableValue, ov, nv ->
-            (facade as Property<Any>).value = nv
+            val facadeProperty = (facade as Property<Any>)
+            if (!facadeProperty.isBound)
+                facadeProperty.value = nv
         }
 
         // Update facade when the property returned to us is changed externally

@@ -8,6 +8,7 @@ import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -583,3 +584,11 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
     }
 
 }
+
+fun <T> DataGrid<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it
+    }
+}
+
+fun <T> DataGrid<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)

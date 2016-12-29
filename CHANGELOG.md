@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Added `DataGrid.bindSelected` to bind selected item to another property or ViewModel
+- Fixed a ViewModel binding bug causing errors if external changes were made to a bound facade
 - Added `squeezebox` builder. SqueezeBox is an accordion that allows multiple open titledpanes, added using `fold()`
 - `cellCache` supports builders. Earlier, builders would be appended to the ListView, creating undesirable results
 - `Scene.reloadViews()` is removed from the public API, no need to call it manually
