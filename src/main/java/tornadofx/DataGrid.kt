@@ -592,3 +592,7 @@ fun <T> DataGrid<T>.bindSelected(property: Property<T>) {
 }
 
 fun <T> DataGrid<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+
+fun <T> DataGrid<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { items.setAll(it) }
+

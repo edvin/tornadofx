@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Added `DataGrid.asyncItems` to load items async with more concise syntax
 - Added `DataGrid.bindSelected` to bind selected item to another property or ViewModel
 - Fixed a ViewModel binding bug causing errors if external changes were made to a bound facade
 - Added `squeezebox` builder. SqueezeBox is an accordion that allows multiple open titledpanes, added using `fold()`
