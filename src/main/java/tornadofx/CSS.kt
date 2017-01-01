@@ -674,6 +674,7 @@ open class PropertyHolder {
     var cellHeight: Dimension<Dimension.LinearUnits> by cssprop("-fx-cell-height")
     var horizontalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-horizontal-cell-spacing")
     var verticalCellSpacing: Dimension<Dimension.LinearUnits> by cssprop("-fx-vertical-cell-spacing")
+    var maxCellsInRow: Int by cssprop("-fx-max-cells-in-row")
 
     // ColorPicker
     var colorLabelVisible: Boolean by cssprop("-fx-color-label-visible")

@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
-- DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`
+- Added `proxyprop` helper to create calculated properties
+- DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`)
 - Added `DataGrid.asyncItems` to load items async with more concise syntax
 - Added `DataGrid.bindSelected` to bind selected item to another property or ViewModel
 - Fixed a ViewModel binding bug causing errors if external changes were made to a bound facade

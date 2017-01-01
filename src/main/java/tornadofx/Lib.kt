@@ -150,3 +150,11 @@ fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o
 fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op(new.toLong()) } }
 fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op(new.toFloat()) } }
 fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }
+
+/**
+ * Create a proxy property backed by calculated data
+ */
+fun <T> proxyprop(getter: () -> T, setter: (T) -> Unit): ObjectProperty<T> = object : SimpleObjectProperty<T>() {
+    override fun getValue() = getter()
+    override fun setValue(v: T) = setter(v)
+}
