@@ -5,11 +5,14 @@ import com.sun.javafx.scene.control.skin.BehaviorSkinBase
 import javafx.event.EventTarget
 import javafx.scene.control.Control
 import javafx.scene.control.TitledPane
+import javafx.scene.paint.Color
 
 class SqueezeBox : Control() {
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
     }
+
+    override fun getUserAgentStylesheet() = SqueezeBoxStyles().base64URL.toExternalForm()
 
     override fun createDefaultSkin() = SqueezeBoxSkin(this)
 
@@ -70,5 +73,13 @@ class SqueezeBoxBehavior(control: SqueezeBox) : BehaviorBase<SqueezeBox>(control
 class SqueezeBoxStyles : Stylesheet() {
     companion object {
         val squeezeBox by cssclass()
+    }
+
+    init {
+        squeezeBox child titledPane {
+            title {
+                backgroundRadius += box(0.px)
+            }
+        }
     }
 }
