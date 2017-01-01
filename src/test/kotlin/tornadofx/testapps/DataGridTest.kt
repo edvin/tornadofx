@@ -56,6 +56,7 @@ class DataGridTest : View("DataGrid") {
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
 
+                maxCellsInRow = 3
                 cellWidth = 164.0
                 cellHeight = 164.0
 

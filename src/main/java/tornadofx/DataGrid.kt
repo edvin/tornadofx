@@ -7,7 +7,6 @@ import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
-import javafx.beans.Observable
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -66,6 +65,11 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty })
     var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) {
         cellWidthProperty.value = value
+    }
+
+    val maxCellsInRowProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxCellsInRow", "-fx-max-cells-in-row", { it.maxCellsInRowProperty })
+    var maxCellsInRow: Int get() = maxCellsInRowProperty.value.toInt(); set(value) {
+        maxCellsInRowProperty.value = value
     }
 
     val cellHeightProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty })
@@ -532,7 +536,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
     override fun getItemCount() = Math.ceil(skinnable.items.size.toDouble() / computeMaxCellsInRow()).toInt()
 
-    fun computeMaxCellsInRow() = Math.max(Math.floor(computeRowWidth() / computeCellWidth()).toInt(), 1)
+    fun computeMaxCellsInRow() = Math.min(Math.max(Math.floor(computeRowWidth() / computeCellWidth()).toInt(), 1), skinnable.maxCellsInRow)
 
     fun computeRowWidth() = skinnable.width + 14 // Account for scrollbar
 
