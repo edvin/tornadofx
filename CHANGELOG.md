@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
-- Observable padding properties to Region `paddingXXXProperty` (top/right/bottom/left)
+- Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left)
 - Added `proxyprop` helper to create calculated properties
 - DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`)
 - Added `DataGrid.asyncItems` to load items async with more concise syntax
