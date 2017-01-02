@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
@@ -1000,4 +1002,54 @@ fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
     if (parent.javaClass.kotlin == parentType) return parent as T
     return parent!!.findParentOfType(parentType)
+}
+
+val Region.paddingTopProperty: Property<Double> get() {
+    return properties.getOrPut("paddingTopProperty") {
+        proxyprop(paddingProperty(), { value.top }) {
+            Insets(it, value.right, value.bottom, value.left)
+        }
+    } as Property<Double>
+}
+
+val Region.paddingBottomProperty: Property<Double> get() {
+    return properties.getOrPut("paddingBottomProperty") {
+        proxyprop(paddingProperty(), { value.bottom }) {
+            Insets(value.top, value.right, it, value.left)
+        }
+    } as Property<Double>
+}
+
+val Region.paddingLeftProperty: Property<Double> get() {
+    return properties.getOrPut("paddingLeftProperty") {
+        proxyprop(paddingProperty(), { value.left }) {
+            Insets(value.top, value.right, value.bottom, it)
+        }
+    } as Property<Double>
+}
+
+val Region.paddingRightProperty: Property<Double> get() {
+    return properties.getOrPut("paddingRightProperty") {
+        proxyprop(paddingProperty(), { value.right }) {
+            Insets(value.top, it, value.bottom, value.left)
+        }
+    } as Property<Double>
+}
+
+val Region.paddingVerticalProperty: Property<Double> get() {
+    return properties.getOrPut("paddingVerticalProperty") {
+        proxyprop(paddingProperty(), { value.top + value.bottom }) {
+            val half = it / 2.0
+            Insets(half, value.right, half, value.left)
+        }
+    } as Property<Double>
+}
+
+val Region.paddingHorizontalProperty: Property<Double> get() {
+    return properties.getOrPut("paddingHorizontalProperty") {
+        proxyprop(paddingProperty(), { value.left + value.right }) {
+            val half = it / 2.0
+            Insets(value.top, half, value.bottom, half)
+        }
+    } as Property<Double>
 }
