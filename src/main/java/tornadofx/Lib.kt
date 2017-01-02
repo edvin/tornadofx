@@ -1,9 +1,8 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.binding.Bindings
 import javafx.beans.property.ObjectProperty
-import javafx.beans.property.ReadOnlyIntegerProperty
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.*
 import javafx.collections.FXCollections
@@ -12,11 +11,11 @@ import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
-import javafx.scene.Scene
-import javafx.scene.control.Button
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
-import javafx.scene.input.*
+import javafx.scene.input.Clipboard
+import javafx.scene.input.ClipboardContent
+import javafx.scene.input.DataFormat
 import java.io.File
 import java.util.function.Predicate
 
@@ -152,9 +151,20 @@ fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o
 fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }
 
 /**
- * Create a proxy property backed by calculated data
+ * Create a proxy property backed by calculated data based on a specific property. The setter
+ * must return the new value for the backed property.
+ * The scope of the getter and setter will be the receiver property
  */
-fun <T> proxyprop(getter: () -> T, setter: (T) -> Unit): ObjectProperty<T> = object : SimpleObjectProperty<T>() {
-    override fun getValue() = getter()
-    override fun setValue(v: T) = setter(v)
+fun <R, T> proxyprop(receiver: Property<R>, getter: Property<R>.() -> T, setter: Property<R>.(T) -> R): ObjectProperty<T> = object : SimpleObjectProperty<T>() {
+    init {
+        receiver.onChange {
+            invalidated()
+        }
+    }
+
+    override fun getValue() = getter.invoke(receiver)
+    override fun setValue(v: T) {
+        receiver.value = setter(receiver, v)
+        invalidated()
+    }
 }

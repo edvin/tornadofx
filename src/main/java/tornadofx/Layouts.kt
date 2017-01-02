@@ -213,3 +213,14 @@ fun Region.paddingTop(p: Double) {
 fun Region.paddingBottom(p: Double) {
     padding = Insets(padding.top, padding.right, p, padding.left)
 }
+
+fun Region.paddingVertical(p: Double) {
+    val half = p / 2.0
+    padding = Insets(half, padding.right, half, padding.left)
+}
+
+fun Region.paddingHorizontal(p: Double) {
+    val half = p / 2.0
+    padding = Insets(padding.top, half, padding.bottom, half)
+}
+
