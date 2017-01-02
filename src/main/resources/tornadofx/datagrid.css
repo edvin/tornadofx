@@ -1,7 +1,6 @@
 .datagrid {
     -fx-cell-width: 150px;
     -fx-cell-height: 150px;
-    -fx-max-cells-in-row: 999;
     -fx-horizontal-cell-spacing: 8px;
     -fx-vertical-cell-spacing: 8px;
 }

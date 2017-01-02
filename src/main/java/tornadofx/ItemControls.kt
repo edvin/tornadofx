@@ -215,7 +215,7 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableCo
 fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     cellFactory = ComboBoxTableCell.forTableColumn(items)
     setOnEditCommit {
-        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
