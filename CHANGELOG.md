@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- TableCell.useCombobox now supports every kind of Property (bug)
 - Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left)
 - Added `proxyprop` helper to create calculated properties
 - DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`)
