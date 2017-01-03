@@ -4,6 +4,8 @@ package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
+import javafx.beans.binding.BooleanBinding
+import javafx.beans.property.BooleanProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
@@ -1052,4 +1054,49 @@ val Region.paddingHorizontalProperty: Property<Double> get() {
             Insets(value.top, half, value.bottom, half)
         }
     } as Property<Double>
+}
+
+fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
+fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) {
+    val obs = expr()
+    val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
+    visibleProperty().cleanBind(binding)
+}
+
+fun Node.disableWhen(expr: () -> ObservableValue<Boolean>) = disableProperty().cleanBind(expr())
+fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
+    val obs = expr()
+    val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
+    disableProperty().cleanBind(binding)
+}
+
+fun Node.removedWhen(expr: () -> ObservableValue<Boolean>) {
+    val originalParent = parent
+    val placeholder = Region()
+
+    fun remove() {
+        if (!originalParent.childrenUnmodifiable.contains(this)) return
+        val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(this))
+        removeFromParent()
+        originalParent.addChildIfPossible(placeholder, index)
+    }
+
+    fun add() {
+        if (originalParent.childrenUnmodifiable.contains(this)) return
+        val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(placeholder))
+        removeFromParent()
+        originalParent.addChildIfPossible(this, index)
+    }
+
+    fun op(remove: Boolean) = if (remove) remove() else add()
+
+    val state = expr()
+
+    state.onChange {
+        op(it ?: false)
+    }
+
+    Platform.runLater {
+        op(state.value)
+    }
 }

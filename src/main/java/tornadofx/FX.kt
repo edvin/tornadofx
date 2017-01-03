@@ -342,7 +342,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 }
 
 @Suppress("UNNECESSARY_SAFE_CALL")
-fun EventTarget.addChildIfPossible(node: Node) {
+fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
     if (FX.ignoreParentForFirstBuilder) return
     if (this is Node) {
         val target = builderTarget
@@ -365,7 +365,7 @@ fun EventTarget.addChildIfPossible(node: Node) {
         }
         is TitledPane -> {
             if (content is Pane) {
-                content.addChildIfPossible(node)
+                content.addChildIfPossible(node, index)
             } else if (content is Node) {
                 val container = VBox()
                 container.children.addAll(content, node)
@@ -380,7 +380,14 @@ fun EventTarget.addChildIfPossible(node: Node) {
         }
         is DataGrid<*> -> {
         }
-        else -> getChildList()?.apply { if (!contains(node)) add(node) }
+        else -> getChildList()?.apply {
+            if (!contains(node)) {
+                if (index != null)
+                    add(index, node)
+                else
+                    add(node)
+            }
+        }
     }
 }
 
