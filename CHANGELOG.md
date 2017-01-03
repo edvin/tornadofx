@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Node `onHover` helper
 - Node builder bindings: disableWhen, enableWhen, visibleWhen, hiddenWhen, removeWhen
 - ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding
 - TableCell.useCombobox now supports every kind of Property (bug)

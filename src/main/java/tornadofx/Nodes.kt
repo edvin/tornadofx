@@ -1100,3 +1100,5 @@ fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
         op(state.value)
     }
 }
+
+fun Node.onHover(onHover: (Boolean) -> Unit) = hoverProperty().onChange { onHover(isHover) }
