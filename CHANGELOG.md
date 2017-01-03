@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
-- Node `onHover` helper
+- Node `onHover { doSomething() }` helper, single param is boolean indicating hover state
 - Node builder bindings: disableWhen, enableWhen, visibleWhen, hiddenWhen, removeWhen
 - ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding
 - TableCell.useCombobox now supports every kind of Property (bug)
-- Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left)
-- Added `proxyprop` helper to create calculated properties
+- Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left/vertical/horizontal/all)
+- Added `proxyprop` helper to create proxied properties
 - DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`)
 - Added `DataGrid.asyncItems` to load items async with more concise syntax
 - Added `DataGrid.bindSelected` to bind selected item to another property or ViewModel

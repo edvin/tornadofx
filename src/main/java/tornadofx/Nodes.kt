@@ -1056,6 +1056,14 @@ val Region.paddingHorizontalProperty: Property<Double> get() {
     } as Property<Double>
 }
 
+val Region.paddingAllProperty: Property<Double> get() {
+    return properties.getOrPut("paddingVerticalProperty") {
+        proxyprop(paddingProperty(), { (value.top + value.right + value.bottom + value.left) / 4.0 }) {
+            Insets(it, it, it, it)
+        }
+    } as Property<Double>
+}
+
 fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
 fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) {
     val obs = expr()

@@ -219,6 +219,10 @@ fun Region.paddingVertical(p: Double) {
     padding = Insets(half, padding.right, half, padding.left)
 }
 
+fun Region.paddingAll(p: Double) {
+    padding = Insets(p, p, p, p)
+}
+
 fun Region.paddingHorizontal(p: Double) {
     val half = p / 2.0
     padding = Insets(padding.top, half, padding.bottom, half)
