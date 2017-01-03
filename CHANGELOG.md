@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding
 - TableCell.useCombobox now supports every kind of Property (bug)
 - Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left/vertical/horizontal/all)
+- Padding vars for Region: `paddingXXX' (top/right/bottom/left/vertical/horizontal/all)
 - Added `proxyprop` helper to create proxied properties
 - DataGrid `maxCellsInRow` property (also CSS styleable as `-fx-max-cells-in-row`)
 - Added `DataGrid.asyncItems` to load items async with more concise syntax

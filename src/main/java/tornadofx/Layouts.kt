@@ -198,33 +198,69 @@ fun Accordion.fold(title: String? = null, op: (Pane.() -> Unit)? = null): Titled
 
 fun EventTarget.region(op: (Region.() -> Unit)? = null) = opcr(this, Region(), op)
 
+@Deprecated("Use the paddingRight property instead", ReplaceWith("paddingRight = p"))
 fun Region.paddingRight(p: Double) {
     padding = Insets(padding.top, p, padding.bottom, padding.left)
 }
 
+var Region.paddingRight: Double get() = padding.right; set(value) {
+    padding = Insets(padding.top, value, padding.bottom, padding.left)
+}
+
+@Deprecated("Use the paddingLeft property instead", ReplaceWith("paddingLeft = p"))
 fun Region.paddingLeft(p: Double) {
     padding = Insets(padding.top, padding.right, padding.bottom, p)
 }
 
+var Region.paddingLeft: Double get() = padding.left; set(value) {
+    padding = Insets(padding.top, padding.right, padding.bottom, value)
+}
+
+@Deprecated("Use the paddingTop property instead", ReplaceWith("paddingTop = p"))
 fun Region.paddingTop(p: Double) {
     padding = Insets(p, padding.right, padding.bottom, padding.left)
 }
 
+var Region.paddingTop: Double get() = padding.top; set(value) {
+    padding = Insets(value, padding.right, padding.bottom, padding.left)
+}
+
+@Deprecated("Use the paddingBottom property instead", ReplaceWith("paddingBottom = p"))
 fun Region.paddingBottom(p: Double) {
     padding = Insets(padding.top, padding.right, p, padding.left)
 }
 
+var Region.paddingBottom: Double get() = padding.bottom; set(value) {
+    padding = Insets(padding.top, padding.right, value, padding.left)
+}
+
+@Deprecated("Use the paddingVertical property instead", ReplaceWith("paddingVertical = p"))
 fun Region.paddingVertical(p: Double) {
     val half = p / 2.0
     padding = Insets(half, padding.right, half, padding.left)
 }
 
-fun Region.paddingAll(p: Double) {
-    padding = Insets(p, p, p, p)
+var Region.paddingVertical: Double get() = (padding.top + padding.bottom) / 2.0; set(value) {
+    val half = value / 2.0
+    padding = Insets(half, padding.right, half, padding.left)
 }
 
+@Deprecated("Use the paddingHorizontal property instead", ReplaceWith("paddingHorizontal = p"))
 fun Region.paddingHorizontal(p: Double) {
     val half = p / 2.0
     padding = Insets(padding.top, half, padding.bottom, half)
 }
 
+var Region.paddingHorizontal: Double get() = (padding.left + padding.right) / 2.0; set(value) {
+    val half = value / 2.0
+    padding = Insets(padding.top, half, padding.bottom, half)
+}
+
+@Deprecated("Use the paddingAll property instead", ReplaceWith("paddingAll = p"))
+fun Region.paddingAll(p: Double) {
+    padding = Insets(p, p, p, p)
+}
+
+var Region.paddingAll: Double get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0; set(value) {
+    padding = Insets(value, value, value, value)
+}
