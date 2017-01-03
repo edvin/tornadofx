@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
-- Node builder bindings: disableWhen, enableWhen, visibleWhen, hiddenWhen, removedWhen
+- Node builder bindings: disableWhen, enableWhen, visibleWhen, hiddenWhen, removeWhen
 - ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding
 - TableCell.useCombobox now supports every kind of Property (bug)
 - Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left)

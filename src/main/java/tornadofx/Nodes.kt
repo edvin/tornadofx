@@ -1070,7 +1070,7 @@ fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
-fun Node.removedWhen(expr: () -> ObservableValue<Boolean>) {
+fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
     val originalParent = parent
     val placeholder = Region()
 

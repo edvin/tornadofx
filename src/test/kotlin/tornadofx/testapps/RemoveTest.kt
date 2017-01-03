@@ -15,7 +15,7 @@ class RemoveTest : View("Remove Test") {
         form {
             label("I'm above the removable element (which might be removed of course)")
             label("Remove me!") {
-                removedWhen { remove }
+                removeWhen { remove }
                 style {
                     fontWeight = FontWeight.BOLD
                     textFill = Color.RED
