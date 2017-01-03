@@ -150,9 +150,11 @@ class LayoutDebugger : Fragment() {
                 object : TreeCell<NodeContainer>() {
                     init {
                         addEventFilter(MouseEvent.MOUSE_ENTERED) {
-                            hoveredNode.value = item?.node
-                            style {
-                                backgroundColor += gc.fill
+                            item?.apply {
+                                hoveredNode.value = node
+                                style {
+                                    backgroundColor += gc.fill
+                                }
                             }
                         }
                         addEventFilter(MouseEvent.MOUSE_EXITED) {
