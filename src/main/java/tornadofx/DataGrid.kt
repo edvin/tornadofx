@@ -62,7 +62,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         this.cellCache = cachedGraphic
     }
 
-    val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150)
+    val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0)
     var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) {
         cellWidthProperty.value = value
     }
@@ -72,15 +72,15 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         maxCellsInRowProperty.value = value
     }
 
-    val cellHeightProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150)
+    val cellHeightProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150.0)
     var cellHeight: Double get() = cellHeightProperty.value as Double; set(value) {
         cellHeightProperty.value = value
     }
 
-    val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty }, 8)
+    val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty }, 8.0)
     var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) { horizontalCellSpacingProperty.value = value }
 
-    val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty }, 8)
+    val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty }, 8.0)
     var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) { verticalCellSpacingProperty.value = value }
 
     val selectionModel = DataGridSelectionModel(this)
