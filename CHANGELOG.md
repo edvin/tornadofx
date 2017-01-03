@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding
 - TableCell.useCombobox now supports every kind of Property (bug)
 - Observable padding properties for Region `paddingXXXProperty` (top/right/bottom/left)
 - Added `proxyprop` helper to create calculated properties

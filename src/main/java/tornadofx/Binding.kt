@@ -3,9 +3,12 @@
 package tornadofx
 
 import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
 import javafx.beans.property.StringProperty
 import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.scene.control.*
 import javafx.scene.text.Text
 import javafx.util.StringConverter
@@ -99,4 +102,20 @@ inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
         else -> null
     }
     return if (converter != null) converter as StringConverter<T> else null
+}
+
+fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
+    init {
+        super.bind(this@toBinding)
+    }
+
+    override fun dispose() {
+        super.unbind(this@toBinding)
+    }
+
+    override fun computeValue() = !this@toBinding.value
+
+    override fun getDependencies(): ObservableList<*> {
+        return FXCollections.singletonObservableList(this@toBinding)
+    }
 }
