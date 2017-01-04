@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Fixed a race condition in Slideshow with overlapping transitions (https://github.com/edvin/tornadofx/issues/225)
 - Node `onHover { doSomething() }` helper, single param is boolean indicating hover state
 - Node builder bindings: disableWhen, enableWhen, visibleWhen, hiddenWhen, removeWhen
 - ObservableValue<Boolean>.toBinding() converts observable boolean to BooleanBinding

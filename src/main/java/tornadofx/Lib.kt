@@ -1,9 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.beans.value.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -158,13 +156,40 @@ fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener {
 fun <R, T> proxyprop(receiver: Property<R>, getter: Property<R>.() -> T, setter: Property<R>.(T) -> R): ObjectProperty<T> = object : SimpleObjectProperty<T>() {
     init {
         receiver.onChange {
-            invalidated()
+            fireValueChangedEvent()
         }
     }
 
-    override fun getValue() = getter.invoke(receiver)
-    override fun setValue(v: T) {
+    override fun invalidated() {
+        receiver.value = setter(receiver, super.get())
+    }
+
+    override fun get() = getter.invoke(receiver)
+    override fun set(v: T) {
         receiver.value = setter(receiver, v)
-        invalidated()
+        super.set(v)
+    }
+}
+
+/**
+ * Create a proxy double property backed by calculated data based on a specific property. The setter
+ * must return the new value for the backed property.
+ * The scope of the getter and setter will be the receiver property
+ */
+fun <R> proxypropDouble(receiver: Property<R>, getter: Property<R>.() -> Double, setter: Property<R>.(Double) -> R): DoubleProperty = object : SimpleDoubleProperty() {
+    init {
+        receiver.onChange {
+            fireValueChangedEvent()
+        }
+    }
+
+    override fun invalidated() {
+        receiver.value = setter(receiver, super.get())
+    }
+
+    override fun get() = getter.invoke(receiver)
+    override fun set(v: Double) {
+        receiver.value = setter(receiver, v)
+        super.set(v)
     }
 }

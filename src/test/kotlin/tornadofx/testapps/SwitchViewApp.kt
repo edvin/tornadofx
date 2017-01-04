@@ -1,6 +1,5 @@
 package tornadofx.testapps
 
-import javafx.scene.control.Alert
 import javafx.scene.control.Alert.AlertType.ERROR
 import tornadofx.*
 

@@ -6,6 +6,7 @@ import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.BooleanProperty
+import javafx.beans.property.DoubleProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
@@ -1006,62 +1007,62 @@ fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     return parent!!.findParentOfType(parentType)
 }
 
-val Region.paddingTopProperty: Property<Double> get() {
+val Region.paddingTopProperty: DoubleProperty get() {
     return properties.getOrPut("paddingTopProperty") {
-        proxyprop(paddingProperty(), { value.top }) {
+        proxypropDouble(paddingProperty(), { value.top }) {
             Insets(it, value.right, value.bottom, value.left)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingBottomProperty: Property<Double> get() {
+val Region.paddingBottomProperty: DoubleProperty get() {
     return properties.getOrPut("paddingBottomProperty") {
-        proxyprop(paddingProperty(), { value.bottom }) {
+        proxypropDouble(paddingProperty(), { value.bottom }) {
             Insets(value.top, value.right, it, value.left)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingLeftProperty: Property<Double> get() {
+val Region.paddingLeftProperty: DoubleProperty get() {
     return properties.getOrPut("paddingLeftProperty") {
-        proxyprop(paddingProperty(), { value.left }) {
+        proxypropDouble(paddingProperty(), { value.left }) {
             Insets(value.top, value.right, value.bottom, it)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingRightProperty: Property<Double> get() {
+val Region.paddingRightProperty: DoubleProperty get() {
     return properties.getOrPut("paddingRightProperty") {
-        proxyprop(paddingProperty(), { value.right }) {
+        proxypropDouble(paddingProperty(), { value.right }) {
             Insets(value.top, it, value.bottom, value.left)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingVerticalProperty: Property<Double> get() {
+val Region.paddingVerticalProperty: DoubleProperty get() {
     return properties.getOrPut("paddingVerticalProperty") {
-        proxyprop(paddingProperty(), { paddingVertical }) {
+        proxypropDouble(paddingProperty(), { paddingVertical }) {
             val half = it / 2.0
             Insets(half, value.right, half, value.left)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingHorizontalProperty: Property<Double> get() {
+val Region.paddingHorizontalProperty: DoubleProperty get() {
     return properties.getOrPut("paddingHorizontalProperty") {
-        proxyprop(paddingProperty(), { paddingHorizontal }) {
+        proxypropDouble(paddingProperty(), { paddingHorizontal }) {
             val half = it / 2.0
             Insets(value.top, half, value.bottom, half)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
-val Region.paddingAllProperty: Property<Double> get() {
+val Region.paddingAllProperty: DoubleProperty get() {
     return properties.getOrPut("paddingVerticalProperty") {
-        proxyprop(paddingProperty(), { paddingAll }) {
+        proxypropDouble(paddingProperty(), { paddingAll }) {
             Insets(it, it, it, it)
         }
-    } as Property<Double>
+    } as DoubleProperty
 }
 
 fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())

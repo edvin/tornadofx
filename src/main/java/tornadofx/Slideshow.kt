@@ -77,12 +77,14 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     private fun goto(slide: Slide, forward: Boolean) {
         val nextUI = slide.getUI(scope)
 
-        if (center == null) {
+        // Avoid race conditions if last transition is still in progress
+        val centerRightNow = center
+        if (centerRightNow == null) {
             center = nextUI.root
         } else {
             val transition = if (forward) slide.transition ?: defaultTransition else defaultBackTransition
             nextUI.root.removeFromParent()
-            center.replaceWith(nextUI.root, transition)
+            centerRightNow.replaceWith(nextUI.root, transition)
         }
 
         val delta = if (forward) 1 else -1
