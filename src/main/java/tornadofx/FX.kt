@@ -17,6 +17,7 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
+import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
@@ -354,10 +355,11 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
     }
     when (this) {
-    // Only add if root is already created, else this will become the root
+        // Only add if root is already created, else this will become the root
         is UIComponent -> root?.addChildIfPossible(node)
         is ScrollPane -> content = node
         is Tab -> content = node
+        is BorderPane -> { } // Either pos = builder { or caught by builderTarget above
         is TabPane -> {
             val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
             val tab = Tab(uicmp?.title ?: node.toString(), node)
