@@ -263,6 +263,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal var reloadInit = false
     internal var muteDocking = false
     abstract val root: Parent
+
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     var accelerators = HashMap<KeyCombination, Runnable>()
