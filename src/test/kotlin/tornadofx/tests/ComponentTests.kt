@@ -30,18 +30,6 @@ class ComponentTests {
 
     }
 
-    @Test
-    fun myTest() {
-
-        val component = object: Fragment(){
-            override val root = vbox{
-                add( SubFragment::class )
-            }
-
-        }
-
-    }
-
     class MainFragment : Fragment() {
 
         var subFragmentNoParam: SubFragment by singleAssign()
