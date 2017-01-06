@@ -116,8 +116,19 @@ abstract class Component {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, *params)
     }
 
-    inline fun <reified T> param(name: String? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = params[name ?: property.name] as T
+    inline fun <reified T> param(name: String? = null, defaultValue: T? = null ): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T{
+            val paramName = name ?: property.name
+            val param = thisRef.params[paramName] as? T
+            if( param == null ) {
+                if( defaultValue == null ){
+                    throw IllegalStateException("param for name [$paramName] has not been set")
+                }
+                return defaultValue
+            } else {
+                return param
+            }
+        }
     }
 
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
@@ -410,7 +421,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     inline fun <reified T : View> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
 
     @JvmName("addFragment")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>, noinline op: (T.() -> Unit)? = null ): Unit {
+        val fragment : T = find(type, scope, *params)
+        plusAssign(fragment.root)
+        op?.invoke(fragment)
+    }
 
     @JvmName("plusView")
     operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
@@ -497,8 +512,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     val titleProperty = SimpleStringProperty(viewTitle)
     var title: String
-        get() = titleProperty.get() ?: ""
-        set(value) = titleProperty.set(value)
+    get() = titleProperty.get() ?: ""
+    set(value) = titleProperty.set(value)
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
@@ -571,7 +586,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     private fun undockFromParent(replacement: UIComponent) {
         if (replacement.root.parent is Pane) (replacement.root.parent as Pane).children.remove(replacement.root)
     }
-
 }
 
 @Suppress("UNCHECKED_CAST")
