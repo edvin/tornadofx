@@ -1041,7 +1041,7 @@ val Region.paddingRightProperty: DoubleProperty get() {
 
 val Region.paddingVerticalProperty: DoubleProperty get() {
     return properties.getOrPut("paddingVerticalProperty") {
-        proxypropDouble(paddingProperty(), { paddingVertical }) {
+        proxypropDouble(paddingProperty(), { paddingVertical.toDouble() }) {
             val half = it / 2.0
             Insets(half, value.right, half, value.left)
         }
@@ -1050,7 +1050,7 @@ val Region.paddingVerticalProperty: DoubleProperty get() {
 
 val Region.paddingHorizontalProperty: DoubleProperty get() {
     return properties.getOrPut("paddingHorizontalProperty") {
-        proxypropDouble(paddingProperty(), { paddingHorizontal }) {
+        proxypropDouble(paddingProperty(), { paddingHorizontal.toDouble() }) {
             val half = it / 2.0
             Insets(value.top, half, value.bottom, half)
         }
@@ -1059,7 +1059,7 @@ val Region.paddingHorizontalProperty: DoubleProperty get() {
 
 val Region.paddingAllProperty: DoubleProperty get() {
     return properties.getOrPut("paddingVerticalProperty") {
-        proxypropDouble(paddingProperty(), { paddingAll }) {
+        proxypropDouble(paddingProperty(), { paddingAll.toDouble() }) {
             Insets(it, it, it, it)
         }
     } as DoubleProperty
