@@ -221,8 +221,8 @@ fun Region.paddingTop(p: Double) {
     padding = Insets(p, padding.right, padding.bottom, padding.left)
 }
 
-var Region.paddingTop: Double get() = padding.top; set(value) {
-    padding = Insets(value, padding.right, padding.bottom, padding.left)
+var Region.paddingTop: Number get() = padding.top; set(value) {
+    padding = Insets(value.toDouble(), padding.right, padding.bottom, padding.left)
 }
 
 @Deprecated("Use the paddingBottom property instead", ReplaceWith("paddingBottom = p"))
@@ -230,8 +230,8 @@ fun Region.paddingBottom(p: Double) {
     padding = Insets(padding.top, padding.right, p, padding.left)
 }
 
-var Region.paddingBottom: Double get() = padding.bottom; set(value) {
-    padding = Insets(padding.top, padding.right, value, padding.left)
+var Region.paddingBottom: Number get() = padding.bottom; set(value) {
+    padding = Insets(padding.top, padding.right, value.toDouble(), padding.left)
 }
 
 @Deprecated("Use the paddingVertical property instead", ReplaceWith("paddingVertical = p"))
@@ -240,8 +240,8 @@ fun Region.paddingVertical(p: Double) {
     padding = Insets(half, padding.right, half, padding.left)
 }
 
-var Region.paddingVertical: Double get() = (padding.top + padding.bottom) / 2.0; set(value) {
-    val half = value / 2.0
+var Region.paddingVertical: Number get() = (padding.top + padding.bottom) / 2.0; set(value) {
+    val half = value.toDouble() / 2.0
     padding = Insets(half, padding.right, half, padding.left)
 }
 
@@ -251,8 +251,8 @@ fun Region.paddingHorizontal(p: Double) {
     padding = Insets(padding.top, half, padding.bottom, half)
 }
 
-var Region.paddingHorizontal: Double get() = (padding.left + padding.right) / 2.0; set(value) {
-    val half = value / 2.0
+var Region.paddingHorizontal: Number get() = (padding.left + padding.right) / 2.0; set(value) {
+    val half = value.toDouble() / 2.0
     padding = Insets(padding.top, half, padding.bottom, half)
 }
 
@@ -261,6 +261,6 @@ fun Region.paddingAll(p: Double) {
     padding = Insets(p, p, p, p)
 }
 
-var Region.paddingAll: Double get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0; set(value) {
-    padding = Insets(value, value, value, value)
+var Region.paddingAll: Number get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0; set(value) {
+    padding = Insets(value.toDouble(), value.toDouble(), value.toDouble(), value.toDouble())
 }

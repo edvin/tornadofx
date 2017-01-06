@@ -9,6 +9,7 @@ import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.concurrent.Task
+import javafx.geometry.Insets
 import javafx.scene.control.ListView
 import javafx.scene.control.TableView
 import javafx.scene.input.Clipboard
@@ -193,3 +194,7 @@ fun <R> proxypropDouble(receiver: Property<R>, getter: Property<R>.() -> Double,
         super.set(v)
     }
 }
+
+fun insets(all: Number) = Insets(all.toDouble(), all.toDouble(), all.toDouble(), all.toDouble())
+fun insets(horizontal: Number? = null, vertical: Number? = null) = Insets(vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0, vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0)
+fun insets(top: Number? = null, right: Number? = null, bottom: Number? = null, left: Number? = null) = Insets(top?.toDouble() ?: 0.0, right?.toDouble() ?: 0.0, bottom?.toDouble() ?: 0.0, left?.toDouble() ?: 0.0)
