@@ -109,11 +109,32 @@ class SortedFilteredList<T>(
 fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
 
-fun <T> task(func: () -> T) = object : Task<T>() {
-    override fun call(): T {
-        return func()
+class FXTask<T>(val func: FXTask<*>.() -> T) : Task<T>() {
+    override fun call() = func(this)
+
+    override public fun updateProgress(workDone: Long, max: Long) {
+        super.updateProgress(workDone, max)
     }
-}.apply {
+
+    override public fun updateProgress(workDone: Double, max: Double) {
+        super.updateProgress(workDone, max)
+    }
+
+    fun value(value: Any) {
+        super.updateValue(value as T)
+    }
+
+    override public fun updateTitle(title: String?) {
+        super.updateTitle(title)
+    }
+
+    override public fun updateMessage(message: String?) {
+        super.updateMessage(message)
+    }
+
+}
+
+fun <T> task(func: FXTask<*>.() -> T): Task<T> = FXTask(func).apply {
     setOnFailed({ Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception) })
     Thread(this).start()
 }

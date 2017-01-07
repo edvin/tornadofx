@@ -151,7 +151,7 @@ abstract class Component {
     val primaryStage: Stage get() = FX.getPrimaryStage(scope)!!
 
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
-    fun <T> background(func: () -> T) = task(func)
+    fun <T> background(func: FXTask<*>.() -> T) = task(func)
 
     /**
      * Perform the given operation on an Injectable of the specified type asynchronousyly.
@@ -211,7 +211,7 @@ abstract class Component {
         return prop.set(injectable, value)
     }
 
-    fun <T> runAsync(func: () -> T) = task(func)
+    fun <T> runAsync(func: FXTask<*>.() -> T) = task(func)
     /**
      * Replace this node with a progress node while a long running task
      * is running and swap it back when complete.
@@ -219,7 +219,7 @@ abstract class Component {
      * The default progress node is a ProgressIndicator that fills the same
      * client area as the parent. You can swap the progress node for any Node you like.
      */
-    fun <T> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
+    fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
         if (progress is Region)
             progress.setPrefSize(boundsInParent.width, boundsInParent.height)
         val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
@@ -229,11 +229,11 @@ abstract class Component {
         return task {
             val result = op()
             Platform.runLater {
-                children.add(index, this)
+                children.add(index, this@runAsyncWithProgress)
                 progress.removeFromParent()
             }
             result
-        }
+        } as Task<T>
     }
 
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
@@ -478,7 +478,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     hookGlobalShortcuts()
 
                     showingProperty().onChange {
-                        if (it == true) {
+                        if (it) {
                             callOnDock()
                             if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                                 configureReloading()

@@ -525,11 +525,11 @@ val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(inde
 fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { items.setAll(it) }
 
-fun <T> TableView<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
+fun <T> TableView<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
+        task(func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> ComboBox<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
+fun <T> ComboBox<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
+        task(func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
     selectionModel.selectedItemProperty().addListener { obs, old, new ->

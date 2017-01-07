@@ -93,7 +93,7 @@ fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: (TreeTableView<
     return opcr(this, treetableview, op)
 }
 
-fun <T> TreeView<T>.lazyPopulate(
+fun <T : Any> TreeView<T>.lazyPopulate(
         leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
         itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
         childFactory: (TreeItem<T>) -> List<T>?
@@ -102,10 +102,10 @@ fun <T> TreeView<T>.lazyPopulate(
 
     if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
     val rootChildren = childFactory.invoke(root)
-    if (rootChildren != null) root.children.setAll(rootChildren.map { createItem(it) })
+    if (rootChildren != null) root.children.setAll(rootChildren.map(::createItem))
 }
 
-class LazyTreeItem<T>(
+class LazyTreeItem<T : Any>(
         value: T,
         val leafCheck: (LazyTreeItem<T>) -> Boolean,
         val itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
