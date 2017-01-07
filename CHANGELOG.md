@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- progressbar and progressindicator builders binds to `Property<Number>` instead of `Property<Double>` to support `DoubleProperty`
 - Added `insets()` builder
 - Fixed a race condition in Slideshow with overlapping transitions (https://github.com/edvin/tornadofx/issues/225)
 - Node `onHover { doSomething() }` helper, param is boolean indicating hover state
