@@ -131,13 +131,13 @@ fun EventTarget.checkbox(text: String? = null, property: Property<Boolean>? = nu
 }, op)
 
 fun EventTarget.progressindicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
-fun EventTarget.progressindicator(property: Property<Double>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator().apply {
+fun EventTarget.progressindicator(property: Property<Number>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator().apply {
     progressProperty().bind(property)
     op?.invoke(this)
 }
 
 fun EventTarget.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
-fun EventTarget.progressbar(property: Property<Double>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
+fun EventTarget.progressbar(property: Property<Number>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
     progressProperty().bind(property)
     op?.invoke(this)
 }
