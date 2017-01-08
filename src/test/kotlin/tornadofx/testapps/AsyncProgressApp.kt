@@ -36,6 +36,7 @@ class ProgressView : View() {
     val status: TaskStatus by inject()
 
     override val root = vbox(4) {
+        visibleWhen { status.running }
         style { borderColor += box(Color.LIGHTGREY, Color.TRANSPARENT, Color.TRANSPARENT, Color.TRANSPARENT) }
         label(status.title).style { fontWeight = FontWeight.BOLD }
         hbox(4) {
