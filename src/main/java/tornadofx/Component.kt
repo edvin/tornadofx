@@ -1,10 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -151,7 +148,7 @@ abstract class Component {
     val primaryStage: Stage get() = FX.getPrimaryStage(scope)!!
 
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
-    fun <T> background(func: FXTask<*>.() -> T) = task(func)
+    fun <T> background(func: FXTask<*>.() -> T) = task(func = func)
 
     /**
      * Perform the given operation on an Injectable of the specified type asynchronousyly.
@@ -211,7 +208,8 @@ abstract class Component {
         return prop.set(injectable, value)
     }
 
-    fun <T> runAsync(func: FXTask<*>.() -> T) = task(func)
+    fun <T> runAsync(status: TaskStatus? = find<TaskStatus>(scope), func: FXTask<*>.() -> T) = task(status, func)
+
     /**
      * Replace this node with a progress node while a long running task
      * is running and swap it back when complete.
@@ -417,16 +415,17 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    @Deprecated("Just an alias for += SomeType::class", ReplaceWith("this += SomeType::class"), DeprecationLevel.WARNING)
     @JvmName("addView")
     inline fun <reified T : View> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
 
-    @JvmName("addFragment")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>, noinline op: (T.() -> Unit)? = null ): Unit {
+    @JvmName("addFragmentByClass")
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>, noinline op: (T.() -> Unit)? = null): Unit {
         val fragment : T = find(type, scope, *params)
         plusAssign(fragment.root)
         op?.invoke(fragment)
     }
+
+    fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
 
     @JvmName("plusView")
     operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)

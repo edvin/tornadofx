@@ -137,7 +137,7 @@ fun EventTarget.progressindicator(property: Property<Number>, op: (ProgressIndic
 }
 
 fun EventTarget.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
-fun EventTarget.progressbar(property: Property<Number>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
+fun EventTarget.progressbar(property: ObservableValue<Number>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
     progressProperty().bind(property)
     op?.invoke(this)
 }

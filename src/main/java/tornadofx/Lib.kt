@@ -17,6 +17,7 @@ import javafx.scene.input.ClipboardContent
 import javafx.scene.input.DataFormat
 import java.io.File
 import java.util.function.Predicate
+import kotlin.concurrent.thread
 
 /**
  * A wrapper for an observable list of items that can be bound to a list control like TableView, ListView etc.
@@ -109,8 +110,17 @@ class SortedFilteredList<T>(
 fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
 
-class FXTask<T>(val func: FXTask<*>.() -> T) : Task<T>() {
+class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
     override fun call() = func(this)
+
+    init {
+        status?.item = this
+    }
+
+    override fun done() {
+        super.done()
+        status?.item = null
+    }
 
     override public fun updateProgress(workDone: Long, max: Long) {
         super.updateProgress(workDone, max)
@@ -120,21 +130,29 @@ class FXTask<T>(val func: FXTask<*>.() -> T) : Task<T>() {
         super.updateProgress(workDone, max)
     }
 
-    fun value(value: Any) {
-        super.updateValue(value as T)
+    @Suppress("UNCHECKED_CAST")
+    fun value(v: Any) {
+        super.updateValue(v as T)
     }
 
-    override public fun updateTitle(title: String?) {
-        super.updateTitle(title)
+    override public fun updateTitle(t: String?) {
+        super.updateTitle(t)
     }
 
-    override public fun updateMessage(message: String?) {
-        super.updateMessage(message)
+    override public fun updateMessage(m: String?) {
+        super.updateMessage(m)
     }
 
 }
 
-fun <T> task(func: FXTask<*>.() -> T): Task<T> = FXTask(func).apply {
+open class TaskStatus : ItemViewModel<Task<*>>() {
+    val running: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.runningProperty()) } }
+    val message: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.messageProperty()) } }
+    val title: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.titleProperty()) } }
+    val progress: ReadOnlyDoubleProperty = bind { SimpleDoubleProperty().apply { if (item != null) bind(item.progressProperty()) } }
+}
+
+fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
     setOnFailed({ Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception) })
     Thread(this).start()
 }

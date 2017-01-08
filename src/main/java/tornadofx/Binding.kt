@@ -5,6 +5,7 @@ package tornadofx
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.StringProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -119,3 +120,20 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
         return FXCollections.singletonObservableList(this@toBinding)
     }
 }
+/*
+fun <T, N> ObservableValue<T>.chain(nested: T.() -> ObservableValue<N>): ObservableValue<N> = object : SimpleObjectProperty<N>() {
+    init {
+        val me = this
+        this@chain.onChange {
+
+        }
+    }
+
+    override fun get() = nested(this@chain.value)?.value
+
+    override fun set(v: N) {
+        nested(this@chain.value)?.value = v
+        super.set(v)
+    }
+}
+*/
