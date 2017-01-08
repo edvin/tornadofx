@@ -109,11 +109,16 @@ class SortedFilteredList<T>(
 fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
 
-class FXTask<T>(status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
+class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
     override fun call() = func(this)
 
     init {
         status?.item = this
+    }
+
+    override fun done() {
+        if (status?.item == this)
+            status?.item = null
     }
 
     override public fun updateProgress(workDone: Long, max: Long) {
