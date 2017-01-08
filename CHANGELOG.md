@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- vbox and hbox builders supports any Number as spacing parameter, not just Double
 - `runAsync` now run in the context of `Task` so you can access `updateMessage()` etc
 - progressbar and progressindicator builders binds to `Property<Number>` instead of `Property<Double>` to support `DoubleProperty`
 - Added `insets()` builder

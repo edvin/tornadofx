@@ -53,19 +53,19 @@ fun ToolBar.children(op: ToolBar.() -> Unit): ToolBar {
     return this
 }
 
-fun EventTarget.hbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
+fun EventTarget.hbox(spacing: Number? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
     if (children != null)
         hbox.children.addAll(children)
-    if (spacing != null) hbox.spacing = spacing
+    if (spacing != null) hbox.spacing = spacing.toDouble()
     return opcr(this, hbox, op)
 }
 
-fun EventTarget.vbox(spacing: Double? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
+fun EventTarget.vbox(spacing: Number? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
     val vbox = VBox()
     if (children != null)
         vbox.children.addAll(children)
-    if (spacing != null) vbox.spacing = spacing
+    if (spacing != null) vbox.spacing = spacing.toDouble()
     return opcr(this, vbox, op)
 }
 
