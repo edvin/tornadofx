@@ -803,7 +803,7 @@ abstract class MarginableConstraints {
 }
 
 @Suppress("CAST_NEVER_SUCCEEDS", "UNCHECKED_CAST")
-inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
+inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable(): TableColumn<T, S> {
     isEditable = true
     when (S::class.javaPrimitiveType ?: S::class) {
         Number::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>)
@@ -818,6 +818,7 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
+    return this
 }
 
 fun <T> TableView<T>.regainFocusAfterEdit() = apply {
@@ -827,7 +828,7 @@ fun <T> TableView<T>.regainFocusAfterEdit() = apply {
     }
 }
 
-fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>) = apply {
+fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>): TableColumn<T, S> = apply {
     cellFactory = TextFieldTableCell.forTableColumn<T, S>(converter)
 }
 
