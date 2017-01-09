@@ -919,3 +919,8 @@ fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boole
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
     return this
 }
+
+fun <T> TableView<T>.enableCellEditing() {
+    selectionModel.isCellSelectionEnabled = true
+    isEditable = true
+}

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- TableView.enableCellEditing() makes table editable and enables cell selection
 - TableView.regainFocusAfterEdit() - make sure TableView doesn't look focus after cell edit
 - TableColumn.makeEditable(converter) - supply specific converter
 - TableColumn.makeEditable() supports BigDecimal
