@@ -301,6 +301,7 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
 
 inline fun <reified T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(T::class, value)
+inline fun <reified T : Injectable> Scope.set(value: T) = FX.getComponents(this).put(T::class, value)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
