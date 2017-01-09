@@ -72,6 +72,18 @@ fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>
     }
 }, op)
 
+fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
+    fun rebinder() {
+        if (items is SortedFilteredList<*>)
+            (items as SortedFilteredList<T>).bindTo(this)
+    }
+    itemsProperty().bind(values)
+    rebinder()
+    itemsProperty().onChange {
+        rebinder()
+    }
+}, op)
+
 fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
     if (items != null) {
@@ -83,7 +95,15 @@ fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T
 
 fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
+    fun rebinder() {
+        if (tableview.items is SortedFilteredList<*>)
+            (tableview.items as SortedFilteredList<T>).bindTo(tableview)
+    }
     tableview.itemsProperty().bind(items)
+    rebinder()
+    tableview.itemsProperty().onChange {
+        rebinder()
+    }
     return opcr(this, tableview, op)
 }
 
