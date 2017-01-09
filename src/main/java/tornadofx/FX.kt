@@ -311,7 +311,7 @@ inline fun <reified T : Injectable> Scope.set(value: T) = FX.getComponents(this)
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
     val useScope = FX.application.fixedToScope[type] ?: scope
-    inheritScopeHolder.set(scope)
+    inheritScopeHolder.set(useScope)
     inheritParamHolder.set(params.toMap())
     if (Injectable::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(useScope)
