@@ -875,25 +875,25 @@ internal var TableColumn<*, *>.resizeType: ResizeType
 internal fun TableColumn<*, *>.resizeTypeProperty() =
         properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
-fun <S, T> TableColumn<S, T>.fixedWidth(width: Double): TableColumn<S, T> {
-    minWidth = width
-    maxWidth = width
-    resizeType = ResizeType.Fixed(width)
+fun <S, T> TableColumn<S, T>.fixedWidth(width: Number): TableColumn<S, T> {
+    minWidth = width.toDouble()
+    maxWidth = width.toDouble()
+    resizeType = ResizeType.Fixed(width.toDouble())
     return this
 }
 
-fun <S, T> TableColumn<S, T>.minWidth(width: Double): TableColumn<S, T> {
-    minWidth = width
+fun <S, T> TableColumn<S, T>.minWidth(width: Number): TableColumn<S, T> {
+    minWidth = width.toDouble()
     return this
 }
 
-fun <S, T> TableColumn<S, T>.maxWidth(width: Double): TableColumn<S, T> {
-    maxWidth = width
+fun <S, T> TableColumn<S, T>.maxWidth(width: Number): TableColumn<S, T> {
+    maxWidth = width.toDouble()
     return this
 }
 
-fun <S, T> TableColumn<S, T>.prefWidth(width: Double): TableColumn<S, T> {
-    prefWidth = width
+fun <S, T> TableColumn<S, T>.prefWidth(width: Number): TableColumn<S, T> {
+    prefWidth = width.toDouble()
     return this
 }
 
@@ -902,13 +902,13 @@ fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
     return this
 }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
-    resizeType = ResizeType.Weight(weight, padding, minContentWidth)
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Number = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Weight(weight.toDouble(), padding.toDouble(), minContentWidth)
     return this
 }
 
-fun <S, T> TableColumn<S, T>.pctWidth(pct: Double): TableColumn<S, T> {
-    resizeType = ResizeType.Pct(pct)
+fun <S, T> TableColumn<S, T>.pctWidth(pct: Number): TableColumn<S, T> {
+    resizeType = ResizeType.Pct(pct.toDouble())
     return this
 }
 
