@@ -81,6 +81,12 @@ fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T
     return opcr(this, tableview, op)
 }
 
+fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
+    val tableview = TableView<T>()
+    tableview.itemsProperty().bind(items)
+    return opcr(this, tableview, op)
+}
+
 fun <T> EventTarget.treeview(root: TreeItem<T>? = null, op: (TreeView<T>.() -> Unit)? = null): TreeView<T> {
     val treeview = TreeView<T>()
     if (root != null) treeview.root = root

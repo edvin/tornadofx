@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- tableview builder that takes `ObservableValue<ObservableList<T>>`, supporting automatic rebind when items change
 - vbox and hbox builders supports any Number as spacing parameter, not just Double
 - `runAsync` exposes `TaskStatus` model for binding towards task states: running, message, title, progress, value
 - `runAsync` now run in the context of `Task` so you can access `updateMessage()` etc
