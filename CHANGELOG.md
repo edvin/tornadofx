@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
-- Components can declare a fixed scope using constructor parameter (`fixedScope = DefaultScope` for true Singleton)
 - TableColumn hasClass/addClass/removeClass/toggleClass supports type safe stylesheets
 - Lots of functions that earlier accepted Double now accept Number
 - TableView.enableCellEditing() makes table editable and enables cell selection

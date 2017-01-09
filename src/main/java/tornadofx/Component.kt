@@ -35,8 +35,8 @@ import kotlin.reflect.*
 
 interface Injectable
 
-abstract class Component(fixedScope: Scope? = null) {
-    open val scope: Scope = fixedScope ?: FX.inheritScopeHolder.get()
+abstract class Component {
+    open val scope: Scope = FX.inheritScopeHolder.get()
     val params: Map<String, Any> = FX.inheritParamHolder.get() ?: mapOf()
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
 
@@ -255,11 +255,11 @@ abstract class Component(fixedScope: Scope? = null) {
 
 }
 
-abstract class Controller(fixedScope : Scope? = null) : Component(fixedScope), Injectable
+abstract class Controller : Component(), Injectable
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
 
-abstract class UIComponent(viewTitle: String? = "", fixedScope : Scope? = null) : Component(fixedScope), EventTarget {
+abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
     }
@@ -600,9 +600,9 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
     onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
-abstract class Fragment(title: String? = null, fixedScope: Scope? = null) : UIComponent(title, fixedScope)
+abstract class Fragment(title: String? = null) : UIComponent(title)
 
-abstract class View(title: String? = null, fixedScope: Scope? = null) : UIComponent(title, fixedScope), Injectable
+abstract class View(title: String? = null) : UIComponent(title), Injectable
 
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
