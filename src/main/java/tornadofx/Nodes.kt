@@ -41,14 +41,22 @@ import java.time.LocalTime
 import java.util.*
 import kotlin.reflect.KClass
 
-fun TableColumnBase<*, *>.hasClass(className: String) = styleClass.contains(className)
-fun TableColumnBase<*, *>.addClass(className: String) = styleClass.add(className)
-fun TableColumnBase<*, *>.removeClass(className: String) = styleClass.remove(className)
-fun TableColumnBase<*, *>.toggleClass(className: String, predicate: Boolean) {
+fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contains(className)
+fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
+fun <S, T> TableColumnBase<S, T>.addClass(className: String): TableColumnBase<S, T> = apply { styleClass.add(className) }
+fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
+    cssClass.forEach { styleClass.add(it.name) }
+}
+fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
+    cssClass.forEach { styleClass.remove(it.name) }
+}
+fun <S, T> TableColumnBase<S, T>.removeClass(className: String): TableColumnBase<S, T> = apply { styleClass.remove(className) }
+fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
+fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
     if (predicate) {
-        if (!hasClass(className)) addClass(className)
+        if (!hasClass(className)) styleClass.add(className)
     } else {
-        removeClass(className)
+        styleClass.remove(className)
     }
 }
 
