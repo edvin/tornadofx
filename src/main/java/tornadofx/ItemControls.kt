@@ -72,6 +72,8 @@ fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>
     }
 }, op)
 
+fun <T> EventTarget.listview(values: SimpleListProperty<T>, op: (ListView<T>.() -> Unit)? = null) = listview(values as ObservableValue<ObservableList<T>>, op)
+
 fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     fun rebinder() {
         if (items is SortedFilteredList<*>)
@@ -92,6 +94,8 @@ fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: (TableView<T
     }
     return opcr(this, tableview, op)
 }
+
+fun <T> EventTarget.tableview(items: SimpleListProperty<T>, op: (TableView<T>.() -> Unit)? = null) = tableview(items as ObservableValue<ObservableList<T>>, op)
 
 fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
