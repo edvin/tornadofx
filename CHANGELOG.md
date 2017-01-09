@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- TableView.regainFocusAfterEdit() - make sure TableView doesn't look focus after cell edit
+- TableColumn.makeEditable(converter) - supply specific converter
+- TableColumn.makeEditable() supports BigDecimal
 - Added scope.set(injectable) as easier alternative to setInScope(injectable, scope)
 - tableview builder that takes `ObservableValue<ObservableList<T>>`, supporting automatic rebind when items change
 - vbox and hbox builders supports any Number as spacing parameter, not just Double

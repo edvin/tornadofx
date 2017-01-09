@@ -34,6 +34,7 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import javafx.util.converter.*
 import tornadofx.osgi.OSGIConsole
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -805,17 +806,29 @@ abstract class MarginableConstraints {
 inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() {
     isEditable = true
     when (S::class.javaPrimitiveType ?: S::class) {
-        Number::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>))
-        String::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>))
-        LocalDate::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>))
-        LocalTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>))
-        LocalDateTime::class -> setCellFactory(TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>))
+        Number::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>)
+        String::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>)
+        LocalDate::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalDateStringConverter() as StringConverter<S>)
+        LocalTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>)
+        LocalDateTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>)
+        BigDecimal::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(BigDecimalStringConverter() as StringConverter<S>)
         Boolean::class.javaPrimitiveType -> {
             this as TableColumn<T, Boolean>
             setCellFactory(CheckBoxTableCell.forTableColumn(this))
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
+}
+
+fun <T> TableView<T>.regainFocusAfterEdit() = apply {
+    editingCellProperty().onChange {
+        if (it == null)
+            requestFocus()
+    }
+}
+
+fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>) = apply {
+    cellFactory = TextFieldTableCell.forTableColumn<T, S>(converter)
 }
 
 fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
