@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Fixed scope support. `DefaultScope(MyController::class)` or `MyController::class.scope(DefaultScope)`
 - TableColumn hasClass/addClass/removeClass/toggleClass supports type safe stylesheets
 - Lots of functions that earlier accepted Double now accept Number
 - TableView.enableCellEditing() makes table editable and enables cell selection

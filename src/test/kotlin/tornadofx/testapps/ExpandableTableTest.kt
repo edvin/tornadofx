@@ -7,8 +7,6 @@ import tornadofx.*
 import java.time.LocalDate
 import java.util.*
 
-class ExpandableTableTestApp : App(ExpandableTableTest::class)
-
 class ExpandableTableTest : View("Smart Resize Demo") {
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
     class Occupancy(val id: Int, val date: LocalDate, val customer: Int)

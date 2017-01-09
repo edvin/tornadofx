@@ -5,12 +5,14 @@ import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.scene.layout.Pane
 import javafx.stage.Stage
+import java.util.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
     var scope: Scope = DefaultScope
+    var fixedToScope = HashMap<KClass<out Component>, Scope>()
 
     constructor(primaryView: KClass<out UIComponent>? = null, stylesheet: KClass<out Stylesheet>, scope: Scope = DefaultScope) : this(primaryView, *arrayOf(stylesheet)) {
         this.scope = scope

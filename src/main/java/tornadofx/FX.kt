@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -38,7 +37,13 @@ open class Scope {
         FX.applications.remove(this)
         FX.components.remove(this)
     }
+
+    operator fun invoke(vararg injectable: KClass<out Component>) {
+        injectable.forEach { FX.application.fixedToScope[it] = this }
+    }
 }
+
+fun KClass<out Component>.scope(scope : Scope) = scope.invoke(this)
 
 var DefaultScope = Scope()
 
@@ -78,10 +83,10 @@ class FX {
             primaryStages[scope] = stage
         }
 
-        internal val applications = HashMap<Scope, Application>()
-        val application: Application get() = applications[DefaultScope]!!
+        internal val applications = HashMap<Scope, App>()
+        val application: App get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
-        fun setApplication(scope: Scope = DefaultScope, application: Application) {
+        fun setApplication(scope: Scope = DefaultScope, application: App) {
             applications[scope] = application
         }
 
@@ -166,7 +171,7 @@ class FX {
         }
 
         @JvmStatic
-        fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
+        fun registerApplication(scope: Scope = DefaultScope, application: App, primaryStage: Stage) {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
@@ -305,18 +310,19 @@ inline fun <reified T : Injectable> Scope.set(value: T) = FX.getComponents(this)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
+    val useScope = FX.application.fixedToScope[type] ?: scope
     inheritScopeHolder.set(scope)
     inheritParamHolder.set(params.toMap())
     if (Injectable::class.java.isAssignableFrom(type.java)) {
-        var components = FX.getComponents(scope)
+        var components = FX.getComponents(useScope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
                     if (cmp is UIComponent) cmp.init()
                     // if cmp.scope overrode the scope, inject into that instead
-                    if (cmp is Component && cmp.scope != scope) {
-                        components = FX.getComponents(scope)
+                    if (cmp is Component && cmp.scope != useScope) {
+                        components = FX.getComponents(cmp.scope)
                     }
                     components[type] = cmp
                 }
