@@ -11,4 +11,9 @@ class Person(name: String, age: Int) {
 
     var age by property(age)
     fun ageProperty() = getProperty(Person::age)
+
+    var parent by property<Person>()
+    fun parentProperty() = getProperty(Person::parent)
+
+    override fun toString() = name
 }
