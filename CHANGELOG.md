@@ -12,7 +12,8 @@ All notable changes to this project will be documented in this file.
 - Lots of functions that earlier accepted Double now accept Number
 - TableView.enableCellEditing() makes table editable and enables cell selection
 - TableView.regainFocusAfterEdit() - make sure TableView doesn't look focus after cell edit
-- TableColumn.makeEditable(converter) - supply specific converter
+- TableColumn.makeEditable(converter) - supply specific converter for editable fields
+- TableColumn.converter(converter) - supply specific converter for read only text fields
 - TableColumn.makeEditable() supports BigDecimal
 - Added scope.set(injectable) as easier alternative to setInScope(injectable, scope)
 - tableview builder that takes `ObservableValue<ObservableList<T>>`, supporting automatic rebind when items change

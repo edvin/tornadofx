@@ -840,6 +840,10 @@ fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>): 
     cellFactory = TextFieldTableCell.forTableColumn<T, S>(converter)
 }
 
+fun <T, S : Any> TableColumn<T, S?>.converter(converter: StringConverter<S>): TableColumn<T, S?> = apply {
+    cellFormat { text = converter.toString(it) }
+}
+
 fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
         populateTree(root, itemFactory, childFactory)
 
