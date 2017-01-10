@@ -1,6 +1,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
+import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
@@ -382,6 +383,31 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S,
     addColumnInternal(column)
     op?.invoke(column)
     return column
+}
+
+/**
+ * Add a global edit commit handler to the TableView. You avoid assuming the responsibility
+ * for writing back the data into your domain object and can consentrate on the actual
+ * response you want to happen when a column commits and edit.
+ */
+fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S) -> Unit) {
+    fun addEventHandlerForColumn(column: TableColumn<S, *>) {
+        column.addEventHandler(TableColumn.editCommitEvent<S, Any>()) { event ->
+            // Make sure the domain object gets the new value before we notify our handler
+            Platform.runLater {
+                onCommit(event, event.rowValue)
+            }
+        }
+    }
+
+    columns.forEach(::addEventHandlerForColumn)
+
+    columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
+        while (change.next()) {
+            if (change.wasAdded())
+                change.addedSubList.forEach(::addEventHandlerForColumn)
+        }
+    })
 }
 
 /**

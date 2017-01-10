@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `TableView.onEditCommit()` handler fires when a cell is edited. No need to manage domain object value, just add your business logic
 - Fixed scope support. `DefaultScope(MyController::class)` or `MyController::class.scope(DefaultScope)`
 - TableColumn hasClass/addClass/removeClass/toggleClass supports type safe stylesheets
 - Lots of functions that earlier accepted Double now accept Number
