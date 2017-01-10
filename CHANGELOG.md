@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- Create nested, observable, writable properties using the `observableValue.select()` function
 - ViewModel `bind` has optional parameter `forceObjectProperty` to avoid creating `IntegerProperty` for ints etc, so you can have nullable values
 - `TableView.onEditCommit()` handler fires when a cell is edited. No need to manage domain object value, just add your business logic
 - Fixed scope support. `DefaultScope(MyController::class)` or `MyController::class.scope(DefaultScope)`
