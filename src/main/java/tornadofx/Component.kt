@@ -231,7 +231,7 @@ abstract class Component {
                 progress.removeFromParent()
             }
             result
-        } as Task<T>
+        }
     }
 
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)

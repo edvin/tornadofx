@@ -39,7 +39,7 @@ open class Scope {
     }
 
     operator fun invoke(vararg injectable: KClass<out Component>) {
-        injectable.forEach { FX.application.fixedToScope[it] = this }
+        injectable.forEach { FX.fixedScopes[it] = this }
     }
 }
 
@@ -49,6 +49,7 @@ var DefaultScope = Scope()
 
 class FX {
     companion object {
+        internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
         internal var ignoreParentForFirstBuilder: Boolean = false
@@ -310,7 +311,7 @@ inline fun <reified T : Injectable> Scope.set(value: T) = FX.getComponents(this)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
-    val useScope = FX.application.fixedToScope[type] ?: scope
+    val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
     inheritParamHolder.set(params.toMap())
     if (Injectable::class.java.isAssignableFrom(type.java)) {
