@@ -9,7 +9,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.bind
-import tornadofx.chain
+import tornadofx.nested
 import tornadofx.onChange
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -45,7 +45,7 @@ class BindingTests {
         val child = Person("Firstborn Child", 18)
         child.parent = father
 
-        val fatherName = child.parentProperty().chain { nameProperty() }
+        val fatherName = child.parentProperty().nested(Person::nameProperty)
         Assert.assertEquals("Mr Father", fatherName.value)
         fatherName.value = "Mister Father"
         Assert.assertEquals("Mister Father", father.name)

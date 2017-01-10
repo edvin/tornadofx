@@ -7,6 +7,7 @@ import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.StringProperty
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
@@ -122,22 +123,36 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
     }
 }
 
-fun <T, N> ObservableValue<T>.chain(nested: T.() -> ObservableValue<N>?): Property<N> {
+fun <T, N> ObservableValue<T>.nested(nested: (T) -> ObservableValue<N>): Property<N> {
+    fun extractNested(): ObservableValue<N>? = if (value != null) nested(value) else null
+
     val dis = this
+    var currentNested: ObservableValue<N>? = extractNested()
 
     return object : SimpleObjectProperty<N>() {
+        val changeListener = ChangeListener<N> { observableValue, oldValue, newValue ->
+            currentNested = extractNested()
+            fireValueChangedEvent()
+        }
+
         init {
             dis.onChange {
                 fireValueChangedEvent()
+                invalidated()
             }
         }
 
-        override fun get() = if (dis.value != null) nested(dis.value)?.value else null
+        override fun invalidated() {
+            currentNested?.removeListener(changeListener)
+            currentNested = extractNested()
+            currentNested?.addListener(changeListener)
+        }
+
+        override fun get() = currentNested?.value
 
         override fun set(v: N?) {
-            val child = nested(dis.value)
-            if (child is WritableValue<*>)
-                (child as WritableValue<N>).value = v
+            if (currentNested is WritableValue<*>)
+                (currentNested as WritableValue<N>).value = v
             super.set(v)
         }
 
