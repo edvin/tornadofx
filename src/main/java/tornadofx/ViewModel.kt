@@ -26,7 +26,7 @@ open class ViewModel : Component(), Injectable {
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
-    private val dirtyStateProperty = booleanBinding(dirtyProperties, dirtyProperties) { this.isNotEmpty() }
+    private val dirtyStateProperty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
     fun dirtyStateProperty() = dirtyStateProperty
     val validationContext = ValidationContext()
     val ignoreDirtyStateProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
@@ -402,4 +402,5 @@ open class ItemViewModel<T> : ViewModel() {
         rebindOnChange(itemProperty)
     }
 
+    fun <N> select(nested: (T) -> ObservableValue<N>) = itemProperty.select(nested)
 }
