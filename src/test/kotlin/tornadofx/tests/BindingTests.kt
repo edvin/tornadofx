@@ -1,7 +1,6 @@
 package tornadofx.tests
 
 import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.scene.control.Label
 import javafx.stage.Stage
@@ -9,8 +8,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.bind
-import tornadofx.nested
-import tornadofx.onChange
+import tornadofx.select
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -45,7 +43,7 @@ class BindingTests {
         val child = Person("Firstborn Child", 18)
         child.parent = father
 
-        val fatherName = child.parentProperty().nested(Person::nameProperty)
+        val fatherName = child.parentProperty().select(Person::nameProperty)
         Assert.assertEquals("Mr Father", fatherName.value)
         fatherName.value = "Mister Father"
         Assert.assertEquals("Mister Father", father.name)

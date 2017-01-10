@@ -123,7 +123,7 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
     }
 }
 
-fun <T, N> ObservableValue<T>.nested(nested: (T) -> ObservableValue<N>): Property<N> {
+fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Property<N> {
     fun extractNested(): ObservableValue<N>? = if (value != null) nested(value) else null
 
     val dis = this
