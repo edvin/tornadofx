@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `setInScope()` now uses correct KClass when entering the injectable into the components map
 - `ItemViewModel.isEmpty` boolean, complements `empty` property
 - `setStageIcon(icon)` will replace all existing icons with the supplied (https://github.com/edvin/tornadofx/issues/228)
 - `TableColumn.useCheckbox(editable = true)` now fires edit/commit events when value is changed
