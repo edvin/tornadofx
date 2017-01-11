@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `ItemViewModel.isEmpty` boolean, complements `empty` property
 - `setStageIcon(icon)` will replace all existing icons with the supplied (https://github.com/edvin/tornadofx/issues/228)
 - `TableColumn.useCheckbox(editable = true)` now fires edit/commit events when value is changed
 - Create nested, observable, writable properties using the `observableValue.select()` function
