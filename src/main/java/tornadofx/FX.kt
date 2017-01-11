@@ -260,6 +260,11 @@ fun ignoreParentForFirstBuilder(op: () -> Unit) {
     }
 }
 
+fun setStageIcon(icon: Image, scope: Scope = DefaultScope) {
+    val adder = { FX.getPrimaryStage(scope)?.icons?.apply { clear(); add(icon) } }
+    if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+}
+
 fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
