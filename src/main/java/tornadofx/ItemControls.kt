@@ -300,7 +300,14 @@ fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableCol
     return this
 }
 
-class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
+class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
+    init {
+        if (makeEditable) {
+            isEditable = true
+            tableView?.isEditable = true
+        }
+    }
+
     override fun updateItem(item: Boolean?, empty: Boolean) {
         super.updateItem(item, empty)
         style { alignment = Pos.CENTER }
@@ -310,16 +317,20 @@ class CheckBoxCell<S>(val editable: Boolean) : TableCell<S, Boolean?>() {
         } else {
             graphic = CheckBox().apply {
                 val model = tableView.items[index]
-                val prop = tableColumn.cellValueFactory.call(TableColumn.CellDataFeatures(tableView, tableColumn, model)) as ObjectProperty
-                isEditable = editable
+                val prop = tableColumn.cellValueFactory.call(TableColumn.CellDataFeatures(tableView, tableColumn, model)) as Property
 
-                if (editable) {
+                if (makeEditable) {
                     selectedProperty().bindBidirectional(prop)
+                    selectedProperty().onChange {
+                        tableView.edit(tableRow.index, tableColumn)
+                        commitEdit(isSelected)
+                    }
                 } else {
                     disableProperty().set(true)
                     selectedProperty().bind(prop)
                 }
             }
+
         }
     }
 }
