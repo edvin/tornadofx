@@ -89,7 +89,7 @@ fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombin
     return radioMenuItem
 }
 
-fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination?, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
+fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name,graphic)
     keyCombination?.apply { checkMenuItem.accelerator = this }
     graphic?.apply { checkMenuItem.graphic = graphic }

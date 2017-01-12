@@ -1,7 +1,10 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.*
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -113,18 +116,25 @@ abstract class Component {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, *params)
     }
 
-    inline fun <reified T> param(name: String? = null, defaultValue: T? = null ): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>): T{
+    inline fun <reified T> param(name: String? = null, defaultValue: T? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T {
             val paramName = name ?: property.name
             val param = thisRef.params[paramName] as? T
-            if( param == null ) {
-                if( defaultValue == null ){
+            if (param == null) {
+                if (defaultValue == null) {
                     throw IllegalStateException("param for name [$paramName] has not been set")
                 }
                 return defaultValue
             } else {
                 return param
             }
+        }
+    }
+
+    inline fun <reified T> nullableParam(name: String? = null, defaultValue: T? = null): ReadOnlyProperty<Component, T?> = object : ReadOnlyProperty<Component, T?> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T? {
+            val paramName = name ?: property.name
+            return thisRef.params[paramName] as? T ?: defaultValue
         }
     }
 
@@ -241,7 +251,7 @@ abstract class Component {
                 progress.removeFromParent()
             }
             result
-        } as Task<T>
+        }
     }
 
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
@@ -307,9 +317,13 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     open fun onDock() {
     }
 
-    open fun onGoto(source: UIComponent) { source.replaceWith(this) }
+    open fun onGoto(source: UIComponent) {
+        source.replaceWith(this)
+    }
 
-    fun goto(target: UIComponent) { target.onGoto(this) }
+    fun goto(target: UIComponent) {
+        target.onGoto(this)
+    }
 
     inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any>) = find<T>(*params).onGoto(this)
 
@@ -430,7 +444,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     @JvmName("addFragmentByClass")
     inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>, noinline op: (T.() -> Unit)? = null): Unit {
-        val fragment : T = find(type, scope, *params)
+        val fragment: T = find(type, scope, *params)
         plusAssign(fragment.root)
         op?.invoke(fragment)
     }
@@ -522,8 +536,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
     val titleProperty = SimpleStringProperty(viewTitle)
     var title: String
-    get() = titleProperty.get() ?: ""
-    set(value) = titleProperty.set(value)
+        get() = titleProperty.get() ?: ""
+        set(value) = titleProperty.set(value)
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
@@ -576,6 +590,17 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
+    /**
+     * Create an adhoc fragment and optionally open it if the openModality is specified. A fragment can also be assigned
+     * to an existing node hierarchy using `add()` or `this += inlineFragment {}`, or you can specify the behavior inside it using `Platform.runLater {}` before
+     * you return the root node for the adhoc fragment.
+     */
+    fun adhocFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = AdhocFragment(scope, title, rootBuilder)
+
+    fun adhocWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = adhocFragment(title, scope, rootBuilder).apply {
+        openWindow(modality = modality, stageStyle = stageStyle)
+    }
+
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
     }
@@ -618,4 +643,9 @@ class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+}
+
+class AdhocFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
+    override val scope = overrideScope
+    override val root = rootBuilder(this)
 }

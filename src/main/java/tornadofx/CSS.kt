@@ -108,17 +108,6 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         // Elements
         val star by csselement("*")
 
-        val AnchorPane by csselement("AnchorPane")
-        val BorderPane by csselement("BorderPane")
-        val FlowPane by csselement("FlowPane")
-        val GridPane by csselement("GridPane")
-        val HBox by csselement("HBox")
-        val Pane by csselement("Pane")
-        val StackPane by csselement("StackPane")
-        val TilePane by csselement("TilePane")
-        val VBox by csselement("VBox")
-        // TODO: Are other elements available by default in JavaFX?
-
         // Style classes used by JavaFX
         val accordion by cssclass()
         val alert by cssclass()

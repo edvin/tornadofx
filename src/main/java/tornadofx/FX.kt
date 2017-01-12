@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -39,7 +40,7 @@ open class Scope {
     }
 
     operator fun invoke(vararg injectable: KClass<out Component>) {
-        injectable.forEach { FX.application.fixedToScope[it] = this }
+        injectable.forEach { FX.fixedScopes[it] = this }
     }
 }
 
@@ -49,6 +50,7 @@ var DefaultScope = Scope()
 
 class FX {
     companion object {
+        internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
         internal var ignoreParentForFirstBuilder: Boolean = false
@@ -83,10 +85,10 @@ class FX {
             primaryStages[scope] = stage
         }
 
-        internal val applications = HashMap<Scope, App>()
-        val application: App get() = applications[DefaultScope]!!
+        internal val applications = HashMap<Scope, Application>()
+        val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
-        fun setApplication(scope: Scope = DefaultScope, application: App) {
+        fun setApplication(scope: Scope = DefaultScope, application: Application) {
             applications[scope] = application
         }
 
@@ -171,7 +173,7 @@ class FX {
         }
 
         @JvmStatic
-        fun registerApplication(scope: Scope = DefaultScope, application: App, primaryStage: Stage) {
+        fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
@@ -259,6 +261,11 @@ fun ignoreParentForFirstBuilder(op: () -> Unit) {
     }
 }
 
+fun setStageIcon(icon: Image, scope: Scope = DefaultScope) {
+    val adder = { FX.getPrimaryStage(scope)?.icons?.apply { clear(); add(icon) } }
+    if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+}
+
 fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
@@ -305,12 +312,14 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
 
-inline fun <reified T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(T::class, value)
-inline fun <reified T : Injectable> Scope.set(value: T) = FX.getComponents(this).put(T::class, value)
+fun <T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
+fun <T : Injectable> Scope.set(vararg value: T) = FX.getComponents(this).apply {
+    for (v in value) put(v.javaClass.kotlin, v)
+}
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
-    val useScope = FX.application.fixedToScope[type] ?: scope
+    val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
     inheritParamHolder.set(params.toMap())
     if (Injectable::class.java.isAssignableFrom(type.java)) {

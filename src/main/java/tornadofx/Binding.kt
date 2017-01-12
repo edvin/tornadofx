@@ -7,7 +7,9 @@ import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.StringProperty
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.control.*
@@ -24,22 +26,22 @@ import java.util.*
 import java.util.concurrent.Callable
 
 inline fun <reified T> ComboBoxBase<T>.bind(property: Property<T>, readonly: Boolean = false) =
-    if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
+        if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
 fun DatePicker.bind(property: Property<LocalDate>, readonly: Boolean = false) =
-    if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
+        if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
 fun ProgressIndicator.bind(property: Property<Number>, readonly: Boolean = false) =
-    if (readonly) progressProperty().bind(property) else progressProperty().bindBidirectional(property)
+        if (readonly) progressProperty().bind(property) else progressProperty().bindBidirectional(property)
 
 inline fun <reified T> ChoiceBox<T>.bind(property: Property<T>, readonly: Boolean = false) =
-    if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
+        if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
 fun CheckBox.bind(property: Property<Boolean>, readonly: Boolean = false) =
-    if (readonly) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property)
+        if (readonly) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property)
 
 fun Slider.bind(property: Property<Number>, readonly: Boolean = false) =
-    if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
+        if (readonly) valueProperty().bind(property) else valueProperty().bindBidirectional(property)
 
 inline fun <reified T : Any> Labeled.bind(property: ObservableValue<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
@@ -51,7 +53,7 @@ inline fun <reified T : Any> Text.bind(property: Property<T>, readonly: Boolean 
         bindStringProperty(textProperty(), converter, format, property, readonly)
 
 inline fun <reified T : Any> TextInputControl.bind(property: Property<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
-    bindStringProperty(textProperty(), converter, format, property, readonly)
+        bindStringProperty(textProperty(), converter, format, property, readonly)
 
 inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: ObservableValue<T>, readonly: Boolean) {
     if (stringProperty.isBound) stringProperty.unbind()
@@ -114,26 +116,47 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
         super.unbind(this@toBinding)
     }
 
-    override fun computeValue() = !this@toBinding.value
+    override fun computeValue() = this@toBinding.value
 
     override fun getDependencies(): ObservableList<*> {
         return FXCollections.singletonObservableList(this@toBinding)
     }
 }
-/*
-fun <T, N> ObservableValue<T>.chain(nested: T.() -> ObservableValue<N>): ObservableValue<N> = object : SimpleObjectProperty<N>() {
-    init {
-        val me = this
-        this@chain.onChange {
 
+fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Property<N> {
+    fun extractNested(): ObservableValue<N>? = if (value != null) nested(value) else null
+
+    val dis = this
+    var currentNested: ObservableValue<N>? = extractNested()
+
+    return object : SimpleObjectProperty<N>() {
+        val changeListener = ChangeListener<N> { observableValue, oldValue, newValue ->
+            currentNested = extractNested()
+            fireValueChangedEvent()
         }
+
+        init {
+            dis.onChange {
+                fireValueChangedEvent()
+                invalidated()
+            }
+        }
+
+        override fun invalidated() {
+            currentNested?.removeListener(changeListener)
+            currentNested = extractNested()
+            currentNested?.addListener(changeListener)
+        }
+
+        override fun get() = currentNested?.value
+
+        override fun set(v: N?) {
+            if (currentNested is WritableValue<*>)
+                (currentNested as WritableValue<N>).value = v
+            super.set(v)
+        }
+
+
     }
 
-    override fun get() = nested(this@chain.value)?.value
-
-    override fun set(v: N) {
-        nested(this@chain.value)?.value = v
-        super.set(v)
-    }
 }
-*/

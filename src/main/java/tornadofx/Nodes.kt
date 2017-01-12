@@ -812,6 +812,7 @@ abstract class MarginableConstraints {
 
 @Suppress("CAST_NEVER_SUCCEEDS", "UNCHECKED_CAST")
 inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable(): TableColumn<T, S> {
+    tableView?.isEditable = true
     isEditable = true
     when (S::class.javaPrimitiveType ?: S::class) {
         Number::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>)
@@ -837,7 +838,12 @@ fun <T> TableView<T>.regainFocusAfterEdit() = apply {
 }
 
 fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>): TableColumn<T, S> = apply {
+    tableView?.isEditable = true
     cellFactory = TextFieldTableCell.forTableColumn<T, S>(converter)
+}
+
+fun <T, S : Any> TableColumn<T, S?>.converter(converter: StringConverter<S>): TableColumn<T, S?> = apply {
+    cellFormat { text = converter.toString(it) }
 }
 
 fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
