@@ -131,6 +131,13 @@ abstract class Component {
         }
     }
 
+    inline fun <reified T> nullableParam(name: String? = null, defaultValue: T? = null): ReadOnlyProperty<Component, T?> = object : ReadOnlyProperty<Component, T?> {
+        override fun getValue(thisRef: Component, property: KProperty<*>): T? {
+            val paramName = name ?: property.name
+            return thisRef.params[paramName] as? T ?: defaultValue
+        }
+    }
+
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
