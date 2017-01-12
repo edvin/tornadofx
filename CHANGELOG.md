@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- di delegate overload to support injecting a dependency by name (in addition to type)
 - Fixed scope support. `DefaultScope(MyController::class)` or `MyController::class.scope(DefaultScope)`
 - TableColumn hasClass/addClass/removeClass/toggleClass supports type safe stylesheets
 - Lots of functions that earlier accepted Double now accept Number
