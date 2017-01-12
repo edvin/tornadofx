@@ -4,6 +4,7 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.beans.value.*
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.collections.ObservableSet
 import javafx.collections.transformation.FilteredList
@@ -186,6 +187,9 @@ fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o
 fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op(new.toLong()) } }
 fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op(new.toFloat()) } }
 fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }
+fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
+    addListener(ListChangeListener{ op(it) })
+}
 
 /**
  * Create a proxy property backed by calculated data based on a specific property. The setter
