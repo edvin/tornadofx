@@ -215,48 +215,47 @@ fun <T> ObservableValue<T>.integerBinding(vararg dependencies: Observable, op: (
         = Bindings.createIntegerBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> integerBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Int): IntegerBinding
-        = Bindings.createIntegerBinding(Callable { receiver.op() }, *dependencies)
+        = Bindings.createIntegerBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T> ObservableValue<T>.longBinding(vararg dependencies: Observable, op: (T?) -> Long): LongBinding
         = Bindings.createLongBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> longBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Long): LongBinding
-        = Bindings.createLongBinding(Callable { receiver.op() }, *dependencies)
+        = Bindings.createLongBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T> ObservableValue<T>.doubleBinding(vararg dependencies: Observable, op: (T?) -> Double): DoubleBinding
         = Bindings.createDoubleBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> doubleBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Double): DoubleBinding
-        = Bindings.createDoubleBinding(Callable { receiver.op() }, *dependencies)
+        = Bindings.createDoubleBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T> ObservableValue<T>.floatBinding(vararg dependencies: Observable, op: (T?) -> Float): FloatBinding
         = Bindings.createFloatBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> floatBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Float): FloatBinding
-        = Bindings.createFloatBinding(Callable { receiver.op() }, *dependencies)
+        = Bindings.createFloatBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
-fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding
-        = Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
+fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding =
+    Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding {
-    val deps = if (receiver is ObservableValue<*>) arrayOf(receiver, *dependencies) else dependencies
-    return Bindings.createBooleanBinding(Callable { receiver.op() }, *deps)
-}
+fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding
+    = Bindings.createBooleanBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)
 
-fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding {
-    val deps = if (receiver is ObservableValue<*>) arrayOf(receiver, *dependencies) else dependencies
-    return Bindings.createStringBinding(Callable { receiver.op() }, *deps)
-}
+fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding =
+    Bindings.createStringBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
+
 
 fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any, R> objectBinding(receiver: T, vararg dependencies: Observable, op: T.() -> R?): ObjectBinding<R?>
-        = Bindings.createObjectBinding(Callable { receiver.op() }, *dependencies)
+        = Bindings.createObjectBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
+private fun <T> createObservableArray(receiver: T, vararg dependencies: Observable):Array<out Observable> =
+    if (receiver is Observable) arrayOf(receiver, *dependencies) else dependencies
 /**
  * Assign the value from the creator to this WritableValue if and only if it is currently null
  */
