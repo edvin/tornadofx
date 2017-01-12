@@ -147,10 +147,20 @@ abstract class Component {
         }
     }
 
-    inline fun <reified T : Any> di(): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Any> di( name: String? = null ): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var injected: T? = null
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (injected == null) injected = FX.dicontainer?.let { it.getInstance(T::class) } ?: throw AssertionError("Injector is not configured, so bean of type ${T::class} can not be resolved")
+            if( FX.dicontainer == null ){
+                throw AssertionError("Injector is not configured, so bean of type ${T::class} cannot be resolved")
+            } else {
+                if (injected == null) injected = FX.dicontainer?.let {
+                    if (name != null) {
+                        it.getInstance(T::class, name)
+                    } else {
+                        it.getInstance(T::class)
+                    }
+                }
+            }
             return injected!!
         }
     }

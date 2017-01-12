@@ -346,7 +346,10 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg pa
 }
 
 interface DIContainer {
-    fun <T : Any> getInstance(type: KClass<T>): T
+    fun <T : Any> getInstance(type: KClass<T> ): T
+    fun <T : Any> getInstance(type: KClass<T>, name: String ): T {
+        throw AssertionError("Injector is not configured, so bean of type $type with name $name can not be resolved")
+    }
 }
 
 /**
