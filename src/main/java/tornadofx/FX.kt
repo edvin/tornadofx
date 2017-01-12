@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -84,10 +85,10 @@ class FX {
             primaryStages[scope] = stage
         }
 
-        internal val applications = HashMap<Scope, App>()
-        val application: App get() = applications[DefaultScope]!!
+        internal val applications = HashMap<Scope, Application>()
+        val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
-        fun setApplication(scope: Scope = DefaultScope, application: App) {
+        fun setApplication(scope: Scope = DefaultScope, application: Application) {
             applications[scope] = application
         }
 
@@ -172,7 +173,7 @@ class FX {
         }
 
         @JvmStatic
-        fun registerApplication(scope: Scope = DefaultScope, application: App, primaryStage: Stage) {
+        fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
