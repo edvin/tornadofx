@@ -1,21 +1,59 @@
 package tornadofx.testapps
 
+import javafx.application.Platform
+import javafx.scene.paint.Color
+import javafx.scene.text.FontWeight
+import javafx.stage.StageStyle.UNDECORATED
 import tornadofx.*
 
-class InlineFragmentTestApp : App(InlineFragmentTestView::class)
+class InlineFragmentTestApp : App(DangerButtonView::class)
 
-class InlineFragmentTestView : View("Inline Fragment") {
-    override val root = vbox {
-        label("Added the old fashioned way")
-        button("Create fragment") {
+class DangerButtonView : View("Do not click the button!") {
+    override val root = stackpane {
+        setPrefSize(400.0, 100.0)
+        button("Don't click me") {
+            style {
+                fontSize = 20.px
+                fontWeight = FontWeight.BOLD
+                textFill = Color.RED
+            }
             setOnAction {
-                adhocWindow("Ooh, so inline!") {
-                    button("Click to close") {
-                        setPrefSize(100.0, 100.0)
-                        setOnAction { closeModal() }
+                adhocWindow("What do you want?", stageStyle = UNDECORATED) {
+                    vbox(10) {
+                        style {
+                            padding = box(20.px)
+                            borderColor += box(Color.ORANGE)
+                            borderWidth += box(2.px)
+                        }
+
+                        label("So, you clicked it anyway.. What do you want?") {
+                            style {
+                                fontWeight = FontWeight.BOLD
+                            }
+                        }
+
+                        hbox(10) {
+                            button("Tell them you clicked") {
+                                setOnAction {
+                                    this@DangerButtonView.title = "It's not dangerous to click the button :)"
+                                    closeModal()
+                                }
+                            }
+                            button("Close app") {
+                                setOnAction {
+                                    Platform.exit()
+                                }
+                            }
+                            button("Cancel") {
+                                setOnAction {
+                                    closeModal()
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
 }
