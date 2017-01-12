@@ -1,7 +1,10 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.*
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -566,6 +569,17 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
+    /**
+     * Create an adhoc fragment and optionally open it if the openModality is specified. A fragment can also be assigned
+     * to an existing node hierarchy using `add()` or `this += inlineFragment {}`, or you can specify the behavior inside it using `Platform.runLater {}` before
+     * you return the root node for the adhoc fragment.
+     */
+    fun adhocFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = AdhocFragment(scope, title, rootBuilder)
+
+    fun adhocWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = adhocFragment(title, scope, rootBuilder).apply {
+        openWindow(modality = modality)
+    }
+
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
     }
@@ -608,4 +622,9 @@ class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+}
+
+class AdhocFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
+    override val scope = overrideScope
+    override val root = rootBuilder(this)
 }

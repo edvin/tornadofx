@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `adhocFragment` and `adhocWindow` builders
 - `ObservableList<T>.onChange` to easy listening to change events from observable lists
 - `setInScope()` now uses correct KClass when entering the injectable into the components map
 - `ItemViewModel.isEmpty` boolean, complements `empty` property
