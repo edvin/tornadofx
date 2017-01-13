@@ -54,6 +54,8 @@ abstract class Component {
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
     fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
 
+    inline fun <reified T : Component> find(vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
+    fun <T : Component> find(type: KClass<T>, vararg params: Pair<String, Any>) = find(type, scope, *params)
 
     private val _config = lazy {
         Properties().apply {
@@ -572,9 +574,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
 
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
-
-    inline fun <reified T : Component> find(vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
-    fun <T : Component> find(type: KClass<T>, vararg params: Pair<String, Any>) = find(type, scope, *params)
 
     inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
