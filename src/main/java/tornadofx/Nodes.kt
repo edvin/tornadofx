@@ -10,6 +10,7 @@ import javafx.beans.property.DoubleProperty
 import javafx.beans.property.ListProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
@@ -533,7 +534,7 @@ val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
 
 fun <T> ListProperty<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { setAll(it) }
+        task { func() } success { value = if (it is ObservableList<*>) it as ObservableList<T> else observableArrayList(it) }
 
 fun <T> ObservableList<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { setAll(it) }
