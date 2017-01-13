@@ -398,6 +398,7 @@ open class ItemViewModel<T> : ViewModel() {
 
     val empty = itemProperty.isNull
     val isEmpty: Boolean get() = empty.value
+    val isNotEmpty: Boolean get() = empty.value.not()
 
     init {
         rebindOnChange(itemProperty)
