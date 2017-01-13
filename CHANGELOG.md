@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.10-SNAPSHOT]
 
+- `ObservableList.asyncItems` and `ListProperty.asyncItems`
 - `confirm()` function that executes an action if the user confirms
 - di delegate overload to support injecting a dependency by name (in addition to type)
 - `adhocFragment` and `adhocWindow` builders

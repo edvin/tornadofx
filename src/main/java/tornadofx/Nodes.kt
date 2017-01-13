@@ -7,6 +7,7 @@ import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.DoubleProperty
+import javafx.beans.property.ListProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
@@ -530,6 +531,12 @@ fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) 
 
 val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
+
+fun <T> ListProperty<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { setAll(it) }
+
+fun <T> ObservableList<T>.asyncItems(func: () -> Collection<T>) =
+        task { func() } success { setAll(it) }
 
 fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { items.setAll(it) }
