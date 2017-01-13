@@ -9,6 +9,16 @@ import tornadofx.FileChooserMode.*
 import java.io.File
 
 /**
+ * Show a confirmation dialog and execute the given action if confirmButton is clicked. The button types
+ * of the confirmButton and cancelButton are configurable.
+ */
+fun confirm(header: String, content: String = "", confirmButton: ButtonType = ButtonType.OK, cancelButton: ButtonType = ButtonType.CANCEL, actionFn: () -> Unit) {
+    alert(Alert.AlertType.CONFIRMATION, header, content, *arrayOf(confirmButton, cancelButton)) {
+        if (it == confirmButton) actionFn()
+    }
+}
+
+/**
  * Show an alert dialog of the given type with the given header and content.
  * You can override the default buttons for the alert type and supply an optional
  * function that will run when a button is clicked. The function runs in the scope
