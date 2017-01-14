@@ -602,7 +602,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         openWindow(modality = modality, stageStyle = stageStyle)
     }
 
-    protected fun openInternalAdhocWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
+    protected fun adhocInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(AdhocFragment(scope, title, rootBuilder), owner)
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
