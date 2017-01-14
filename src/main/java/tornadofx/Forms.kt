@@ -9,6 +9,7 @@ import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.control.PasswordField
@@ -63,9 +64,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun buttonbar(op: (HBox.() -> Unit)? = null): Field {
+    fun buttonbar(alignment: Pos ? = null, op: (HBox.() -> Unit)? = null): Field {
         val field = Field("", true)
         children.add(field)
+        if (alignment != null) field.inputContainer.alignment = alignment
         op?.invoke(field.inputContainer)
         return field
     }
