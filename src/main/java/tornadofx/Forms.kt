@@ -63,8 +63,15 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun field(text: String? = null, op: (HBox.() -> Unit)? = null): Field {
-        val field = Field(text ?: "")
+    fun buttonbar(op: (HBox.() -> Unit)? = null): Field {
+        val field = Field("", true)
+        children.add(field)
+        op?.invoke(field.inputContainer)
+        return field
+    }
+
+    fun field(text: String? = null, forceLabelIndent: Boolean = false, op: (HBox.() -> Unit)? = null): Field {
+        val field = Field(text ?: "", forceLabelIndent)
         children.add(field)
         op?.invoke(field.inputContainer)
         return field
@@ -176,7 +183,7 @@ fun Node.mnemonicTarget() {
 }
 
 @DefaultProperty("inputs")
-class Field(text: String? = null) : Pane() {
+class Field(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
     var text by property(text)
     fun textProperty() = getProperty(Field::text)
 
@@ -196,7 +203,7 @@ class Field(text: String? = null) : Pane() {
     val fieldset: Fieldset get() = parent as Fieldset
 
     override fun computePrefHeight(width: Double): Double {
-        val labelHasContent = text.isNotBlank()
+        val labelHasContent = forceLabelIndent || text.isNotBlank()
 
         val labelHeight = if (labelHasContent) labelContainer.prefHeight(-1.0) else 0.0
         val inputHeight = inputContainer.prefHeight(-1.0)
@@ -211,7 +218,7 @@ class Field(text: String? = null) : Pane() {
 
     override fun computePrefWidth(height: Double): Double {
         val fieldset = fieldset
-        val labelHasContent = text.isNotBlank()
+        val labelHasContent = forceLabelIndent || text.isNotBlank()
 
         val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth else 0.0
         val inputWidth = inputContainer.prefWidth(height)
@@ -228,7 +235,7 @@ class Field(text: String? = null) : Pane() {
 
     override fun layoutChildren() {
         val fieldset = fieldset
-        val labelHasContent = text.isNotBlank()
+        val labelHasContent = forceLabelIndent || text.isNotBlank()
 
         val insets = insets
         val contentX = insets.left
