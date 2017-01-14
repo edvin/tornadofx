@@ -18,7 +18,7 @@ class DangerButtonView : View("Do not click the button!") {
                 textFill = Color.RED
             }
             setOnAction {
-                adhocInternalWindow("What do you want?", overlayPaint = c(Color.RED.toString(), 0.4)) {
+                builderInternalWindow("What do you want?", overlayPaint = c(Color.RED.toString(), 0.4)) {
                     vbox(10) {
                         style {
                             padding = box(20.px)

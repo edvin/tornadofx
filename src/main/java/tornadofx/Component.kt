@@ -592,18 +592,18 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     /**
-     * Create an adhoc fragment and optionally open it if the openModality is specified. A fragment can also be assigned
+     * Create an builder fragment and optionally open it if the openModality is specified. A fragment can also be assigned
      * to an existing node hierarchy using `add()` or `this += inlineFragment {}`, or you can specify the behavior inside it using `Platform.runLater {}` before
-     * you return the root node for the adhoc fragment.
+     * you return the root node for the builder fragment.
      */
-    fun adhocFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = AdhocFragment(scope, title, rootBuilder)
+    fun builderFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = BuilderFragment(scope, title, rootBuilder)
 
-    fun adhocWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = adhocFragment(title, scope, rootBuilder).apply {
+    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
         openWindow(modality = modality, stageStyle = stageStyle)
     }
 
-    protected fun adhocInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(AdhocFragment(scope, title, rootBuilder), owner)
+    protected fun builderInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
@@ -649,7 +649,7 @@ class ResourceLookup(val component: Component) {
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
 }
 
-class AdhocFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
+class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
     override val scope = overrideScope
     override val root = rootBuilder(this)
 }
