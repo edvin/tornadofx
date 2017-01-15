@@ -2,10 +2,8 @@ package tornadofx
 
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
-import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.binding.StringExpression
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -550,10 +548,20 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         root.findParentOfType(InternalWindow::class)?.close()
     }
 
-    val titleProperty = SimpleStringProperty(viewTitle)
+    val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
+
+    open val headingProperty: StringProperty get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
+
+    var heading: String
+        get() = headingProperty.get() ?: ""
+        set(value) {
+            if (headingProperty == titleProperty)
+                properties["tornadofx.heading"] = SimpleStringProperty()
+            headingProperty.set(value)
+        }
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
