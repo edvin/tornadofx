@@ -247,7 +247,6 @@ fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T
 fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding =
     Bindings.createStringBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
-
 fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)
 

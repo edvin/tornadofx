@@ -29,7 +29,10 @@ fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
 }
 
 fun ToolBar.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null): Pane {
-    val pane = Pane().apply { HBox.setHgrow(this, prio) }
+    val pane = Pane().apply {
+        addClass("spacer")
+        hgrow = prio
+    }
     op?.invoke(pane)
     add(pane)
     return pane

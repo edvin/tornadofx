@@ -4,6 +4,7 @@ import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
+import kotlin.reflect.KProperty1
 import kotlin.test.*
 
 class ComponentTests {
@@ -18,7 +19,7 @@ class ComponentTests {
         try {
             mainFragment.subFragmentNoParam.booleanParam
             fail("IllegalStateException should have been thrown")
-        } catch ( e: IllegalStateException ){
+        } catch (e: IllegalStateException) {
             // param not set
         }
 
@@ -28,6 +29,9 @@ class ComponentTests {
         assertFalse(mainFragment.subFragmentWithParam.booleanParam,
                 "parameter value should match parameter passed in")
 
+        assertNull(mainFragment.subFragmentWithParam.nullableBooleanParam,
+                "nullable parameter value should match parameter passed in")
+
     }
 
     class MainFragment : Fragment() {
@@ -36,11 +40,14 @@ class ComponentTests {
 
         var subFragmentWithParam: SubFragment by singleAssign()
 
-        override val root = vbox{
-            add( SubFragment::class ){
+        override val root = vbox {
+            add(SubFragment::class) {
                 subFragmentNoParam = this
             }
-            add( SubFragment::class, "booleanParam" to false ){
+            add(SubFragment::class, mapOf(
+                    SubFragment::booleanParam to false,
+                    SubFragment::nullableBooleanParam to null
+            )) {
                 subFragmentWithParam = this
             }
         }
@@ -48,9 +55,9 @@ class ComponentTests {
     }
 
     class SubFragment : Fragment() {
-
-        val booleanParam : Boolean by param()
-        val booleanParamWithDefault : Boolean by param( defaultValue = true )
+        val booleanParam: Boolean by param()
+        val booleanParamWithDefault: Boolean by param(defaultValue = true)
+        val nullableBooleanParam: Boolean? by nullableParam()
 
         override val root = vbox()
     }

@@ -245,11 +245,12 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     private var bytesRead: ByteArray? = null
 
     override fun consume(): Rest.Response {
-        if (bytesRead == null) {
-            bytes()
-            return this
-        }
         try {
+            if (bytesRead == null) {
+                bytes()
+                return this
+            }
+
             with(request.connection) {
                 if (doInput) inputStream.close()
             }

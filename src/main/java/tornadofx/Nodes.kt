@@ -5,12 +5,10 @@ package tornadofx
 import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
-import javafx.beans.property.BooleanProperty
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.ListProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
-import javafx.collections.FXCollections
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
@@ -49,9 +47,11 @@ fun <S, T> TableColumnBase<S, T>.addClass(className: String): TableColumnBase<S,
 fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
     cssClass.forEach { styleClass.add(it.name) }
 }
+
 fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
     cssClass.forEach { styleClass.remove(it.name) }
 }
+
 fun <S, T> TableColumnBase<S, T>.removeClass(className: String): TableColumnBase<S, T> = apply { styleClass.remove(className) }
 fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
 fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
@@ -65,8 +65,8 @@ fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boole
 fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 
-fun <T : Node> T.addClass(className: String): T {
-    styleClass.add(className)
+fun <T : Node> T.addClass(vararg className: String): T {
+    styleClass.addAll(className)
     return this
 }
 
@@ -230,6 +230,10 @@ fun EventTarget.replaceChildren(vararg node: Node) {
 
 operator fun EventTarget.plusAssign(node: Node) {
     addChildIfPossible(node)
+}
+
+fun Pane.clear() {
+    children.clear()
 }
 
 fun <T : EventTarget> T.replaceChildren(op: T.() -> Unit) {
@@ -918,7 +922,11 @@ fun EventTarget.removeFromParent() {
     } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
-        parent?.getChildList()?.remove(this)
+        if (parent?.parent is ToolBar) {
+            (parent.parent as ToolBar).items.remove(this)
+        } else {
+            parent?.getChildList()?.remove(this)
+        }
     }
 }
 

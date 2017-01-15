@@ -2,12 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.10-SNAPSHOT]
+## [1.6.0-SNAPSHOT]
 
+- API break: View params are now map(property-ref, value) instead of vararg Pair(String, value)
+- menu builder correctly supports sub-menus
+- menu builder accepts graphic parameter
+- ViewModel autocommit bindings doesn't affect dirty state any more
+- buttonbar builder for forms
+- ItemViewModel constructor takes optional initial value
 - `ObservableList.asyncItems` and `ListProperty.asyncItems`
 - `confirm()` function that executes an action if the user confirms
 - di delegate overload to support injecting a dependency by name (in addition to type)
-- `adhocFragment` and `adhocWindow` builders
+- `builderFragment` and `builderWindow` builders - fragment and window by just supplying a title and builder
 - `ObservableList<T>.onChange` to easy listening to change events from observable lists
 - `setInScope()` now uses correct KClass when entering the injectable into the components map
 - `ItemViewModel.isEmpty` boolean, complements `empty` property
