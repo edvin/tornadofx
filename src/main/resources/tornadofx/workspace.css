@@ -7,7 +7,7 @@
     -fx-spacing: 0.4em;
 }
 
-.workspace .header .title-container {
+.workspace .header .heading-container {
     -fx-font-weight: bold;
     -fx-font-size: 1.2em;
     -fx-alignment: center-left;
@@ -15,7 +15,7 @@
     -fx-spacing: 1em;
 }
 
-.workspace .header .title-container .text {
+.workspace .header .heading-container .text {
     -fx-fill: #5f5f5f;
 }
 

@@ -15,9 +15,9 @@ import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 
-class TitleContainer : HBox() {
+class HeadingContainer : HBox() {
     init {
-        addClass("title-container")
+        addClass("heading-container")
     }
 }
 
@@ -40,7 +40,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
     val maxViewStackDepthProperty = SimpleIntegerProperty(10)
     var maxViewStackDepth by maxViewStackDepthProperty
 
-    val titleContainer = TitleContainer()
+    val headingContainer = HeadingContainer()
     private val realDockedComponentProperty = ReadOnlyObjectWrapper<UIComponent>()
     val dockedComponentProperty: ReadOnlyObjectProperty<UIComponent> = realDockedComponentProperty.readOnlyProperty
     val dockedComponent: UIComponent? get() = realDockedComponentProperty.value
@@ -136,7 +136,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                                 dockedComponentProperty.value?.onSave()
                         }
                     }
-                    add(titleContainer)
+                    add(headingContainer)
                     spacer()
                 }
             }
@@ -150,8 +150,8 @@ open class Workspace(title: String = "Workspace") : View(title) {
         refreshButton.disableProperty().cleanBind(child.refreshable.not())
         saveButton.disableProperty().cleanBind(child.saveable.not())
 
-        titleContainer.children.clear()
-        titleContainer.label(child.headingProperty)
+        headingContainer.children.clear()
+        headingContainer.label(child.headingProperty)
 
         if (updateViewStack && !viewStack.contains(child)) {
             // Remove everything after viewpos
