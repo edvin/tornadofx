@@ -82,7 +82,7 @@ var DefaultScope = Scope()
 
 class FX {
     companion object {
-        var defaultWorkspace: KClass<Workspace> = Workspace::class
+        var defaultWorkspace: KClass<out Workspace> = Workspace::class
         internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()
