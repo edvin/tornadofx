@@ -31,7 +31,7 @@ class WorkspaceArea : BorderPane() {
     }
 }
 
-open class Workspace : View("Workspace") {
+open class Workspace(title: String = "Workspace") : View(title) {
     var refreshButton: Button by singleAssign()
     var saveButton: Button by singleAssign()
 
