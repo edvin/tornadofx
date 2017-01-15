@@ -34,7 +34,11 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         FX.registerApplication(scope, this, stage)
 
         try {
-            val view = find(determinePrimaryView(), scope)
+            val primaryViewType = determinePrimaryView()
+            val view = find(primaryViewType, scope)
+
+            @Suppress("UNCHECKED_CAST")
+            if (view is Workspace) FX.defaultWorkspace = primaryViewType as KClass<Workspace>
 
             stage.apply {
                 scene = createPrimaryScene(view)

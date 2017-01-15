@@ -10,7 +10,7 @@
 .workspace .header .title-container {
     -fx-font-weight: bold;
     -fx-font-size: 1.2em;
-    -fx-alignment: center;
+    -fx-alignment: center-left;
     -fx-padding: 0 0 0 0.2em;
     -fx-spacing: 1em;
 }
@@ -21,10 +21,7 @@
 
 .workspace .header .container {
     -fx-padding: 0 0.2em 0 0.2em;
-}
-
-.workspace .header .container {
-    -fx-alignment: center;
+    -fx-alignment: center-left;
 }
 
 .workspace .header .button.icon-only {

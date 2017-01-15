@@ -33,7 +33,6 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
 
 open class Scope() {
     internal var workspaceInstance: Workspace? = null
@@ -55,14 +54,8 @@ open class Scope() {
     var workspace: Workspace
         get() {
             if (workspaceInstance == null) {
-                // If primary view was a workspace, lookup the same workspace type
-                (FX.application as? App)?.apply {
-                    if (Workspace::class.java.isAssignableFrom(primaryView.java))
-                        workspaceInstance = find(primaryView) as Workspace
-                }
-                // Fallback to the default workspace
-                if (workspaceInstance == null)
-                    workspaceInstance = find<Workspace>()
+                // Use configured default workspace
+                workspaceInstance = find(FX.defaultWorkspace, this)
             }
             return workspaceInstance!!
         }
@@ -89,6 +82,7 @@ var DefaultScope = Scope()
 
 class FX {
     companion object {
+        var defaultWorkspace: KClass<Workspace> = Workspace::class
         internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = ThreadLocal<Scope>()
         internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()

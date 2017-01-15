@@ -197,5 +197,3 @@ open class Workspace : View("Workspace") {
         }
     }
 }
-
-class WPApp : App(Workspace::class)
