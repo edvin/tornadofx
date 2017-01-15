@@ -349,7 +349,7 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<KProperty1<*, Any?>, Any?>? = null): T = find(T::class, scope, params)
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
 fun <T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
