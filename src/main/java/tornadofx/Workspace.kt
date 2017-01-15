@@ -14,7 +14,6 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
-import kotlin.reflect.KProperty1
 
 class TitleContainer : HBox() {
     init {
@@ -60,7 +59,7 @@ open class Workspace : View("Workspace") {
     }
 
     private val shortcutProxy: EventHandler<KeyEvent> = EventHandler { event ->
-        dockedComponentProperty.value?.apply {
+        dockedComponent?.apply {
             val match = accelerators.keys.asSequence().find { it.match(event) }
             if (match != null) {
                 accelerators[match]?.invoke()

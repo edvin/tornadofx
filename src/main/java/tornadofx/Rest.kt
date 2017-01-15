@@ -4,7 +4,6 @@ import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.scene.control.ProgressBar
 import javafx.scene.control.ProgressBar.INDETERMINATE_PROGRESS
 import javafx.scene.control.Tooltip
 import org.apache.http.HttpHost
@@ -417,12 +416,10 @@ inline fun <reified T : JsonModel> JsonArray.toModel(): ObservableList<T> {
 }
 
 class RestProgressBar : Fragment() {
-    override val root = ProgressBar().apply {
-        prefWidth = 100.0
+    override val root = progressbar {
+        prefWidth = 75.0
         isVisible = false
     }
-
-    private val api: Rest by inject()
 
     init {
         Rest.ongoingRequests.addListener(ListChangeListener<Rest.Request> { c ->
