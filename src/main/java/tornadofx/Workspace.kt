@@ -132,7 +132,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                         isDisable = true
                         graphic = label { addClass("icon", "save") }
                         setOnAction {
-                            if (dockedComponentProperty.value?.saveable?.value ?: false)
+                            if (dockedComponentProperty.value?.savable?.value ?: false)
                                 dockedComponentProperty.value?.onSave()
                         }
                     }
@@ -148,7 +148,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
     fun dock(child: UIComponent, updateViewStack: Boolean = true) {
         titleProperty.bind(child.titleProperty)
         refreshButton.disableProperty().cleanBind(child.refreshable.not())
-        saveButton.disableProperty().cleanBind(child.saveable.not())
+        saveButton.disableProperty().cleanBind(child.savable.not())
 
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty)

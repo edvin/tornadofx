@@ -294,7 +294,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     abstract val root: Parent
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
-    open val saveable: BooleanExpression get() = properties.getOrPut("tornadofx.saveable") { SimpleBooleanProperty(true) } as BooleanExpression
+    open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
 
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
