@@ -152,9 +152,7 @@ open class Workspace : View("Workspace") {
         saveButton.disableProperty().cleanBind(child.saveable.not())
 
         titleContainer.children.clear()
-        titleContainer.label(titleProperty) {
-            addClass("heading")
-        }
+        titleContainer.label(titleProperty)
 
         if (updateViewStack && !viewStack.contains(child)) {
             // Remove everything after viewpos
