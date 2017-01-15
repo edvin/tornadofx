@@ -84,7 +84,9 @@ class FX {
     companion object {
         var defaultWorkspace: KClass<out Workspace> = Workspace::class
         internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
-        internal val inheritScopeHolder = ThreadLocal<Scope>()
+        internal val inheritScopeHolder = object : ThreadLocal<Scope>() {
+            override fun initialValue() = DefaultScope
+        }
         internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()
         internal var ignoreParentForFirstBuilder: Boolean = false
             get() {
@@ -435,13 +437,14 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
                 // MenuBar is added above the toolbar and is not considered dynamic
                 (top as VBox).children.add(0, node)
             } else {
+                val targetIndex: Int
                 if (node is ButtonBase) {
                     // Add buttons after last button
-                    val targetIndex = header.items.indexOfLast { it is Button } + 1
-                    header.items.add(targetIndex, node)
+                    targetIndex = header.items.indexOfLast { it is Button } + 1
                 } else {
-                    header.items.add(node)
+                    targetIndex = header.items.indexOfFirst { it.hasClass("spacer") } + 1
                 }
+                header.items.add(targetIndex, node)
             }
         }
         is Workspace -> {
