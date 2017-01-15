@@ -198,8 +198,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
 
 /**
  * Create a new scope and associate it with this Workspace and optionally add one
- * or more Injectable instances into the scope. If no Scope is given, a new is generated
- * automatically. The op block operates on the workspace. The following example
+ * or more Injectable instances into the scope. The op block operates on the workspace. The following example
  * creates a new scope, injects a Customer Model into it and docks the CustomerEditor
  * into the Workspace:
  *
@@ -209,7 +208,8 @@ open class Workspace(title: String = "Workspace") : View(title) {
  * }
  * </pre>
  */
-fun <W : Workspace> W.withNewScope(newScope: Scope = Scope(), vararg setInScope: Injectable, op: W.() -> Unit) {
+fun Workspace.withNewScope(vararg setInScope: Injectable, op: Workspace.() -> Unit) {
+    val newScope = Scope()
     newScope.workspaceInstance = this
     newScope.set(*setInScope)
     op()
@@ -217,12 +217,21 @@ fun <W : Workspace> W.withNewScope(newScope: Scope = Scope(), vararg setInScope:
 
 /**
  * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
- * the scope, optionally passing along the given parameters and injecting the given Injectables
- * into the new scope.
+ * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
  */
-inline fun <W : Workspace, reified T: UIComponent> W.dockInNewScope(newScope: Scope = Scope(), params: Map<*, Any?>? = null, vararg setInScope: Injectable) {
-    withNewScope(newScope, *setInScope) {
-        dock<T>(newScope, params)
+inline fun <reified T: UIComponent> Workspace.dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
+    withNewScope(*setInScope) {
+        dock<T>(scope, params)
+    }
+}
+
+/**
+ * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
+ * the scope, optionally injecting the given Injectables into the new scope.
+ */
+inline fun <reified T: UIComponent> Workspace.dockInNewScope(vararg setInScope: Injectable) {
+    withNewScope(*setInScope) {
+        dock<T>(scope)
     }
 }
 
@@ -230,8 +239,8 @@ inline fun <W : Workspace, reified T: UIComponent> W.dockInNewScope(newScope: Sc
  * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
  * the scope and optionally injecting the given Injectables into the new scope.
  */
-fun <W : Workspace, T: UIComponent> W.dockInNewScope(newScope: Scope = Scope(), uiComponent: T, vararg setInScope: Injectable) {
-    withNewScope(newScope, *setInScope) {
+fun <T: UIComponent> Workspace.dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
+    withNewScope(*setInScope) {
         dock(uiComponent)
     }
 }
