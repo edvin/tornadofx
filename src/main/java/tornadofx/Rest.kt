@@ -4,7 +4,6 @@ import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.scene.control.ProgressBar
 import javafx.scene.control.ProgressBar.INDETERMINATE_PROGRESS
 import javafx.scene.control.Tooltip
 import org.apache.http.HttpHost
@@ -245,11 +244,12 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     private var bytesRead: ByteArray? = null
 
     override fun consume(): Rest.Response {
-        if (bytesRead == null) {
-            bytes()
-            return this
-        }
         try {
+            if (bytesRead == null) {
+                bytes()
+                return this
+            }
+
             with(request.connection) {
                 if (doInput) inputStream.close()
             }
@@ -416,12 +416,10 @@ inline fun <reified T : JsonModel> JsonArray.toModel(): ObservableList<T> {
 }
 
 class RestProgressBar : Fragment() {
-    override val root = ProgressBar().apply {
-        prefWidth = 100.0
+    override val root = progressbar {
+        prefWidth = 75.0
         isVisible = false
     }
-
-    private val api: Rest by inject()
 
     init {
         Rest.ongoingRequests.addListener(ListChangeListener<Rest.Request> { c ->

@@ -11,6 +11,7 @@ import kotlin.reflect.KProperty
 
 open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
     var scope: Scope = DefaultScope
+    val workspace: Workspace get() = scope.workspace
 
     constructor(primaryView: KClass<out UIComponent>? = null, stylesheet: KClass<out Stylesheet>, scope: Scope = DefaultScope) : this(primaryView, *arrayOf(stylesheet)) {
         this.scope = scope
@@ -33,7 +34,11 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         FX.registerApplication(scope, this, stage)
 
         try {
-            val view = find(determinePrimaryView(), scope)
+            val primaryViewType = determinePrimaryView()
+            val view = find(primaryViewType, scope)
+
+            @Suppress("UNCHECKED_CAST")
+            if (view is Workspace) FX.defaultWorkspace = primaryViewType as KClass<Workspace>
 
             stage.apply {
                 scene = createPrimaryScene(view)
@@ -41,12 +46,17 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
                 FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
                 hookGlobalShortcuts()
+                onBeforeShow(view)
                 if (shouldShowPrimaryStage()) show()
             }
             FX.initialized.value = true
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
         }
+    }
+
+    open fun onBeforeShow(view: UIComponent) {
+
     }
 
     override fun stop() {

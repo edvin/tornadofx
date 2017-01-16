@@ -19,8 +19,16 @@ operator fun <T: MenuItem> ContextMenu.plusAssign(menuItem: T): Unit{
 }
 
 //MenuBar extensions
-fun MenuBar.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
-    val menu = Menu(name)
+fun MenuBar.menu(name: String? = null, graphic: Node? = null, op: (Menu.() -> Unit)? = null): Menu {
+    val menu = Menu(name, graphic)
+    op?.invoke(menu)
+    this += menu
+    return menu
+}
+
+// Submenu
+fun Menu.menu(name: String? = null, graphic: Node? = null, op: (Menu.() -> Unit)? = null): Menu {
+    val menu = Menu(name, graphic)
     op?.invoke(menu)
     this += menu
     return menu
