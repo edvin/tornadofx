@@ -194,53 +194,53 @@ open class Workspace(title: String = "Workspace") : View(title) {
             root.dynamicComponentMode = false
         }
     }
-}
 
-/**
- * Create a new scope and associate it with this Workspace and optionally add one
- * or more Injectable instances into the scope. The op block operates on the workspace. The following example
- * creates a new scope, injects a Customer Model into it and docks the CustomerEditor
- * into the Workspace:
- *
- * <pre>
- * workspace.withNewScope(CustomerModel(customer)) {
- *     dock<CustomerEditor>()
- * }
- * </pre>
- */
-fun Workspace.withNewScope(vararg setInScope: Injectable, op: Workspace.() -> Unit) {
-    val newScope = Scope()
-    newScope.workspaceInstance = this
-    newScope.set(*setInScope)
-    op()
-}
-
-/**
- * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
- * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
- */
-inline fun <reified T: UIComponent> Workspace.dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
-    withNewScope(*setInScope) {
-        dock<T>(scope, params)
+    /**
+     * Create a new scope and associate it with this Workspace and optionally add one
+     * or more Injectable instances into the scope. The op block operates on the workspace. The following example
+     * creates a new scope, injects a Customer Model into it and docks the CustomerEditor
+     * into the Workspace:
+     *
+     * <pre>
+     * workspace.withNewScope(CustomerModel(customer)) {
+     *     dock<CustomerEditor>()
+     * }
+     * </pre>
+     */
+    fun withNewScope(vararg setInScope: Injectable, op: Workspace.() -> Unit) {
+        val newScope = Scope()
+        newScope.workspaceInstance = this
+        newScope.set(*setInScope)
+        op(this)
     }
-}
 
-/**
- * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
- * the scope, optionally injecting the given Injectables into the new scope.
- */
-inline fun <reified T: UIComponent> Workspace.dockInNewScope(vararg setInScope: Injectable) {
-    withNewScope(*setInScope) {
-        dock<T>(scope)
+    /**
+     * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
+     * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
+     */
+    inline fun <reified T: UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
+        withNewScope(*setInScope) {
+            dock<T>(scope, params)
+        }
     }
-}
 
-/**
- * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
- * the scope and optionally injecting the given Injectables into the new scope.
- */
-fun <T: UIComponent> Workspace.dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
-    withNewScope(*setInScope) {
-        dock(uiComponent)
+    /**
+     * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
+     * the scope, optionally injecting the given Injectables into the new scope.
+     */
+    inline fun <reified T: UIComponent> dockInNewScope(vararg setInScope: Injectable) {
+        withNewScope(*setInScope) {
+            dock<T>(scope)
+        }
+    }
+
+    /**
+     * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
+     * the scope and optionally injecting the given Injectables into the new scope.
+     */
+    fun <T: UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
+        withNewScope(*setInScope) {
+            dock(uiComponent)
+        }
     }
 }
