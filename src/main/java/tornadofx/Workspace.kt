@@ -40,6 +40,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
     private val viewPos = SimpleIntegerProperty(-1)
     val maxViewStackDepthProperty = SimpleIntegerProperty(10)
     var maxViewStackDepth by maxViewStackDepthProperty
+    private val viewStackDisabled = booleanBinding(maxViewStackDepthProperty) { value == 0 }
 
     val headingContainer = HeadingContainer()
     private val realDockedComponentProperty = ReadOnlyObjectWrapper<UIComponent>()
@@ -57,6 +58,11 @@ open class Workspace(title: String = "Workspace") : View(title) {
             FX.log.warning("The Workspace feature is experimental and subject to change even in minor releases!")
             importStylesheet("/tornadofx/workspace.css")
         }
+    }
+
+    fun disableNavigation() {
+        viewStack.clear()
+        maxViewStackDepth = 0
     }
 
     private val shortcutProxy: EventHandler<KeyEvent> = EventHandler { event ->
@@ -105,6 +111,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                             dock(viewStack[viewPos.get()], false)
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value < 1 })
+                        removeWhen { viewStackDisabled }
                     }
                     button {
                         addClass("icon-only")
@@ -114,6 +121,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                             dock(viewStack[viewPos.get()], false)
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value == viewStack.size - 1 })
+                        removeWhen { viewStackDisabled }
                     }
                     button {
                         addClass("icon-only")
@@ -154,7 +162,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty)
 
-        if (updateViewStack && !viewStack.contains(child)) {
+        if (updateViewStack && !viewStackDisabled.value && !viewStack.contains(child)) {
             // Remove everything after viewpos
             while (viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
                 viewStack.removeAt(viewPos.get() + 1)
