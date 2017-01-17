@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
@@ -971,7 +973,7 @@ fun <T> TableView<T>.enableCellEditing() {
     isEditable = true
 }
 
-fun <S> TableView<S>.enableDirtyTracking() = editModel
+fun <S> TableView<S>.enableDirtyTracking() = editModel.enableDirtyTracking()
 
 @Suppress("UNCHECKED_CAST")
 val <S> TableView<S>.editModel: TableViewEditModel<S> get() = properties.getOrPut("tornadofx.editModel") { TableViewEditModel(this) } as TableViewEditModel<S>
@@ -995,7 +997,7 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
 
     fun getDirtyState(item: S): TableColumnDirtyState<S> = items.getOrPut(item) { TableColumnDirtyState(this, item) }
 
-    init {
+    fun enableDirtyTracking() {
         tableView.setRowFactory {
             object : TableRow<S>() {
                 override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
@@ -1096,8 +1098,11 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
             _dirty = booleanBinding(dirtyColumns) { isNotEmpty() }
         return _dirty!!
     }
+    val isDirty: Boolean get() = dirty.value
 
-    fun getDirtyColumnProperty(column: TableColumn<S, Any?>) = booleanBinding(dirtyColumns) { containsKey(column) }
+    fun getDirtyColumnProperty(column: TableColumn<Any?, Any?>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
+
+    fun isDirtyColumn(column: TableColumn<Any?, Any?>) = dirtyColumns.containsKey(column as TableColumn<S, Any?>)
 
     init {
         dirtyColumns.addListener(InvalidationListener {
@@ -1115,6 +1120,23 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 
     override fun equals(other: Any?) = other is TableColumnDirtyState<*> && other.item == item
     override fun hashCode() = item?.hashCode() ?: throw IllegalStateException("Item must be present")
+
+    fun rollback(column : TableColumn<Any?, Any?>) {
+        val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
+        if (initialValue != null) {
+            column.setValue(item, initialValue)
+            dirtyColumns.remove(column)
+        }
+        editModel.tableView.refresh()
+    }
+
+    fun commit(column : TableColumn<Any?, Any?>) {
+        val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
+        if (initialValue != null) {
+            dirtyColumns.remove(column)
+        }
+        editModel.tableView.refresh()
+    }
 
     fun rollback() {
         dirtyColumns.forEach {
