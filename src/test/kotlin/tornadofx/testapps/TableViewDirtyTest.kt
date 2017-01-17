@@ -17,6 +17,7 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
         center {
             tableview(customers) {
                 table = this
+                enableDirtyTracking()
                 column("First Name", Customer::firstNameProperty).makeEditable()
                 column("Last Name", Customer::lastNameProperty).makeEditable()
             }
