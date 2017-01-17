@@ -4,11 +4,10 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.control.TableView
-import javafx.scene.paint.Color
 import tornadofx.*
 import java.util.*
 
-class TableViewDirtyTestApp : App(TableViewDirtyTest::class)
+class TableViewDirtyTestApp : WorkspaceApp(TableViewDirtyTest::class)
 
 class TableViewDirtyTest : View("TableView Dirty Test") {
     val customers = FXCollections.observableArrayList(Customer("Thomas", "Nield"), Customer("Edvin", "Syse"))
@@ -20,49 +19,22 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                 table = this
                 prefHeight = 200.0
                 column("First Name", Customer::firstNameProperty).makeEditable()
-                column("Last Name", Customer::lastNameProperty).makeEditable().cellDecorator {
-                    val isDirty = (it != null && editModel.getDirtyState(rowItem).isDirtyColumn(tableColumn))
-                    textFill = if (isDirty) Color.BLUE else Color.BLACK
-                }
+                column("Last Name", Customer::lastNameProperty).makeEditable()
                 enableCellEditing()
                 regainFocusAfterEdit()
                 enableDirtyTracking()
                 contextmenu {
-                    menuitem("Rollback").properties["name"] = "rollback"
-                    menuitem("Commit").properties["name"] = "commit"
-                }
-                setOnContextMenuRequested { event ->
-                    val dirtyState = editModel.getDirtyState(selectedItem)
-                    val selectedCell = selectionModel.selectedCells.firstOrNull()
-                    val rollbackItem = contextMenu.items.find { it.properties["name"] == "rollback" }!!
-                    val commitItem = contextMenu.items.find { it.properties["name"] == "commit" }!!
-
-                    if (selectedCell != null && dirtyState.isDirtyColumn(selectedCell.tableColumn)) {
-                        with (contextMenu) {
-                            with (rollbackItem) {
-                                isDisable = false
-                                text = "Rollback ${selectedCell.tableColumn.text}"
-                                setOnAction {
-                                    dirtyState.rollback(selectedCell.tableColumn)
-                                }
-                            }
-                            with (commitItem) {
-                                isDisable = false
-                                text = "Commit ${selectedCell.tableColumn.text}"
-                                setOnAction {
-                                    dirtyState.commit(selectedCell.tableColumn)
-                                }
-                            }
-                        }
-                    } else {
-                        with (rollbackItem) {
-                            isDisable = true
-                            text = "Rollback column"
-                        }
-                        with (commitItem) {
-                            isDisable = true
-                            text = "Commit column"
-                        }
+                    menuitem("Rollback") {
+                        editModel.getDirtyState(selectedItem).rollback(selectedColumn!!)
+                    }.apply {
+                        disableWhen { editModel.selectedItemDirty.not() }
+                        textProperty().bind(stringBinding(selectionModel.selectedCells) { "Rollback ${selectedColumn?.text}"})
+                    }
+                    menuitem("Commit") {
+                        editModel.getDirtyState(selectedItem).commit(selectedColumn!!)
+                    }.apply {
+                        disableWhen { editModel.selectedItemDirty.not() }
+                        textProperty().bind(stringBinding(selectionModel.selectedCells) { "Commit ${selectedColumn?.text}"})
                     }
                 }
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
@@ -83,18 +55,18 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                         table.editModel.rollbackSelected()
                     }
                 }
-                button("Rollback all") {
-                    setOnAction {
-                        table.editModel.rollback()
-                    }
-                }
-                button("Commit all") {
-                    setOnAction {
-                        table.editModel.rollback()
-                    }
-                }
             }
         }
+
+
+    }
+
+    override fun onSave() {
+        table.editModel.commit()
+    }
+
+    override fun onRefresh() {
+        table.editModel.rollback()
     }
 
     class Customer(firstName: String, lastName: String) {

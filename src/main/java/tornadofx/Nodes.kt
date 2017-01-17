@@ -1123,6 +1123,8 @@ fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
+fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableProperty().cleanBind(expr())
+
 fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
     Platform.runLater {
         val originalParent = parent

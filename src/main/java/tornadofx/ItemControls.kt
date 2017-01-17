@@ -354,6 +354,7 @@ fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
     model.itemProperty.bind(selectionModel.selectedItemProperty())
 }
 
+val TableView<*>.selectedColumn: TableColumn<Any?, Any?>? get() = selectionModel.selectedCells.firstOrNull()?.tableColumn
 
 /**
  * Create a column with a value factory that extracts the value from the given mutable
