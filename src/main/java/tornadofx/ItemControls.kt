@@ -1,13 +1,22 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
 import javafx.application.Platform
+import javafx.beans.InvalidationListener
+import javafx.beans.Observable
 import javafx.beans.binding.Bindings
+import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.ObjectBinding
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.beans.value.WritableValue
+import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.collections.ObservableMap
 import javafx.event.EventTarget
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -15,6 +24,8 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
+import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -960,4 +971,236 @@ fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boole
 fun <T> TableView<T>.enableCellEditing() {
     selectionModel.isCellSelectionEnabled = true
     isEditable = true
+}
+
+fun <S> TableView<S>.enableDirtyTracking() = editModel.enableDirtyTracking()
+
+@Suppress("UNCHECKED_CAST")
+val <S> TableView<S>.editModel: TableViewEditModel<S> get() = properties.getOrPut("tornadofx.editModel") { TableViewEditModel(this) } as TableViewEditModel<S>
+
+class TableViewEditModel<S>(val tableView: TableView<S>) {
+    val items = FXCollections.observableHashMap<S, TableColumnDirtyState<S>>()
+
+    private var _selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?>? = null
+    val selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?> get() {
+        if (_selectedItemDirtyState == null)
+            _selectedItemDirtyState = objectBinding(tableView.selectionModel.selectedItemProperty()) { getDirtyState(value) }
+        return _selectedItemDirtyState!!
+    }
+
+    private var _selectedItemDirty: BooleanBinding? = null
+    val selectedItemDirty: BooleanBinding get() {
+        if (_selectedItemDirty == null)
+            _selectedItemDirty = booleanBinding(selectedItemDirtyState) { value?.dirty?.value ?: false }
+        return _selectedItemDirty!!
+    }
+
+    fun getDirtyState(item: S): TableColumnDirtyState<S> = items.getOrPut(item) { TableColumnDirtyState(this, item) }
+
+    fun enableDirtyTracking() {
+        tableView.setRowFactory {
+            object : TableRow<S>() {
+                override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
+            }
+        }
+
+        fun addEventHandlerForColumn(column: TableColumn<S, *>) {
+            column.addEventHandler(TableColumn.editCommitEvent<S, Any>()) { event ->
+                // This fires before the column value is changed (else we would use onEditCommit)
+                val item = event.rowValue
+                val itemTracker = items.getOrPut(item) { TableColumnDirtyState(this, item) }
+                val initialValue = itemTracker.dirtyColumns.getOrPut(event.tableColumn) {
+                    event.tableColumn.getValue(item)
+                }
+                if (initialValue == event.newValue) {
+                    itemTracker.dirtyColumns.remove(event.tableColumn)
+                } else {
+                    itemTracker.dirtyColumns[event.tableColumn] = initialValue
+                }
+                selectedItemDirty.invalidate()
+            }
+        }
+
+        // Add columns and track changes to columns
+        tableView.columns.forEach(::addEventHandlerForColumn)
+        tableView.columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
+            while (change.next()) {
+                if (change.wasAdded())
+                    change.addedSubList.forEach(::addEventHandlerForColumn)
+            }
+        })
+
+        // Remove dirty state for items removed from the TableView
+        val listenForRemovals = ListChangeListener<S> {
+            while (it.next()) {
+                if (it.wasRemoved()) {
+                    it.removed.forEach {
+                        items.remove(it)
+                    }
+                }
+            }
+        }
+
+        // Track removals on current items list
+        tableView.items?.addListener(listenForRemovals)
+
+        // Clear items if item list changes and track removals in new list
+        tableView.itemsProperty().addListener { observableValue, oldValue, newValue ->
+            items.clear()
+            oldValue?.removeListener(listenForRemovals)
+            newValue?.addListener(listenForRemovals)
+        }
+    }
+
+    fun commit(item: S) {
+        getDirtyState(item).commit()
+    }
+
+    fun commit() {
+        items.values.forEach { it.commit() }
+    }
+
+    fun rollback() {
+        items.values.forEach { it.rollback() }
+    }
+
+    fun rollback(item: S) {
+        getDirtyState(item).rollback()
+    }
+
+    fun commitSelected() {
+        val selected = selectedItemDirtyState.value?.item
+        if (selected != null) commit(selected)
+    }
+
+    fun rollbackSelected() {
+        val selected = selectedItemDirtyState.value?.item
+        if (selected != null) rollback(selected)
+    }
+
+    fun isDirty(item: S): Boolean = getDirtyState(item).dirty.value
+}
+
+class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S) : Observable {
+    val invalidationListeners = ArrayList<InvalidationListener>()
+
+    // Dirty columns and initial value
+    private var _dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?>? = null
+    val dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?> get() {
+        if (_dirtyColumns == null)
+            _dirtyColumns = FXCollections.observableHashMap<TableColumn<S, Any?>, Any?>()
+        return _dirtyColumns!!
+    }
+
+    private var _dirty: BooleanBinding? = null
+    val dirty: BooleanBinding get() {
+        if (_dirty == null)
+            _dirty = booleanBinding(dirtyColumns) { isNotEmpty() }
+        return _dirty!!
+    }
+    val isDirty: Boolean get() = dirty.value
+
+    fun getDirtyColumnProperty(column: TableColumn<Any?, Any?>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
+
+    fun isDirtyColumn(column: TableColumn<Any?, Any?>) = dirtyColumns.containsKey(column as TableColumn<S, Any?>)
+
+    init {
+        dirtyColumns.addListener(InvalidationListener {
+            invalidationListeners.forEach { it.invalidated(this) }
+        })
+    }
+
+    override fun removeListener(listener: InvalidationListener) {
+        invalidationListeners.remove(listener)
+    }
+
+    override fun addListener(listener: InvalidationListener) {
+        invalidationListeners.add(listener)
+    }
+
+    override fun equals(other: Any?) = other is TableColumnDirtyState<*> && other.item == item
+    override fun hashCode() = item?.hashCode() ?: throw IllegalStateException("Item must be present")
+
+    fun rollback(column : TableColumn<Any?, Any?>) {
+        val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
+        if (initialValue != null) {
+            column.setValue(item, initialValue)
+            dirtyColumns.remove(column)
+        }
+        editModel.tableView.refresh()
+    }
+
+    fun commit(column : TableColumn<Any?, Any?>) {
+        val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
+        if (initialValue != null) {
+            dirtyColumns.remove(column)
+        }
+        editModel.tableView.refresh()
+    }
+
+    fun rollback() {
+        dirtyColumns.forEach {
+            it.key.setValue(item, it.value)
+        }
+        dirtyColumns.clear()
+        editModel.selectedItemDirtyState.invalidate()
+        editModel.tableView.refresh()
+    }
+
+    fun commit() {
+        dirtyColumns.clear()
+        editModel.selectedItemDirtyState.invalidate()
+        editModel.tableView.refresh()
+    }
+
+}
+
+@Suppress("UNCHECKED_CAST")
+class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: TableViewEditModel<S>) : TableRowSkin<S>(tableRow) {
+    private fun getPolygon(cell: TableCell<S, *>) =
+            cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.RED } } as Polygon
+
+    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
+        super.layoutChildren(x, y, w, h)
+
+        cells.forEach { cell ->
+            val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
+            val polygon = getPolygon(cell)
+            val isDirty = item != null && editModel.getDirtyState(item).dirtyColumns.keys.contains(cell.tableColumn)
+            if (isDirty) {
+                if (!children.contains(polygon))
+                    children.add(polygon)
+
+                polygon.relocate(cell.layoutX, y)
+            } else {
+                children.remove(polygon)
+            }
+        }
+
+    }
+}
+
+/**
+ * Write a value into the property representing this TableColumn, provided
+ * the property is writable.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S, T> TableColumn<S, T>.setValue(item: S, value: T?) {
+    val property = getTableColumnProperty(item)
+    if (property is WritableValue<*>)
+        (property as WritableValue<T>).value = value
+}
+
+/**
+ * Get the value from the property rperesenting this TableColumn.
+ */
+fun <S, T> TableColumn<S, T>.getValue(item: S) = getTableColumnProperty(item).value
+
+/**
+ * Get the property representing this TableColumn for the given item.
+ */
+fun <S, T> TableColumn<S, T>.getTableColumnProperty(item: S): ObservableValue<T?> {
+    val param = TableColumn.CellDataFeatures<S, T>(tableView, this, item)
+    val property = cellValueFactory.call(param)
+    return property
 }

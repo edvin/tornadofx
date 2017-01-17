@@ -252,3 +252,9 @@ open class Workspace(title: String = "Workspace") : View(title) {
         }
     }
 }
+
+open class WorkspaceApp(val initiallyDockedView: KClass<out UIComponent>, vararg stylesheet: KClass<out Stylesheet>) : App(Workspace::class, *stylesheet) {
+    override fun onBeforeShow(view: UIComponent) {
+        workspace.dock(find(initiallyDockedView))
+    }
+}
