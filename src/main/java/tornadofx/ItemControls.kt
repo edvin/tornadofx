@@ -1168,7 +1168,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
         cells.forEach { cell ->
             val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
             val polygon = getPolygon(cell)
-            val isDirty = item != null && editModel.getDirtyState(item).dirtyColumns.keys.contains(cell.tableColumn)
+            val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
             if (isDirty) {
                 if (!children.contains(polygon))
                     children.add(polygon)
