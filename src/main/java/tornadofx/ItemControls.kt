@@ -997,10 +997,12 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
 
     fun getDirtyState(item: S): TableColumnDirtyState<S> = items.getOrPut(item) { TableColumnDirtyState(this, item) }
 
-    fun enableDirtyTracking() {
-        tableView.setRowFactory {
-            object : TableRow<S>() {
-                override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
+    fun enableDirtyTracking(dirtyDecorator: Boolean = true) {
+        if (dirtyDecorator) {
+            tableView.setRowFactory {
+                object : TableRow<S>() {
+                    override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
+                }
             }
         }
 
