@@ -3,7 +3,6 @@ package tornadofx.testapps
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.paint.Color
 import tornadofx.*

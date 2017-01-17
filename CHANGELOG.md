@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.6.0-SNAPSHOT]
 
 - Workspaces (https://edvin.gitbooks.io/tornadofx-guide/content/16.%20Workspaces.html)
+- OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
 - API break: View params are now map(property-ref, value) instead of vararg Pair(String, value)
 - menu builder correctly supports sub-menus
 - menu builder accepts graphic parameter

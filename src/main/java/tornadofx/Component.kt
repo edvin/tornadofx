@@ -525,6 +525,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     showingProperty().onChange {
                         if (it) {
                             callOnDock()
+                            if (owner != null) {
+                                x = owner.x + (owner.width / 2) - (scene.width / 2)
+                                y = owner.y + (owner.height / 2) - (scene.height / 2)
+                            }
                             if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                                 configureReloading()
                             }

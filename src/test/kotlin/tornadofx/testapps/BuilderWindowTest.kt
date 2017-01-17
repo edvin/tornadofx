@@ -7,7 +7,7 @@ import javafx.stage.StageStyle.DECORATED
 import javafx.stage.StageStyle.UNDECORATED
 import tornadofx.*
 
-class InlineFragmentTestApp : App(DangerButtonView::class)
+class BuilderWindowTestApp : App(DangerButtonView::class)
 
 class DangerButtonView : View("Do not click the button!") {
     override val root = stackpane {
