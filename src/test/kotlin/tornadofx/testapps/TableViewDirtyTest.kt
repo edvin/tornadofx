@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
+import javafx.scene.paint.Color
 import tornadofx.*
 import java.util.*
 
@@ -20,7 +21,10 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                 table = this
                 prefHeight = 200.0
                 column("First Name", Customer::firstNameProperty).makeEditable()
-                column("Last Name", Customer::lastNameProperty).makeEditable()
+                column("Last Name", Customer::lastNameProperty).makeEditable().cellDecorator {
+                    val isDirty = (it != null && editModel.getDirtyState(rowItem).isDirtyColumn(tableColumn))
+                    textFill = if (isDirty) Color.BLUE else Color.BLACK
+                }
                 enableCellEditing()
                 regainFocusAfterEdit()
                 enableDirtyTracking()

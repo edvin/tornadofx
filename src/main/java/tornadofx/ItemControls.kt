@@ -1100,9 +1100,9 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
     }
     val isDirty: Boolean get() = dirty.value
 
-    fun getDirtyColumnProperty(column: TableColumn<Any?, Any?>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
+    fun getDirtyColumnProperty(column: TableColumn<*, *>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
 
-    fun isDirtyColumn(column: TableColumn<Any?, Any?>) = dirtyColumns.containsKey(column as TableColumn<S, Any?>)
+    fun isDirtyColumn(column: TableColumn<*, *>) = dirtyColumns.containsKey(column as TableColumn<S, Any?>)
 
     init {
         dirtyColumns.addListener(InvalidationListener {
