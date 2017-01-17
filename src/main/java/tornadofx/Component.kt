@@ -296,6 +296,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
 
+    fun savableWhen(savable: () -> BooleanExpression) {
+        properties["tornadofx.savable"] = savable()
+    }
+
+    fun refreshableWhen(refreshable: () -> BooleanExpression) {
+        properties["tornadofx.refreshable"] = refreshable()
+    }
+
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     val accelerators = HashMap<KeyCombination, () -> Unit>()
