@@ -1160,7 +1160,7 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 @Suppress("UNCHECKED_CAST")
 class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: TableViewEditModel<S>) : TableRowSkin<S>(tableRow) {
     private fun getPolygon(cell: TableCell<S, *>) =
-            cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.RED } } as Polygon
+            cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.BLUE } } as Polygon
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         super.layoutChildren(x, y, w, h)
