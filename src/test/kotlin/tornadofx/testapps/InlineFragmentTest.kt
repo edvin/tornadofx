@@ -3,7 +3,6 @@ package tornadofx.testapps
 import javafx.application.Platform
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
-import javafx.stage.StageStyle.DECORATED
 import javafx.stage.StageStyle.UNDECORATED
 import tornadofx.*
 
@@ -11,7 +10,7 @@ class InlineFragmentTestApp : App(DangerButtonView::class)
 
 class DangerButtonView : View("Do not click the button!") {
     override val root = stackpane {
-        setPrefSize(400.0, 100.0)
+        setPrefSize(400.0, 200.0)
         button("Don't click me") {
             style {
                 fontSize = 20.px
@@ -19,7 +18,7 @@ class DangerButtonView : View("Do not click the button!") {
                 textFill = Color.RED
             }
             setOnAction {
-                builderWindow("What do you want?", stageStyle = UNDECORATED, owner = primaryStage) {
+                builderInternalWindow("What do you want?", overlayPaint = c(Color.RED.toString(), 0.4)) {
                     vbox(10) {
                         style {
                             padding = box(20.px)

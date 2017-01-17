@@ -11,9 +11,10 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import java.net.URL
 
-class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean) : StackPane() {
+class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private lateinit var view: UIComponent
@@ -37,7 +38,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
         if (modal) {
             canvas {
                 overlay = this
-                graphicsContext2D.fill = c("#000", 0.4)
+                graphicsContext2D.fill = overlayPaint
                 widthProperty().bind(this@InternalWindow.widthProperty())
                 heightProperty().bind(this@InternalWindow.heightProperty())
                 widthProperty().onChange { fillOverlay() }

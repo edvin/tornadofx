@@ -20,6 +20,8 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -629,6 +631,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = null, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
+
+    protected fun builderInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
