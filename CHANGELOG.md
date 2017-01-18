@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.0-SNAPSHOT]
+## [1.6.1-SNAPSHOT]
+
+
+## [1.6.0]
 
 - Workspaces (https://edvin.gitbooks.io/tornadofx-guide/content/16.%20Workspaces.html)
 - OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
