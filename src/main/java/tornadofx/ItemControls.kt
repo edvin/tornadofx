@@ -1055,8 +1055,12 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
         }
     }
 
-    fun commit(item: S) {
-        getDirtyState(item).commit()
+    /**
+     * Commit the current item, or just the given column for this item if a column is supplied
+     */
+    fun commit(item: S, column: TableColumn<*, *>? = null) {
+        val dirtyState = getDirtyState(item);
+        if (column == null) dirtyState.commit() else dirtyState.commit(column)
     }
 
     fun commit() {
@@ -1067,8 +1071,12 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
         items.values.forEach { it.rollback() }
     }
 
-    fun rollback(item: S) {
-        getDirtyState(item).rollback()
+    /**
+     * Rollback the current item, or just the given column for this item if a column is supplied
+     */
+    fun rollback(item: S, column: TableColumn<*, *>? = null) {
+        val dirtyState = getDirtyState(item);
+        if (column == null) dirtyState.rollback() else dirtyState.rollback(column)
     }
 
     fun commitSelected() {
@@ -1124,7 +1132,7 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
     override fun equals(other: Any?) = other is TableColumnDirtyState<*> && other.item == item
     override fun hashCode() = item?.hashCode() ?: throw IllegalStateException("Item must be present")
 
-    fun rollback(column : TableColumn<Any?, Any?>) {
+    fun rollback(column: TableColumn<*, *>) {
         val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
         if (initialValue != null) {
             column.setValue(item, initialValue)
@@ -1133,7 +1141,7 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
         editModel.tableView.refresh()
     }
 
-    fun commit(column : TableColumn<Any?, Any?>) {
+    fun commit(column: TableColumn<*, *>) {
         val initialValue = dirtyColumns[column as TableColumn<S, Any?>]
         if (initialValue != null) {
             dirtyColumns.remove(column)

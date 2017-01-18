@@ -24,17 +24,13 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                 regainFocusAfterEdit()
                 enableDirtyTracking()
                 contextmenu {
-                    menuitem("Rollback") {
-                        editModel.getDirtyState(selectedItem).rollback(selectedColumn!!)
-                    }.apply {
+                    item(stringBinding(selectionModel.selectedCells) { "Rollback ${selectedColumn?.text}" }) {
                         disableWhen { editModel.selectedItemDirty.not() }
-                        textProperty().bind(stringBinding(selectionModel.selectedCells) { "Rollback ${selectedColumn?.text}"})
+                        setOnAction { editModel.rollback(selectedItem, selectedColumn) }
                     }
-                    menuitem("Commit") {
-                        editModel.getDirtyState(selectedItem).commit(selectedColumn!!)
-                    }.apply {
+                    item(stringBinding(selectionModel.selectedCells) { "Commit ${selectedColumn?.text}" }) {
                         disableWhen { editModel.selectedItemDirty.not() }
-                        textProperty().bind(stringBinding(selectionModel.selectedCells) { "Commit ${selectedColumn?.text}"})
+                        setOnAction { editModel.commit(selectedItem, selectedColumn) }
                     }
                 }
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
@@ -45,15 +41,11 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                 paddingAll = 4
                 button("Commit row") {
                     disableWhen { table.editModel.selectedItemDirty.not() }
-                    setOnAction {
-                        table.editModel.commitSelected()
-                    }
+                    setOnAction { table.editModel.commitSelected() }
                 }
                 button("Rollback row") {
                     disableWhen { table.editModel.selectedItemDirty.not() }
-                    setOnAction {
-                        table.editModel.rollbackSelected()
-                    }
+                    setOnAction { table.editModel.rollbackSelected() }
                 }
             }
         }

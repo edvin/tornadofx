@@ -68,7 +68,7 @@ fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, g
  * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action. Notice that this differs
  * from the deprecated `menuitem` builder where the op is configured as the `setOnAction` directly.
  */
-fun ContextMenu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: ((MenuItem) -> Unit)? = null): MenuItem {
+fun ContextMenu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name, graphic)
     keyCombination?.apply { menuItem.accelerator = this }
     graphic?.apply { menuItem.graphic = this }
@@ -82,7 +82,7 @@ fun ContextMenu.item(name: String, keyCombination: KeyCombination? = null, graph
  * call `setOnAction` to provide the menu item action. Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun ContextMenu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: ((MenuItem) -> Unit)? = null): MenuItem {
+fun ContextMenu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(null, graphic)
     menuItem.textProperty().bind(name)
     keyCombination?.apply { menuItem.accelerator = this }
@@ -135,7 +135,7 @@ fun Menu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic:
  * Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: ((MenuItem) -> Unit)? = null): MenuItem {
+fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name, graphic)
     keyCombination?.apply { menuItem.accelerator = this }
     graphic?.apply { menuItem.graphic = graphic }
@@ -149,7 +149,7 @@ fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Nod
  * call `setOnAction` to provide the menu item action. Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun Menu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: ((MenuItem) -> Unit)? = null): MenuItem {
+fun Menu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(null, graphic)
     menuItem.textProperty().bind(name)
     keyCombination?.apply { menuItem.accelerator = this }
