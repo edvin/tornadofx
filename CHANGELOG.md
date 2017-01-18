@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
 - API break: View params are now map(property-ref, value) instead of vararg Pair(String, value)
 - menu builder correctly supports sub-menus
+- Introduced `item` menu item builder, should be used in favor of `menuitem`, which took the onAction callback insteadof an operation on the MenuItem as the op block parameter (breaks with the other builders)
 - menu builder accepts graphic parameter
 - ViewModel autocommit bindings doesn't affect dirty state any more
 - buttonbar builder for forms
