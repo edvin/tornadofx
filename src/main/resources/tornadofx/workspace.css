@@ -1,8 +1,3 @@
-.workspace {
-    -fx-pref-width: 900px;
-    -fx-pref-height: 600px;
-}
-
 .workspace .header {
     -fx-spacing: 0.4em;
 }

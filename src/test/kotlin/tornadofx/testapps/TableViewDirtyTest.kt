@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.control.TableView
+import javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY
 import tornadofx.*
 import java.util.*
 
@@ -33,7 +34,7 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                         setOnAction { editModel.commit(selectedItem, selectedColumn) }
                     }
                 }
-                columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
+                columnResizePolicy = CONSTRAINED_RESIZE_POLICY
             }
         }
         bottom {
