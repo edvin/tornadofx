@@ -12,7 +12,6 @@ import javafx.geometry.Orientation.VERTICAL
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Label
-import javafx.scene.control.PasswordField
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
@@ -55,7 +54,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var labelPosition by property<Orientation>()
     fun labelPositionProperty() = getProperty(Fieldset::labelPosition)
 
-    var wrapWidth by property<Double>()
+    var wrapWidth by property<Number>()
     fun wrapWidthProperty() = getProperty(Fieldset::wrapWidth)
 
     var icon by property<Node>()
@@ -135,9 +134,9 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         }
 
         // Setup listeneres for wrapping
-        wrapWidthProperty().addListener { observable, oldValue, newValue ->
+        wrapWidthProperty().onChange { newValue ->
             val responsiveOrientation = createObjectBinding<Orientation>(Callable {
-                if (width < newValue) VERTICAL else HORIZONTAL
+                if (width < newValue?.toDouble() ?: 0.0) VERTICAL else HORIZONTAL
             }, widthProperty())
 
             if (labelPositionProperty().isBound)
