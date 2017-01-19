@@ -70,10 +70,25 @@ open class Workspace(title: String = "Workspace") : View(title) {
             val match = accelerators.keys.asSequence().find { it.match(event) }
             if (match != null) {
                 accelerators[match]?.invoke()
+                event.consume()
             } else if (event.isControlDown && event.code == KeyCode.S) {
-                if (!saveButton.isDisable) onSave()
+                if (!saveButton.isDisable) {
+                    onSave()
+                    event.consume()
+                }
             } else if (event.code == KeyCode.F5 || (event.isControlDown && event.code == KeyCode.R)) {
-                if (!refreshButton.isDisable) onRefresh()
+                if (!refreshButton.isDisable) {
+                    onRefresh()
+                    event.consume()
+                }
+            }
+        }
+        if (!event.isConsumed) {
+            // Fallback to accelerators registered on the Workspace
+            val localMatch = accelerators.keys.asSequence().find { it.match(event) }
+            if (localMatch != null) {
+                accelerators[localMatch]?.invoke()
+                event.consume()
             }
         }
     }
