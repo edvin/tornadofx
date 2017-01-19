@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
+- ItemViewModel.asyncItem helper to reload the underlying item
+- Corrected Workspace.dockInNewScope, docking was performed in the old scope (!)
 
 ## [1.6.0]
 

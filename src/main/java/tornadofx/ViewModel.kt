@@ -417,4 +417,8 @@ open class ItemViewModel<T>(initialValue: T? = null) : ViewModel() {
     }
 
     fun <N> select(nested: (T) -> ObservableValue<N>) = itemProperty.select(nested)
+
+    fun asyncItem(func: () -> T?) =
+            task { func() } success { if (itemProperty.isBound && item is JsonModel) (item as JsonModel).update(it as JsonModel) else item = it }
+
 }

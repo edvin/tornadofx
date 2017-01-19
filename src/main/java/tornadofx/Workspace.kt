@@ -205,21 +205,21 @@ open class Workspace(title: String = "Workspace") : View(title) {
 
     /**
      * Create a new scope and associate it with this Workspace and optionally add one
-     * or more Injectable instances into the scope. The op block operates on the workspace. The following example
+     * or more Injectable instances into the scope. The op block operates on the workspace and is passed the new scope. The following example
      * creates a new scope, injects a Customer Model into it and docks the CustomerEditor
      * into the Workspace:
      *
      * <pre>
-     * workspace.withNewScope(CustomerModel(customer)) {
-     *     dock<CustomerEditor>()
+     * workspace.withNewScope(CustomerModel(customer)) { newScope ->
+     *     dock<CustomerEditor>(newScope)
      * }
      * </pre>
      */
-    fun withNewScope(vararg setInScope: Injectable, op: Workspace.() -> Unit) {
+    fun withNewScope(vararg setInScope: Injectable, op: Workspace.(Scope) -> Unit) {
         val newScope = Scope()
         newScope.workspaceInstance = this
         newScope.set(*setInScope)
-        op(this)
+        op(this, newScope)
     }
 
     /**
@@ -237,8 +237,8 @@ open class Workspace(title: String = "Workspace") : View(title) {
      * the scope, optionally injecting the given Injectables into the new scope.
      */
     inline fun <reified T: UIComponent> dockInNewScope(vararg setInScope: Injectable) {
-        withNewScope(*setInScope) {
-            dock<T>(scope)
+        withNewScope(*setInScope) { newScope ->
+            dock<T>(newScope)
         }
     }
 
