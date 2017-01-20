@@ -40,7 +40,7 @@ open class Form : VBox() {
         get() = children.filterIsInstance<Fieldset>()
 
     override fun getUserAgentStylesheet() =
-            Form::class.java.getResource("form.css").toExternalForm()!!
+            Form::class.java.getResource("/tornadofx/form.css").toExternalForm()!!
 }
 
 @DefaultProperty("children")
