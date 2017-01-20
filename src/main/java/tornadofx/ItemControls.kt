@@ -311,6 +311,10 @@ fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableCol
     return this
 }
 
+fun <S> ListView<S>.useCheckbox(converter: StringConverter<S>? = null, getter: (S) -> ObservableValue<Boolean>) {
+    setCellFactory { CheckBoxListCell(getter, converter) }
+}
+
 class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
     val checkbox: CheckBox by lazy {
         CheckBox().apply {
