@@ -311,7 +311,26 @@ fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableCol
     return this
 }
 
+fun <S> ListView<S>.useCheckbox(converter: StringConverter<S>? = null, getter: (S) -> ObservableValue<Boolean>) {
+    setCellFactory { CheckBoxListCell(getter, converter) }
+}
+
 class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
+    val checkbox: CheckBox by lazy {
+        CheckBox().apply {
+            if (makeEditable) {
+                selectedProperty().bindBidirectional(itemProperty())
+                setOnAction {
+                    tableView.edit(index, tableColumn)
+                    commitEdit(!isSelected)
+                }
+            } else {
+                isDisable = true
+                selectedProperty().bind(itemProperty())
+            }
+        }
+    }
+
     init {
         if (makeEditable) {
             isEditable = true
@@ -322,27 +341,7 @@ class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
     override fun updateItem(item: Boolean?, empty: Boolean) {
         super.updateItem(item, empty)
         style { alignment = Pos.CENTER }
-
-        if (empty || item == null) {
-            graphic = null
-        } else {
-            graphic = CheckBox().apply {
-                val model = tableView.items[index]
-                val prop = tableColumn.cellValueFactory.call(TableColumn.CellDataFeatures(tableView, tableColumn, model)) as Property
-
-                if (makeEditable) {
-                    selectedProperty().bindBidirectional(prop)
-                    selectedProperty().onChange {
-                        tableView.edit(tableRow.index, tableColumn)
-                        commitEdit(isSelected)
-                    }
-                } else {
-                    disableProperty().set(true)
-                    selectedProperty().bind(prop)
-                }
-            }
-
-        }
+        graphic = if (empty || item == null) null else checkbox
     }
 }
 
