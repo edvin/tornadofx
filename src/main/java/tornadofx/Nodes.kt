@@ -762,6 +762,12 @@ var Node.hgrow: Priority? get() = HBox.getHgrow(this); set(value) {
 }
 var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) {
     VBox.setVgrow(this, value)
+    // Input Container vgrow must propagate to Field and Fieldset
+    if (parent?.parent is Field) {
+        VBox.setVgrow(parent.parent, value)
+        if (parent.parent?.parent is Fieldset)
+            VBox.setVgrow(parent.parent.parent, value)
+    }
 }
 
 fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {

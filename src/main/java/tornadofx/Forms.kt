@@ -63,16 +63,25 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun buttonbar(alignment: Pos ? = null, op: (HBox.() -> Unit)? = null): Field {
-        val field = Field("", true)
+    fun buttonbar(alignment: Pos? = null, op: (Pane.() -> Unit)? = null): Field {
+        val field = Field(forceLabelIndent = true)
         children.add(field)
         if (alignment != null) field.inputContainer.alignment = alignment
         op?.invoke(field.inputContainer)
         return field
     }
 
-    fun field(text: String? = null, forceLabelIndent: Boolean = false, op: (HBox.() -> Unit)? = null): Field {
-        val field = Field(text ?: "", forceLabelIndent)
+    /**
+     * Create a field with the given text and operate on it.
+     * @param text The label of the field
+     * @param forceLabelIndent Indent the label even if it's empty, good for aligning buttons etc
+     * @orientation Whether to create an HBox (HORIZONTAL) or a VBox (VERTICAL) container for the field content
+     * @op Code that will run in the context of the content container (Either HBox or VBox per the orientation)
+     *
+     * @see buttonbar
+     */
+    fun field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Pane.() -> Unit)? = null): Field {
+        val field = Field(text ?: "", orientation, forceLabelIndent)
         children.add(field)
         op?.invoke(field.inputContainer)
         return field
@@ -105,10 +114,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
                     c.addedSubList.asSequence().filterIsInstance<Field>().forEach { added ->
 
                         // Configure hgrow for current children
-                        added.inputContainer.children.forEach { this.configureHgrow(it) }
+                        added.inputContainer.children.forEach { configureHgrow(it) }
 
                         // Add listener to support inputs added later
-                        added.inputContainer.children.addListener(ListChangeListener { while (it.next()) if (it.wasAdded()) it.addedSubList.forEach { this.configureHgrow(it) } })
+                        added.inputContainer.children.addListener(ListChangeListener { while (it.next()) if (it.wasAdded()) it.addedSubList.forEach { configureHgrow(it) } })
                     }
                 }
             }
@@ -116,8 +125,8 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().addListener { observable, oldValue, newValue ->
-            children.asSequence().filterIsInstance<Field>().forEach {
-                it.inputContainer.children.forEach { this.configureHgrow(it) }
+            children.asSequence().filterIsInstance<Field>().forEach { field ->
+                field.inputContainer.children.forEach { configureHgrow(it) }
             }
         }
     }
@@ -184,20 +193,23 @@ fun Node.mnemonicTarget() {
 }
 
 @DefaultProperty("inputs")
-class Field(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
+class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val forceLabelIndent: Boolean = false) : Pane() {
     var text by property(text)
     fun textProperty() = getProperty(Field::text)
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
-    val inputContainer = HBox().apply { addClass(Stylesheet.inputContainer) }
-    var inputs: ObservableList<Node>? = null
+    val inputContainer: Pane = (if (orientation == HORIZONTAL) HBox() else VBox()).apply {
+        addClass(Stylesheet.inputContainer)
+        addPseudoClass(orientation.name.toLowerCase())
+    }
+    @Suppress("unused") // FXML Default Target
+    val inputs: ObservableList<Node> = inputContainer.children
 
     init {
         isFocusTraversable = false
         addClass(Stylesheet.field)
         label.textProperty().bind(textProperty())
-        inputs = inputContainer.children
         children.addAll(labelContainer, inputContainer)
     }
 
@@ -206,8 +218,8 @@ class Field(text: String? = null, val forceLabelIndent: Boolean = false) : Pane(
     override fun computePrefHeight(width: Double): Double {
         val labelHasContent = forceLabelIndent || text.isNotBlank()
 
-        val labelHeight = if (labelHasContent) labelContainer.prefHeight(-1.0) else 0.0
-        val inputHeight = inputContainer.prefHeight(-1.0)
+        val labelHeight = if (labelHasContent) labelContainer.prefHeight(width) else 0.0
+        val inputHeight = inputContainer.prefHeight(width)
 
         val insets = insets
 
@@ -259,7 +271,7 @@ class Field(text: String? = null, val forceLabelIndent: Boolean = false) : Pane(
             }
         } else {
             if (labelHasContent) {
-                val labelPrefHeight = labelContainer.prefHeight(-1.0)
+                val labelPrefHeight = labelContainer.prefHeight(width)
                 val labelHeight = Math.min(labelPrefHeight, contentHeight)
 
                 labelContainer.resizeRelocate(contentX, contentY, Math.min(labelWidth, contentWidth), labelHeight)
