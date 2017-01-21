@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
+- UIComponents can now be instantiated manually instead of via inject() and find()
 - Input Control builders now support ObservableValue instead of just Property for automatic binding
 - ListView.useCheckbox()
 - ItemViewModel.asyncItem helper to reload the underlying item

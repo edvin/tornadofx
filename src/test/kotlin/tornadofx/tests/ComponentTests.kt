@@ -3,9 +3,13 @@ package tornadofx.tests
 import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import tornadofx.*
-import kotlin.reflect.KProperty1
-import kotlin.test.*
+import tornadofx.Fragment
+import tornadofx.singleAssign
+import tornadofx.vbox
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class ComponentTests {
 

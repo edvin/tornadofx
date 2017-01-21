@@ -2,7 +2,6 @@ package tornadofx
 
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
-import javafx.beans.binding.StringExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
@@ -292,6 +291,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal var reloadInit = false
     internal var muteDocking = false
     abstract val root: Parent
+    private var isInitialized = false
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
@@ -309,6 +309,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     val accelerators = HashMap<KeyCombination, () -> Unit>()
 
     fun init() {
+        if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
@@ -320,6 +321,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             if (newParent == null && oldParent != null) callOnUndock()
             if (newParent != null && newParent != oldParent) callOnDock()
         })
+        isInitialized = true
     }
 
     open fun onUndock() {
@@ -347,6 +349,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     inline fun <reified T : UIComponent> goto(params: Map<String, Any?>) = find<T>(params).onGoto(this)
 
     internal fun callOnDock() {
+        if (!isInitialized) init()
         if (muteDocking) return
         if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
