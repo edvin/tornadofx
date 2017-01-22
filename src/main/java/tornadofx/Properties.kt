@@ -74,11 +74,42 @@ fun <S, T> observable(owner: S, prop: KProperty1<S, T>): ReadOnlyObjectProperty<
     }
 }
 
+/**
+ * Convert an bean instance and a corresponding getter/setter reference into a writable observable.
+ *
+ * Example: val observableName = observable(myPojo, MyPojo::getName, MyPojo::setName)
+ */
+fun <S : Any, T> observable(bean: S, getter: KFunction<T>, setter: KFunction2<S, T, Unit>): PojoProperty<T> {
+    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+
+    return object : PojoProperty<T>(bean, propName) {
+        override fun get() = getter.call(bean)
+        override fun set(newValue: T) {
+            setter.invoke(bean, newValue)
+        }
+    }
+}
+
+open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T>(bean, propName) {
+    fun refresh() {
+        fireValueChangedEvent()
+    }
+}
+
 
 @JvmName("pojoObservable")
 inline fun <reified T : Any> Any.observable(propName: String) =
         this.observable( propertyName = propName, propertyType = T::class )
 
+/**
+ * Convert a pojo bean instance into a writable observable.
+ *
+ * Example: val observableName = myPojo.observable(MyPojo::getName, MyPojo::setName)
+ *            or
+ *          val observableName = myPojo.observable(MyPojo::getName)
+ *            or
+ *          val observableName = myPojo.observable("name")
+ */
 @Suppress("UNCHECKED_CAST")
 inline fun <reified S : Any, reified T : Any> S.observable( getter: KFunction<T>? = null, setter: KFunction2<S, T, Unit>? = null, propertyName: String? = null, @Suppress("UNUSED_PARAMETER")propertyType: KClass<T>? = null ): ObjectProperty<T> {
     if( getter == null && propertyName == null ) throw AssertionError("Either getter or propertyName must be provided")

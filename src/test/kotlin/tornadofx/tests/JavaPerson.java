@@ -20,7 +20,7 @@ public class JavaPerson {
     public void setId(Integer id) {
         Integer oldValue = this.id;
         this.id = id;
-        //pcs.firePropertyChange("id",oldValue,id);
+        pcs.firePropertyChange("id",oldValue,id);
     }
 
     public String getName() {
