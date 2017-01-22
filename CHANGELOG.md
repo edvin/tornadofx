@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
+
+- can now bind to a pojo by providing only a single getter ( eg. person.observable( JavaPerson::getId ) )
+  - API break: previously returned a PojoProperty - now returns an ObjectProperty<T>
+  - uses javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder and will now propogate PropertyChangeEvents from the pojo
 - UIComponent.headingProperty is ObservableValue<String> for easier binding
 - `field` builder supports `orientation` parameter which will cause input container to be a VBox instead of an HBox (https://github.com/edvin/tornadofx/issues/190)
 - UIComponents can now be instantiated manually instead of via inject() and find()

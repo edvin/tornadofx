@@ -155,7 +155,28 @@ class PropertiesTest {
         Assert.assertEquals("Doe", person.name)
 
         person.id = 5
-        idObservable.refresh()
+        Assert.assertEquals(5, idObservable.value)
+    }
+
+    @Test
+    fun pojoWritableObservableGetterOnly() {
+        val person = JavaPerson()
+        person.id = 1
+        person.name = "John"
+
+        val idObservable = person.observable( JavaPerson::getId )
+        val nameObservable = person.observable<String>("name")
+        val idBinding = idObservable.integerBinding{ idObservable.value }
+
+        idObservable.value = 44
+        nameObservable.value = "Doe"
+        Assert.assertEquals(44, idBinding.value )
+        Assert.assertEquals(44, person.id)
+        Assert.assertEquals("Doe", person.name)
+
+        person.id = 5
+        // property change events on the pojo are propogated
+        Assert.assertEquals( 5, idBinding.value )
         Assert.assertEquals(5, idObservable.value)
     }
 
