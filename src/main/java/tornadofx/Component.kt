@@ -3,6 +3,8 @@ package tornadofx
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
+import javafx.beans.value.ObservableValue
+import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -568,14 +570,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
 
-    open val headingProperty: StringProperty get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
+    open val headingProperty: ObservableValue<String> get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
 
+    @Suppress("UNCHECKED_CAST")
     var heading: String
-        get() = headingProperty.get() ?: ""
+        get() = headingProperty.value ?: ""
         set(value) {
             if (headingProperty == titleProperty)
                 properties["tornadofx.heading"] = SimpleStringProperty()
-            headingProperty.set(value)
+            if (headingProperty is WritableValue<*>)
+                (headingProperty as WritableValue<String>).value = value
         }
 
     /**
