@@ -58,6 +58,14 @@ class StylesheetTests {
     enum class Bool { TRUE, FALSE, FILE_NOT_FOUND }
 
     @Test
+    fun deriveTest() {
+        val color = Color.hsb(0.0, 1.0, 0.5, 0.8)
+        Assert.assertEquals(Color.RED, color.derive(0.5))
+        Assert.assertEquals(Color.RED, color.derive(-0.5))
+        Assert.assertEquals(Color.RED, color.ladder(Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE), Stop(0.2, Color.RED), Stop(0.2, Color.GREEN), Stop(0.2, Color.BLUE)))
+    }
+
+    @Test
     fun useCustomRenderer() {
         stylesheet {
             label {

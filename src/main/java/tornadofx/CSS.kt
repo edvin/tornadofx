@@ -14,8 +14,7 @@ import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.*
-import javafx.scene.paint.Color
-import javafx.scene.paint.Paint
+import javafx.scene.paint.*
 import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.shape.StrokeType
@@ -1229,6 +1228,24 @@ fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0): Color = try {
 } catch (e: Exception) {
     Stylesheet.log.warning("Error parsing color c(red=$red, green=$green, blue=$blue, opacity=$opacity)")
     Color.MAGENTA
+}
+
+internal fun Color.withOpacity(newOpacity: Double) = Color(red, green, blue, newOpacity)
+
+fun Color.derive(ratio: Double, opacity: Double = this.opacity) = (if (ratio < 0) interpolate(Color.BLACK, -ratio) else interpolate(Color.WHITE, ratio)).withOpacity(opacity)
+
+fun Color.ladder(vararg stops: Stop): Color {
+    val offset = brightness
+    val nStops = LinearGradient(0.0, 1.0, 0.0, 1.0, false, CycleMethod.NO_CYCLE, *stops).stops
+    return if (offset <= 0.0) {
+        nStops.first().color
+    } else if (offset >= 1.0) {
+        nStops.last().color
+    } else {
+        val left = nStops.last { it.offset <= offset }
+        val right = nStops.first { it.offset >= offset }
+        if (right.offset == left.offset) left.color else left.color.interpolate(right.color, (offset - left.offset) / (right.offset - left.offset))
+    }
 }
 
 fun <T> multi(vararg elements: T) = MultiValue(elements)
