@@ -1230,9 +1230,7 @@ fun c(red: Int, green: Int, blue: Int, opacity: Double = 1.0): Color = try {
     Color.MAGENTA
 }
 
-internal fun Color.withOpacity(newOpacity: Double) = Color(red, green, blue, newOpacity)
-
-fun Color.derive(ratio: Double, opacity: Double = this.opacity) = (if (ratio < 0) interpolate(Color.BLACK, -ratio) else interpolate(Color.WHITE, ratio)).withOpacity(opacity)
+fun Color.derive(ratio: Double) = if (ratio < 0) interpolate(Color(0.0, 0.0, 0.0, opacity), -ratio)!! else interpolate(Color(1.0, 1.0, 1.0, opacity), ratio)!!
 
 fun Color.ladder(vararg stops: Stop): Color {
     val offset = brightness
