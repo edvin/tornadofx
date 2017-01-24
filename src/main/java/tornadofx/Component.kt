@@ -310,6 +310,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     val accelerators = HashMap<KeyCombination, () -> Unit>()
 
+    fun disableSave() {
+        properties["tornadofx.savable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableRefresh() {
+        properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
+    }
+
     fun init() {
         if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this

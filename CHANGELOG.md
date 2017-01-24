@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
-
+- UIComponent `disableSave()` and `disableRefresh()`
 - can now bind to a pojo by providing only a single getter ( eg. person.observable( JavaPerson::getId ) )
   - API break: previously returned a PojoProperty - now returns an ObjectProperty<T>
   - uses javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder and will now propogate PropertyChangeEvents from the pojo
