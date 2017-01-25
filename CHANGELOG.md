@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
+- Color.derive and Color.ladder
 - Rest.Response implements Closeable so it can be `use`ed (https://github.com/edvin/tornadofx/issues/237)
 - UIComponent `disableSave()` and `disableRefresh()`
 - can now bind to a pojo by providing only a single getter ( eg. person.observable( JavaPerson::getId ) )
