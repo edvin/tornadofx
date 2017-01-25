@@ -18,6 +18,7 @@ import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.*
 import org.apache.http.util.EntityUtils
 import tornadofx.Rest.Request.Method.*
+import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
 import java.net.*
@@ -112,7 +113,7 @@ open class Rest : Controller() {
         fun execute(): Response
     }
 
-    interface Response {
+    interface Response : Closeable {
         val request: Request
         val statusCode: Int
         val reason: String
@@ -243,6 +244,10 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override val statusCode: Int get() = request.connection.responseCode
     private var bytesRead: ByteArray? = null
 
+    override fun close() {
+        consume()
+    }
+
     override fun consume(): Rest.Response {
         try {
             if (bytesRead == null) {
@@ -372,8 +377,11 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
 
 class HttpClientResponse(override val request: HttpClientRequest, val response: CloseableHttpResponse) : Rest.Response {
     override val statusCode: Int get() = response.statusLine.statusCode
-
     override val reason: String get() = response.statusLine.reasonPhrase
+
+    override fun close() {
+        consume()
+    }
 
     override fun text(): String {
         try {

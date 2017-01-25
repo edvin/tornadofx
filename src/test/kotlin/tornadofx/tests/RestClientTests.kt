@@ -1,12 +1,14 @@
 package tornadofx.tests
 
 import com.sun.net.httpserver.HttpServer
+import javafx.application.Platform
 import javafx.stage.Stage
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.BeforeClass
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.FX
 import tornadofx.JsonBuilder
 import tornadofx.Rest
 import tornadofx.boolean
@@ -79,4 +81,16 @@ class RestClientTests {
         Assert.assertEquals(true, result.boolean("success"))
     }
 
+    @Test
+    fun testAutoclose() {
+        val hangingResponse = api.get("/category")
+        FX.runAndWait {
+            Assert.assertEquals(1, Rest.ongoingRequests.size)
+        }
+        hangingResponse.use {
+        }
+        FX.runAndWait {
+            Assert.assertEquals(0, Rest.ongoingRequests.size)
+        }
+    }
 }
