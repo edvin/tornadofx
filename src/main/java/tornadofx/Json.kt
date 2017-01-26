@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
+import java.io.InputStream
 import java.io.StringWriter
 import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
@@ -351,3 +352,6 @@ fun JsonStructure.toString(vararg options: String): String {
 }
 
 fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
+
+fun InputStream.toJSONArray(): JsonArray = Json.createReader(this).use { it.readArray() }
+fun InputStream.toJSON(): JsonObject = Json.createReader(this).use { it.readObject() }

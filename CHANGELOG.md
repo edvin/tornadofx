@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.1-SNAPSHOT]
 
+- InputStream.toJSON and .toJSONArray + resources.json(key) and resources.jsonArray(key)
 - Color.derive and Color.ladder
 - Rest.Response implements Closeable so it can be `use`ed (https://github.com/edvin/tornadofx/issues/237)
 - UIComponent `disableSave()` and `disableRefresh()`

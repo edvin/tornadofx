@@ -692,6 +692,8 @@ class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+    fun json(resource: String) = stream(resource)!!.toJSON()
+    fun jsonArray(resource: String) = stream(resource)!!.toJSONArray()
 }
 
 class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
