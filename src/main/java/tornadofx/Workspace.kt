@@ -146,8 +146,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                             addClass("icon", "refresh")
                         }
                         setOnAction {
-                            if (dockedComponentProperty.value?.refreshable?.value ?: false)
-                                dockedComponentProperty.value?.onRefresh()
+                            onRefresh()
                         }
                     }
                     button {
@@ -156,8 +155,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                         isDisable = true
                         graphic = label { addClass("icon", "save") }
                         setOnAction {
-                            if (dockedComponentProperty.value?.savable?.value ?: false)
-                                dockedComponentProperty.value?.onSave()
+                            onSave()
                         }
                     }
                     add(headingContainer)
@@ -165,6 +163,16 @@ open class Workspace(title: String = "Workspace") : View(title) {
                 }
             }
         }
+    }
+
+    override fun onSave() {
+        if (dockedComponentProperty.value?.savable?.value ?: false)
+            dockedComponentProperty.value?.onSave()
+    }
+
+    override fun onRefresh() {
+        if (dockedComponentProperty.value?.refreshable?.value ?: false)
+            dockedComponentProperty.value?.onRefresh()
     }
 
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find(T::class, scope, params))
