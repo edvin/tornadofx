@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.1-SNAPSHOT]
+## [1.6.1]
 
 - whenSaved and whenRefreshed lambdas as alternative to overriding onSave and onRefresh
 - Workspace onSave and onDock delegates to the docked View
