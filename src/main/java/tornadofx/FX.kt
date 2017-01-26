@@ -18,6 +18,7 @@ import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
@@ -31,28 +32,62 @@ import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
-open class Scope {
+open class Scope() {
+    internal var workspaceInstance: Workspace? = null
+
+    constructor(workspace: Workspace, vararg setInScope: Injectable) : this() {
+        set(*setInScope)
+        workspaceInstance = workspace
+    }
+
+    constructor(vararg setInScope: Injectable) : this() {
+        set(*setInScope)
+    }
+
+    fun workspace(workspace: Workspace): Scope {
+        workspaceInstance = workspace
+        return this
+    }
+
+    var workspace: Workspace
+        get() {
+            if (workspaceInstance == null) {
+                // Use configured default workspace
+                workspaceInstance = find(FX.defaultWorkspace, this)
+            }
+            return workspaceInstance!!
+        }
+        set(value) {
+            workspaceInstance = value
+        }
+
     fun deregister() {
         FX.primaryStages.remove(this)
         FX.applications.remove(this)
         FX.components.remove(this)
     }
 
+    // Fix the component types to this scope
     operator fun invoke(vararg injectable: KClass<out Component>) {
         injectable.forEach { FX.fixedScopes[it] = this }
     }
 }
 
-fun KClass<out Component>.scope(scope : Scope) = scope.invoke(this)
+// Fix this component types to the given scope
+fun KClass<out Component>.scope(scope: Scope) = scope.invoke(this)
 
 var DefaultScope = Scope()
 
 class FX {
     companion object {
+        var defaultWorkspace: KClass<out Workspace> = Workspace::class
         internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
-        internal val inheritScopeHolder = ThreadLocal<Scope>()
-        internal val inheritParamHolder = ThreadLocal<Map<String, Any>>()
+        internal val inheritScopeHolder = object : ThreadLocal<Scope>() {
+            override fun initialValue() = DefaultScope
+        }
+        internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()
         internal var ignoreParentForFirstBuilder: Boolean = false
             get() {
                 if (field) {
@@ -75,7 +110,7 @@ class FX {
         }
 
         val eventbus = EventBus()
-        val log = Logger.getLogger("FX")
+        val log: Logger = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
 
         internal val primaryStages = HashMap<Scope, Stage>()
@@ -310,18 +345,33 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
 fun <T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
-fun <T : Injectable> Scope.set(vararg value: T) = FX.getComponents(this).apply {
-    for (v in value) put(v.javaClass.kotlin, v)
+@Suppress("UNCHECKED_CAST")
+fun <T : Injectable> Scope.set(vararg value: T): Scope {
+    FX.getComponents(this).apply {
+        for (v in value) put(v.javaClass.kotlin, v)
+    }
+    return this
+}
+
+fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
+    val m = HashMap<String, Any?>()
+    params.forEach { m.put(it.first, it.second) }
+    return m
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<String, Any>): T {
+fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
-    inheritParamHolder.set(params.toMap())
+    val stringKeyedMap = HashMap<String, Any?>()
+    params?.forEach {
+        val stringKey = (it.key as? KProperty<*>)?.name ?: it.key.toString()
+        stringKeyedMap[stringKey] = params[it.key]
+    }
+    inheritParamHolder.set(stringKeyedMap)
     if (Injectable::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(useScope)
         if (!components.containsKey(type as KClass<out Injectable>)) {
@@ -342,12 +392,17 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg pa
 
     val cmp = type.java.newInstance()
     if (cmp is Fragment) cmp.init()
+
+    // Become default workspace for scope if not set
+    if (cmp is Workspace && cmp.scope.workspaceInstance == null)
+        cmp.scope.workspaceInstance = cmp
+
     return cmp
 }
 
 interface DIContainer {
-    fun <T : Any> getInstance(type: KClass<T> ): T
-    fun <T : Any> getInstance(type: KClass<T>, name: String ): T {
+    fun <T : Any> getInstance(type: KClass<T>): T
+    fun <T : Any> getInstance(type: KClass<T>, name: String): T {
         throw AssertionError("Injector is not configured, so bean of type $type with name $name can not be resolved")
     }
 }
@@ -374,11 +429,32 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
     }
     when (this) {
-        // Only add if root is already created, else this will become the root
+        is WorkspaceArea -> {
+            // Decide if the component should be tracked for removal on undock
+            if (dynamicComponentMode) dynamicComponents.add(node)
+
+            if (node is MenuBar) {
+                // MenuBar is added above the toolbar and is not considered dynamic
+                (top as VBox).children.add(0, node)
+            } else {
+                val targetIndex: Int
+                if (node is ButtonBase) {
+                    // Add buttons after last button
+                    targetIndex = header.items.indexOfLast { it is Button } + 1
+                } else {
+                    targetIndex = header.items.indexOfFirst { it.hasClass("spacer") } + 1
+                }
+                header.items.add(targetIndex, node)
+            }
+        }
+        is Workspace -> {
+            root.addChildIfPossible(node, index)
+        }
         is UIComponent -> root?.addChildIfPossible(node)
         is ScrollPane -> content = node
         is Tab -> content = node
-        is BorderPane -> { } // Either pos = builder { or caught by builderTarget above
+        is BorderPane -> {
+        } // Either pos = builder { or caught by builderTarget above
         is TabPane -> {
             val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
             val tab = Tab(uicmp?.title ?: node.toString(), node)
@@ -420,6 +496,8 @@ fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
     is ToolBar -> items
     is Pane -> children
     is Group -> children
+    is HBox -> children
+    is VBox -> children
     is Control -> if (skin is SkinBase<*>) (skin as SkinBase<*>).children else getChildrenReflectively()
     is Parent -> getChildrenReflectively()
     else -> null

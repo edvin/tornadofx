@@ -3,12 +3,14 @@ package tornadofx
 import javafx.beans.Observable
 import javafx.beans.binding.*
 import javafx.beans.property.*
+import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
+import kotlin.reflect.jvm.javaMethod
 
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
@@ -88,35 +90,40 @@ fun <S : Any, T> observable(bean: S, getter: KFunction<T>, setter: KFunction2<S,
     }
 }
 
-@JvmName("pojoObservable")
-fun <S : Any, T> S.observable(getter: KFunction<T>, setter: KFunction2<S, T, Unit>): PojoProperty<T> =
-        observable(this, getter, setter)
-
 open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T>(bean, propName) {
     fun refresh() {
         fireValueChangedEvent()
     }
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <S : Any, T : Any> observable(bean: S, propName: String, propType: KClass<T>): PojoProperty<T> {
-    val suffix = propName.capitalize()
-
-    val getter = bean.javaClass.getDeclaredMethod("get$suffix")
-    val setter = bean.javaClass.getDeclaredMethod("set$suffix", propType.java)
-
-    return object : PojoProperty<T>(bean, propName) {
-        override fun get() = getter.invoke(bean) as T
-        override fun set(newValue: T) {
-            setter.invoke(bean, newValue)
-        }
-    }
-
-}
 
 @JvmName("pojoObservable")
 inline fun <reified T : Any> Any.observable(propName: String) =
-        observable(this, propName, T::class)
+        this.observable( propertyName = propName, propertyType = T::class )
+
+/**
+ * Convert a pojo bean instance into a writable observable.
+ *
+ * Example: val observableName = myPojo.observable(MyPojo::getName, MyPojo::setName)
+ *            or
+ *          val observableName = myPojo.observable(MyPojo::getName)
+ *            or
+ *          val observableName = myPojo.observable("name")
+ */
+@Suppress("UNCHECKED_CAST")
+inline fun <reified S : Any, reified T : Any> S.observable( getter: KFunction<T>? = null, setter: KFunction2<S, T, Unit>? = null, propertyName: String? = null, @Suppress("UNUSED_PARAMETER")propertyType: KClass<T>? = null ): ObjectProperty<T> {
+    if( getter == null && propertyName == null ) throw AssertionError("Either getter or propertyName must be provided")
+    var propName = propertyName
+    if( propName == null && getter != null ){
+        propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    }
+    return JavaBeanObjectPropertyBuilder.create().apply{
+        bean( this@observable )
+        this.name( propName )
+        if( getter != null ) this.getter( getter.javaMethod )
+        if( setter != null ) this.setter( setter.javaMethod )
+    } .build() as ObjectProperty<T>
+}
 
 enum class SingleAssignThreadSafetyMode {
     SYNCHRONIZED,
@@ -246,7 +253,6 @@ fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T
 
 fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding =
     Bindings.createStringBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
-
 
 fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)

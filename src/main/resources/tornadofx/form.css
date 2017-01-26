@@ -14,7 +14,7 @@
     -fx-padding: 0 0 3 0;
 }
 
-.form .fieldset .input-container {
+.form .fieldset .input-container:horizontal {
     -fx-alignment: baseline-left;
 }
 

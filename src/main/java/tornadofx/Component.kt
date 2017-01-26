@@ -1,10 +1,10 @@
 package tornadofx
 
 import javafx.application.Platform
-import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.binding.BooleanExpression
+import javafx.beans.property.*
+import javafx.beans.value.ObservableValue
+import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -42,7 +42,8 @@ interface Injectable
 
 abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
-    val params: Map<String, Any> = FX.inheritParamHolder.get() ?: mapOf()
+    val workspace: Workspace get() = scope.workspace
+    val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
 
     val config: Properties
@@ -56,8 +57,8 @@ abstract class Component {
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
     fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
 
-    inline fun <reified T : Component> find(vararg params: Pair<String, Any>): T = find(T::class, scope, *params)
-    fun <T : Component> find(type: KClass<T>, vararg params: Pair<String, Any>) = find(type, scope, *params)
+    inline fun <reified T : Component> find(params: Map<*, Any?>? = null): T = find(T::class, scope, params)
+    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null) = find(type, scope, params)
 
     private val _config = lazy {
         Properties().apply {
@@ -116,17 +117,16 @@ abstract class Component {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, *params)
+    inline fun <reified T> inject(overrideScope: Scope = scope, params: Map<String, Any?>? = null): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, params)
     }
 
-    inline fun <reified T> param(name: String? = null, defaultValue: T? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T> param(defaultValue: T? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            val paramName = name ?: property.name
-            val param = thisRef.params[paramName] as? T
+            val param = thisRef.params[property.name] as? T
             if (param == null) {
                 if (defaultValue == null) {
-                    throw IllegalStateException("param for name [$paramName] has not been set")
+                    throw IllegalStateException("param for name [$property.name] has not been set")
                 }
                 return defaultValue
             } else {
@@ -135,18 +135,17 @@ abstract class Component {
         }
     }
 
-    inline fun <reified T> nullableParam(name: String? = null, defaultValue: T? = null): ReadOnlyProperty<Component, T?> = object : ReadOnlyProperty<Component, T?> {
+    inline fun <reified T> nullableParam(defaultValue: T? = null): ReadOnlyProperty<Component, T?> = object : ReadOnlyProperty<Component, T?> {
         override fun getValue(thisRef: Component, property: KProperty<*>): T? {
-            val paramName = name ?: property.name
-            return thisRef.params[paramName] as? T ?: defaultValue
+            return thisRef.params[property.name] as? T ?: defaultValue
         }
     }
 
-    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, params: Map<String, Any?>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(T::class, overrideScope, *params)
+            if (fragment == null) fragment = find(T::class, overrideScope, params)
             return fragment!!
         }
     }
@@ -296,12 +295,33 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal var reloadInit = false
     internal var muteDocking = false
     abstract val root: Parent
+    private var isInitialized = false
+
+    open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
+    open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
+
+    fun savableWhen(savable: () -> BooleanExpression) {
+        properties["tornadofx.savable"] = savable()
+    }
+
+    fun refreshableWhen(refreshable: () -> BooleanExpression) {
+        properties["tornadofx.refreshable"] = refreshable()
+    }
 
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
-    var accelerators = HashMap<KeyCombination, Runnable>()
+    val accelerators = HashMap<KeyCombination, () -> Unit>()
+
+    fun disableSave() {
+        properties["tornadofx.savable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableRefresh() {
+        properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
+    }
 
     fun init() {
+        if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ observable, oldParent, newParent ->
             if (modalStage != null) return@addListener
@@ -313,12 +333,21 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             if (newParent == null && oldParent != null) callOnUndock()
             if (newParent != null && newParent != oldParent) callOnDock()
         })
+        isInitialized = true
     }
 
     open fun onUndock() {
     }
 
     open fun onDock() {
+    }
+
+    open fun onRefresh() {
+
+    }
+
+    open fun onSave() {
+
     }
 
     open fun onGoto(source: UIComponent) {
@@ -329,9 +358,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         target.onGoto(this)
     }
 
-    inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any>) = find<T>(*params).onGoto(this)
+    inline fun <reified T : UIComponent> goto(params: Map<String, Any?>) = find<T>(params).onGoto(this)
 
     internal fun callOnDock() {
+        if (!isInitialized) init()
         if (muteDocking) return
         if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
@@ -388,7 +418,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         }
     }
 
-    // TODO: Helpers needing access to Scope must be defined here or they must take scope with default as parameter.
+
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
 
     fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
@@ -444,11 +474,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     @JvmName("addView")
-    inline fun <reified T : View> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>): Unit = plusAssign(find(type, scope, *params).root)
+    inline fun <reified T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null): Unit = plusAssign(find(type, scope, params).root)
 
     @JvmName("addFragmentByClass")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, vararg params: Pair<String, Any>, noinline op: (T.() -> Unit)? = null): Unit {
-        val fragment: T = find(type, scope, *params)
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): Unit {
+        val fragment: T = find(type, scope, params)
         plusAssign(fragment.root)
         op?.invoke(fragment)
     }
@@ -461,11 +491,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint =c("#000", 0.4), vararg params: Pair<String, Any>) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, *params), owner)
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, params: Map<*, Any?>? = null) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope, params), owner)
 
     protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4)) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
+
+    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, rootBuilder: UIComponent.() -> Parent) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
@@ -507,6 +540,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
                     showingProperty().onChange {
                         if (it) {
                             callOnDock()
+                            if (owner != null) {
+                                x = owner.x + (owner.width / 2) - (scene.width / 2)
+                                y = owner.y + (owner.height / 2) - (scene.height / 2)
+                            }
                             if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                                 configureReloading()
                             }
@@ -538,10 +575,22 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         root.findParentOfType(InternalWindow::class)?.close()
     }
 
-    val titleProperty = SimpleStringProperty(viewTitle)
+    val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
+
+    open val headingProperty: ObservableValue<String> get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
+
+    @Suppress("UNCHECKED_CAST")
+    var heading: String
+        get() = headingProperty.value ?: ""
+        set(value) {
+            if (headingProperty == titleProperty)
+                properties["tornadofx.heading"] = SimpleStringProperty()
+            if (headingProperty is WritableValue<*>)
+                (headingProperty as WritableValue<String>).value = value
+        }
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
@@ -592,14 +641,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     /**
-     * Create an builder fragment and optionally open it if the openModality is specified. A fragment can also be assigned
+     * Create an fragment by supplying an inline builder expression and optionally open it if the openModality is specified. A fragment can also be assigned
      * to an existing node hierarchy using `add()` or `this += inlineFragment {}`, or you can specify the behavior inside it using `Platform.runLater {}` before
      * you return the root node for the builder fragment.
      */
     fun builderFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = BuilderFragment(scope, title, rootBuilder)
 
-    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
-        openWindow(modality = modality, stageStyle = stageStyle)
+    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = null, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
+        openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
     protected fun builderInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
@@ -625,6 +674,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     private fun undockFromParent(replacement: UIComponent) {
         if (replacement.root.parent is Pane) (replacement.root.parent as Pane).children.remove(replacement.root)
     }
+
 }
 
 @Suppress("UNCHECKED_CAST")

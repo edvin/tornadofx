@@ -58,6 +58,28 @@ class StylesheetTests {
     enum class Bool { TRUE, FALSE, FILE_NOT_FOUND }
 
     @Test
+    fun colorLadderTest() {
+        val stops = arrayOf(
+                Stop(0.0, Color.TRANSPARENT),
+                Stop(1.0, Color.WHITE),
+                Stop(0.5, Color.RED),  // Should be left side of 0.2
+                Stop(0.5, Color.GREEN),  // Should be ignored
+                Stop(0.5, Color.BLUE)  // Should be right side of 0.2
+        )
+        Color.hsb(0.0, 1.0, 0.3).ladder(*stops) shouldEqual Color(0.6, 0.0, 0.0, 0.6)
+        Color.hsb(0.0, 1.0, 0.6).ladder(*stops) shouldEqual Color(0.2, 0.2, 1.0, 1.0)
+        Color.hsb(0.0, 1.0, 0.4999).ladder(*stops) shouldEqual Color.RED
+        Color.hsb(0.0, 1.0, 0.5).ladder(*stops) shouldEqual Color.BLUE
+    }
+
+    @Test
+    fun colorDeriveTest() {
+        val color = Color.hsb(0.0, 1.0, 0.5, 0.8)
+        color.derive(0.5) shouldEqual Color(0.75, 0.5, 0.5, 0.8)
+        color.derive(-0.5) shouldEqual Color(0.25, 0.0, 0.0, 0.8)
+    }
+
+    @Test
     fun useCustomRenderer() {
         stylesheet {
             label {
@@ -492,6 +514,7 @@ class StylesheetTests {
 
     private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
     infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
+    infix fun Color.shouldEqual(other: Color) = Assert.assertEquals(other.toString(), toString())
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
     /**

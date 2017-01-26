@@ -26,10 +26,26 @@ open class ViewModel : Component(), Injectable {
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
-    private val dirtyStateProperty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
-    fun dirtyStateProperty() = dirtyStateProperty
+    val dirty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
+    @Deprecated("Use dirty property instead", ReplaceWith("dirty"))
+    fun dirtyStateProperty() = dirty
     val validationContext = ValidationContext()
     val ignoreDirtyStateProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
+    val autocommitProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
+
+    init {
+        autocommitProperties.onChange {
+            while (it.next()) {
+                if (it.wasAdded()) {
+                    it.addedSubList.forEach { facade ->
+                        facade.addListener { obs, ov, nv ->
+                            propertyMap[obs]!!.invoke()?.value = nv
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Wrap a JavaFX property and return the ViewModel facade for this property
@@ -109,11 +125,7 @@ open class ViewModel : Component(), Injectable {
         prop.addListener(externalChangeListeners[facade]!!)
 
         // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
-        if (autocommit) {
-            facade.addListener { obs, ov, nv ->
-                propertyMap[obs]!!.invoke()?.value = nv
-            }
-        }
+        if (autocommit) autocommitProperties.add(facade)
 
         return facade as ResultType
     }
@@ -126,12 +138,12 @@ open class ViewModel : Component(), Injectable {
         if (dirtyProperties.contains(property)) {
             val sourceValue = propertyMap[property]!!.invoke()?.value
             if (sourceValue == newValue) dirtyProperties.remove(property)
-        } else {
+        } else if (!autocommitProperties.contains(property)) {
             dirtyProperties.add(property)
         }
     }
 
-    val isDirty: Boolean get() = dirtyStateProperty.value
+    val isDirty: Boolean get() = dirty.value
     val isNotDirty: Boolean get() = !isDirty
 
     fun validate(focusFirstError: Boolean = true): Boolean = validationContext.validate(focusFirstError)
@@ -392,8 +404,8 @@ val Property<*>.viewModel: ViewModel? get() {
     return null
 }
 
-open class ItemViewModel<T> : ViewModel() {
-    val itemProperty = SimpleObjectProperty<T>()
+open class ItemViewModel<T>(initialValue: T? = null) : ViewModel() {
+    val itemProperty = SimpleObjectProperty<T>(initialValue)
     var item by itemProperty
 
     val empty = itemProperty.isNull
@@ -405,4 +417,8 @@ open class ItemViewModel<T> : ViewModel() {
     }
 
     fun <N> select(nested: (T) -> ObservableValue<N>) = itemProperty.select(nested)
+
+    fun asyncItem(func: () -> T?) =
+            task { func() } success { if (itemProperty.isBound && item is JsonModel) (item as JsonModel).update(it as JsonModel) else item = it }
+
 }

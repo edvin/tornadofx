@@ -79,19 +79,19 @@ fun EventTarget.text(observable: ObservableValue<String>, op: (Text.() -> Unit)?
 
 fun EventTarget.textfield(value: String? = null, op: (TextField.() -> Unit)? = null) = opcr(this, TextField().apply { if (value != null) text = value }, op)
 
-fun EventTarget.textfield(property: Property<String>, op: (TextField.() -> Unit)? = null) = textfield().apply {
+fun EventTarget.textfield(property: ObservableValue<String>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     bind(property)
     op?.invoke(this)
 }
 
 @JvmName("textfieldNumber")
-fun EventTarget.textfield(property: Property<Number>, op: (TextField.() -> Unit)? = null) = textfield().apply {
+fun EventTarget.textfield(property: ObservableValue<Number>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     bind(property)
     op?.invoke(this)
 }
 
 fun EventTarget.passwordfield(value: String? = null, op: (PasswordField.() -> Unit)? = null) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
-fun EventTarget.passwordfield(property: Property<String>, op: (PasswordField.() -> Unit)? = null) = passwordfield().apply {
+fun EventTarget.passwordfield(property: ObservableValue<String>, op: (PasswordField.() -> Unit)? = null) = passwordfield().apply {
     bind(property)
     op?.invoke(this)
 }
@@ -108,8 +108,11 @@ fun EventTarget.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> 
 }
 
 fun EventTarget.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
-fun EventTarget.textarea(property: Property<String>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
-    textProperty().bindBidirectional(property)
+fun EventTarget.textarea(property: ObservableValue<String>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
+    if (property is Property<String>)
+        textProperty().bindBidirectional(property)
+    else
+        textProperty().bind(property)
     op?.invoke(this)
 }
 

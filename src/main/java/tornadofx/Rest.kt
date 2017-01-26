@@ -4,7 +4,6 @@ import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.scene.control.ProgressBar
 import javafx.scene.control.ProgressBar.INDETERMINATE_PROGRESS
 import javafx.scene.control.Tooltip
 import org.apache.http.HttpHost
@@ -19,6 +18,7 @@ import org.apache.http.impl.auth.BasicScheme
 import org.apache.http.impl.client.*
 import org.apache.http.util.EntityUtils
 import tornadofx.Rest.Request.Method.*
+import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
 import java.net.*
@@ -113,7 +113,7 @@ open class Rest : Controller() {
         fun execute(): Response
     }
 
-    interface Response {
+    interface Response : Closeable {
         val request: Request
         val statusCode: Int
         val reason: String
@@ -244,12 +244,17 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override val statusCode: Int get() = request.connection.responseCode
     private var bytesRead: ByteArray? = null
 
+    override fun close() {
+        consume()
+    }
+
     override fun consume(): Rest.Response {
-        if (bytesRead == null) {
-            bytes()
-            return this
-        }
         try {
+            if (bytesRead == null) {
+                bytes()
+                return this
+            }
+
             with(request.connection) {
                 if (doInput) inputStream.close()
             }
@@ -372,8 +377,11 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
 
 class HttpClientResponse(override val request: HttpClientRequest, val response: CloseableHttpResponse) : Rest.Response {
     override val statusCode: Int get() = response.statusLine.statusCode
-
     override val reason: String get() = response.statusLine.reasonPhrase
+
+    override fun close() {
+        consume()
+    }
 
     override fun text(): String {
         try {
@@ -416,12 +424,10 @@ inline fun <reified T : JsonModel> JsonArray.toModel(): ObservableList<T> {
 }
 
 class RestProgressBar : Fragment() {
-    override val root = ProgressBar().apply {
-        prefWidth = 100.0
+    override val root = progressbar {
+        prefWidth = 75.0
         isVisible = false
     }
-
-    private val api: Rest by inject()
 
     init {
         Rest.ongoingRequests.addListener(ListChangeListener<Rest.Request> { c ->

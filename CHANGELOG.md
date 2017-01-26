@@ -2,13 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.10-SNAPSHOT]
-- InternalWindow now has `overlayPaint` that defaults `c("#000", 0.4)
-- addhocInternalWindow added
+## [1.6.1-SNAPSHOT]
+
+- Color.derive and Color.ladder
+- Rest.Response implements Closeable so it can be `use`ed (https://github.com/edvin/tornadofx/issues/237)
+- UIComponent `disableSave()` and `disableRefresh()`
+- can now bind to a pojo by providing only a single getter ( eg. person.observable( JavaPerson::getId ) )
+  - API break: previously returned a PojoProperty - now returns an ObjectProperty<T>
+  - uses javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder and will now propogate PropertyChangeEvents from the pojo
+- UIComponent.headingProperty is ObservableValue<String> for easier binding
+- `field` builder supports `orientation` parameter which will cause input container to be a VBox instead of an HBox (https://github.com/edvin/tornadofx/issues/190)
+- UIComponents can now be instantiated manually instead of via inject() and find()
+- Input Control builders now support ObservableValue instead of just Property for automatic binding
+- ListView.useCheckbox()
+- ItemViewModel.asyncItem helper to reload the underlying item
+- Corrected Workspace.dockInNewScope, docking was performed in the old scope (!)
+
+## [1.6.0]
+
+- Workspaces (https://edvin.gitbooks.io/tornadofx-guide/content/16.%20Workspaces.html)
+- OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
+- API break: View params are now map(property-ref, value) instead of vararg Pair(String, value)
+- menu builder correctly supports sub-menus
+- Introduced `item` menu item builder, should be used in favor of `menuitem`, which took the onAction callback insteadof an operation on the MenuItem as the op block parameter (breaks with the other builders)
+- menu builder accepts graphic parameter
+- ViewModel autocommit bindings doesn't affect dirty state any more
+- buttonbar builder for forms
+- ItemViewModel constructor takes optional initial value
 - `ObservableList.asyncItems` and `ListProperty.asyncItems`
 - `confirm()` function that executes an action if the user confirms
 - di delegate overload to support injecting a dependency by name (in addition to type)
-- `adhocFragment` and `adhocWindow` builders
+- `builderFragment` and `builderWindow` builders - fragment and window by just supplying a title and builder
 - `ObservableList<T>.onChange` to easy listening to change events from observable lists
 - `setInScope()` now uses correct KClass when entering the injectable into the components map
 - `ItemViewModel.isEmpty` boolean, complements `empty` property
@@ -48,6 +72,7 @@ All notable changes to this project will be documented in this file.
 - `cellCache` supports builders. Earlier, builders would be appended to the ListView, creating undesirable results
 - `Scene.reloadViews()` is removed from the public API, no need to call it manually
 - `titledpane` builder now accepts op parameter like every other builder. node parameter is now optional
+- Fieldset.wrapWidth is now Number instead of Double
 
 ## [1.5.9]
 
