@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import javafx.application.Platform
@@ -302,8 +304,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         properties["tornadofx.savable"] = savable()
     }
 
+    fun whenSaved(onSave: () -> Unit) {
+        properties["tornadofx.onSave"] = onSave
+    }
+
     fun refreshableWhen(refreshable: () -> BooleanExpression) {
         properties["tornadofx.refreshable"] = refreshable()
+    }
+
+    fun whenRefreshed(onRefresh: () -> Unit) {
+        properties["tornadofx.onRefresh"] = onRefresh
     }
 
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
@@ -341,11 +351,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     open fun onRefresh() {
-
+        (properties["tornadofx.onRefresh"] as? () -> Unit)?.invoke()
     }
 
     open fun onSave() {
-
+        (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
     }
 
     open fun onGoto(source: UIComponent) {
