@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 - menu builder accepts graphic parameter
 - ViewModel autocommit bindings doesn't affect dirty state any more
 - buttonbar builder for forms
+- InternalWindow now has `overlayPaint` that defaults `c("#000", 0.4)
+- builderInternalWindow added
 - ItemViewModel constructor takes optional initial value
 - `ObservableList.asyncItems` and `ListProperty.asyncItems`
 - `confirm()` function that executes an action if the user confirms

@@ -3,7 +3,6 @@ package tornadofx.testapps
 import javafx.application.Platform
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
-import javafx.stage.StageStyle.DECORATED
 import javafx.stage.StageStyle.UNDECORATED
 import tornadofx.*
 

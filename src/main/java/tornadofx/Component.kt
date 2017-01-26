@@ -494,8 +494,8 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, params: Map<*, Any?>? = null) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope, params), owner)
 
-    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4)) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
+    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
 
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(BuilderFragment(scope, title, rootBuilder), owner)
