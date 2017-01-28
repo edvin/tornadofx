@@ -249,6 +249,13 @@
         </plugins>
     </build>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <properties>
         <kotlin.version>1.0.6</kotlin.version>
         <dokka.version>0.9.9</dokka.version>
