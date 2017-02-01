@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- Accordion.fold has `expanded` parameter
+
 ## [1.6.1]
 
 - whenSaved and whenRefreshed lambdas as alternative to overriding onSave and onRefresh

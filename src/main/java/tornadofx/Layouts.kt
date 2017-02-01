@@ -183,8 +183,9 @@ fun EventTarget.accordion(vararg panes: TitledPane, op: (Accordion.() -> Unit)? 
     return accordion
 }
 
-fun <T : Node> Accordion.fold(title: String? = null, node: T, op: (T.() -> Unit)? = null): TitledPane {
+fun <T : Node> Accordion.fold(title: String? = null, node: T, expanded: Boolean = false, op: (T.() -> Unit)? = null): TitledPane {
     val fold = TitledPane(title, node)
+    fold.isExpanded = expanded
     panes += fold
     op?.invoke(node)
     return fold
