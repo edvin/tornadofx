@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import javafx.application.Platform
@@ -21,7 +23,6 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
-import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -304,8 +305,16 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         properties["tornadofx.savable"] = savable()
     }
 
+    fun whenSaved(onSave: () -> Unit) {
+        properties["tornadofx.onSave"] = onSave
+    }
+
     fun refreshableWhen(refreshable: () -> BooleanExpression) {
         properties["tornadofx.refreshable"] = refreshable()
+    }
+
+    fun whenRefreshed(onRefresh: () -> Unit) {
+        properties["tornadofx.onRefresh"] = onRefresh
     }
 
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
@@ -343,11 +352,11 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     }
 
     open fun onRefresh() {
-
+        (properties["tornadofx.onRefresh"] as? () -> Unit)?.invoke()
     }
 
     open fun onSave() {
-
+        (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
     }
 
     open fun onGoto(source: UIComponent) {
@@ -491,14 +500,14 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, params: Map<*, Any?>? = null) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(find(view, scope, params), owner)
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
 
-    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(view, owner)
+    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4)) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
 
-    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, rootBuilder: UIComponent.() -> Parent) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton).open(BuilderFragment(scope, title, rootBuilder), owner)
+    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
+            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
@@ -651,9 +660,6 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    protected fun builderInternalWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint=c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
-
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
     }
@@ -697,6 +703,8 @@ class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+    fun json(resource: String) = stream(resource)!!.toJSON()
+    fun jsonArray(resource: String) = stream(resource)!!.toJSONArray()
 }
 
 class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {

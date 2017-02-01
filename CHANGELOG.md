@@ -2,8 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.1-SNAPSHOT]
+## [1.6.2-SNAPSHOT]
 
+- Accordion.fold has `expanded` parameter
+
+## [1.6.1]
+
+- whenSaved and whenRefreshed lambdas as alternative to overriding onSave and onRefresh
+- Workspace onSave and onDock delegates to the docked View
+- InputStream.toJSON and .toJSONArray + resources.json(key) and resources.jsonArray(key)
 - Color.derive and Color.ladder
 - Rest.Response implements Closeable so it can be `use`ed (https://github.com/edvin/tornadofx/issues/237)
 - UIComponent `disableSave()` and `disableRefresh()`
