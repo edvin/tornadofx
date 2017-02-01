@@ -77,7 +77,7 @@ class SortedFilteredList<T>(
     }
 
     /**
-     * Bind this data object to the given TableView.
+     * Bind this data object to the given ListView.
      *
      * The `listView.items` is set to the underlying sortedItems.
      *
