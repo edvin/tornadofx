@@ -478,7 +478,9 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
             SmartListCell(scope, it)
         }
         if (formatButtonCell) {
-            buttonCell = cellFactory.call(null)
+            Platform.runLater {
+                buttonCell = cellFactory.call(null)
+            }
         }
     }
 

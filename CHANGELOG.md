@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.6.2-SNAPSHOT]
 
 - Accordion.fold has `expanded` parameter
+- Fixed: ComboBox with cellFormat does not show bound element (https://github.com/edvin/tornadofx/issues/245)
 
 ## [1.6.1]
 
