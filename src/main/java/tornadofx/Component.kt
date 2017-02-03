@@ -297,7 +297,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal var muteDocking = false
     abstract val root: Parent
     private var isInitialized = false
-    val currentWindow: Window? = modalStage?.owner ?: FX.primaryStage
+    val currentWindow: Window? get() = modalStage?.owner ?: FX.primaryStage
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
