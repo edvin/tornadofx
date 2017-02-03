@@ -66,7 +66,12 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     fun buttonbar(alignment: Pos? = null, op: (Pane.() -> Unit)? = null): Field {
         val field = Field(forceLabelIndent = true)
         children.add(field)
-        if (alignment != null) field.inputContainer.alignment = alignment
+        if (alignment != null) {
+            when (field.inputContainer) {
+                is HBox -> field.inputContainer.alignment = alignment
+                is VBox -> field.inputContainer.alignment = alignment
+            }
+        }
         op?.invoke(field.inputContainer)
         return field
     }
