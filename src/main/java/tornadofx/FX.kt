@@ -473,7 +473,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         is SqueezeBox -> {
             if (node is TitledPane)
-                addPane(node)
+                addChild(node)
         }
         is DataGrid<*> -> {
         }

@@ -18,7 +18,7 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
         }
 
         squeezebox {
-            fold("Pane 1", expanded = true) {
+            fold("Pane 1", expanded = true, closeable = true) {
                 stackpane {
                     vbox {
                         alignment = Pos.CENTER
@@ -27,20 +27,20 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
                     }
                 }
             }
-            fold("Pane 2", expanded = true) {
+            fold("Pane 2", expanded = true, closeable = true) {
                 label("I'm inside 2")
             }
-            fold("Pane 3") {
+            fold("Pane 3", closeable = true) {
                 label("I'm inside 3")
             }
-            fold("Pane 4", expanded = true) {
+            fold("Pane 4", expanded = true, closeable = true) {
                 label("I'm inside 4")
             }
-            fold("Pane 5") {
+            fold("Pane 5", closeable = true) {
                 label("I'm inside 5")
             }
             subscribe<AddFoldEvent> {
-                fold("Another fold by subscription") {
+                fold("Another fold by subscription", closeable = true) {
                     stackpane {
                         label("Yo!")
                     }

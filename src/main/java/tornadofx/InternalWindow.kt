@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
+import tornadofx.InternalWindow.Styles.Companion.crossPath
 import java.net.URL
 
 class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
@@ -64,7 +65,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
                             setOnMouseClicked {
                                 close()
                             }
-                            graphic = svgpath("M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z") {
+                            graphic = svgpath(crossPath) {
                                 addClass(Styles.closebutton)
                             }
                         }
@@ -86,6 +87,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
             val window by cssclass()
             val top by cssclass()
             val closebutton by cssclass()
+            val crossPath = "M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"
         }
 
         init {
@@ -111,9 +113,6 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
                             star {
                                 fill = Color.WHITE
                             }
-                        }
-                        star {
-                            shape = "M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48z"
                         }
                     }
                 }
