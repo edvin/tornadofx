@@ -297,6 +297,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     internal var muteDocking = false
     abstract val root: Parent
     private var isInitialized = false
+    val currentWindow: Window? = modalStage?.owner ?: FX.primaryStage
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
@@ -511,10 +512,10 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false)
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
 
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = null, block: Boolean = false) {
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -658,7 +659,7 @@ abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
      */
     fun builderFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = BuilderFragment(scope, title, rootBuilder)
 
-    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = null, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
+    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
