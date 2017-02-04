@@ -5,6 +5,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
+import javafx.geometry.HorizontalDirection
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -46,6 +47,18 @@ open class Workspace(title: String = "Workspace") : View(title) {
     private val realDockedComponentProperty = ReadOnlyObjectWrapper<UIComponent>()
     val dockedComponentProperty: ReadOnlyObjectProperty<UIComponent> = realDockedComponentProperty.readOnlyProperty
     val dockedComponent: UIComponent? get() = realDockedComponentProperty.value
+
+    val leftDrawer: Drawer get() {
+        if (root.left is Drawer) return root.left as Drawer
+        root.left = Drawer(HorizontalDirection.LEFT, false)
+        return root.left as Drawer
+    }
+
+    val rightDrawer: Drawer get() {
+        if (root.right is Drawer) return root.right as Drawer
+        root.right = Drawer(HorizontalDirection.RIGHT, false)
+        return root.right as Drawer
+    }
 
     companion object {
         val activeWorkspaces = FXCollections.observableArrayList<Workspace>()
@@ -183,7 +196,9 @@ open class Workspace(title: String = "Workspace") : View(title) {
         saveButton.disableProperty().cleanBind(child.savable.not())
 
         headingContainer.children.clear()
-        headingContainer.label(child.headingProperty)
+        headingContainer.label(child.headingProperty) {
+            graphicProperty().bind(child.iconProperty)
+        }
 
         if (updateViewStack && !viewStackDisabled.value && !viewStack.contains(child)) {
             // Remove everything after viewpos
@@ -249,7 +264,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
      */
-    inline fun <reified T: UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
+    inline fun <reified T : UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
         withNewScope(*setInScope) {
             dock<T>(scope, params)
         }
@@ -259,7 +274,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope, optionally injecting the given Injectables into the new scope.
      */
-    inline fun <reified T: UIComponent> dockInNewScope(vararg setInScope: Injectable) {
+    inline fun <reified T : UIComponent> dockInNewScope(vararg setInScope: Injectable) {
         withNewScope(*setInScope) { newScope ->
             dock<T>(newScope)
         }
@@ -269,7 +284,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope and optionally injecting the given Injectables into the new scope.
      */
-    fun <T: UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
+    fun <T : UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
         withNewScope(*setInScope) {
             dock(uiComponent)
         }

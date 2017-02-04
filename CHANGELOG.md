@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- Workspace Drawer support (workspace.leftDrawer/rightDrawer)
 - Drawer component
 - SqueezeBox panes are now `closeable`
 - Form buttonbar alignment is now working correctly

@@ -283,10 +283,13 @@ abstract class Controller : Component(), Injectable
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
 
-abstract class UIComponent(viewTitle: String? = "") : Component(), EventTarget {
+abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Component(), EventTarget {
     override fun buildEventDispatchChain(tail: EventDispatchChain?): EventDispatchChain {
         throw UnsupportedOperationException("not implemented")
     }
+
+    val iconProperty: ObjectProperty<Node> = SimpleObjectProperty(icon)
+    var icon by iconProperty
 
     val isDockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
     val isDocked by isDockedProperty
@@ -698,9 +701,9 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
     onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
-abstract class Fragment(title: String? = null) : UIComponent(title)
+abstract class Fragment(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
 
-abstract class View(title: String? = null) : UIComponent(title), Injectable
+abstract class View(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
 
 class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()

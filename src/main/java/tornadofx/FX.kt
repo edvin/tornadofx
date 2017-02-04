@@ -6,8 +6,10 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
@@ -127,7 +129,7 @@ class FX {
             applications[scope] = application
         }
 
-        val stylesheets = FXCollections.observableArrayList<String>()
+        val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
 
         internal val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
         fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
@@ -449,6 +451,18 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         is Workspace -> {
             root.addChildIfPossible(node, index)
+        }
+        is Drawer -> {
+            val uicmp = node.uiComponent<UIComponent>()
+            if (uicmp != null) {
+                item(uicmp, false)
+            } else {
+                val title = if (node is Labeled) node.textProperty() else SimpleStringProperty(node.toString())
+                val icon = if (node is Labeled) node.graphicProperty() else SimpleObjectProperty()
+                item(title, icon) {
+                    add(node)
+                }
+            }
         }
         is UIComponent -> root?.addChildIfPossible(node)
         is ScrollPane -> content = node

@@ -10,7 +10,7 @@ import java.util.*
 
 class TableViewDirtyTestApp : WorkspaceApp(TableViewDirtyTest::class)
 
-class TableViewDirtyTest : View("TableView Dirty Test") {
+class TableViewDirtyTest : View("Dirty Tables") {
     val customers = FXCollections.observableArrayList(Customer("Thomas", "Nield"), Customer("Edvin", "Syse"))
     var table: TableView<Customer> by singleAssign()
 
@@ -50,8 +50,6 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
                 }
             }
         }
-
-
     }
 
     override fun onSave() {
@@ -60,6 +58,10 @@ class TableViewDirtyTest : View("TableView Dirty Test") {
 
     override fun onRefresh() {
         table.editModel.rollback()
+    }
+
+    init {
+        icon = FX.icon
     }
 
     class Customer(firstName: String, lastName: String) {

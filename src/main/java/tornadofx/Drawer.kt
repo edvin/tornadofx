@@ -1,9 +1,6 @@
 package tornadofx
 
-import javafx.beans.property.BooleanProperty
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
@@ -35,16 +32,21 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
 
     override fun getUserAgentStylesheet() = DrawerStyles().base64URL.toExternalForm()
 
-    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit): DrawerItem {
-        val item = DrawerItem(this, title, icon)
-        op(item)
+    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit) =
+            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, op)
+
+    fun item(uiComponent: UIComponent, expanded: Boolean, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
+        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty)
+        item.button.textProperty().bind(uiComponent.headingProperty)
+        item.children.add(uiComponent.root)
+        op?.invoke(item)
         items.add(item)
         if (expanded) item.button.isSelected = true
         return item
     }
 
-    fun item(title: ObservableValue<String>, icon: Node? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit): DrawerItem {
-        val item = DrawerItem(this, null, icon)
+    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit): DrawerItem {
+        val item = DrawerItem(this, title, icon)
         item.button.textProperty().bind(title)
         op(item)
         items.add(item)
@@ -163,8 +165,12 @@ class ExpandedDrawerContentArea : VBox() {
     }
 }
 
-class DrawerItem(val drawer: Drawer, title: String? = null, icon: Node? = null) : StackPane() {
-    internal val button = ToggleButton(title, icon)
+class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null) : StackPane() {
+    internal val button = ToggleButton().apply {
+        if (title != null) textProperty().bind(title)
+        if (icon != null) graphicProperty().bind(icon)
+    }
+
     val expanded: Boolean get() = button.isSelected
 
     init {
