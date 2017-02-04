@@ -925,6 +925,8 @@ inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Un
 fun EventTarget.removeFromParent() {
     if (this is UIComponent) {
         root.removeFromParent()
+    } else if (this is DrawerItem) {
+        drawer.items.remove(this)
     } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {

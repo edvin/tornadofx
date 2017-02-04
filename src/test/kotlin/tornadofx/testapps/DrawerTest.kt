@@ -5,12 +5,19 @@ import tornadofx.*
 
 class DrawerTestApp : App(DrawerWorkspace::class) {
     override fun onBeforeShow(view: UIComponent) {
-        workspace.dock<TestDrawerContributor>()
+        workspace.dock<JustAView>()
     }
 }
 
 class JustAView : View() {
-    override val root = label("I'm just a view - I do nothing")
+    override val root = vbox {
+        label("I'm just a view - I do nothing")
+        button("Load another View") {
+            setOnAction {
+                workspace.dock<TestDrawerContributor>()
+            }
+        }
+    }
 }
 
 class TestDrawerContributor : View() {

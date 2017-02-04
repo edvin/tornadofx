@@ -42,6 +42,11 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
         op?.invoke(item)
         items.add(item)
         if (expanded) item.button.isSelected = true
+        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
+            if (root.dynamicComponentMode) {
+                root.dynamicComponents.add(item)
+            }
+        }
         return item
     }
 
@@ -51,6 +56,11 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
         op(item)
         items.add(item)
         if (expanded) item.button.isSelected = true
+        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
+            if (root.dynamicComponentMode) {
+                root.dynamicComponents.add(item)
+            }
+        }
         return item
     }
 
