@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- SqueezeBox has multiselect option (still defaults to true)
 - ContextMenu.checkboxmenuitem builder
 - UIComponent.icon property used by Workspace and Drawer
 - Workspace Drawer support (workspace.leftDrawer/rightDrawer)

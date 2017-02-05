@@ -59,6 +59,31 @@ class DrawerWorkspace : Workspace("Drawer Workspace") {
                     style { backgroundColor += Color.RED }
                 }
             }
+            item("Form item") {
+                form {
+                    fieldset("Customer Details") {
+                        field("Name") { textfield() }
+                        field("Password") { textfield() }
+                    }
+                }
+            }
+            item("SqueezeBox Item") {
+                squeezebox {
+                    fold("Customer Editor") {
+                        form {
+                            fieldset("Customer Details") {
+                                field("Name") { textfield() }
+                                field("Password") { textfield() }
+                            }
+                        }
+                    }
+                    fold("Some other editor") {
+                        stackpane {
+                            label("Nothing here")
+                        }
+                    }
+                }
+            }
             item("Third Item") {
                 stackpane {
                     label("Content of Item Three")

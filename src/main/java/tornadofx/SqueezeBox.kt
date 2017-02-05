@@ -2,6 +2,8 @@ package tornadofx
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase
 import com.sun.javafx.scene.control.skin.BehaviorSkinBase
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
 import javafx.scene.Node
@@ -9,8 +11,11 @@ import javafx.scene.control.Button
 import javafx.scene.control.Control
 import javafx.scene.control.TitledPane
 
-class SqueezeBox : Control() {
+class SqueezeBox(multiselect: Boolean = true) : Control() {
     internal val panes = FXCollections.observableArrayList<TitledPane>()
+
+    val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
+    var multiselect by multiselectProperty
 
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
@@ -28,6 +33,12 @@ class SqueezeBox : Control() {
                 }
             }
         }
+
+        multiselectProperty.onChange {
+            if (!multiselect) {
+                panes.filter { it.isExpanded }.drop(1).forEach { it.isExpanded = false }
+            }
+        }
     }
 
     override fun getUserAgentStylesheet() = SqueezeBoxStyles().base64URL.toExternalForm()
@@ -38,6 +49,11 @@ class SqueezeBox : Control() {
         children.add(child)
     }
 
+    internal fun updateExpanded(pane: TitledPane) {
+        if (!multiselect && pane.isExpanded) {
+            panes.filter { it != pane && it.isExpanded }.forEach { it.isExpanded = false }
+        }
+    }
 }
 
 class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, SqueezeBoxBehavior>(control, SqueezeBoxBehavior(control)) {
@@ -95,10 +111,11 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 }
 
-fun EventTarget.squeezebox(op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(), op)
+fun EventTarget.squeezebox(multiselect: Boolean = true, op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(), op)
 
 fun SqueezeBox.fold(title: String? = null, expanded: Boolean = false, icon: Node? = null, closeable: Boolean = false, op: TitledPane.() -> Unit): TitledPane {
     val fold = TitledPane(title, null)
+    fold.expandedProperty().onChange { updateExpanded(fold) }
     fold.graphic = icon
     fold.isExpanded = expanded
     fold.properties["tornadofx.closeable"] = closeable

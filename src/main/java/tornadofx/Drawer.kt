@@ -79,7 +79,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
         // Redraw if floating mode is toggled
         floatingDrawersProperty.onChange {
-            configureContentArea()
+            updateContentArea()
             parent?.requestLayout()
             scene?.root?.requestLayout()
         }
@@ -184,11 +184,11 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
             contentArea.children.remove(item)
         }
 
-        configureContentArea()
+        updateContentArea()
     }
 
     // Dock is a child when there are expanded children
-    private fun configureContentArea() {
+    private fun updateContentArea() {
         if (contentArea.children.isEmpty()) {
             center = null
             children.remove(contentArea)
