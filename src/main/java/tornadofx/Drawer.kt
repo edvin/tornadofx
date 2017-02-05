@@ -35,7 +35,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
     fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit) =
             item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, op)
 
-    fun item(uiComponent: UIComponent, expanded: Boolean, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
+    fun item(uiComponent: UIComponent, expanded: Boolean = false, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
         val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty)
         item.button.textProperty().bind(uiComponent.headingProperty)
         item.children.add(uiComponent.root)
