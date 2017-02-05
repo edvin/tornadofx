@@ -72,6 +72,13 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
         configureDockingSide()
 
+        // Redraw if floating mode is toggled
+        floatingContentProperty.onChange {
+            configureContentArea()
+            parent?.requestLayout()
+            scene?.root?.requestLayout()
+        }
+
         // Adapt docking behavior to parent
         parentProperty().onChange {
             if (it is BorderPane) {
@@ -150,16 +157,21 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
             contentArea.children.remove(item)
         }
 
-        // Dock is a child when there are expanded children
+        configureContentArea()
+    }
+
+    // Dock is a child when there are expanded children
+    private fun configureContentArea() {
         if (contentArea.children.isEmpty()) {
             center = null
             children.remove(contentArea)
-        } else if (center == null) {
+        } else {
             if (floatingContent) {
                 contentArea.isManaged = false
                 if (!children.contains(contentArea)) children.add(contentArea)
             } else {
                 contentArea.isManaged = true
+                if (children.contains(contentArea)) children.remove(contentArea)
                 center = contentArea
             }
         }
