@@ -15,6 +15,7 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
+import javafx.scene.layout.StackPane
 import kotlin.reflect.KClass
 
 class HeadingContainer : HBox() {
@@ -44,20 +45,26 @@ open class Workspace(title: String = "Workspace") : View(title) {
     private val viewStackDisabled = booleanBinding(maxViewStackDepthProperty) { value == 0 }
 
     val headingContainer = HeadingContainer()
+    val dockedContainer = StackPane()
+
     private val realDockedComponentProperty = ReadOnlyObjectWrapper<UIComponent>()
     val dockedComponentProperty: ReadOnlyObjectProperty<UIComponent> = realDockedComponentProperty.readOnlyProperty
     val dockedComponent: UIComponent? get() = realDockedComponentProperty.value
 
     val leftDrawer: Drawer get() {
         if (root.left is Drawer) return root.left as Drawer
-        root.left = Drawer(HorizontalDirection.LEFT, false)
-        return root.left as Drawer
+        val drawer = Drawer(HorizontalDirection.LEFT, false, false)
+        root.left = drawer
+        drawer.toFront()
+        return drawer
     }
 
     val rightDrawer: Drawer get() {
         if (root.right is Drawer) return root.right as Drawer
-        root.right = Drawer(HorizontalDirection.RIGHT, false)
-        return root.right as Drawer
+        val drawer = Drawer(HorizontalDirection.RIGHT, false, false)
+        root.right = drawer
+        drawer.toFront()
+        return drawer
     }
 
     companion object {
@@ -176,6 +183,7 @@ open class Workspace(title: String = "Workspace") : View(title) {
                 }
             }
         }
+        center = dockedContainer
     }
 
     override fun onSave() {
@@ -223,7 +231,8 @@ open class Workspace(title: String = "Workspace") : View(title) {
 
         inDynamicComponentMode {
             realDockedComponentProperty.value = child
-            root.center = child.root
+            dockedContainer.clear()
+            dockedContainer.add(child.root)
         }
 
         // Make sure we are visible

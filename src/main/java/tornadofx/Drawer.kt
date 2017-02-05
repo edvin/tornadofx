@@ -16,11 +16,14 @@ import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 
-fun EventTarget.drawer(side: HorizontalDirection = LEFT, multiselect: Boolean = false, op: Drawer.() -> Unit) = opcr(this, Drawer(side, multiselect), op)
+fun EventTarget.drawer(side: HorizontalDirection = LEFT, multiselect: Boolean = false, floatingContent: Boolean = false, op: Drawer.() -> Unit) = opcr(this, Drawer(side, multiselect, floatingContent), op)
 
-class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
+class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<HorizontalDirection> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
+
+    val floatingContentProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
+    var floatingContent by floatingContentProperty
 
     val buttonArea = VBox().addClass(DrawerStyles.buttonArea)
     val contentArea = ExpandedDrawerContentArea()
@@ -67,7 +70,6 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
     init {
         addClass(DrawerStyles.drawer)
 
-        center = contentArea
         configureDockingSide()
 
         // Adapt docking behavior to parent
@@ -151,11 +153,25 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean) : BorderPane() {
         // Dock is a child when there are expanded children
         if (contentArea.children.isEmpty()) {
             center = null
+            children.remove(contentArea)
         } else if (center == null) {
-            center = contentArea
+            if (floatingContent) {
+                contentArea.isManaged = false
+                if (!children.contains(contentArea)) children.add(contentArea)
+            } else {
+                contentArea.isManaged = true
+                center = contentArea
+            }
         }
     }
 
+    override fun layoutChildren() {
+        super.layoutChildren()
+        if (floatingContent && contentArea.children.isNotEmpty()) {
+            val buttonBounds = buttonArea.layoutBounds
+            contentArea.resizeRelocate(buttonBounds.maxX, buttonBounds.minY, contentArea.prefWidth(-1.0), buttonBounds.height)
+        }
+    }
 }
 
 class ExpandedDrawerContentArea : VBox() {

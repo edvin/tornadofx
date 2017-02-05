@@ -5,11 +5,12 @@ import tornadofx.*
 
 class DrawerTestApp : App(DrawerWorkspace::class) {
     override fun onBeforeShow(view: UIComponent) {
+        workspace.root.setPrefSize(600.0, 400.0)
         workspace.dock<JustAView>()
     }
 }
 
-class JustAView : View() {
+class JustAView : View("Just A View") {
     override val root = vbox {
         label("I'm just a view - I do nothing")
         button("Load another View") {
@@ -20,7 +21,7 @@ class JustAView : View() {
     }
 }
 
-class TestDrawerContributor : View() {
+class TestDrawerContributor : View("Test View with dynamic drawer item") {
     override val root = stackpane {
         vbox {
             label("I add something to the drawer when I'm docked")
@@ -43,6 +44,13 @@ class TestDrawerContributor : View() {
 
 class DrawerWorkspace : Workspace("Drawer Workspace") {
     init {
+        menubar {
+            menu("Options") {
+                checkmenuitem("Floating dock") {
+                    selectedProperty().bindBidirectional(leftDrawer.floatingContentProperty)
+                }
+            }
+        }
         with(leftDrawer) {
             item(TableViewDirtyTest::class)
             item("Second Item") {
