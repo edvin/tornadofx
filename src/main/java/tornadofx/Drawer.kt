@@ -9,6 +9,7 @@ import javafx.geometry.HorizontalDirection.LEFT
 import javafx.geometry.HorizontalDirection.RIGHT
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.control.ContextMenu
 import javafx.scene.control.ToggleButton
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Priority
@@ -22,8 +23,8 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
     val dockingSideProperty: ObjectProperty<HorizontalDirection> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
 
-    val floatingContentProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
-    var floatingContent by floatingContentProperty
+    val floatingDrawersProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
+    var floatingDrawers by floatingDrawersProperty
 
     val buttonArea = VBox().addClass(DrawerStyles.buttonArea)
     val contentArea = ExpandedDrawerContentArea()
@@ -32,6 +33,8 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
     val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
     var multiselect by multiselectProperty
+
+    val contextMenu = ContextMenu()
 
     override fun getUserAgentStylesheet() = DrawerStyles().base64URL.toExternalForm()
 
@@ -71,9 +74,11 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
         addClass(DrawerStyles.drawer)
 
         configureDockingSide()
+        configureContextMenu()
+        enforceMultiSelect()
 
         // Redraw if floating mode is toggled
-        floatingContentProperty.onChange {
+        floatingDrawersProperty.onChange {
             configureContentArea()
             parent?.requestLayout()
             scene?.root?.requestLayout()
@@ -107,6 +112,28 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
                     }
                 }
             }
+        }
+    }
+
+    private fun enforceMultiSelect() {
+        multiselectProperty.onChange {
+            if (!multiselect) {
+                contentArea.children.toTypedArray().drop(1).forEach {
+                    (it as DrawerItem).button.isSelected = false
+                }
+            }
+        }
+    }
+
+    private fun configureContextMenu() {
+        contextMenu.checkmenuitem("Floating drawers") {
+            selectedProperty().bindBidirectional(floatingDrawersProperty)
+        }
+        contextMenu.checkmenuitem("Multiselect") {
+            selectedProperty().bindBidirectional(multiselectProperty)
+        }
+        buttonArea.setOnContextMenuRequested {
+            contextMenu.show(buttonArea, it.screenX, it.screenY)
         }
     }
 
@@ -166,7 +193,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
             center = null
             children.remove(contentArea)
         } else {
-            if (floatingContent) {
+            if (floatingDrawers) {
                 contentArea.isManaged = false
                 if (!children.contains(contentArea)) children.add(contentArea)
             } else {
@@ -179,7 +206,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
     override fun layoutChildren() {
         super.layoutChildren()
-        if (floatingContent && contentArea.children.isNotEmpty()) {
+        if (floatingDrawers && contentArea.children.isNotEmpty()) {
             val buttonBounds = buttonArea.layoutBounds
             contentArea.resizeRelocate(buttonBounds.maxX, buttonBounds.minY, contentArea.prefWidth(-1.0), buttonBounds.height)
         }

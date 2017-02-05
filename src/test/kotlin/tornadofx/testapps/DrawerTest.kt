@@ -46,8 +46,8 @@ class DrawerWorkspace : Workspace("Drawer Workspace") {
     init {
         menubar {
             menu("Options") {
-                checkmenuitem("Floating dock") {
-                    selectedProperty().bindBidirectional(leftDrawer.floatingContentProperty)
+                checkmenuitem("Floating drawer") {
+                    selectedProperty().bindBidirectional(leftDrawer.floatingDrawersProperty)
                 }
             }
         }

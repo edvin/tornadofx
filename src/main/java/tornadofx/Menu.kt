@@ -51,6 +51,15 @@ fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = 
     return this.menuitem(name, KeyCombination.valueOf(keyCombination), graphic, onAction)
 }
 
+fun ContextMenu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
+    val checkMenuItem = CheckMenuItem(name, graphic)
+    keyCombination?.apply { checkMenuItem.accelerator = this }
+    graphic?.apply { checkMenuItem.graphic = graphic }
+    op?.let { it.invoke(checkMenuItem) }
+    this += checkMenuItem
+    return checkMenuItem
+}
+
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
