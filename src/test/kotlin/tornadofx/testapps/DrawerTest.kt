@@ -44,7 +44,7 @@ class TestDrawerContributor : View() {
 class DrawerWorkspace : Workspace("Drawer Workspace") {
     init {
         with(leftDrawer) {
-            add(TableViewDirtyTest::class)
+            item(TableViewDirtyTest::class)
             item("Second Item") {
                 stackpane {
                     label("Content of Item Two")

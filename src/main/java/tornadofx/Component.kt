@@ -488,7 +488,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
     }
 
-    fun Drawer.item(uiComponent: KClass<UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
+    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
         item(find(uiComponent, scope, params), expanded, op)
 
     @JvmName("addView")
