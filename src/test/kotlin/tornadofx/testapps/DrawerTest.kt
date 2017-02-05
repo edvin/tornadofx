@@ -68,7 +68,7 @@ class DrawerWorkspace : Workspace("Drawer Workspace") {
                 }
             }
             item("SqueezeBox Item") {
-                squeezebox {
+                squeezebox(multiselect = false) {
                     fold("Customer Editor") {
                         form {
                             fieldset("Customer Details") {

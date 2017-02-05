@@ -111,7 +111,7 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 }
 
-fun EventTarget.squeezebox(multiselect: Boolean = true, op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(), op)
+fun EventTarget.squeezebox(multiselect: Boolean = true, op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(multiselect), op)
 
 fun SqueezeBox.fold(title: String? = null, expanded: Boolean = false, icon: Node? = null, closeable: Boolean = false, op: TitledPane.() -> Unit): TitledPane {
     val fold = TitledPane(title, null)
