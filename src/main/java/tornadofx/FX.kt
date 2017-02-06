@@ -466,7 +466,11 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         is UIComponent -> root?.addChildIfPossible(node)
         is ScrollPane -> content = node
-        is Tab -> content = node
+        is Tab -> {
+            content = node
+            // Map the tab to the UIComponent for later retrieval. Used to close tab with UIComponent.close()
+            node.uiComponent<UIComponent>()?.properties?.set("tornadofx.tab", this)
+        }
         is BorderPane -> {
         } // Either pos = builder { or caught by builderTarget above
         is TabPane -> {

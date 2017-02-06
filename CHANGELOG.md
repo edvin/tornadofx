@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- Workspace has NavigationMode Stack (default) and Tabs
+- `closeModal()` deprecated in favor of `close()` since it will also close tabs and non-modal + internal windows
 - SqueezeBox has multiselect option (still defaults to true)
 - ContextMenu.checkboxmenuitem builder
 - UIComponent.icon property used by Workspace and Drawer
@@ -100,7 +102,7 @@ All notable changes to this project will be documented in this file.
 - Pass parameters to ui components using inject/find. Inject params via `val myParam : Int by param()` in target view.
 - booleanBinding and stringBinding now adds observable receiver as dependency
 - Eventbus: `FXEvent` class with `subscribe()`, `unsubscribe` and `fire` functions (https://edvin.gitbooks.io/tornadofx-guide/content/15.%20EventBus.html)
-- InternalWindow is public, closeModal() will also close InternalWindow
+- InternalWindow is public, close() will also close InternalWindow
 - `setInScope(value, scope)` allows you to preemptively configure an injectable property
 - Allow Labeled.bind() to work on ObservableValue<T> instead of just Property<T>
 - HttpClientEngine now adds default json headers to request

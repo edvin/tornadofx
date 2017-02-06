@@ -214,6 +214,9 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 }
 
 class ExpandedDrawerContentArea : VBox() {
+    var resizing = false
+    var oldWidth = 0.0
+
     init {
         addClass(DrawerStyles.contentArea)
         children.onChange { change ->
@@ -228,6 +231,7 @@ class ExpandedDrawerContentArea : VBox() {
             }
         }
     }
+
 }
 
 class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null) : StackPane() {

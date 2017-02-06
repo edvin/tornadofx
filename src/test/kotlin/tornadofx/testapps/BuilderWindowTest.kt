@@ -38,7 +38,7 @@ class DangerButtonView : View("Do not click the button!") {
                                 button("Tell them you clicked") {
                                     setOnAction {
                                         this@DangerButtonView.title = "It's not dangerous to click the button :)"
-                                        closeModal()
+                                        close()
                                     }
                                 }
                                 button("Close app") {
@@ -48,7 +48,7 @@ class DangerButtonView : View("Do not click the button!") {
                                 }
                                 button("Cancel") {
                                     setOnAction {
-                                        closeModal()
+                                        close()
                                     }
                                 }
                             }
@@ -62,7 +62,7 @@ class DangerButtonView : View("Do not click the button!") {
                         vbox(20) {
                             label("opened in an internalwindow")
                             button("close") {
-                                setOnAction { closeModal() }
+                                setOnAction { close() }
                             }
                         }
                     }

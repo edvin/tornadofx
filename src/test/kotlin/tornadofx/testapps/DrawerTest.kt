@@ -27,7 +27,7 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
             label("I add something to the drawer when I'm docked")
             button("Close") {
                 setOnAction {
-                    workspace.dock<JustAView>()
+                    close()
                 }
             }
         }
@@ -42,12 +42,14 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
     }
 }
 
-class DrawerWorkspace : Workspace("Drawer Workspace") {
+class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.Tabs) {
     init {
         menubar {
             menu("Options") {
-                checkmenuitem("Floating drawer") {
-                    selectedProperty().bindBidirectional(leftDrawer.floatingDrawersProperty)
+                checkmenuitem("Toggle Navigation") {
+                    setOnAction {
+                        navigationMode = if (navigationMode == NavigationMode.Stack) NavigationMode.Tabs else NavigationMode.Stack
+                    }
                 }
             }
         }

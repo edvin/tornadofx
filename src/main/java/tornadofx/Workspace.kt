@@ -1,14 +1,16 @@
 package tornadofx
 
-import javafx.beans.property.ReadOnlyObjectProperty
-import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.application.Platform
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.geometry.HorizontalDirection
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.Button
+import javafx.scene.control.TabPane
 import javafx.scene.control.ToolBar
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -16,6 +18,7 @@ import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
+import tornadofx.Workspace.NavigationMode.Stack
 import kotlin.reflect.KClass
 
 class HeadingContainer : HBox() {
@@ -34,22 +37,29 @@ class WorkspaceArea : BorderPane() {
     }
 }
 
-open class Workspace(title: String = "Workspace") : View(title) {
+open class Workspace(title: String = "Workspace", navigationMode: NavigationMode = Stack) : View(title) {
     var refreshButton: Button by singleAssign()
     var saveButton: Button by singleAssign()
+    var backButton: Button by singleAssign()
+    var forwardButton: Button by singleAssign()
+
+    enum class NavigationMode { Stack, Tabs }
+
+    val navigationModeProperty: ObjectProperty<NavigationMode> = SimpleObjectProperty(navigationMode)
+    var navigationMode by navigationModeProperty
 
     private val viewStack = FXCollections.observableArrayList<UIComponent>()
     private val viewPos = SimpleIntegerProperty(-1)
-    val maxViewStackDepthProperty = SimpleIntegerProperty(10)
+
+    val maxViewStackDepthProperty = SimpleIntegerProperty(DefaultViewStackDepth)
     var maxViewStackDepth by maxViewStackDepthProperty
-    private val viewStackDisabled = booleanBinding(maxViewStackDepthProperty) { value == 0 }
 
     val headingContainer = HeadingContainer()
-    val dockedContainer = StackPane()
+    val tabContainer = TabPane().addClass("editor-container")
+    val stackContainer = StackPane().addClass("editor-container")
 
-    private val realDockedComponentProperty = ReadOnlyObjectWrapper<UIComponent>()
-    val dockedComponentProperty: ReadOnlyObjectProperty<UIComponent> = realDockedComponentProperty.readOnlyProperty
-    val dockedComponent: UIComponent? get() = realDockedComponentProperty.value
+    val dockedComponentProperty: ObjectProperty<UIComponent> = SimpleObjectProperty()
+    val dockedComponent: UIComponent? get() = dockedComponentProperty.value
 
     val leftDrawer: Drawer get() {
         if (root.left is Drawer) return root.left as Drawer
@@ -69,9 +79,10 @@ open class Workspace(title: String = "Workspace") : View(title) {
 
     companion object {
         val activeWorkspaces = FXCollections.observableArrayList<Workspace>()
+        val DefaultViewStackDepth = 10
 
         fun closeAll() {
-            activeWorkspaces.forEach(Workspace::closeModal)
+            activeWorkspaces.forEach(Workspace::close)
         }
 
         init {
@@ -140,23 +151,23 @@ open class Workspace(title: String = "Workspace") : View(title) {
                     }
                     button {
                         addClass("icon-only")
+                        backButton = this
                         graphic = label { addClass("icon", "back") }
                         setOnAction {
                             viewPos.set(viewPos.get() - 1)
                             dock(viewStack[viewPos.get()], false)
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value < 1 })
-                        removeWhen { viewStackDisabled }
                     }
                     button {
                         addClass("icon-only")
+                        forwardButton = this
                         graphic = label { addClass("icon", "forward") }
                         setOnAction {
                             viewPos.set(viewPos.get() + 1)
                             dock(viewStack[viewPos.get()], false)
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value == viewStack.size - 1 })
-                        removeWhen { viewStackDisabled }
                     }
                     button {
                         addClass("icon-only")
@@ -183,7 +194,90 @@ open class Workspace(title: String = "Workspace") : View(title) {
                 }
             }
         }
-        center = dockedContainer
+    }
+
+    init {
+        navigationModeProperty.addListener { observableValue, ov, nv -> navigationModeChanged(ov, nv) }
+        tabContainer.tabs.onChange { change ->
+            while (change.next()) {
+                if (change.wasRemoved()) {
+                    change.removed.forEach {
+                        if (it == dockedComponent) {
+                            titleProperty.unbind()
+                            refreshButton.disableProperty().unbind()
+                            saveButton.disableProperty().unbind()
+                        }
+                    }
+                }
+                if (change.wasAdded()) {
+                    change.addedSubList.forEach {
+                        it.content.properties["tornadofx.tab"] = it
+                    }
+                }
+            }
+        }
+        tabContainer.selectionModel.selectedItemProperty().addListener { observableValue, ov, nv ->
+            val newCmp = nv?.content?.uiComponent<UIComponent>()
+            val oldCmp = ov?.content?.uiComponent<UIComponent>()
+            if (newCmp != null && newCmp != dockedComponent) {
+                setAsCurrentlyDocked(newCmp)
+            }
+            if (oldCmp != null && oldCmp != newCmp) {
+                oldCmp.callOnUndock()
+            }
+        }
+        dockedComponentProperty.onChange { child ->
+            if (child != null) {
+                inDynamicComponentMode {
+                    if (root.center == stackContainer) {
+                        tabContainer.tabs.clear()
+
+                        stackContainer.clear()
+                        stackContainer.add(child)
+                    } else {
+                        stackContainer.clear()
+
+                        var tab = tabContainer.tabs.find { it.content == child.root }
+                        if (tab == null) {
+                            tabContainer.add(child)
+                            tab = tabContainer.tabs.last()
+                        } else {
+                            child.callOnDock()
+                        }
+                        tabContainer.selectionModel.select(tab)
+                    }
+                }
+            }
+        }
+        navigationModeChanged(null, navigationMode)
+    }
+
+    private fun navigationModeChanged(oldMode: NavigationMode?, newMode: NavigationMode?) {
+        if (oldMode == null || oldMode != newMode) {
+            root.center = if (navigationMode == Stack) stackContainer else tabContainer
+            if (root.center == stackContainer && tabContainer.tabs.isNotEmpty()) {
+                val selectedTab = tabContainer.selectionModel.selectedItem
+                if (selectedTab != null) {
+                    val selectedCmp = selectedTab.content.uiComponent<UIComponent>()
+                    if (selectedCmp != null) {
+                        stackContainer.add(selectedCmp)
+                    }
+                }
+                tabContainer.tabs.clear()
+            }
+            if (dockedComponent != null) {
+                Platform.runLater { setAsCurrentlyDocked(dockedComponent!!) }
+            }
+        }
+        if (newMode == Stack) {
+            if (!root.header.items.contains(backButton)) {
+                root.header.items.add(0, backButton)
+                root.header.items.add(1, forwardButton)
+            }
+        } else {
+            root.header.items.remove(backButton)
+            root.header.items.remove(forwardButton)
+        }
     }
 
     override fun onSave() {
@@ -199,16 +293,9 @@ open class Workspace(title: String = "Workspace") : View(title) {
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find(T::class, scope, params))
 
     fun dock(child: UIComponent, updateViewStack: Boolean = true) {
-        titleProperty.bind(child.titleProperty)
-        refreshButton.disableProperty().cleanBind(child.refreshable.not())
-        saveButton.disableProperty().cleanBind(child.savable.not())
+        setAsCurrentlyDocked(child)
 
-        headingContainer.children.clear()
-        headingContainer.label(child.headingProperty) {
-            graphicProperty().bind(child.iconProperty)
-        }
-
-        if (updateViewStack && !viewStackDisabled.value && !viewStack.contains(child)) {
+        if (navigationMode == Stack && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)) {
             // Remove everything after viewpos
             while (viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
                 viewStack.removeAt(viewPos.get() + 1)
@@ -225,20 +312,30 @@ open class Workspace(title: String = "Workspace") : View(title) {
             }
         }
 
-        // Remove previously added dynamic components
-        root.dynamicComponents.forEach(Node::removeFromParent)
-        root.dynamicComponents.clear()
-
-        inDynamicComponentMode {
-            realDockedComponentProperty.value = child
-            dockedContainer.clear()
-            dockedContainer.add(child.root)
-        }
-
         // Make sure we are visible
         if (root.scene == null) {
             openWindow()
         }
+    }
+
+    private fun setAsCurrentlyDocked(child: UIComponent) {
+        titleProperty.bind(child.titleProperty)
+        refreshButton.disableProperty().cleanBind(child.refreshable.not())
+        saveButton.disableProperty().cleanBind(child.savable.not())
+
+        headingContainer.children.clear()
+        headingContainer.label(child.headingProperty) {
+            graphicProperty().bind(child.iconProperty)
+        }
+
+        clearDynamicComponents()
+
+        dockedComponentProperty.value = child
+    }
+
+    private fun clearDynamicComponents() {
+        root.dynamicComponents.forEach(Node::removeFromParent)
+        root.dynamicComponents.clear()
     }
 
     private fun inDynamicComponentMode(function: () -> Unit) {

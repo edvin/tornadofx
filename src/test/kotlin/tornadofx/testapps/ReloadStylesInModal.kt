@@ -22,7 +22,7 @@ class ReloadStylesInModal : App(MainView::class, Styles::class) {
             label("My label")
             button("Close") {
                 setOnAction {
-                    closeModal()
+                    close()
                 }
             }
         }

@@ -304,9 +304,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
+    open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(true) } as BooleanExpression
 
     fun savableWhen(savable: () -> BooleanExpression) {
         properties["tornadofx.savable"] = savable()
+    }
+
+    fun closeableWhen(closeable: () -> BooleanExpression) {
+        properties["tornadofx.closeable"] = closeable()
     }
 
     fun whenSaved(onSave: () -> Unit) {
@@ -527,7 +532,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
             } else {
                 modalStage = Stage(stageStyle)
-                // modalStage needs to be set before this code to make closeModal() work in blocking mode
+                // modalStage needs to be set before this code to make close() work in blocking mode
                 with(modalStage!!) {
                     titleProperty().bind(titleProperty)
                     initModality(modality)
@@ -541,7 +546,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                             if (escapeClosesWindow) {
                                 addEventFilter(KeyEvent.KEY_PRESSED) {
                                     if (it.code == KeyCode.ESCAPE)
-                                        closeModal()
+                                        close()
                                 }
                             }
 
@@ -585,12 +590,18 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
     }
 
-    fun closeModal() {
+    @Deprecated("Use close() instead", replaceWith = ReplaceWith("close"))
+    fun closeModal() = close()
+
+    fun close() {
         modalStage?.apply {
             close()
             modalStage = null
         }
         root.findParentOfType(InternalWindow::class)?.close()
+        (root.properties["tornadofx.tab"] as? Tab)?.apply {
+            tabPane?.tabs?.remove(this)
+        }
     }
 
     val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
