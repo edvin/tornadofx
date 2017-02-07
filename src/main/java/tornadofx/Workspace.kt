@@ -2,8 +2,10 @@ package tornadofx
 
 import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.geometry.HorizontalDirection
@@ -203,7 +205,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 if (change.wasRemoved()) {
                     change.removed.forEach {
                         if (it == dockedComponent) {
-                            titleProperty.unbind()
+                            (titleProperty as? Property<String>)?.unbind()
                             refreshButton.disableProperty().unbind()
                             saveButton.disableProperty().unbind()
                         }
@@ -319,7 +321,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun setAsCurrentlyDocked(child: UIComponent) {
-        titleProperty.bind(child.titleProperty)
+        (titleProperty as? Property<String>)?.bind(child.titleProperty)
         refreshButton.disableProperty().cleanBind(child.refreshable.not())
         saveButton.disableProperty().cleanBind(child.savable.not())
 

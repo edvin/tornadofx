@@ -604,12 +604,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
     }
 
-    open val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
+    open val titleProperty: ObservableValue<String?> = SimpleStringProperty(viewTitle)
     var title: String
-        get() = titleProperty.get() ?: ""
-        set(value) = titleProperty.set(value)
+        get() = titleProperty.value ?: ""
+        set(value) {
+            (titleProperty as? WritableValue<String>)?.value = value
+        }
 
-    open val headingProperty: ObservableValue<String> get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
+    open val headingProperty: ObservableValue<String?> get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
 
     @Suppress("UNCHECKED_CAST")
     var heading: String
