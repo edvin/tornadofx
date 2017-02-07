@@ -256,17 +256,12 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         if (oldMode == null || oldMode != newMode) {
             root.center = if (navigationMode == Stack) stackContainer else tabContainer
             if (root.center == stackContainer && tabContainer.tabs.isNotEmpty()) {
-                val selectedTab = tabContainer.selectionModel.selectedItem
-                if (selectedTab != null) {
-                    val selectedCmp = selectedTab.content.uiComponent<UIComponent>()
-                    if (selectedCmp != null) {
-                        stackContainer.add(selectedCmp)
-                    }
-                }
                 tabContainer.tabs.clear()
             }
-            if (dockedComponent != null) {
-                Platform.runLater { setAsCurrentlyDocked(dockedComponent!!) }
+            val wasdocked = dockedComponent
+            if (wasdocked != null) {
+                dockedComponentProperty.value = null
+                dock(wasdocked, true)
             }
         }
         if (newMode == Stack) {
@@ -295,7 +290,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     fun dock(child: UIComponent, updateViewStack: Boolean = true) {
         setAsCurrentlyDocked(child)
 
-        if (navigationMode == Stack && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)) {
+        if (root.center == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)) {
             // Remove everything after viewpos
             while (viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
                 viewStack.removeAt(viewPos.get() + 1)
