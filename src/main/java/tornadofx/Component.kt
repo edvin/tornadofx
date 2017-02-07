@@ -604,7 +604,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
     }
 
-    val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
+    open val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
