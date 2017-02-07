@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
-- resources.image and resources.imageview helpers
+- resources.text, resources.image and resources.imageview helpers
 - Workspace has NavigationMode Stack (default) and Tabs
 - `closeModal()` deprecated in favor of `close()` since it will also close tabs and non-modal + internal windows
 - SqueezeBox has multiselect option (still defaults to true)

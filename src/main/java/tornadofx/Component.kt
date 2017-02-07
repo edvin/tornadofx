@@ -729,6 +729,7 @@ class ResourceLookup(val component: Component) {
     fun imageview(resource: String): ImageView = ImageView(Image(stream(resource)))
     fun json(resource: String) = stream(resource)!!.toJSON()
     fun jsonArray(resource: String) = stream(resource)!!.toJSONArray()
+    fun text(resource: String): String = stream(resource)!!.use { it.bufferedReader().readText() }
 }
 
 class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {
