@@ -62,12 +62,11 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
                     }
                     if (closeButton) {
                         button {
+                            addClass(Styles.closebutton)
                             setOnMouseClicked {
                                 close()
                             }
-                            graphic = svgpath(crossPath) {
-                                addClass(Styles.closebutton)
-                            }
+                            graphic = svgpath(crossPath)
                         }
                     }
                 }
@@ -104,7 +103,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
 
                     alignment = Pos.CENTER
 
-                    button {
+                    closebutton {
                         padding = box(4.px, 12.px)
                         backgroundRadius += box(0.px)
                         backgroundColor += Color.WHITE
