@@ -16,6 +16,8 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
@@ -723,6 +725,8 @@ class ResourceLookup(val component: Component) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+    fun image(resource: String): Image = Image(stream(resource))
+    fun imageview(resource: String): ImageView = ImageView(Image(stream(resource)))
     fun json(resource: String) = stream(resource)!!.toJSON()
     fun jsonArray(resource: String) = stream(resource)!!.toJSONArray()
 }
