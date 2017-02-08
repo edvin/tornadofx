@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- TableView.selectOnDrag() will select rows or columns depending on the current selection mode
 - resources.text, resources.image and resources.imageview helpers
 - Workspace has NavigationMode Stack (default) and Tabs
 - `closeModal()` deprecated in favor of `close()` since it will also close tabs and non-modal + internal windows

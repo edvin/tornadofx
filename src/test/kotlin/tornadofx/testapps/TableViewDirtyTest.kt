@@ -3,6 +3,7 @@ package tornadofx.testapps
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableView
 import javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY
 import tornadofx.*
@@ -11,7 +12,7 @@ import java.util.*
 class TableViewDirtyTestApp : WorkspaceApp(TableViewDirtyTest::class)
 
 class TableViewDirtyTest : View("Dirty Tables") {
-    val customers = FXCollections.observableArrayList(Customer("Thomas", "Nield"), Customer("Edvin", "Syse"))
+    val customers = FXCollections.observableArrayList(Customer("Thomas", "Nield"), Customer("Matthew", "Turnblom"), Customer("Edvin", "Syse"))
     var table: TableView<Customer> by singleAssign()
 
     override val root = borderpane {
@@ -34,6 +35,7 @@ class TableViewDirtyTest : View("Dirty Tables") {
                         setOnAction { editModel.commit(selectedItem, selectedColumn) }
                     }
                 }
+                selectionModel.selectionMode = SelectionMode.MULTIPLE
                 columnResizePolicy = CONSTRAINED_RESIZE_POLICY
             }
         }

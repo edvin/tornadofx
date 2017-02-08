@@ -23,6 +23,7 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.shape.Polygon
@@ -971,6 +972,20 @@ fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boole
 fun <T> TableView<T>.enableCellEditing() {
     selectionModel.isCellSelectionEnabled = true
     isEditable = true
+}
+
+fun <T> TableView<T>.selectOnDrag() {
+    addEventFilter(MouseEvent.MOUSE_DRAGGED) {
+        (it.pickResult.intersectedNode as? TableCell<*, *>)?.apply {
+            if (items.size > index) {
+                if (selectionModel.isCellSelectionEnabled) {
+                    selectionModel.select(index, tableColumn as TableColumn<T, *>?)
+                } else {
+                    selectionModel.select(index)
+                }
+            }
+        }
+    }
 }
 
 fun <S> TableView<S>.enableDirtyTracking() = editModel.enableDirtyTracking()
