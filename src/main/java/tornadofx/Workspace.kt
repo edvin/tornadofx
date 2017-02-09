@@ -333,7 +333,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         root.dynamicComponents.clear()
     }
 
-    private fun inDynamicComponentMode(function: () -> Unit) {
+    fun inDynamicComponentMode(function: () -> Unit) {
         root.dynamicComponentMode = true
         try {
             function()
