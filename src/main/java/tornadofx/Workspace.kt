@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -305,11 +304,6 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             while (viewStack.size >= maxViewStackDepth) {
                 viewStack.removeAt(0)
             }
-        }
-
-        // Make sure we are visible
-        if (root.scene == null) {
-            openWindow()
         }
     }
 
