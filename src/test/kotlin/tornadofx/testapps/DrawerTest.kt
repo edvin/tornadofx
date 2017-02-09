@@ -7,6 +7,7 @@ class DrawerTestApp : App(DrawerWorkspace::class) {
     override fun onBeforeShow(view: UIComponent) {
         workspace.root.setPrefSize(600.0, 400.0)
         workspace.dock<JustAView>()
+
     }
 }
 
@@ -40,9 +41,13 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
             }
         }
     }
+
+    override fun onUndock() {
+        workspace.viewStack.remove(this)
+    }
 }
 
-class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.Tabs) {
+class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.Stack) {
     init {
         menubar {
             menu("Options") {
