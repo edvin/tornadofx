@@ -4,7 +4,6 @@ package tornadofx
 
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
 import com.sun.javafx.application.HostServicesDelegate
-import javafx.application.HostServices
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
