@@ -3,6 +3,7 @@
 package tornadofx
 
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
+import com.sun.javafx.application.HostServicesDelegate
 import javafx.application.HostServices
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
@@ -55,7 +56,7 @@ abstract class Component {
         get() = _config.value
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
-    val hostServices: HostServices get() = HostServicesFactory.getInstance(FX.application)
+    val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
         fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
