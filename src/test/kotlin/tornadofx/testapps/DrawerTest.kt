@@ -7,7 +7,6 @@ class DrawerTestApp : App(DrawerWorkspace::class) {
     override fun onBeforeShow(view: UIComponent) {
         workspace.root.setPrefSize(600.0, 400.0)
         workspace.dock<JustAView>()
-
     }
 }
 
@@ -58,15 +57,27 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
                 }
             }
         }
-        with(leftDrawer) {
-            item(TableViewDirtyTest::class)
-            item("Second Item") {
-                stackpane {
-                    label("Content of Item Two")
-                    style { backgroundColor += Color.RED }
+        with(bottomDrawer) {
+            item("Console") {
+                style {
+                    backgroundColor += Color.BLACK
+                }
+                label("""Connected to the target VM, address: '127.0.0.1:64653', transport: 'socket'
+Disconnected from the target VM, address: '127.0.0.1:64653', transport: 'socket'
+
+Process finished with exit code 0
+""") {
+                    style {
+                        backgroundColor += Color.BLACK
+                        textFill = Color.LIGHTGREY
+                        fontFamily = "Consolas"
+                    }
                 }
             }
-            item("Form item", showTitlePane = true) {
+        }
+        with(leftDrawer) {
+            item(TableViewDirtyTest::class)
+            item("Form item") {
                 form {
                     fieldset("Customer Details") {
                         field("Name") { textfield() }
@@ -74,7 +85,7 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
                     }
                 }
             }
-            item("SqueezeBox Item") {
+            item("SqueezeBox Item", showHeader = false) {
                 squeezebox(multiselect = false) {
                     fold("Customer Editor") {
                         form {
@@ -89,12 +100,6 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
                             label("Nothing here")
                         }
                     }
-                }
-            }
-            item("Third Item") {
-                stackpane {
-                    label("Content of Item Three")
-                    style { backgroundColor += Color.YELLOW }
                 }
             }
         }

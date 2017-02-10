@@ -4,10 +4,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
-import javafx.geometry.HorizontalDirection
-import javafx.geometry.HorizontalDirection.LEFT
-import javafx.geometry.HorizontalDirection.RIGHT
-import javafx.geometry.Pos
+import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.ContextMenu
@@ -17,10 +14,10 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 
-fun EventTarget.drawer(side: HorizontalDirection = LEFT, multiselect: Boolean = false, floatingContent: Boolean = false, op: Drawer.() -> Unit) = opcr(this, Drawer(side, multiselect, floatingContent), op)
+fun EventTarget.drawer(side: Side = Side.LEFT, multiselect: Boolean = false, floatingContent: Boolean = false, op: Drawer.() -> Unit) = opcr(this, Drawer(side, multiselect, floatingContent), op)
 
-class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
-    val dockingSideProperty: ObjectProperty<HorizontalDirection> = SimpleObjectProperty(side)
+class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
+    val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
 
     val floatingDrawersProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
@@ -38,10 +35,10 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
     override fun getUserAgentStylesheet() = DrawerStyles().base64URL.toExternalForm()
 
-    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, showTitlePane: Boolean = multiselect, op: DrawerItem.() -> Unit) =
-            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showTitlePane, op)
+    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, showHeader: Boolean = true, op: DrawerItem.() -> Unit) =
+            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showHeader, op)
 
-    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = multiselect, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
+    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = true, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
         val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
         item.button.textProperty().bind(uiComponent.headingProperty)
         item.children.add(uiComponent.root)
@@ -56,7 +53,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
         return item
     }
 
-    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit): DrawerItem {
+    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = false, showHeader: Boolean = true, op: DrawerItem.() -> Unit): DrawerItem {
         val item = DrawerItem(this, title, icon, showHeader)
         item.button.textProperty().bind(title)
         op(item)
@@ -87,8 +84,10 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
         // Adapt docking behavior to parent
         parentProperty().onChange {
             if (it is BorderPane) {
-                if (it.left == this) dockingSide = LEFT
-                else if (it.right == this) dockingSide = RIGHT
+                if (it.left == this) dockingSide = Side.LEFT
+                else if (it.right == this) dockingSide = Side.RIGHT
+                else if (it.bottom == this) dockingSide = Side.BOTTOM
+                else if (it.top == this) dockingSide = Side.TOP
             }
         }
 
@@ -109,6 +108,7 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
                         val group = it.button.parent
                         it.button.removeFromParent()
                         group.removeFromParent()
+                        contentArea.children.remove(it)
                     }
                 }
             }
@@ -138,16 +138,39 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
     }
 
     private fun configureRotation(button: ToggleButton) {
-        button.rotate = if (dockingSide == LEFT) -90.0 else 90.0
+        button.rotate = when (dockingSide) {
+            Side.LEFT -> -90.0
+            Side.RIGHT -> 90.0
+            else -> 0.0
+        }
     }
 
     private fun configureDockingSide() {
-        if (dockingSide == LEFT) {
-            left = buttonArea
-            right = null
-        } else {
-            left = null
-            right = buttonArea
+        when (dockingSide) {
+            Side.LEFT -> {
+                left = buttonArea
+                right = null
+                bottom = null
+                top = null
+            }
+            Side.RIGHT -> {
+                left = null
+                right = buttonArea
+                bottom = null
+                top = null
+            }
+            Side.BOTTOM -> {
+                left = null
+                right = null
+                bottom = buttonArea
+                top = null
+            }
+            Side.TOP -> {
+                left = null
+                right = null
+                bottom = null
+                top = buttonArea
+            }
         }
 
         buttonArea.children.forEach {
@@ -298,6 +321,7 @@ class DrawerStyles : Stylesheet() {
         drawerItem child titledPane {
             title {
                 backgroundRadius += box(0.px)
+                padding = box(2.px, 5.px)
             }
             content {
                 borderColor += box(Color.TRANSPARENT)

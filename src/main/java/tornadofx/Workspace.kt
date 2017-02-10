@@ -5,8 +5,8 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.event.EventHandler
-import javafx.geometry.HorizontalDirection
 import javafx.geometry.Pos
+import javafx.geometry.Side
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TabPane
@@ -62,7 +62,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     val leftDrawer: Drawer get() {
         if (root.left is Drawer) return root.left as Drawer
-        val drawer = Drawer(HorizontalDirection.LEFT, false, false)
+        val drawer = Drawer(Side.LEFT, false, false)
         root.left = drawer
         drawer.toFront()
         return drawer
@@ -70,8 +70,16 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     val rightDrawer: Drawer get() {
         if (root.right is Drawer) return root.right as Drawer
-        val drawer = Drawer(HorizontalDirection.RIGHT, false, false)
+        val drawer = Drawer(Side.RIGHT, false, false)
         root.right = drawer
+        drawer.toFront()
+        return drawer
+    }
+
+    val bottomDrawer: Drawer get() {
+        if (root.bottom is Drawer) return root.bottom as Drawer
+        val drawer = Drawer(Side.BOTTOM, false, false)
+        root.bottom = drawer
         drawer.toFront()
         return drawer
     }
