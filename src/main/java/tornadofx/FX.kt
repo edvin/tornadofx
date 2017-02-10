@@ -430,32 +430,25 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             return
         }
     }
-    if (this is WorkspaceArea) {
-        // Decide if the component should be tracked for removal on undock
-        if (dynamicComponentMode) dynamicComponents.add(node)
-
-        if (node is MenuBar) {
-            // MenuBar is added above the toolbar and is not considered dynamic
-            (top as VBox).children.add(0, node)
-        } else {
-            val targetIndex: Int
-            if (node is ButtonBase) {
-                // Add buttons after last button
-                targetIndex = header.items.indexOfLast { it is Button } + 1
-            } else {
-                targetIndex = header.items.indexOfFirst { it.hasClass("spacer") } + 1
-            }
-            header.items.add(targetIndex, node)
-        }
-        return
-    } else {
-        val workspaceParent = node.findParentOfType(WorkspaceArea::class)
-        if (workspaceParent != null && workspaceParent.dynamicComponentMode) {
-            workspaceParent.dynamicComponents.add(node)
-        }
-    }
-
     when (this) {
+        is WorkspaceArea -> {
+            // Decide if the component should be tracked for removal on undock
+            if (dynamicComponentMode) dynamicComponents.add(node)
+
+            if (node is MenuBar) {
+                // MenuBar is added above the toolbar and is not considered dynamic
+                (top as VBox).children.add(0, node)
+            } else {
+                val targetIndex: Int
+                if (node is ButtonBase) {
+                    // Add buttons after last button
+                    targetIndex = header.items.indexOfLast { it is Button } + 1
+                } else {
+                    targetIndex = header.items.indexOfFirst { it.hasClass("spacer") } + 1
+                }
+                header.items.add(targetIndex, node)
+            }
+        }
         is Workspace -> {
             root.addChildIfPossible(node, index)
         }
