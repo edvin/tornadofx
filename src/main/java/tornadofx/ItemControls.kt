@@ -309,6 +309,11 @@ fun <S> TableColumn<S, Double?>.useProgressBar(afterCommit: ((TableColumn.CellEd
 
 fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean?> {
     setCellFactory { CheckBoxCell(editable) }
+    if (editable) {
+        Platform.runLater {
+            tableView?.isEditable = true
+        }
+    }
     return this
 }
 

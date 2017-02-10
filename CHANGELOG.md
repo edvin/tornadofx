@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- Improved TableView.column builder so it finds mutable properties even when constructor params with same name is present (https://github.com/edvin/tornadofx/issues/247)
 - Workspace.viewStack is public
 - Workspace detects dynamic components anywhere inside the WorkspaceArea
 - TableView.selectOnDrag() will select rows or columns depending on the current selection mode
