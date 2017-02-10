@@ -67,10 +67,12 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
                 }
             }
             item("Form item") {
-                form {
-                    fieldset("Customer Details") {
-                        field("Name") { textfield() }
-                        field("Password") { textfield() }
+                titledpane("Customer Details", collapsible = false) {
+                    form {
+                        fieldset("Customer Details") {
+                            field("Name") { textfield() }
+                            field("Password") { textfield() }
+                        }
                     }
                 }
             }

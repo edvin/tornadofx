@@ -7,6 +7,7 @@ import javafx.event.EventTarget
 import javafx.geometry.HorizontalDirection
 import javafx.geometry.HorizontalDirection.LEFT
 import javafx.geometry.HorizontalDirection.RIGHT
+import javafx.geometry.Pos
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.ContextMenu
@@ -214,9 +215,6 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 }
 
 class ExpandedDrawerContentArea : VBox() {
-    var resizing = false
-    var oldWidth = 0.0
-
     init {
         addClass(DrawerStyles.contentArea)
         children.onChange { change ->
@@ -226,6 +224,7 @@ class ExpandedDrawerContentArea : VBox() {
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }
+                        it.alignment = Pos.TOP_CENTER
                     }
                 }
             }
@@ -234,7 +233,7 @@ class ExpandedDrawerContentArea : VBox() {
 
 }
 
-class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null) : StackPane() {
+class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null) : VBox() {
     internal val button = ToggleButton().apply {
         if (title != null) textProperty().bind(title)
         if (icon != null) graphicProperty().bind(icon)
@@ -243,14 +242,30 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
     val expanded: Boolean get() = button.isSelected
 
     init {
+        addClass(DrawerStyles.drawerItem)
         button.selectedProperty().onChange { drawer.updateExpanded(this) }
         drawer.updateExpanded(this)
+
+        children.onChange { change ->
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    change.addedSubList.forEach {
+                        if (VBox.getVgrow(it) == null) {
+                            VBox.setVgrow(it, Priority.ALWAYS)
+                        }
+                        it.alignment = Pos.TOP_CENTER
+                    }
+                }
+            }
+        }
+
     }
 }
 
 class DrawerStyles : Stylesheet() {
     companion object {
         val drawer by cssclass()
+        val drawerItem by cssclass()
         val buttonArea by cssclass()
         val contentArea by cssclass()
     }
@@ -262,7 +277,6 @@ class DrawerStyles : Stylesheet() {
                 borderWidth += box(0.5.px)
             }
             buttonArea {
-                // -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color
                 unsafe("-fx-background-color", raw("-fx-body-color"))
 
                 toggleButton {
@@ -273,6 +287,14 @@ class DrawerStyles : Stylesheet() {
                         textFill = Color.WHITE
                     }
                 }
+            }
+        }
+        drawerItem child titledPane {
+            title {
+                backgroundRadius += box(0.px)
+            }
+            content {
+                borderColor += box(Color.TRANSPARENT)
             }
         }
     }
