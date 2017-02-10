@@ -628,18 +628,6 @@ var Node.margin: Insets?
         }
     }
 
-var Node.alignment: Pos?
-    get() = when (parent) {
-        is StackPane -> StackPane.getAlignment(this)
-        else -> null
-    }
-    set (value) = when (parent) {
-        is StackPane -> StackPane.setAlignment(this, value)
-        else -> {
-            FX.log.warning("Setting alignment=$value on $this failed because parent doesn't support it ($parent)")
-        }
-    }
-
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */

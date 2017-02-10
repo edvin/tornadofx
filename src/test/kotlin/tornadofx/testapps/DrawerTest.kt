@@ -66,13 +66,11 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
                     style { backgroundColor += Color.RED }
                 }
             }
-            item("Form item") {
-                titledpane("Customer Details", collapsible = false) {
-                    form {
-                        fieldset("Customer Details") {
-                            field("Name") { textfield() }
-                            field("Password") { textfield() }
-                        }
+            item("Form item", showTitlePane = true) {
+                form {
+                    fieldset("Customer Details") {
+                        field("Name") { textfield() }
+                        field("Password") { textfield() }
                     }
                 }
             }

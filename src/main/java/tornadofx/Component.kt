@@ -497,8 +497,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
     }
 
-    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
-            item(find(uiComponent, scope, params), expanded, op)
+    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
+            item(find(uiComponent, scope, params), expanded, showHeader, op)
 
     @JvmName("addView")
     inline fun <reified T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null): Unit = plusAssign(find(type, scope, params).root)

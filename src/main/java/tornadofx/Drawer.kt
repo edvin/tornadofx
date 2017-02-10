@@ -14,7 +14,6 @@ import javafx.scene.control.ContextMenu
 import javafx.scene.control.ToggleButton
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Priority
-import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 
@@ -39,11 +38,11 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
 
     override fun getUserAgentStylesheet() = DrawerStyles().base64URL.toExternalForm()
 
-    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit) =
-            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, op)
+    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, showTitlePane: Boolean = multiselect, op: DrawerItem.() -> Unit) =
+            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showTitlePane, op)
 
-    fun item(uiComponent: UIComponent, expanded: Boolean = false, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
-        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty)
+    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = multiselect, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
+        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
         item.button.textProperty().bind(uiComponent.headingProperty)
         item.children.add(uiComponent.root)
         op?.invoke(item)
@@ -57,8 +56,8 @@ class Drawer(side: HorizontalDirection, multiselect: Boolean, floatingContent: B
         return item
     }
 
-    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = false, op: DrawerItem.() -> Unit): DrawerItem {
-        val item = DrawerItem(this, title, icon)
+    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit): DrawerItem {
+        val item = DrawerItem(this, title, icon, showHeader)
         item.button.textProperty().bind(title)
         op(item)
         items.add(item)
@@ -224,7 +223,9 @@ class ExpandedDrawerContentArea : VBox() {
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }
-                        it.alignment = Pos.TOP_CENTER
+                     //   if (it is VBox) {
+                       //     it.alignment = Pos.TOP_CENTER
+                        //}
                     }
                 }
             }
@@ -233,7 +234,7 @@ class ExpandedDrawerContentArea : VBox() {
 
 }
 
-class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null) : VBox() {
+class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null, showHeader: Boolean) : VBox() {
     internal val button = ToggleButton().apply {
         if (title != null) textProperty().bind(title)
         if (icon != null) graphicProperty().bind(icon)
@@ -243,6 +244,12 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
 
     init {
         addClass(DrawerStyles.drawerItem)
+        if (showHeader) {
+            titledpane {
+                textProperty().bind(title)
+                isCollapsible = false
+            }
+        }
         button.selectedProperty().onChange { drawer.updateExpanded(this) }
         drawer.updateExpanded(this)
 
@@ -253,7 +260,6 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }
-                        it.alignment = Pos.TOP_CENTER
                     }
                 }
             }
