@@ -4,11 +4,13 @@ import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
+import javafx.geometry.Orientation
 import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.ToggleButton
+import javafx.scene.control.ToolBar
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -23,7 +25,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     val floatingDrawersProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
     var floatingDrawers by floatingDrawersProperty
 
-    val buttonArea = VBox().addClass(DrawerStyles.buttonArea)
+    val buttonArea = ToolBar().addClass(DrawerStyles.buttonArea)
     val contentArea = ExpandedDrawerContentArea()
 
     val items = FXCollections.observableArrayList<DrawerItem>()
@@ -152,28 +154,32 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                 right = null
                 bottom = null
                 top = null
+                buttonArea.orientation = Orientation.VERTICAL
             }
             Side.RIGHT -> {
                 left = null
                 right = buttonArea
                 bottom = null
                 top = null
+                buttonArea.orientation = Orientation.VERTICAL
             }
             Side.BOTTOM -> {
                 left = null
                 right = null
                 bottom = buttonArea
                 top = null
+                buttonArea.orientation = Orientation.HORIZONTAL
             }
             Side.TOP -> {
                 left = null
                 right = null
                 bottom = null
                 top = buttonArea
+                buttonArea.orientation = Orientation.HORIZONTAL
             }
         }
 
-        buttonArea.children.forEach {
+        buttonArea.items.forEach {
             val button = (it as Group).children.first() as ToggleButton
             configureRotation(button)
         }
@@ -306,10 +312,16 @@ class DrawerStyles : Stylesheet() {
                 borderWidth += box(0.5.px)
             }
             buttonArea {
-                unsafe("-fx-background-color", raw("-fx-body-color"))
-
+                spacing = 0.px
+                padding = box(0.px)
+                toolBarOverflowButton {
+                    padding = box(4.px)
+                    arrow {
+                        padding = box(4.px)
+                    }
+                }
                 toggleButton {
-                    backgroundInsets += box(-1.px)
+                    backgroundInsets += box(0.px)
                     backgroundRadius += box(0.px)
                     and(selected) {
                         backgroundColor += c("#818181")
