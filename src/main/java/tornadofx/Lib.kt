@@ -71,7 +71,7 @@ class SortedFilteredList<T>(
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
     fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
-        tableView.items = this
+        tableView.items = sortedItems
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
         return this
     }
@@ -83,7 +83,7 @@ class SortedFilteredList<T>(
      *
      */
     fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = this
+        listView.items = sortedItems
         return this
     }
 
