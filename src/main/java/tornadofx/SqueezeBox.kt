@@ -11,11 +11,14 @@ import javafx.scene.control.Button
 import javafx.scene.control.Control
 import javafx.scene.control.TitledPane
 
-class SqueezeBox(multiselect: Boolean = true) : Control() {
+class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Control() {
     internal val panes = FXCollections.observableArrayList<TitledPane>()
 
     val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
     var multiselect by multiselectProperty
+
+    val fillHeightProperty: BooleanProperty = SimpleBooleanProperty(fillHeight)
+    var fillHeight by fillHeightProperty
 
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
@@ -80,8 +83,18 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
 
     override fun layoutChildren(contentX: Double, contentY: Double, contentWidth: Double, contentHeight: Double) {
         var currentY = contentY
+        var extraHeightPerExpandedPane = 0.0
+        if (skinnable.fillHeight) {
+            var totalPrefHeight: Double = 0.0
+            var expandedCount = 0
+            control.panes.forEach {
+                if (it.isExpanded) expandedCount += 1
+                totalPrefHeight += it.prefHeight(contentWidth)
+            }
+            extraHeightPerExpandedPane = (contentHeight - totalPrefHeight) / expandedCount
+        }
         control.panes.forEach { pane ->
-            val prefHeight = pane.prefHeight(contentWidth)
+            val prefHeight = pane.prefHeight(contentWidth) + if (pane.isExpanded) extraHeightPerExpandedPane else 0.0
             pane.resizeRelocate(contentX, currentY, contentWidth, prefHeight)
             pane.renderCloseButton(contentWidth, currentY)
             currentY += prefHeight
@@ -111,7 +124,7 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 }
 
-fun EventTarget.squeezebox(multiselect: Boolean = true, op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(multiselect), op)
+fun EventTarget.squeezebox(multiselect: Boolean = true, fillHeight: Boolean = true, op: SqueezeBox.() -> Unit) = opcr(this, SqueezeBox(multiselect, fillHeight), op)
 
 fun SqueezeBox.fold(title: String? = null, expanded: Boolean = false, icon: Node? = null, closeable: Boolean = false, op: TitledPane.() -> Unit): TitledPane {
     val fold = TitledPane(title, null)

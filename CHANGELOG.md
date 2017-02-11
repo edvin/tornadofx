@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- SqueezeBox.fillHeight property
+- Added svgicon builder
 - Removed Node.alignment helper, it was misleading
 - Added collapsible parameter to titledpane builder
 - Added Component.hostServices property to access a JavaFX HostServices instance

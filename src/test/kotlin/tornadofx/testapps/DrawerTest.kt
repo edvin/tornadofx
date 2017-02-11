@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.beans.property.SimpleStringProperty
 import javafx.scene.paint.Color
 import tornadofx.*
 
@@ -50,7 +51,7 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
     init {
         menubar {
             menu("Options") {
-                checkmenuitem("Toggle Navigation") {
+                checkmenuitem("Toggle Navigation Mode") {
                     setOnAction {
                         navigationMode = if (navigationMode == NavigationMode.Stack) NavigationMode.Tabs else NavigationMode.Stack
                     }
@@ -74,6 +75,9 @@ Process finished with exit code 0
                     }
                 }
             }
+            item("Events") {
+
+            }
         }
         with(leftDrawer) {
             item(TableViewDirtyTest::class)
@@ -86,7 +90,7 @@ Process finished with exit code 0
                 }
             }
             item("SqueezeBox Item", showHeader = false) {
-                squeezebox(multiselect = false) {
+                squeezebox(multiselect = false, fillHeight = true) {
                     fold("Customer Editor") {
                         form {
                             fieldset("Customer Details") {
@@ -98,6 +102,11 @@ Process finished with exit code 0
                     fold("Some other editor") {
                         stackpane {
                             label("Nothing here")
+                        }
+                    }
+                    fold("A Table") {
+                        tableview(listOf("One", "Two", "Three").observable()) {
+                            column<String, String>("Value") { SimpleStringProperty(it.value) }
                         }
                     }
                 }

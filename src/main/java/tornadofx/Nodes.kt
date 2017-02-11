@@ -28,6 +28,8 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
+import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -1153,3 +1155,19 @@ fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
 }
 
 fun Node.onHover(onHover: (Boolean) -> Unit) = hoverProperty().onChange { onHover(isHover) }
+
+fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: (SVGIcon.() -> Unit)? = null) = opcr(this, SVGIcon(shape, size, color), op)
+
+class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) : Pane() {
+    init {
+        addClass("icon", "svg-icon")
+        style {
+            shape = svgShape
+            backgroundColor += color
+            minWidth = size.px
+            minHeight = size.px
+            maxWidth = size.px
+            maxHeight = size.px
+        }
+    }
+}
