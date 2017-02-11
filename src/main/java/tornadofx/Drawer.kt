@@ -314,12 +314,6 @@ class DrawerStyles : Stylesheet() {
             buttonArea {
                 spacing = 0.px
                 padding = box(0.px)
-                toolBarOverflowButton {
-                    padding = box(4.px)
-                    arrow {
-                        padding = box(4.px)
-                    }
-                }
                 toggleButton {
                     backgroundInsets += box(0.px)
                     backgroundRadius += box(0.px)
