@@ -25,6 +25,12 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     val floatingDrawersProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
     var floatingDrawers by floatingDrawersProperty
 
+    val maxContentSizeProperty: ObjectProperty<Number> = SimpleObjectProperty<Number>()
+    var maxContentSize by maxContentSizeProperty
+
+    val fixedContentSizeProperty: ObjectProperty<Number> = SimpleObjectProperty<Number>()
+    var fixedContentSize by fixedContentSizeProperty
+
     val buttonArea = ToolBar().addClass(DrawerStyles.buttonArea)
     val contentArea = ExpandedDrawerContentArea()
 
@@ -222,6 +228,30 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
             center = null
             children.remove(contentArea)
         } else {
+            if (fixedContentSize != null) {
+                when (dockingSide) {
+                    Side.LEFT, Side.RIGHT -> {
+                        contentArea.maxWidth = fixedContentSize.toDouble()
+                        contentArea.minWidth = fixedContentSize.toDouble()
+                    }
+                    Side.TOP, Side.BOTTOM -> {
+                        contentArea.maxHeight = fixedContentSize.toDouble()
+                        contentArea.minHeight = fixedContentSize.toDouble()
+                    }
+                }
+            } else {
+                contentArea.maxWidth = USE_COMPUTED_SIZE
+                contentArea.minWidth = USE_COMPUTED_SIZE
+                contentArea.maxHeight = USE_COMPUTED_SIZE
+                contentArea.minHeight = USE_COMPUTED_SIZE
+                if (maxContentSize != null) {
+                    when (dockingSide) {
+                        Side.LEFT, Side.RIGHT -> contentArea.maxWidth = maxContentSize.toDouble()
+                        Side.TOP, Side.BOTTOM -> contentArea.maxHeight = maxContentSize.toDouble()
+                    }
+                }
+            }
+
             if (floatingDrawers) {
                 contentArea.isManaged = false
                 if (!children.contains(contentArea)) children.add(contentArea)
