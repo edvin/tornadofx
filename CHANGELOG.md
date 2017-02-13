@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- `include(fxmlFile)` builder support
+- `fxml()` Views now supports nested includes / controllers injected via `fxid()` (name of controller is `fx:id` + "Controler")
 - SqueezeBox.fillHeight property
 - Added svgicon builder
 - Removed Node.alignment helper, it was misleading

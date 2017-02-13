@@ -56,7 +56,7 @@ abstract class Component {
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
-        fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
+    fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
@@ -155,10 +155,10 @@ abstract class Component {
         }
     }
 
-    inline fun <reified T : Any> di( name: String? = null ): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T : Any> di(name: String? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var injected: T? = null
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if( FX.dicontainer == null ){
+            if (FX.dicontainer == null) {
                 throw AssertionError("Injector is not configured, so bean of type ${T::class} cannot be resolved")
             } else {
                 if (injected == null) injected = FX.dicontainer?.let {
@@ -518,13 +518,13 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
+    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
 
-    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4)) =
+    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4)) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
 
-    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint : Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
+    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false)
@@ -625,6 +625,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 (headingProperty as WritableValue<String>).value = value
         }
 
+    companion object {
+        val overrideFXMLController = ThreadLocal<NestedController>()
+    }
+
+    class NestedController(val rootFxId: String, val loader: FXMLLoader, val controllerClass: KClass<out Component>)
+
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
      * if not specified. If the FXML file specifies a controller (handy for content completion in FXML editors)
@@ -635,25 +641,70 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * no controller will be set at all. Make sure to only specify this parameter if you actually have the `fx:controller`
      * attribute in your FXML.
      */
-    fun <T : Node> fxml(location: String? = null, hasControllerAttribute: Boolean = false): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+    inline fun <reified T : Node> fxml(location: String? = null, hasControllerAttribute: Boolean = false): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
         val value: T
 
-        init {
-            val componentType = this@UIComponent.javaClass
-            val targetLocation = location ?: componentType.simpleName + ".fxml"
-            val fxml = componentType.getResource(targetLocation) ?:
-                    throw IllegalArgumentException("FXML not found for $componentType")
+        private fun getCurrentElementFxId() = getCurrentElement().let { element ->
+            element.javaClass.getField("fx_id").let { fxid ->
+                fxid.isAccessible = true
+                fxid.get(element) as String?
+            }
+        }
 
-            fxmlLoader = FXMLLoader(fxml).apply {
-                resources = this@UIComponent.messages
-                if (hasControllerAttribute) {
-                    setControllerFactory { this@UIComponent }
-                } else {
-                    setController(this@UIComponent)
+        private fun getCurrentElement(): Any = FXMLLoader::class.java.getDeclaredField("current").let {
+            it.isAccessible = true
+            it.get(fxmlLoader)
+        }
+
+        init {
+            val nestedControllers = ArrayList<NestedController>()
+
+            if (overrideFXMLController.get() != null) {
+                val ctrl = overrideFXMLController.get()
+                fxmlLoader = ctrl.loader
+                value = fxmlLoader!!.namespace[ctrl.rootFxId] as T
+            } else {
+                val componentType = this@UIComponent.javaClass
+                val targetLocation = location ?: componentType.simpleName + ".fxml"
+                val fxml = componentType.getResource(targetLocation) ?:
+                        throw IllegalArgumentException("FXML not found for $componentType")
+
+                fxmlLoader = FXMLLoader(fxml).apply {
+                    resources = this@UIComponent.messages
+                    setControllerFactory { controllerClass ->
+                        if (controllerClass.isAssignableFrom(this@UIComponent.javaClass)) {
+                            this@UIComponent
+                        } else {
+                            val ctrl: Any
+                            val rootFxId = getCurrentElementFxId() ?: throw IllegalArgumentException("Nested controllers _must_ have an fx:id set!")
+                            if (Component::class.java.isAssignableFrom(controllerClass)) {
+                                ctrl = NestedController(rootFxId, this, controllerClass.kotlin as KClass<Component>)
+                                nestedControllers.add(ctrl)
+                            } else {
+                                ctrl = controllerClass.newInstance()
+                                namespace["${rootFxId}Controller"] = ctrl
+                            }
+                            ctrl
+                        }
+                    }
+                }
+
+                if (!hasControllerAttribute) fxmlLoader!!.setController(this@UIComponent)
+                value = fxmlLoader!!.load()
+
+                // Instantiate nested controllers with this loader
+                if (nestedControllers.isNotEmpty()) {
+                    val oldOverride = overrideFXMLController.get()
+                    try {
+                        nestedControllers.forEach { nestedController ->
+                            overrideFXMLController.set(nestedController)
+                            fxmlLoader!!.namespace["${nestedController.rootFxId}Controller"] = find(nestedController.controllerClass)
+                        }
+                    } finally {
+                        overrideFXMLController.set(oldOverride)
+                    }
                 }
             }
-
-            value = fxmlLoader!!.load()
         }
 
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
@@ -667,10 +718,19 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             if (value == null)
                 log.warning("Property $key of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader!!.location}")
             else
-                log.warning("Property $key of $thisRef did not resolve to the correct type. Check declaration in ${thisRef.fxmlLoader!!.location}")
+                log.warning("Property $key of $thisRef did not resolve to the correct type (Should be ${T::class}, was ${value.javaClass.kotlin}) Check declaration in ${thisRef.fxmlLoader!!.location}")
 
             throw IllegalArgumentException("Property $key does not match fx:id declaration")
         }
+    }
+
+    inline fun <reified T : Parent> EventTarget.include(scope: Scope = this@UIComponent.scope, hasControllerAttribute: Boolean = false, location: String): T {
+        val loader = object : Fragment() {
+            override val scope = scope
+            override val root: T by fxml(location, hasControllerAttribute)
+        }
+        addChildIfPossible(loader.root)
+        return loader.root
     }
 
     /**
