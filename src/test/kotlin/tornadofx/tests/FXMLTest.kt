@@ -11,7 +11,6 @@ import javafx.stage.Stage
 import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import tornadofx.App
 import tornadofx.Fragment
 import tornadofx.View
 import tornadofx.find
@@ -70,8 +69,8 @@ class FXMLTest {
             (composedForm.searchPane.children[0] as Parent).childrenUnmodifiable[1] is TextField )
 
         // listPane > AnchorPane > lvItems
-        Assert.assertEquals( "javafx.scene.control.ListView",
-                (composedForm.listPane.children[0] as Parent).childrenUnmodifiable[0].javaClass.name)
+        Assert.assertEquals(ListView::class.java,
+                (composedForm.listPane.children[0] as Parent).childrenUnmodifiable[0].javaClass)
 
     }
 
