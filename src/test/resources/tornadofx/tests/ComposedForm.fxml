@@ -9,10 +9,10 @@
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Pane fx:id="searchPane">
-              <fx:include source="ComposedFormSearch.fxml" />
+              <fx:include fx:id="searchPaneContents" source="ComposedFormSearch.fxml" />
       </Pane>
       <Pane fx:id="listPane" prefHeight="200.0" prefWidth="200.0">
-              <fx:include source="ComposedFormList.fxml" />
+              <fx:include fx:id="listPaneContents" source="ComposedFormList.fxml" />
       </Pane>
       <Separator prefWidth="200.0" />
       <ButtonBar prefHeight="40.0" prefWidth="200.0">

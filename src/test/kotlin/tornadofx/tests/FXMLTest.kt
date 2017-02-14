@@ -5,12 +5,15 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
+import javafx.scene.layout.AnchorPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
+import tornadofx.App
 import tornadofx.Fragment
 import tornadofx.View
 import tornadofx.find
@@ -101,3 +104,17 @@ class ComposedForm : View() {
     fun ok() {}
     fun cancel() {}
 }
+
+class ComposedFormListController : View() {
+    override val root : AnchorPane by fxml("/tornadofx/test/ComposedFormList.fxml")
+}
+
+class ComposedFormSearchController : View() {
+    override val root : HBox by fxml("/torandofx/test/ComposedFormSearch.fxml")
+    val tfSearch : TextField by fxid()
+    fun search() {
+        println("search=" + tfSearch.text)
+    }
+}
+
+class ComposedFormApp : App(ComposedForm::class)
