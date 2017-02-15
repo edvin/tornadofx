@@ -1,7 +1,6 @@
 package tornadofx.tests
 
 import javafx.scene.Parent
-import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
@@ -43,12 +42,6 @@ class FXMLTest {
     }
 
     @Test
-    fun nestedFXML() {
-        val outside = find<Outside>()
-        Assert.assertNotNull(outside.insideController.root)
-    }
-
-    @Test
     fun simpleFormFXML() {
         val simpleForm = find<SimpleForm>()
         Assert.assertNotNull(simpleForm.tfField1)
@@ -74,15 +67,6 @@ class FXMLTest {
 
     }
 
-}
-
-class Outside : View() {
-    override val root: VBox by fxml("/tornadofx/tests/Outside.fxml")
-    val insideController: Inside by fxid()
-}
-
-class Inside : View() {
-    override val root: Button by fxml()
 }
 
 class SimpleForm : View() {
