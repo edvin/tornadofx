@@ -38,32 +38,37 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
-fun <T> EventTarget.spinner(editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>()
+    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun EventTarget.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
+fun EventTarget.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, property: Property<Int>? = null, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
     val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
     spinner.isEditable = editable
+    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     return opcr(this, spinner, op)
 }
 
-fun EventTarget.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
+fun EventTarget.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, property: Property<Double>? = null, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
     val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
+    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(items)
+    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
-fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(valueFactory)
+    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
