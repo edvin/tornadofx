@@ -235,12 +235,32 @@ fun <S> TableView<S>.addColumnInternal(column: TableColumn<S, *>, index: Int? = 
     if (index == null) columnTarget.add(column) else columnTarget.add(index, column)
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <S> TreeTableView<S>.addColumnInternal(column: TreeTableColumn<S, *>, index: Int? = null) {
+    val columnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TreeTableColumn<S, *>> ?: columns
+    if (index == null) columnTarget.add(column) else columnTarget.add(index, column)
+}
+
 /**
  * Create a column holding children columns
  */
 @Suppress("UNCHECKED_CAST")
 fun <S> TableView<S>.nestedColumn(title: String, op: (TableView<S>.() -> Unit)? = null): TableColumn<S, Any?> {
     val column = TableColumn<S, Any?>(title)
+    addColumnInternal(column)
+    val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>>
+    properties["tornadofx.columnTarget"] = column.columns
+    op?.invoke(this)
+    properties["tornadofx.columnTarget"] = previousColumnTarget
+    return column
+}
+
+/**
+ * Create a column holding children columns
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S> TreeTableView<S>.nestedColumn(title: String, op: (TreeTableView<S>.() -> Unit)? = null): TreeTableColumn<S, Any?> {
+    val column = TreeTableColumn<S, Any?>(title)
     addColumnInternal(column)
     val previousColumnTarget = properties["tornadofx.columnTarget"] as? ObservableList<TableColumn<S, *>>
     properties["tornadofx.columnTarget"] = column.columns
@@ -258,6 +278,33 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableCo
     addColumnInternal(column)
     op?.invoke(column)
     return column
+}
+
+/**
+ * Create a column using the getter of the attribute you want shown.
+ */
+@JvmName("pojoColumn") fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
+    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    return this.column( title, propName )
+}
+
+/**
+ * Create a column using the propertyName of the attribute you want shown.
+ */
+fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: (TreeTableColumn<S, T>.() -> Unit)? = null): TreeTableColumn<S, T> {
+    val column = TreeTableColumn<S, T>(title)
+    column.cellValueFactory = TreeItemPropertyValueFactory<S, T>(propertyName)
+    addColumnInternal(column)
+    op?.invoke(column)
+    return column
+}
+
+/**
+ * Create a column using the getter of the attribute you want shown.
+ */
+@JvmName("pojoColumn") fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
+    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    return this.column( title, propName )
 }
 
 fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {

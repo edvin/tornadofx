@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- typesafe pojo column builders for TableView and TreeTableView eg. column( "Name", MyPojo::getName )
 - spinner builders takes property param
 - `include(fxmlFile)` builder support
 - `fxml()` Views now supports nested includes / controllers injected via `fxid()` (name of controller is `fx:id` + "Controler")
