@@ -13,6 +13,10 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     var scope: Scope = DefaultScope
     val workspace: Workspace get() = scope.workspace
 
+    fun <T : FXEvent> fire(event: T) {
+        FX.eventbus.fire(event)
+    }
+
     constructor(primaryView: KClass<out UIComponent>? = null, stylesheet: KClass<out Stylesheet>, scope: Scope = DefaultScope) : this(primaryView, *arrayOf(stylesheet)) {
         this.scope = scope
     }
