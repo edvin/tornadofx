@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.2-SNAPSHOT]
+## [1.6.2]
 
 - resizeColumnsToFitContent takes nested columns into account
 - SmartResize.POLICY takes nested columns into account
