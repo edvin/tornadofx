@@ -154,7 +154,13 @@ fun EventTarget.pagination(pageCount: Int? = null, pageIndex: Int? = null, op: (
     return opcr(this, pagination, op)
 }
 
-fun EventTarget.scrollpane(op: (ScrollPane.() -> Unit)? = null) = opcr(this, ScrollPane(), op)
+fun EventTarget.scrollpane(fitToWidth: Boolean = false, fitToHeight: Boolean = false, op: (ScrollPane.() -> Unit)? = null): ScrollPane {
+    val pane = ScrollPane()
+    pane.isFitToWidth = fitToWidth
+    pane.isFitToHeight = fitToHeight
+    opcr(this, pane, op)
+    return pane
+}
 
 fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
     val splitpane = SplitPane()

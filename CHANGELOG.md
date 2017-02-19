@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.2-SNAPSHOT]
 
+- scrollpane builder now has fitToWidth and fitToHeight params
 - typesafe pojo column builders for TableView and TreeTableView eg. column( "Name", MyPojo::getName )
 - spinner builders takes property param
 - `include(fxmlFile)` builder support
