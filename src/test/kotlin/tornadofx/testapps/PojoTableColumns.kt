@@ -19,6 +19,6 @@ class PojoTableColumns : View("Pojo Table Columns") {
             column("Primary Email", JavaPerson::getPrimaryEmail )
             column("Secondary Email", JavaPerson::getSecondaryEmail )
         }
-
+        resizeColumnsToFitContent()
     }
 }

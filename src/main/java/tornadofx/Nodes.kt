@@ -285,7 +285,7 @@ var Region.usePrefSize: Boolean
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
 
-fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = columns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
         try {
             val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
