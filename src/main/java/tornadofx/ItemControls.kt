@@ -975,6 +975,10 @@ val TableView<*>.contentColumns: List<TableColumn<*, *>> get() = columns.flatMap
     if (it.columns.isEmpty()) listOf(it) else it.columns
 }
 
+val TreeTableView<*>.contentColumns: List<TreeTableColumn<*, *>> get() = columns.flatMap {
+    if (it.columns.isEmpty()) listOf(it) else it.columns
+}
+
 internal var TableColumn<*, *>.resizeType: ResizeType
     get() = resizeTypeProperty().value
     set(value) {
