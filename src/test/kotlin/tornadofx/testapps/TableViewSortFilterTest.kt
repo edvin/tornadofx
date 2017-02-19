@@ -32,8 +32,11 @@ class TableViewSortFilterTest : View("Table Sort and Filter") {
 		table = tableview {
 			column("ID", Person::id)
 			column("Name", Person::name)
-			column("Birthday", Person::birthday)
-			column("Age", Person::age)
+			nestedColumn("DOB") {
+				column("Birthday", Person::birthday)
+				column("Age", Person::age).contentWidth()
+			}
+            columnResizePolicy = SmartResize.POLICY
 		}
 	}
 
