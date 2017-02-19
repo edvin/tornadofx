@@ -7,17 +7,31 @@ import javafx.scene.input.KeyEvent
 import javafx.util.Callback
 
 
-fun <T> ComboBox<T>.makeAutocompletable() : AutoCompleteComboBoxExtension<T> = AutoCompleteComboBoxExtension<T>(this)
+/**
+ * Extension function to combobox to add autocomplete capabilities
+ * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
+ */
+fun <T> ComboBox<T>.makeAutocompletable() = AutoCompleteComboBoxExtension<T>(this, null)
+/**
+ * Extension function to combobox to add autocomplete capabilities
+ * Accept in parameter a callback to create the autocomplete list based on input text
+ * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
+ */
+fun <T> ComboBox<T>.makeAutocompletable(autoCompleteFilter : Callback<String, ObservableList<T>>) = AutoCompleteComboBoxExtension<T>(this, autoCompleteFilter)
 
 
 
 /**
+ * Auto Complete support for combobox
+ * Accept a call back to make custom filter
+ * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
  * Created by anouira on 15/02/2017.
  */
-class AutoCompleteComboBoxExtension<T>(private val comboBox : ComboBox<T>,
-                                       var autoCompleteFilter : Callback<String, ObservableList<T>> = Callback {
-                                           (comboBox.items ?: FXCollections.emptyObservableList()).filtered { current -> comboBox.converter.toString(current).contains(it, true) }
-                                       }) : EventHandler<KeyEvent> {
+class AutoCompleteComboBoxExtension<T>(val comboBox : ComboBox<T>, autoCompleteFilter : Callback<String, ObservableList<T>>? ) : EventHandler<KeyEvent> {
+    val data: ObservableList<T> = comboBox.items ?: FXCollections.emptyObservableList()
+    var autoCompleteFilter_ : Callback<String, ObservableList<T>> = autoCompleteFilter ?: Callback {
+        data.filtered { current -> comboBox.converter.toString(current).contains(it, true) }
+    }
     private var moveCaretToPos = false
     private var caretPos: Int = 0
 
@@ -40,14 +54,14 @@ class AutoCompleteComboBoxExtension<T>(private val comboBox : ComboBox<T>,
 
         if(isControlDown) {
             when (code) {
-                KeyCode.V -> ""
+                KeyCode.V -> Unit
                 else -> return
             }
         }
         if(isShiftDown) {
             when (code) {
                 KeyCode.LEFT,KeyCode.RIGHT,KeyCode.HOME,KeyCode.END -> return
-                else -> ""
+                else -> Unit
             }
         }
 
@@ -65,11 +79,11 @@ class AutoCompleteComboBoxExtension<T>(private val comboBox : ComboBox<T>,
                 moveCaretToPos = true
                 caretPos = comboBox.editor.caretPosition
             }
-            KeyCode.RIGHT, KeyCode.LEFT, KeyCode.HOME, KeyCode.END, KeyCode.TAB, KeyCode.SHIFT, KeyCode.CONTROL ->  return
-            else -> ""
+            KeyCode.RIGHT, KeyCode.LEFT, KeyCode.HOME, KeyCode.END, KeyCode.TAB, KeyCode.SHIFT, KeyCode.CONTROL, KeyCode.ENTER, KeyCode.ESCAPE ->  return
+            else -> Unit
         }
 
-        val list = autoCompleteFilter.call(text)
+        val list = autoCompleteFilter_.call(text)
 
         comboBox.items = list
         comboBox.editor.text = text
