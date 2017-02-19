@@ -7,7 +7,6 @@ import tornadofx.tests.JavaPerson
 class PojoTableColumnsApp : App(PojoTableColumns::class)
 
 class PojoTableColumns : View("Pojo Table Columns") {
-
     val people = FXCollections.observableArrayList(
             JavaPerson().apply { name = "John Doe"; primaryEmail = "john@doe.com"; secondaryEmail = "john.doe@gmail.com"},
             JavaPerson().apply { name = "Jane Doe"; primaryEmail = "jane@doe.com"; secondaryEmail = "jane.doe@gmail.com"}
