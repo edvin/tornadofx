@@ -1,12 +1,25 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
+import javafx.scene.input.KeyCombination
 import tornadofx.*
 
 class SqueezeBoxTestApp : App(SqueezeBoxTestView::class)
 
 object AddFoldEvent : FXEvent()
 
+class AccelTestApp : App(AccelTest::class)
+class AccelTest : View() {
+    override val root = button("Click me") {
+        accelerator(KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_ANY, KeyCombination.SHIFT_ANY))
+        setOnAction {
+            alert(Alert.AlertType.INFORMATION, "Fire!", "You clicked.")
+        }
+    }
+}
 class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
     override val root = vbox(5.0) {
         setPrefSize(300.0, 600.0)
@@ -15,6 +28,7 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
             setOnAction {
                 fire(AddFoldEvent)
             }
+            accelerator(KeyCombination.valueOf("Ctrl+A"))
         }
 
         scrollpane(fitToWidth = true) {

@@ -440,7 +440,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
     }
 
-
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
 
     fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
