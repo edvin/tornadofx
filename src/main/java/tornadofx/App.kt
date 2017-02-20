@@ -121,11 +121,17 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         op(popupMenu)
     }
 
-    fun TrayIcon.setOnMouseClicked(button: Int = BUTTON1, clickCount: Int = 1, op: () -> Unit) {
+    fun TrayIcon.setOnMouseClicked(fxThread: Boolean = false, button: Int = BUTTON1, clickCount: Int = 1, op: () -> Unit) {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.button == button && e.clickCount == clickCount) {
-                    op()
+                    if (fxThread) {
+                        Platform.runLater {
+                            op()
+                        }
+                    } else {
+                        op()
+                    }
                 }
             }
         })
@@ -138,8 +144,16 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         return item
     }
 
-    fun MenuItem.setOnAction(action: () -> Unit) {
-        addActionListener { action() }
+    fun MenuItem.setOnAction(fxThread: Boolean = false, action: () -> Unit) {
+        addActionListener {
+            if (fxThread) {
+                Platform.runLater {
+                    action()
+                }
+            } else {
+                action()
+            }
+        }
     }
 
 }
