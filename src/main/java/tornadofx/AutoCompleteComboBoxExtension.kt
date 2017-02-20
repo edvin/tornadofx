@@ -25,7 +25,7 @@ fun <T> ComboBox<T>.makeAutocompletable(autoCompleteFilter : ((String) -> List<T
 class AutoCompleteComboBoxExtension<T>(val comboBox : ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : EventHandler<KeyEvent> {
     val data: ObservableList<T> = comboBox.items ?: FXCollections.emptyObservableList()
     var autoCompleteFilter_ : (String) -> List<T> = autoCompleteFilter ?: {
-        data.filtered { current -> comboBox.converter.toString(current).contains(it, true) }
+        data.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
     private var moveCaretToPos = false
     private var caretPos: Int = 0
