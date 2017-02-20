@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.6.3-SNAPSHOT]
 
 - EventBus `fire()` function is now available from the App class
+- `ComboBox.makeAutocompletable()`
 
 ## [1.6.2]
 

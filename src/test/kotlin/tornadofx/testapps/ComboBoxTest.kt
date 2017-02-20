@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.*
 import java.util.*
@@ -26,7 +25,7 @@ class ComboboxTest : View("Combobox test") {
 class AutoCompleteComboBoxExtensionTestApp : App(AutoCompleteComboBoxExtensionTest::class)
 
 class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension test") {
-    val itemsGlobalObject = Locale.getISOCountries().asList().map { Locale("",it) }
+    val itemsGlobalObject = Locale.getISOCountries().asList().map { Locale("", it) }
     val itemsGlobal = itemsGlobalObject.map { it.displayCountry }
     val selectedItem = SimpleStringProperty(itemsGlobal.first())
     val selectedItem2 = SimpleStringProperty(itemsGlobal.first())
@@ -36,7 +35,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
     override val root = form {
         setPrefSize(400.0, 400.0)
         fieldset {
-            field("Default"){
+            field("Default") {
                 combobox(selectedItem, itemsGlobal) {
                     makeAutocompletable()
                 }
@@ -44,32 +43,31 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
             /**
              * Example using custom filter using startswith instead of contains
              */
-            field("With custom Filter"){
+            field("With custom Filter") {
                 combobox(selectedItem2, itemsGlobal) {
-                    makeAutocompletable(Callback {
-                        itemsGlobal.observable().filtered { current -> comboBox@this.converter.toString(current).startsWith(it, true) }
-                    })
+                    makeAutocompletable {
+                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
+                    }
                 }
             }
             /**
              * Example using converter
              */
-            field("Default with custom converter"){
+            field("Default with custom converter") {
                 combobox(selectedItemObject, itemsGlobalObject) {
                     converter = LocaleStringConverter()
                     makeAutocompletable()
-
                 }
             }
             /**
              * Example using converter and custom filter
              */
-            field("With custom converter and filter"){
+            field("With custom converter and filter") {
                 combobox(selectedItemObject2, itemsGlobalObject) {
                     converter = LocaleStringConverter()
-                    makeAutocompletable(Callback {
+                    makeAutocompletable {
                         itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
-                    })
+                    }
 
                 }
             }
@@ -80,7 +78,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
 class LocaleStringConverter : StringConverter<Locale>() {
     val mapLocale = hashMapOf<String, Locale>()
     override fun fromString(string: String?): Locale {
-        return mapLocale.getOrDefault(string?: "", null)
+        return mapLocale.getOrDefault(string ?: "", null)
     }
 
     override fun toString(locale: Locale?): String {
