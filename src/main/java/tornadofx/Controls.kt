@@ -45,8 +45,9 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
-fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
+fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab()
+    tab.isClosable = closable
     tab.textProperty().bind(uiComponent.titleProperty)
     tab.content = uiComponent.root
     tabs.add(tab)
