@@ -731,7 +731,7 @@ abstract class Fragment(title: String? = null, icon: Node? = null) : UIComponent
 
 abstract class View(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
 
-class ResourceLookup(val component: Component) {
+class ResourceLookup(val component: Any) {
     operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
     fun url(resource: String): URL? = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)

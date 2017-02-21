@@ -22,6 +22,9 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     var scope: Scope = DefaultScope
     val workspace: Workspace get() = scope.workspace
     private val trayIcons = ArrayList<TrayIcon>()
+    val resources: ResourceLookup by lazy {
+        ResourceLookup(this)
+    }
 
     fun <T : FXEvent> fire(event: T) {
         FX.eventbus.fire(event)
