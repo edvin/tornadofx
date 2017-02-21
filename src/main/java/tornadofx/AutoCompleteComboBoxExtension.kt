@@ -2,11 +2,12 @@ package tornadofx
 
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
 import javafx.event.EventHandler
 import javafx.scene.control.ComboBox
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.util.Callback
+import java.util.function.Predicate
 
 
 /**
@@ -23,44 +24,44 @@ fun <T> ComboBox<T>.makeAutocompletable(autoCompleteFilter : ((String) -> List<T
  * Created by anouira on 15/02/2017.
  */
 class AutoCompleteComboBoxExtension<T>(val comboBox : ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : EventHandler<KeyEvent> {
-    val data: ObservableList<T> = comboBox.items ?: FXCollections.emptyObservableList()
+    val filtredItems: FilteredList<T> = (comboBox.items ?: FXCollections.emptyObservableList()).filtered { true }
+    var localFilter = true
     var autoCompleteFilter_ : (String) -> List<T> = autoCompleteFilter ?: {
-        data.filter { current -> comboBox.converter.toString(current).contains(it, true) }
+        filtredItems.predicate = Predicate{ current -> comboBox.converter.toString(current).contains(it, true) }
+        filtredItems
     }
     private var moveCaretToPos = false
     private var caretPos: Int = 0
 
     init {
+        localFilter = autoCompleteFilter == null
         with(this.comboBox) {
             val valueTmp = value
             isEditable = true
-            onKeyPressed = EventHandler<KeyEvent> { hide() }
+            items = filtredItems
             onKeyReleased = this@AutoCompleteComboBoxExtension
             value = valueTmp
         }
     }
 
-    override fun handle(event: KeyEvent?) {
-        val code = event?.code
-        val isControlDown = event?.isControlDown ?: false
-        val isShiftDown = event?.isShiftDown ?: false
+    override fun handle(event: KeyEvent) {
         val text = comboBox.editor.text
         val caretPosition = comboBox.editor.caretPosition
 
-        if(isControlDown) {
-            when (code) {
+        if(event.isControlDown) {
+            when (event.code) {
                 KeyCode.V -> Unit
                 else -> return
             }
         }
-        if(isShiftDown) {
-            when (code) {
+        if(event.isShiftDown) {
+            when (event.code) {
                 KeyCode.LEFT,KeyCode.RIGHT,KeyCode.HOME,KeyCode.END -> return
                 else -> Unit
             }
         }
 
-        when (code) {
+        when (event.code) {
             KeyCode.DOWN, KeyCode.UP -> {
                 if (!comboBox.isShowing) {
                     comboBox.show()
@@ -79,8 +80,19 @@ class AutoCompleteComboBoxExtension<T>(val comboBox : ComboBox<T>, autoCompleteF
         }
 
         val list = autoCompleteFilter_.invoke(text)
+        if(!localFilter) comboBox.items = (list as? ObservableList<T>) ?: list.observable()
+        try {
+            val method = comboBox.skin.javaClass.superclass.getDeclaredMethod("positionAndShowPopup")
+            method.isAccessible = true
+            method.invoke(comboBox.skin)
+            method.isAccessible = false
+        } catch (ex : Throwable) {
+            //Fall back to hide show solution
+            comboBox.hide()
+            comboBox.show()
+            print("Falback to showhide in combobox autocomplete")
+        }
 
-        comboBox.items = (list as? ObservableList<T>) ?: list.observable()
         comboBox.editor.text = text
         if (!moveCaretToPos) {
             caretPos = -1

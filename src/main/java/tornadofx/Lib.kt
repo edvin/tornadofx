@@ -22,7 +22,7 @@ import java.util.function.Predicate
 /**
  * A wrapper for an observable list of items that can be bound to a list control like TableView, ListView etc.
  *
- * The wrapper makes the data sortable and filterable. Configure a filter by setting the
+ * The wrapper makes the filtredItems sortable and filterable. Configure a filter by setting the
  * predicate property or by calling filterWhen to automatically update the predicate when
  * an observable value changes.
  *
@@ -30,10 +30,10 @@ import java.util.function.Predicate
  *
  * ```kotlin
  * val table = TableView<Person>()
- * val data = SortedFilteredList(persons).bindTo(table)
+ * val filtredItems = SortedFilteredList(persons).bindTo(table)
  * ```
  *
- * Items can be updated by calling `data.items.setAll` or `data.items.addAll` at a later time.
+ * Items can be updated by calling `filtredItems.items.setAll` or `filtredItems.items.addAll` at a later time.
  */
 @Suppress("UNCHECKED_CAST")
 class SortedFilteredList<T>(
@@ -64,7 +64,7 @@ class SortedFilteredList<T>(
     var predicate by predicateProperty
 
     /**
-     * Bind this data object to the given TableView.
+     * Bind this filtredItems object to the given TableView.
      *
      * The `tableView.items` is set to the underlying sortedItems.
      *
@@ -77,7 +77,7 @@ class SortedFilteredList<T>(
     }
 
     /**
-     * Bind this data object to the given ListView.
+     * Bind this filtredItems object to the given ListView.
      *
      * The `listView.items` is set to the underlying sortedItems.
      *
@@ -96,7 +96,7 @@ class SortedFilteredList<T>(
      * <pre>
      * textfield {
      *     promptText = "Filtrering"
-     *     data.filterWhen(textProperty(), { query, item -> item.matches(query) } )
+     *     filtredItems.filterWhen(textProperty(), { query, item -> item.matches(query) } )
      * }
      * </pre>
      */
@@ -192,7 +192,7 @@ fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Uni
 }
 
 /**
- * Create a proxy property backed by calculated data based on a specific property. The setter
+ * Create a proxy property backed by calculated filtredItems based on a specific property. The setter
  * must return the new value for the backed property.
  * The scope of the getter and setter will be the receiver property
  */
@@ -215,7 +215,7 @@ fun <R, T> proxyprop(receiver: Property<R>, getter: Property<R>.() -> T, setter:
 }
 
 /**
- * Create a proxy double property backed by calculated data based on a specific property. The setter
+ * Create a proxy double property backed by calculated filtredItems based on a specific property. The setter
  * must return the new value for the backed property.
  * The scope of the getter and setter will be the receiver property
  */
