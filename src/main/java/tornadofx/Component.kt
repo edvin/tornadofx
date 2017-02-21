@@ -732,14 +732,14 @@ abstract class Fragment(title: String? = null, icon: Node? = null) : UIComponent
 abstract class View(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
 
 class ResourceLookup(val component: Any) {
-    operator fun get(resource: String): String? = component.javaClass.getResource(resource)?.toExternalForm()
-    fun url(resource: String): URL? = component.javaClass.getResource(resource)
-    fun stream(resource: String): InputStream? = component.javaClass.getResourceAsStream(resource)
+    operator fun get(resource: String): String = component.javaClass.getResource(resource).toExternalForm()
+    fun url(resource: String): URL = component.javaClass.getResource(resource)
+    fun stream(resource: String): InputStream = component.javaClass.getResourceAsStream(resource)
     fun image(resource: String): Image = Image(stream(resource))
     fun imageview(resource: String): ImageView = ImageView(Image(stream(resource)))
-    fun json(resource: String) = stream(resource)!!.toJSON()
-    fun jsonArray(resource: String) = stream(resource)!!.toJSONArray()
-    fun text(resource: String): String = stream(resource)!!.use { it.bufferedReader().readText() }
+    fun json(resource: String) = stream(resource).toJSON()
+    fun jsonArray(resource: String) = stream(resource).toJSONArray()
+    fun text(resource: String): String = stream(resource).use { it.bufferedReader().readText() }
 }
 
 class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment.() -> Parent) : Fragment(title) {

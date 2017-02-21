@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- resources stream/url/get helpers are not non-nullable
 - Added resources helper to App class
 - Added TrayIcon support (https://github.com/edvin/tornadofx/issues/255)
 - EventBus `fire()` function is now available from the App class
