@@ -31,7 +31,8 @@ class AutoCompleteComboBoxExtension<T>(val comboBox : ComboBox<T>, autoCompleteF
     private var caretPos: Int = 0
 
     init {
-        with(this.comboBox) {
+
+        with(comboBox) {
             val valueTmp = value
             isEditable = true
             onKeyPressed = EventHandler<KeyEvent> { hide() }

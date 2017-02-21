@@ -1,6 +1,8 @@
 package tornadofx
 
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
@@ -42,6 +44,38 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     if (op != null) op(content)
     return tab
 }
+
+fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab()
+    tab.textProperty().bind(uiComponent.titleProperty)
+    tab.content = uiComponent.root
+    tabs.add(tab)
+    op?.invoke(tab)
+    return tab
+}
+
+val TabPane.savable: BooleanExpression get() {
+    val savable = SimpleBooleanProperty(false)
+    fun updateState() {
+        savable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(false))
+    }
+    updateState()
+    selectionModel.selectedItemProperty().onChange { updateState() }
+    return savable
+}
+
+val TabPane.refreshable: BooleanExpression get() {
+    val refreshable = SimpleBooleanProperty(false)
+    fun updateState() {
+        refreshable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(false))
+    }
+    updateState()
+    selectionModel.selectedItemProperty().onChange { updateState() }
+    return refreshable
+}
+
+fun TabPane.onSave() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onSave()
+fun TabPane.onRefresh() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onRefresh()
 
 fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab(text)
