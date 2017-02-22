@@ -109,18 +109,19 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         override val root = Pane()
     }
 
-    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, op: TrayIcon.() -> Unit){
+    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit){
         Platform.setImplicitExit(implicitExit)
         SwingUtilities.invokeLater {
             Toolkit.getDefaultToolkit()
             val trayIcon = TrayIcon(image, tooltip)
+            trayIcon.isImageAutoSize= autoSize
             op(trayIcon)
             SystemTray.getSystemTray().add(trayIcon)
             trayIcons.add(trayIcon)
         }
     }
-    fun trayicon(icon: InputStream, tooltip: String? = null, implicitExit: Boolean = false, op: TrayIcon.() -> Unit) {
-        trayicon(ImageIO.read(icon), tooltip, implicitExit, op)
+    fun trayicon(icon: InputStream, tooltip: String? = null, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit) {
+        trayicon(ImageIO.read(icon), tooltip, implicitExit, autoSize, op)
     }
 
     fun TrayIcon.menu(label: String, op: PopupMenu.() -> Unit) {
