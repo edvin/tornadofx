@@ -10,6 +10,7 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseEvent.BUTTON1
+import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.util.*
 import javax.imageio.ImageIO
@@ -108,15 +109,18 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         override val root = Pane()
     }
 
-    fun trayicon(icon: InputStream, tooltip: String? = null, implicitExit: Boolean = false, op: TrayIcon.() -> Unit) {
+    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, op: TrayIcon.() -> Unit){
         Platform.setImplicitExit(implicitExit)
         SwingUtilities.invokeLater {
             Toolkit.getDefaultToolkit()
-            val trayIcon = TrayIcon(ImageIO.read(icon), tooltip)
+            val trayIcon = TrayIcon(image, tooltip)
             op(trayIcon)
             SystemTray.getSystemTray().add(trayIcon)
             trayIcons.add(trayIcon)
         }
+    }
+    fun trayicon(icon: InputStream, tooltip: String? = null, implicitExit: Boolean = false, op: TrayIcon.() -> Unit) {
+        trayicon(ImageIO.read(icon), tooltip, implicitExit, op)
     }
 
     fun TrayIcon.menu(label: String, op: PopupMenu.() -> Unit) {
