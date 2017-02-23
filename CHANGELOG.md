@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- Improved Form prefWidth calculations
 - MenuItem.enableWhen function
 - Custom tab support for Views. Views can be docked in tabs and even delegate to refreshable and savable for the surrounding View
 - resources stream/url/get helpers are not non-nullable
