@@ -89,6 +89,10 @@ interface JsonModel {
 
 }
 
+object JsonConfig {
+    var DefaultDateTimeMillis = false
+}
+
 /**
  * Nullable getters are lowercase, not null getters are prependend with get + camelcase
  * JsonObject already provide some not null getters like getString, getBoolean etc, the rest
@@ -114,9 +118,9 @@ fun JsonObject.boolean(key: String) = bool(key) // Alias
 fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
 fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
 
-fun JsonNumber.datetime() = LocalDateTime.ofEpochSecond(longValue(), 0, ZoneOffset.UTC)
-fun JsonObject.getDateTime(key: String): LocalDateTime = getJsonNumber(key).datetime()
-fun JsonObject.datetime(key: String) = if (isNotNullOrNULL(key)) getDateTime(key) else null
+fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue()/(if (millis) 1000 else 1), 0, ZoneOffset.UTC)
+fun JsonObject.getDateTime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(key).datetime(millis)
+fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
 
 fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) getUUID(key) else null
 fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
@@ -197,9 +201,9 @@ class JsonBuilder {
         return this
     }
 
-    fun add(key: String, value: LocalDateTime?): JsonBuilder {
+    fun add(key: String, value: LocalDateTime?, millis: Boolean = JsonConfig.DefaultDateTimeMillis): JsonBuilder {
         if (value != null)
-            delegate.add(key, value.toEpochSecond(ZoneOffset.UTC))
+            delegate.add(key, value.toEpochSecond(ZoneOffset.UTC) * (if (millis) 1000 else 1))
 
         return this
     }
