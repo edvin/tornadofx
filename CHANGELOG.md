@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- TextInputControl `trimWhitespace()`, `stripWhitespace()`, `stripNonNumeric()`, `stripNonInteger` continually strips or trims whitespace in inputs
 - JSON `datetime` function has optional `millis` parameter to convert to/from milliseconds since epoch instead of seconds
 - `JsonConfig.DefaultDateTimeMillis = true` will cause `datetime` to convert to/from milliseconds since epoch by default
 - Improved Form prefWidth calculations

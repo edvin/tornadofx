@@ -18,7 +18,9 @@ import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
+import java.text.DecimalFormat
 import java.time.LocalDate
+import java.util.*
 
 fun EventTarget.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -248,3 +250,31 @@ fun EventTarget.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar()
 
 fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
+
+/**
+ * Listen to changes and update the value of the property if the given mutator results in a different value
+ */
+fun <T : Any?> Property<T>.mutateOnChange(mutator: (T?) -> T?) = onChange {
+    val changed = mutator(value)
+    if (changed != value) value = changed
+}
+
+/**
+ * Remove leading or trailing whitespace from a Text Input Control.
+ */
+fun TextInputControl.trimWhitespace() = textProperty().mutateOnChange { it?.trim() }
+
+/**
+ * Remove any whitespace from a Text Input Control.
+ */
+fun TextInputControl.stripWhitespace() = textProperty().mutateOnChange { it?.replace(Regex("\\s*"), "") }
+
+/**
+ * Remove any non integer values from a Text Input Control.
+ */
+fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.replace(Regex("[^0-9]"), "") }
+
+/**
+ * Remove any non integer values from a Text Input Control.
+ */
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
