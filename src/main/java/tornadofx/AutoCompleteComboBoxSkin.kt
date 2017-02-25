@@ -58,6 +58,19 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
             comboBox.hide()
             updateDisplayArea()
         }
+        updateCellFactory()
+        comboBox.cellFactoryProperty().onChange { updateCellFactory() }
+    }
+
+    private fun updateCellFactory() {
+        if (comboBox.cellFactory != null) {
+            listView.cellFactory = comboBox.cellFactory
+        } else {
+            createDefaultCellFactory()
+        }
+    }
+
+    private fun createDefaultCellFactory() {
         val cellFormat: (ListCell<T>.(T) -> Unit) = {
             if (it is Node) {
                 graphic = it
