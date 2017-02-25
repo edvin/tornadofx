@@ -8,7 +8,6 @@ import javafx.scene.control.ListView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
-import javafx.scene.layout.VBox
 import kotlin.reflect.KClass
 
 
@@ -19,7 +18,7 @@ import kotlin.reflect.KClass
  */
 fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-        if (event.clickCount == clickCount && selectedItem != null)
+        if (event.clickCount == clickCount && selectedItem != null && event.target.isInsideRow())
             action(selectedItem!!)
     }
 

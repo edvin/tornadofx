@@ -1,6 +1,8 @@
 package tornadofx
 
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
@@ -16,7 +18,9 @@ import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
+import java.text.DecimalFormat
 import java.time.LocalDate
+import java.util.*
 
 fun EventTarget.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -42,6 +46,39 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     if (op != null) op(content)
     return tab
 }
+
+fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab()
+    tab.isClosable = closable
+    tab.textProperty().bind(uiComponent.titleProperty)
+    tab.content = uiComponent.root
+    tabs.add(tab)
+    op?.invoke(tab)
+    return tab
+}
+
+val TabPane.savable: BooleanExpression get() {
+    val savable = SimpleBooleanProperty(false)
+    fun updateState() {
+        savable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(false))
+    }
+    updateState()
+    selectionModel.selectedItemProperty().onChange { updateState() }
+    return savable
+}
+
+val TabPane.refreshable: BooleanExpression get() {
+    val refreshable = SimpleBooleanProperty(false)
+    fun updateState() {
+        refreshable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(false))
+    }
+    updateState()
+    selectionModel.selectedItemProperty().onChange { updateState() }
+    return refreshable
+}
+
+fun TabPane.onSave() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onSave()
+fun TabPane.onRefresh() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onRefresh()
 
 fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab(text)
@@ -213,3 +250,31 @@ fun EventTarget.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar()
 
 fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
+
+/**
+ * Listen to changes and update the value of the property if the given mutator results in a different value
+ */
+fun <T : Any?> Property<T>.mutateOnChange(mutator: (T?) -> T?) = onChange {
+    val changed = mutator(value)
+    if (changed != value) value = changed
+}
+
+/**
+ * Remove leading or trailing whitespace from a Text Input Control.
+ */
+fun TextInputControl.trimWhitespace() = textProperty().mutateOnChange { it?.trim() }
+
+/**
+ * Remove any whitespace from a Text Input Control.
+ */
+fun TextInputControl.stripWhitespace() = textProperty().mutateOnChange { it?.replace(Regex("\\s*"), "") }
+
+/**
+ * Remove any non integer values from a Text Input Control.
+ */
+fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.replace(Regex("[^0-9]"), "") }
+
+/**
+ * Remove any non integer values from a Text Input Control.
+ */
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }

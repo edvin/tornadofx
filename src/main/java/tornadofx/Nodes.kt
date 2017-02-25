@@ -492,7 +492,7 @@ enum class EditEventType(val editing: Boolean) {
  */
 fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     val isSelected = { event: InputEvent ->
-        event.target.isInsideTableRow() && !selectionModel.isEmpty
+        event.target.isInsideRow() && !selectionModel.isEmpty
     }
 
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
@@ -522,7 +522,7 @@ fun Node.onDoubleClick(action: () -> Unit) {
  */
 fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     val isSelected = { event: InputEvent ->
-        event.target.isInsideTableRow() && !selectionModel.isEmpty
+        event.target.isInsideRow() && !selectionModel.isEmpty
     }
 
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
@@ -576,20 +576,20 @@ fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
 }
 
 /**
- * Did the event occur inside a TableRow or TreeTableRow?
+ * Did the event occur inside a TableRow, TreeTableRow or ListCell?
  */
-fun EventTarget.isInsideTableRow(): Boolean {
+fun EventTarget.isInsideRow(): Boolean {
     if (this !is Node)
         return false
 
     if (this is TableColumnHeader)
         return false
 
-    if (this is TableRow<*> || this is TableView<*> || this is TreeTableRow<*> || this is TreeTableView<*>)
+    if (this is TableRow<*> || this is TableView<*> || this is TreeTableRow<*> || this is TreeTableView<*> || this is ListCell<*>)
         return true
 
     if (this.parent != null)
-        return this.parent.isInsideTableRow()
+        return this.parent.isInsideRow()
 
     return false
 }
@@ -1122,6 +1122,11 @@ fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
 }
 
 fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableProperty().cleanBind(expr())
+fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) {
+    val obs = expr()
+    val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
+    disableProperty().cleanBind(binding)
+}
 
 fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
     Platform.runLater {

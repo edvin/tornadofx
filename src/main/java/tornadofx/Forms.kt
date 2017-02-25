@@ -33,8 +33,8 @@ open class Form : VBox() {
         addClass(Stylesheet.form)
     }
 
-    internal val labelContainerWidth: Double
-        get() = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-1.0) }.max() ?: 0.0
+    internal fun labelContainerWidth(height: Double): Double
+        = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-height) }.max() ?: 0.0
 
     val fieldsets: List<Fieldset>
         get() = children.filterIsInstance<Fieldset>()
@@ -238,12 +238,12 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val for
         val fieldset = fieldset
         val labelHasContent = forceLabelIndent || text.isNotBlank()
 
-        val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth else 0.0
+        val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth(height) else 0.0
         val inputWidth = inputContainer.prefWidth(height)
 
         val insets = insets
 
-        if (fieldset.labelPosition == HORIZONTAL)
+        if (fieldset.labelPosition == VERTICAL)
             return Math.max(labelWidth, inputWidth) + insets.left + insets.right
 
         return labelWidth + inputWidth + insets.left + insets.right
@@ -261,7 +261,7 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val for
         val contentWidth = width - insets.left - insets.right
         val contentHeight = height - insets.top - insets.bottom
 
-        val labelWidth = Math.min(contentWidth, fieldset.form.labelContainerWidth)
+        val labelWidth = Math.min(contentWidth, fieldset.form.labelContainerWidth(height))
 
         if (fieldset.labelPosition == HORIZONTAL) {
             if (labelHasContent) {
