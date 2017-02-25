@@ -31,6 +31,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
     val selectedItem2 = SimpleStringProperty(itemsGlobal.first())
     val selectedItemObject = SimpleObjectProperty(itemsGlobalObject.first())
     val selectedItemObject2 = SimpleObjectProperty(itemsGlobalObject.first())
+    val selectedItemObject3 = SimpleObjectProperty(itemsGlobalObject.first())
 
     override val root = form {
         setPrefSize(400.0, 400.0)
@@ -68,7 +69,20 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     makeAutocompletable {
                         itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
-
+                }
+            }
+            /**
+             * Example using custom cell factory
+             */
+            field("With custom cell factory") {
+                combobox(selectedItemObject3, itemsGlobalObject) {
+                    converter = LocaleStringConverter()
+                    cellFormat {
+                        text = "Locale: " + converter.toString(it)
+                    }
+                    makeAutocompletable {
+                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                    }
                 }
             }
         }
