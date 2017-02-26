@@ -49,7 +49,7 @@ abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val workspace: Workspace get() = scope.workspace
     val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
-    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
+    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
     val config: Properties
         get() = _config.value
@@ -265,15 +265,17 @@ abstract class Component {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
-        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: (T) -> Unit): (T) -> Unit {
+        val registration = FXEventRegistration(T::class, this, times?.toLong(),action as (FXEvent) -> Unit)
+        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
-        if (fireNow) FX.eventbus.subscribe(T::class, scope, action)
+        if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
+        return action
     }
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> unsubscribe(noinline action: (T) -> Unit) {
-        subscribedEvents[T::class]?.remove(action)
+        subscribedEvents[T::class]?.removeAll { it.action == action }
         FX.eventbus.unsubscribe(T::class, action)
     }
 
@@ -402,7 +404,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     private fun detachLocalEventBusListeners() {
         subscribedEvents.forEach { event, actions ->
             actions.forEach {
-                FX.eventbus.unsubscribe(event, it)
+                FX.eventbus.unsubscribe(event, it.action)
             }
         }
     }
