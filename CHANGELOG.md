@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- `contextmenu` builder now works on any Node, not just Control
 - EventBus `subscribe(times = n)` parameter will unregister listener after it has fired `n` times (http://stackoverflow.com/questions/42465786/how-to-unsubscribe-events-in-tornadofx)
 - TextInputControl `trimWhitespace()`, `stripWhitespace()`, `stripNonNumeric()`, `stripNonInteger` continually strips or trims whitespace in inputs
 - JSON `datetime` function has optional `millis` parameter to convert to/from milliseconds since epoch instead of seconds
@@ -13,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Custom tab support for Views. Views can be docked in tabs and even delegate to refreshable and savable for the surrounding View
 - resources stream/url/get helpers are not non-nullable
 - Added resources helper to App class
-- Added TrayIcon support (https://github.com/edvin/tornadofx/issues/255)
+- Added TrayIcon support (https://gitallhub.com/edvin/tornadofx/issues/255)
 - EventBus `fire()` function is now available from the App class
 - `ComboBox.makeAutocompletable()`
 

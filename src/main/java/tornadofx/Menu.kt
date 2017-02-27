@@ -2,9 +2,11 @@ package tornadofx
 
 import javafx.beans.value.ObservableValue
 import javafx.event.ActionEvent
+import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
+import javafx.scene.input.MouseEvent
 
 //Menu-related operator functions
 operator fun <T : MenuItem> Menu.plusAssign(menuItem: T): Unit {
@@ -191,9 +193,17 @@ fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, gra
     return checkMenuItem
 }
 
-fun Control.contextmenu(op: (ContextMenu.() -> Unit)? = null): Node {
+fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     val menu = ContextMenu()
     op?.invoke(menu)
-    contextMenu = menu
+    if (this is Control) {
+        contextMenu = menu
+    } else if (this is Node) {
+        this.addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+            if (event.isSecondaryButtonDown && !menu.isShowing) {
+                menu.show(this@contextmenu, event.screenX, event.screenY)
+            }
+        }
+    }
     return this
 }
