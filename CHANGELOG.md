@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- `buttonbar` builder in `form` now creates and operates on a `ButtonBar`
 - `contextmenu` builder now works on any Node, not just Control
 - EventBus `subscribe(times = n)` parameter will unregister listener after it has fired `n` times (http://stackoverflow.com/questions/42465786/how-to-unsubscribe-events-in-tornadofx)
 - TextInputControl `trimWhitespace()`, `stripWhitespace()`, `stripNonNumeric()`, `stripNonInteger` continually strips or trims whitespace in inputs

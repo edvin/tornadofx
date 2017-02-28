@@ -694,6 +694,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title) }}).apply {
+        builder((root as Form).fieldsets.first())
+        openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
+    }
+
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
         return replaceWith(find(component, scope), transition)
     }
