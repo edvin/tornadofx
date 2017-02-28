@@ -14,7 +14,14 @@ open class FXEvent(
         open val scope: Scope? = null
 )
 
-class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Component?, val maxCount: Long? = null, val action: (FXEvent) -> Unit) {
+class EventContext {
+    internal var unsubscribe = false
+    fun unsubscribe() {
+        unsubscribe = true
+    }
+}
+
+class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Component?, val maxCount: Long? = null, val action: EventContext.(FXEvent) -> Unit) {
     val count = AtomicLong()
 
     override fun equals(other: Any?): Boolean {
@@ -37,7 +44,7 @@ class EventBus {
     enum class RunOn { ApplicationThread, BackgroundThread }
 
     private val subscriptions = HashMap<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
-    private val eventScopes = HashMap<(FXEvent) -> Unit, Scope>()
+    private val eventScopes = HashMap<EventContext.(FXEvent) -> Unit, Scope>()
 
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration : FXEventRegistration) {
         subscriptions.computeIfAbsent(event, { HashSet() }).add(registration)
@@ -45,18 +52,18 @@ class EventBus {
     }
 
     fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: KClass<T>, scope: Scope, action: (T) -> Unit) {
-        subscribe(event, scope, FXEventRegistration(event, owner, times, action as (FXEvent) -> Unit))
+        subscribe(event, scope, FXEventRegistration(event, owner, times, action as EventContext.(FXEvent) -> Unit))
     }
 
     fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit) {
-        subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as (FXEvent) -> Unit))
+        subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
     }
 
-    fun <T : FXEvent> unsubscribe(event: Class<T>, action: (T) -> Unit) {
+    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit) {
         unsubscribe(event.kotlin, action)
     }
 
-    fun <T : FXEvent> unsubscribe(event: KClass<T>, action: (T) -> Unit) {
+    fun <T : FXEvent> unsubscribe(event: KClass<T>, action: EventContext.(T) -> Unit) {
         subscriptions[event]?.removeAll { it.action == action }
         eventScopes.remove(action)
     }
@@ -72,7 +79,9 @@ class EventBus {
                 if (event.scope == null || event.scope == eventScopes[it.action]) {
                     val count = it.count.andIncrement
                     if (it.maxCount == null || count < it.maxCount) {
-                        it.action.invoke(event)
+                        val context = EventContext()
+                        it.action.invoke(context, event)
+                        if (context.unsubscribe) unsubscribe(it)
                     } else {
                         unsubscribe(it)
                     }
