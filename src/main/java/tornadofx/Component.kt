@@ -265,8 +265,8 @@ abstract class Component {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: (T) -> Unit): (T) -> Unit {
-        val registration = FXEventRegistration(T::class, this, times?.toLong(),action as (FXEvent) -> Unit)
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): EventContext.(T) -> Unit {
+        val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
         if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
@@ -274,7 +274,7 @@ abstract class Component {
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> unsubscribe(noinline action: (T) -> Unit) {
+    inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) {
         subscribedEvents[T::class]?.removeAll { it.action == action }
         FX.eventbus.unsubscribe(T::class, action)
     }
