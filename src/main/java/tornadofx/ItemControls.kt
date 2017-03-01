@@ -1016,8 +1016,8 @@ fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
     return this
 }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Number = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding.toDouble(), minContentWidth)
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Double, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+    resizeType = ResizeType.Weight(weight, padding, minContentWidth)
     return this
 }
 

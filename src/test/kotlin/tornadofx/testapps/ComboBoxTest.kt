@@ -91,13 +91,13 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
 
 class LocaleStringConverter : StringConverter<Locale>() {
     val mapLocale = hashMapOf<String, Locale>()
-    override fun fromString(string: String?): Locale {
-        return mapLocale.getOrDefault(string ?: "", null)
+    override fun fromString(string: String?): Locale? {
+        return if (string == null) null else mapLocale.getOrDefault(string, null)
     }
 
-    override fun toString(locale: Locale?): String {
+    override fun toString(locale: Locale?): String? {
         val output = locale?.displayCountry + ", " + locale?.isO3Country
-        mapLocale.putIfAbsent(output, locale)
+        if (locale != null) mapLocale.putIfAbsent(output, locale)
         return output
     }
 }
