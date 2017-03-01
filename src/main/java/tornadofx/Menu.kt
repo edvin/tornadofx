@@ -194,7 +194,7 @@ fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, gra
 }
 
 fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
-    val menu = ContextMenu()
+    val menu = if (this is Control && contextMenu != null) contextMenu else ContextMenu()
     op?.invoke(menu)
     if (this is Control) {
         contextMenu = menu
