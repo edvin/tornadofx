@@ -14,6 +14,7 @@ import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -694,7 +695,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title) }}).apply {
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) }}).apply {
         builder((root as Form).fieldsets.first())
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
