@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.3-SNAPSHOT]
 
+- Added MenuItem.visibleWhen
 - Fixed: `workspace.dockInNewScope(params)` operates on current scope instead of the new
 - `buttonbar` builder in `form` now creates and operates on a `ButtonBar`
 - `contextmenu` builder now works on any Node, not just Control

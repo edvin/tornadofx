@@ -1121,6 +1121,7 @@ fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
+fun MenuItem.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
 fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableProperty().cleanBind(expr())
 fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) {
     val obs = expr()
