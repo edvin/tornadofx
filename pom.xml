@@ -6,7 +6,7 @@
 
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.6.3-SNAPSHOT</version>
+    <version>1.7.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>TornadoFX</name>
     <description>Lightweight JavaFX Framework for Kotlin</description>
@@ -136,11 +136,9 @@
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <version>${kotlin.version}</version>
-                <!-- TODO: Enable when weightedWidth no longer causes RuntimeException
                 <configuration>
                     <jvmTarget>1.8</jvmTarget>
                 </configuration>
-                -->
                 <executions>
                     <execution>
                         <id>compile</id>

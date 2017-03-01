@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.3-SNAPSHOT]
+## [1.7.0-SNAPSHOT]
 
 - Kotlin 1.1 dependency
 - Added MenuItem.visibleWhen
