@@ -199,10 +199,8 @@ fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     if (this is Control) {
         contextMenu = menu
     } else if (this is Node) {
-        this.addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
-            if (event.isSecondaryButtonDown && !menu.isShowing) {
-                menu.show(this@contextmenu, event.screenX, event.screenY)
-            }
+        this.setOnContextMenuRequested { event ->
+            menu.show(this@contextmenu, event.screenX, event.screenY)
         }
     }
     return this
