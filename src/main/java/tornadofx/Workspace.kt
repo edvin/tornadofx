@@ -368,8 +368,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
      */
     inline fun <reified T : UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
-        withNewScope(*setInScope) {
-            dock<T>(scope, params)
+        withNewScope(*setInScope) { newScope ->
+            dock<T>(newScope, params)
         }
     }
 
