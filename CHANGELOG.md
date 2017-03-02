@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - EventBus `fire()` function is now available from the App class
 - `ComboBox.makeAutocompletable()`
 
-## [1.6.2]
+## [1.6.2] - 2017-02-21
 
 - resizeColumnsToFitContent takes nested columns into account
 - SmartResize.POLICY takes nested columns into account
@@ -55,7 +55,7 @@ All notable changes to this project will be documented in this file.
 - Accordion.fold has `expanded` parameter
 - Fixed: ComboBox with cellFormat does not show bound element (https://github.com/edvin/tornadofx/issues/245)
 
-## [1.6.1]
+## [1.6.1] -2017-01-26
 
 - whenSaved and whenRefreshed lambdas as alternative to overriding onSave and onRefresh
 - Workspace onSave and onDock delegates to the docked View
@@ -74,7 +74,7 @@ All notable changes to this project will be documented in this file.
 - ItemViewModel.asyncItem helper to reload the underlying item
 - Corrected Workspace.dockInNewScope, docking was performed in the old scope (!)
 
-## [1.6.0]
+## [1.6.0] - 2017-01-18
 
 - Workspaces (https://edvin.gitbooks.io/tornadofx-guide/content/16.%20Workspaces.html)
 - OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
@@ -132,7 +132,7 @@ All notable changes to this project will be documented in this file.
 - `titledpane` builder now accepts op parameter like every other builder. node parameter is now optional
 - Fieldset.wrapWidth is now Number instead of Double
 
-## [1.5.9]
+## [1.5.9] - 2016-12-24
 
 - UIComponent has `isdockedProperty` and `isDocked` boolean telling you if the ui component is currently docked
 - Added CSS elements to type safe stylesheets so you can now target f.ex HBox even if it doesn't have a CSS class
