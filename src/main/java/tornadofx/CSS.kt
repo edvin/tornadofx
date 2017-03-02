@@ -483,7 +483,7 @@ open class PropertyHolder {
             is CssBox<*> -> "${toCss(value.top)} ${toCss(value.right)} ${toCss(value.bottom)} ${toCss(value.left)}"
             is FontWeight -> "${value.weight}"  // Needs to come before `is Enum<*>`
             is Enum<*> -> value.toString().toLowerCase().replace("_", "-")
-            is Font -> "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
+            is Font -> "${if (value.style == "Regular") "normal" else value.style} ${value.size}px ${toCss(value.family)}"
             is Cursor -> if (value is ImageCursor) {
                 value.image.javaClass.getDeclaredField("url").let {
                     it.isAccessible = true
