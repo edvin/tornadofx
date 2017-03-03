@@ -149,16 +149,16 @@ fun <T> MutableList<T>.swap(indexOne: Int, indexTwo: Int) {
  */
 fun <T> MutableList<T>.swap(itemOne: T, itemTwo: T) = swap(indexOf(itemOne),indexOf(itemTwo))
 
-fun <SourceType, TargetType> ObservableList<out SourceType>.bindAndConvert(targetList: MutableList<TargetType>, converter: (SourceType) -> TargetType): ListConversionListener<SourceType, TargetType> {
-    val listener = ListConversionListener(targetList, converter)
-    if (targetList is ObservableList<TargetType>) {
-        targetList.setAll(this.map(converter))
+fun <SourceType, TargetType> MutableList<TargetType>.bindConverted(sourceList: ObservableList<SourceType>, converter: (SourceType) -> TargetType): ListConversionListener<SourceType, TargetType> {
+    val listener = ListConversionListener(this, converter)
+    if (this is ObservableList<*>) {
+        (this as ObservableList<TargetType>).setAll(sourceList.map(converter))
     } else {
-        targetList.clear()
-        targetList.addAll(this.map(converter))
+        clear()
+        addAll(sourceList.map(converter))
     }
-    removeListener(listener)
-    addListener(listener)
+    sourceList.removeListener(listener)
+    sourceList.addListener(listener)
     return listener
 }
 
