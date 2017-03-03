@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0-SNAPSHOT]
 
+- API Break: Removed Node.margin helper because it shadowed margin property on Nodes which had their own margin property
 - ValidationContext.validate() has optional `decorateErrors` parameter
 - ValidationContext and ViewModel has `valid` observable boolean value
 - Kotlin 1.1 dependency

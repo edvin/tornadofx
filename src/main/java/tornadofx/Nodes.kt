@@ -614,22 +614,6 @@ class BorderPaneConstraint(node: Node,
     }
 }
 
-var Node.margin: Insets?
-    get() = when (parent) {
-        is HBox -> HBox.getMargin(this)
-        is VBox -> VBox.getMargin(this)
-        is StackPane -> StackPane.getMargin(this)
-        else -> null
-    }
-    set(value) = when (parent) {
-        is HBox -> HBox.setMargin(this, value)
-        is VBox -> VBox.setMargin(this, value)
-        is StackPane -> StackPane.setMargin(this, value)
-        else -> {
-            FX.log.warning("Setting margin=$value on $this failed because parent doesn't support it ($parent)")
-        }
-    }
-
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
