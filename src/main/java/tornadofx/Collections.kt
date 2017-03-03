@@ -149,6 +149,10 @@ fun <T> MutableList<T>.swap(indexOne: Int, indexTwo: Int) {
  */
 fun <T> MutableList<T>.swap(itemOne: T, itemTwo: T) = swap(indexOf(itemOne),indexOf(itemTwo))
 
+/**
+ * Bind this list to the given observable list by converting them into the correct type via the given converter.
+ * Changes to the observable list are synced.
+ */
 fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceList: ObservableList<SourceType>, converter: (SourceType) -> TargetType): ListConversionListener<SourceType, TargetType> {
     val listener = ListConversionListener(this, converter)
     if (this is ObservableList<*>) {

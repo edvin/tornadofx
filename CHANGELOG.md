@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0-SNAPSHOT]
 
+- EventTarget.bindComponents(sourceList, converter) syncs the child nodes of the event target to the given observable list of UIComponents via the converter
+- EventTarget.bindChildren(sourceList, converter) syncs the child nodes of the event target to the given observable list via the converter
 - ObservableList.bind(sourceList, converter) syncs two lists and converts from one type to another on the fly
 - API Break: Removed Node.margin helper because it shadowed margin property on Nodes which had their own margin property
 - ValidationContext.validate() has optional `decorateErrors` parameter
