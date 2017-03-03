@@ -1,5 +1,9 @@
 package tornadofx
 
+import javafx.beans.WeakListener
+import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
+import java.lang.ref.WeakReference
 import java.util.*
 
 /**
@@ -144,3 +148,63 @@ fun <T> MutableList<T>.swap(indexOne: Int, indexTwo: Int) {
  * Swaps the index position of two items
  */
 fun <T> MutableList<T>.swap(itemOne: T, itemTwo: T) = swap(indexOf(itemOne),indexOf(itemTwo))
+
+fun <SourceType, TargetType> ObservableList<out SourceType>.bindAndConvert(targetList: MutableList<TargetType>, converter: (SourceType) -> TargetType): ListConversionListener<SourceType, TargetType> {
+    val listener = ListConversionListener(targetList, converter)
+    if (targetList is ObservableList<TargetType>) {
+        targetList.setAll(this.map(converter))
+    } else {
+        targetList.clear()
+        targetList.addAll(this.map(converter))
+    }
+    removeListener(listener)
+    addListener(listener)
+    return listener
+}
+
+/**
+ * Listens to changes on a list of SourceType and keeps the target list in sync by converting
+ * each object into the TargetType via the supplied converter.
+ */
+class ListConversionListener<SourceType, TargetType>(targetList: MutableList<TargetType>, val converter: (SourceType) -> TargetType) : ListChangeListener<SourceType>, WeakListener {
+    internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
+
+    override fun onChanged(change: ListChangeListener.Change<out SourceType>) {
+        val list = targetRef.get()
+        if (list == null) {
+            change.list.removeListener(this)
+        } else {
+            while (change.next()) {
+                if (change.wasPermutated()) {
+                    list.subList(change.from, change.to).clear()
+                    list.addAll(change.from, change.list.subList(change.from, change.to).map(converter))
+                } else {
+                    if (change.wasRemoved()) {
+                        list.subList(change.from, change.from + change.removedSize).clear()
+                    }
+                    if (change.wasAdded()) {
+                        list.addAll(change.from, change.addedSubList.map(converter))
+                    }
+                }
+            }
+        }
+    }
+
+    override fun wasGarbageCollected() = targetRef.get() == null
+
+    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+
+        val ourList = targetRef.get() ?: return false
+
+        if (other is ListConversionListener<*, *>) {
+            val otherList = other.targetRef.get()
+            return ourList === otherList
+        }
+        return false
+    }
+}
