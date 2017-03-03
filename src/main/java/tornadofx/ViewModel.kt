@@ -146,7 +146,7 @@ open class ViewModel : Component(), Injectable {
     val isDirty: Boolean get() = dirty.value
     val isNotDirty: Boolean get() = !isDirty
 
-    fun validate(focusFirstError: Boolean = true): Boolean = validationContext.validate(focusFirstError)
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true): Boolean = validationContext.validate(focusFirstError, decorateErrors)
 
     /**
      * This function is called after a successful commit, right before the optional successFn call sent to the commit
