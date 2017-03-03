@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0-SNAPSHOT]
 
+- ValidationContext and ViewModel has `valid` observable boolean value
 - Kotlin 1.1 dependency
 - Added MenuItem.visibleWhen
 - Fixed: `workspace.dockInNewScope(params)` operates on current scope instead of the new

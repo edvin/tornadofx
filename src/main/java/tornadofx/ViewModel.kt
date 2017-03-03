@@ -215,6 +215,7 @@ open class ViewModel : Component(), Injectable {
     }
 
     val isValid: Boolean get() = validationContext.isValid
+    val valid: ReadOnlyBooleanProperty get() = validationContext.valid
 
     /**
      * Extract the value of the corresponding source property

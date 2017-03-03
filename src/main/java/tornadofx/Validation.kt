@@ -2,6 +2,9 @@
 
 package tornadofx
 
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.TextInputControl
@@ -78,7 +81,8 @@ class ValidationContext {
     /**
      * A boolean indicating the current validation status.
      */
-    val isValid: Boolean get() = validators.find { !it.isValid } == null
+    val valid : ReadOnlyBooleanProperty = SimpleBooleanProperty(true)
+    val isValid by valid
 
     /**
      * Rerun all validators and return a boolean indicating if validation passes.
@@ -107,6 +111,14 @@ class ValidationContext {
     fun warning(message: String? = null) = ValidationMessage(message, ValidationSeverity.Warning)
     fun success(message: String? = null) = ValidationMessage(message, ValidationSeverity.Success)
 
+    /**
+     * Update the valid property state. If the calling validator was valid we need to see if any of the other properties are invalid.
+     * If the calling validator is invalid, we know the state is invalid so no need to check the other validators.
+     */
+    internal fun updateValidState(callingValidatorState: Boolean) {
+        (valid as BooleanProperty).value = if (callingValidatorState) validators.find { !it.isValid } == null else false
+    }
+
     inner class Validator<T>(
             val node: Node,
             val property: ObservableValue<T>,
@@ -127,6 +139,7 @@ class ValidationContext {
                 decorator!!.decorate(node)
             }
 
+            updateValidState(isValid)
             return isValid
         }
 
