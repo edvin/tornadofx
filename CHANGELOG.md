@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1-SNAPSHOT]
+
+
+
 ## [1.7.0] - 2017-03-04
 
 - EventTarget.bindComponents(sourceList, converter) syncs the child nodes of the event target to the given observable list of UIComponents via the converter
