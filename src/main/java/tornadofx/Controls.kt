@@ -262,7 +262,9 @@ fun <T : Any?> Property<T>.mutateOnChange(mutator: (T?) -> T?) = onChange {
 /**
  * Remove leading or trailing whitespace from a Text Input Control.
  */
-fun TextInputControl.trimWhitespace() = textProperty().mutateOnChange { it?.trim() }
+fun TextInputControl.trimWhitespace() = focusedProperty().onChange { focused ->
+    if (!focused && text != null) text = text.trim()
+}
 
 /**
  * Remove any whitespace from a Text Input Control.
