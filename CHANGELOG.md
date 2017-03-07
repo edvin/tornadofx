@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.7.1-SNAPSHOT]
 
 - TextInputControl.trimWhitespace() enforces on focus lost instead of onChange (prevented adding words with whitespace)
+- ViewModel.bind accepts cast to IntegerProperty/DoubleProperty/FloatProperty/BooleanProperty even when binding is null at construction time
 
 ## [1.7.0] - 2017-03-04
 

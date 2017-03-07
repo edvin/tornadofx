@@ -29,6 +29,7 @@ open class ViewModel : Component(), Injectable {
     val dirty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
     @Deprecated("Use dirty property instead", ReplaceWith("dirty"))
     fun dirtyStateProperty() = dirty
+
     val validationContext = ValidationContext()
     val ignoreDirtyStateProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
     val autocommitProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
@@ -73,9 +74,9 @@ open class ViewModel : Component(), Injectable {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline op: () -> PropertyType?): ResultType {
-        val prop = op() ?: SimpleObjectProperty<T>()
-        val value = prop.value
+    inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
+        val prop = propertyProducer()
+        val value = prop?.value
 
         // Faster check where possible
         var facade: Any? = null
@@ -87,31 +88,41 @@ open class ViewModel : Component(), Injectable {
                 is DoubleProperty -> facade = if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop.name)
                 is FloatProperty -> facade = if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop.name)
                 is BooleanProperty -> facade = if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop.name)
+                null -> {
+                    if (IntegerProperty::class.java.isAssignableFrom(PropertyType::class.java))
+                        facade = SimpleIntegerProperty(this, null)
+                    else if (DoubleProperty::class.java.isAssignableFrom(PropertyType::class.java))
+                        facade = SimpleDoubleProperty(this, null)
+                    else if (FloatProperty::class.java.isAssignableFrom(PropertyType::class.java))
+                        facade = SimpleFloatProperty(this, null)
+                    else if (BooleanProperty::class.java.isAssignableFrom(PropertyType::class.java))
+                        facade = SimpleBooleanProperty(this, null)
+                }
             }
         }
 
         if (facade == null) {
             if (forceObjectProperty) {
-                facade = if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop.name)
+                facade = if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop?.name)
             } else {
                 facade = when (T::class.javaPrimitiveType ?: T::class) {
-                    Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop.name)
-                    Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop.name)
-                    Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop.name)
-                    Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop.name)
-                    Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop.name)
-                    String::class -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop.name)
-                    is ObservableList<*> -> if (value != null) SimpleListProperty(this, prop.name, value as ObservableList<T>) else SimpleListProperty(this, prop.name)
-                    is ObservableSet<*> -> if (value != null) SimpleSetProperty(this, prop.name, value as ObservableSet<T>) else SimpleSetProperty(this, prop.name)
-                    is List<*> -> if (value != null) SimpleListProperty(this, prop.name, (value as List<T>).observable()) else SimpleListProperty(this, prop.name)
-                    is Set<*> -> if (value != null) SimpleSetProperty(this, prop.name, (value as Set<T>).observable()) else SimpleSetProperty(this, prop.name)
-                    else -> if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop.name)
+                    Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop?.name)
+                    Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop?.name)
+                    Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop?.name)
+                    Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop?.name)
+                    Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop?.name)
+                    String::class -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop?.name)
+                    is ObservableList<*> -> if (value != null) SimpleListProperty(this, prop.name, value as ObservableList<T>) else SimpleListProperty(this, prop?.name)
+                    is ObservableSet<*> -> if (value != null) SimpleSetProperty(this, prop.name, value as ObservableSet<T>) else SimpleSetProperty(this, prop?.name)
+                    is List<*> -> if (value != null) SimpleListProperty(this, prop.name, (value as List<T>).observable()) else SimpleListProperty(this, prop?.name)
+                    is Set<*> -> if (value != null) SimpleSetProperty(this, prop.name, (value as Set<T>).observable()) else SimpleSetProperty(this, prop?.name)
+                    else -> if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop?.name)
                 }
             }
         }
 
         (facade as Property<*>).addListener(dirtyListener)
-        propertyMap[facade] = op
+        propertyMap[facade] = propertyProducer
         propertyCache[facade] = prop
 
         // Listener that can track external changes for this facade
@@ -122,7 +133,7 @@ open class ViewModel : Component(), Injectable {
         }
 
         // Update facade when the property returned to us is changed externally
-        prop.addListener(externalChangeListeners[facade]!!)
+        prop?.addListener(externalChangeListeners[facade]!!)
 
         // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
         if (autocommit) autocommitProperties.add(facade)
