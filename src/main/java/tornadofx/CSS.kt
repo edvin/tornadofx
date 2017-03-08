@@ -1144,8 +1144,14 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
 
 // Style Class
 
+/**
+ * Check if this Node has the given type safe css class. Pseudo classes are also supported.
+ */
 fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
 
+/**
+ * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
+ */
 fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
     cssClass.forEach {
         if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
@@ -1153,6 +1159,9 @@ fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
     return this
 }
 
+/**
+ * Remove the given given type safe css class(es) from this node. Pseudo classes are also supported.
+ */
 fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
     cssClass.forEach {
         if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
@@ -1160,7 +1169,15 @@ fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
     return this
 }
 
+/**
+ * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
+ */
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+/**
+ * Toggle the given type safe css class based on the given predicate observable value.
+ * Whenever the observable value changes, the class is added or removed.
+ * Pseudo classes are also supported.
+ */
 fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
     toggleClass(cssClass, observablePredicate.value ?: false)
     observablePredicate.onChange {
@@ -1168,11 +1185,26 @@ fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableV
     }
 }
 
+/**
+ * Add the given type safe css classes to every Node in this Iterable. Pseudo classes are also supported.
+ */
 fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
+
+/**
+ * Remove the given type safe css classes from every node in this Iterable. Pseudo classes are also supported.
+ */
 fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
+
+/**
+ * Toggle the given type safe css class on every node in this iterable based on the given predicate. Pseudo classes are also supported.
+ */
 fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
 
+/**
+ * Bind this observable type safe css rule to this Node. Pseudo classes are also supported.
+ */
 fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
+
 class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
     val listener: ChangeListener<CssRule>
 
