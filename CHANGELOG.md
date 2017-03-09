@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- openModal(resizable) and openWindow(resizable) optional parameter
 - TextInputControl.trimWhitespace() enforces on focus lost instead of onChange (prevented adding words with whitespace)
 - ViewModel.bind accepts cast to IntegerProperty/DoubleProperty/FloatProperty/BooleanProperty even when binding is null at construction time
 

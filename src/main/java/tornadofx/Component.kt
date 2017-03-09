@@ -529,10 +529,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false)
-            = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
+            = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false) {
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -540,6 +540,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 modalStage = Stage(stageStyle)
                 // modalStage needs to be set before this code to make close() work in blocking mode
                 with(modalStage!!) {
+                    if (resizable != null) isResizable = resizable
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
