@@ -55,6 +55,16 @@ class SortedFilteredList<T>(
     }
 
 
+    /**
+     * Force the filtered list to refilter it's items based on the current predicate without having to configure a new predicate.
+     */
+    fun refilter() {
+        filteredItems.javaClass.getDeclaredMethod("refilter").apply {
+            isAccessible = true
+            invoke(filteredItems)
+        }
+    }
+
     val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
         override fun set(newValue: ((T) -> Boolean)) {
             super.set(newValue)
