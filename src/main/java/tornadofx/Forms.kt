@@ -221,7 +221,7 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
 
 @DefaultProperty("inputs")
 abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
-    var text by property(text)
+    var text: String? by property(text)
     fun textProperty() = getProperty(Field::text)
 
     val label = Label()
@@ -241,7 +241,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
     val fieldset: Fieldset get() = parent as Fieldset
 
     override fun computePrefHeight(width: Double): Double {
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val labelHeight = if (labelHasContent) labelContainer.prefHeight(width) else 0.0
         val inputHeight = inputContainer.prefHeight(width)
@@ -256,7 +256,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
 
     override fun computePrefWidth(height: Double): Double {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth(height) else 0.0
         val inputWidth = inputContainer.prefWidth(height)
@@ -273,7 +273,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
 
     override fun layoutChildren() {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val insets = insets
         val contentX = insets.left
