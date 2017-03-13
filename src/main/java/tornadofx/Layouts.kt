@@ -9,6 +9,7 @@ import javafx.scene.Node
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
+import javafx.scene.Parent
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
