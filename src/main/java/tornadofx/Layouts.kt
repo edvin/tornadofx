@@ -13,12 +13,14 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
 private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
+private val GridPanelParentObjectKey = "TornadoFX.GridPanelParentObject"
 
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 0
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()
+    fake.properties[GridPanelParentObjectKey] = this
     if (title != null)
         fake.children.add(Label(title))
 
@@ -27,6 +29,38 @@ fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     // Create a new row in the GridPane and add the children added to the fake pane
     addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
 }
+
+fun GridPane.constraintsForColumn(columnIndex: Int): ColumnConstraints {
+    val constraints = columnConstraints
+    while (constraints.size <= columnIndex)
+        constraints.add(ColumnConstraints())
+    return constraints[columnIndex]
+}
+
+val Parent.columnConstraints: ColumnConstraints? get() {
+    var cursor = this
+    var next = parent
+    while (next != null) {
+        val gridReference = if (next is GridPane)
+            next to GridPane.getColumnIndex(cursor)?.let { it }
+        else if (next.parent == null) // perhaps we're still in the row builder
+            (next.properties[GridPanelParentObjectKey] as? GridPane)?.let {
+                it to next.getChildList()?.indexOf(cursor)
+            }
+        else null
+
+        if (gridReference != null) {
+            val (grid, columnIndex) = gridReference
+            if (columnIndex != null && columnIndex >= 0)
+                return grid.constraintsForColumn(columnIndex)
+        }
+        cursor = next
+        next = next.parent
+    }
+    return null
+}
+
+fun Parent.columnConstraints(op: ColumnConstraints.() -> Unit) = columnConstraints?.apply { op() }
 
 fun ToolBar.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null): Pane {
     val pane = Pane().apply {
