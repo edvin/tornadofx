@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Kotlin 1.1.1 and JvmTarget 1.8
 - SortedFilteredList.refilter() causes the existing predicate to be reevaluated
 - openModal(resizable) and openWindow(resizable) optional parameter
 - TextInputControl.trimWhitespace() enforces on focus lost instead of onChange (prevented adding words with whitespace)
