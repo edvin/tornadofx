@@ -38,7 +38,7 @@ fun GridPane.constraintsForColumn(columnIndex: Int): ColumnConstraints {
     return constraints[columnIndex]
 }
 
-val Parent.columnConstraints: ColumnConstraints? get() {
+val Parent.gridpaneColumnConstraints: ColumnConstraints? get() {
     var cursor = this
     var next = parent
     while (next != null) {
@@ -61,7 +61,7 @@ val Parent.columnConstraints: ColumnConstraints? get() {
     return null
 }
 
-fun Parent.columnConstraints(op: ColumnConstraints.() -> Unit) = columnConstraints?.apply { op() }
+fun Parent.gridpaneColumnConstraints(op: ColumnConstraints.() -> Unit) = gridpaneColumnConstraints?.apply { op() }
 
 fun ToolBar.spacer(prio: Priority = Priority.ALWAYS, op: (Pane.() -> Unit)? = null): Pane {
     val pane = Pane().apply {
