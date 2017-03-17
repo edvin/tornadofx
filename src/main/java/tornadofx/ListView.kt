@@ -57,6 +57,7 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>?> = SimpleObjectProperty()
     var cell by cellProperty
     val editingProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val editing by editingProperty
 
     open fun startEdit() {
         cell?.startEdit()
