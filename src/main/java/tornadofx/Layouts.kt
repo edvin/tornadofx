@@ -14,14 +14,14 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
 private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
-private val GridPanelParentObjectKey = "TornadoFX.GridPanelParentObject"
+private val GridPaneParentObjectKey = "TornadoFX.GridPaneParentObject"
 
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 0
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()
-    fake.properties[GridPanelParentObjectKey] = this
+    fake.properties[GridPaneParentObjectKey] = this
     if (title != null)
         fake.children.add(Label(title))
 
@@ -45,7 +45,7 @@ val Parent.columnConstraints: ColumnConstraints? get() {
         val gridReference = if (next is GridPane)
             next to GridPane.getColumnIndex(cursor)?.let { it }
         else if (next.parent == null) // perhaps we're still in the row builder
-            (next.properties[GridPanelParentObjectKey] as? GridPane)?.let {
+            (next.properties[GridPaneParentObjectKey] as? GridPane)?.let {
                 it to next.getChildList()?.indexOf(cursor)
             }
         else null
