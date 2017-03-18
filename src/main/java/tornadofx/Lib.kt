@@ -56,7 +56,11 @@ class SortedFilteredList<T>(
     override fun lastIndexOf(element: T) = sortedItems.lastIndexOf(element)
     override fun add(element: T) = items.add(element)
     override fun add(index: Int, element: T) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            items.add(backingIndex, element)
+        }
     }
 
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
