@@ -135,9 +135,9 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
                 fresh = false
             }
             cellFragment?.apply {
-                cellProperty.value = this@SmartListCell
-                itemProperty.value = item
                 editingProperty.cleanBind(editingProperty())
+                itemProperty.value = item
+                cellProperty.value = this@SmartListCell
                 graphic = root
             }
             cellFormat?.invoke(this, item)
@@ -146,8 +146,8 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
 
     private fun clearCellFragment() {
         cellFragment?.apply {
-            itemProperty.value = null
             cellProperty.value = null
+            itemProperty.value = null
             editingProperty.unbind()
             editingProperty.value = false
         }
