@@ -84,7 +84,7 @@ open class ViewModel : Component(), Injectable {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified PropertyType : Property<T>, reified T : Any> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): PropertyType {
+    inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
         val prop = propertyProducer()
         val value = prop?.value
 
@@ -96,6 +96,7 @@ open class ViewModel : Component(), Injectable {
             when (prop) {
                 is IntegerProperty -> facade = if (value != null) BindingAwareSimpleIntegerProperty(this, prop.name, value as Int) else BindingAwareSimpleIntegerProperty(this, prop.name)
                 is DoubleProperty -> facade = if (value != null) BindingAwareSimpleDoubleProperty(this, prop.name, value as Double) else BindingAwareSimpleDoubleProperty(this, prop.name)
+                is LongProperty -> facade = if (value != null) BindingAwareSimpleLongProperty(this, prop.name, value as Long) else BindingAwareSimpleLongProperty(this, prop.name)
                 is FloatProperty -> facade = if (value != null) BindingAwareSimpleFloatProperty(this, prop.name, value as Float) else BindingAwareSimpleFloatProperty(this, prop.name)
                 is BooleanProperty -> facade = if (value != null) BindingAwareSimpleBooleanProperty(this, prop.name, value as Boolean) else BindingAwareSimpleBooleanProperty(this, prop.name)
                 null -> {
@@ -116,17 +117,17 @@ open class ViewModel : Component(), Injectable {
                 facade = if (value != null) BindingAwareSimpleObjectProperty(this, prop.name, value) else BindingAwareSimpleObjectProperty(this, prop?.name)
             } else {
                 facade = when (T::class.javaPrimitiveType ?: T::class) {
-                    Int::class.javaPrimitiveType -> if (value != null) SimpleIntegerProperty(this, prop.name, value as Int) else SimpleIntegerProperty(this, prop?.name)
-                    Long::class.javaPrimitiveType -> if (value != null) SimpleLongProperty(this, prop.name, value as Long) else SimpleLongProperty(this, prop?.name)
-                    Double::class.javaPrimitiveType -> if (value != null) SimpleDoubleProperty(this, prop.name, value as Double) else SimpleDoubleProperty(this, prop?.name)
-                    Float::class.javaPrimitiveType -> if (value != null) SimpleFloatProperty(this, prop.name, value as Float) else SimpleFloatProperty(this, prop?.name)
-                    Boolean::class.javaPrimitiveType -> if (value != null) SimpleBooleanProperty(this, prop.name, value as Boolean) else SimpleBooleanProperty(this, prop?.name)
-                    String::class -> if (value != null) SimpleStringProperty(this, prop.name, value as String) else SimpleStringProperty(this, prop?.name)
+                    Int::class.javaPrimitiveType -> if (value != null) BindingAwareSimpleIntegerProperty(this, prop.name, value as Int) else BindingAwareSimpleIntegerProperty(this, prop?.name)
+                    Long::class.javaPrimitiveType -> if (value != null) BindingAwareSimpleLongProperty(this, prop.name, value as Long) else BindingAwareSimpleLongProperty(this, prop?.name)
+                    Double::class.javaPrimitiveType -> if (value != null) BindingAwareSimpleDoubleProperty(this, prop.name, value as Double) else BindingAwareSimpleDoubleProperty(this, prop?.name)
+                    Float::class.javaPrimitiveType -> if (value != null) BindingAwareSimpleFloatProperty(this, prop.name, value as Float) else BindingAwareSimpleFloatProperty(this, prop?.name)
+                    Boolean::class.javaPrimitiveType -> if (value != null) BindingAwareSimpleBooleanProperty(this, prop.name, value as Boolean) else BindingAwareSimpleBooleanProperty(this, prop?.name)
+                    String::class -> if (value != null) BindingAwareSimpleStringProperty(this, prop.name, value as String) else BindingAwareSimpleStringProperty(this, prop?.name)
                     is ObservableList<*> -> if (value != null) SimpleListProperty(this, prop.name, value as ObservableList<T>) else SimpleListProperty(this, prop?.name)
                     is ObservableSet<*> -> if (value != null) SimpleSetProperty(this, prop.name, value as ObservableSet<T>) else SimpleSetProperty(this, prop?.name)
                     is List<*> -> if (value != null) SimpleListProperty(this, prop.name, (value as List<T>).observable()) else SimpleListProperty(this, prop?.name)
                     is Set<*> -> if (value != null) SimpleSetProperty(this, prop.name, (value as Set<T>).observable()) else SimpleSetProperty(this, prop?.name)
-                    else -> if (value != null) SimpleObjectProperty(this, prop.name, value) else SimpleObjectProperty(this, prop?.name)
+                    else -> if (value != null) BindingAwareSimpleObjectProperty(this, prop.name, value) else BindingAwareSimpleObjectProperty(this, prop?.name)
                 }
             }
         }
@@ -148,7 +149,7 @@ open class ViewModel : Component(), Injectable {
         // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
         if (autocommit) autocommitProperties.add(facade)
 
-        return facade as PropertyType
+        return facade as ResultType
     }
 
     inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, op))

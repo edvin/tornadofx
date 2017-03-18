@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.InvalidationListener
 import javafx.beans.property.*
 import javafx.beans.value.*
 import javafx.collections.FXCollections
@@ -40,7 +41,96 @@ class SortedFilteredList<T>(
         val items: ObservableList<T> = FXCollections.observableArrayList(),
         initialPredicate: (T) -> Boolean = { true },
         val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
-        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
+        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> {
+
+    override val size: Int
+        get() = sortedItems.size
+
+    override fun contains(element: T) = sortedItems.contains(element)
+
+    override fun containsAll(elements: Collection<T>) = sortedItems.containsAll(elements)
+    override fun get(index: Int) = sortedItems[index]
+    override fun indexOf(element: T) = sortedItems.indexOf(element)
+    override fun isEmpty() = sortedItems.isEmpty()
+    override fun iterator() = sortedItems.iterator()
+    override fun lastIndexOf(element: T) = sortedItems.lastIndexOf(element)
+    override fun add(element: T) = items.add(element)
+    override fun add(index: Int, element: T) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            return items.addAll(backingIndex, elements)
+        }
+        return false
+    }
+
+    override fun addAll(elements: Collection<T>) = items.addAll(elements)
+
+    override fun clear() = items.clear()
+    override fun listIterator() = sortedItems.listIterator()
+    override fun listIterator(index: Int) = sortedItems.listIterator(index)
+    override fun remove(element: T) = items.remove(element)
+    override fun removeAll(elements: Collection<T>) = items.removeAll(elements)
+    override fun removeAt(index: Int): T? {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        return if (backingIndex > -1) {
+            items.removeAt(backingIndex)
+        } else {
+            null
+        }
+    }
+
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> {
+        val item = sortedItems[fromIndex]
+        val backingFromIndex = items.indexOf(item)
+        if (backingFromIndex > -1) {
+            return items.subList(backingFromIndex, items.indexOf(sortedItems[toIndex]))
+        }
+        return mutableListOf()
+    }
+
+    override fun removeAll(vararg elements: T) = items.removeAll(elements)
+
+    override fun addAll(vararg elements: T) = items.addAll(elements)
+
+    override fun remove(from: Int, to: Int) {
+        val item = sortedItems[from]
+        val backingFromIndex = items.indexOf(item)
+        if (backingFromIndex > -1) {
+            items.remove(backingFromIndex, items.indexOf(sortedItems[to]))
+        }
+    }
+
+    override fun retainAll(vararg elements: T) = items.retainAll(elements)
+
+    override fun retainAll(elements: Collection<T>) = items.retainAll(elements)
+
+    override fun removeListener(listener: ListChangeListener<in T>?) {
+        sortedItems.removeListener(listener)
+    }
+
+    override fun removeListener(listener: InvalidationListener?) {
+        sortedItems.removeListener(listener)
+    }
+
+    override fun addListener(listener: ListChangeListener<in T>?) {
+        sortedItems.addListener(listener)
+    }
+
+    override fun addListener(listener: InvalidationListener?) {
+        sortedItems.addListener(listener)
+    }
+
+    override fun setAll(col: MutableCollection<out T>?) = items.setAll(col)
+
+    override fun setAll(vararg elements: T): Boolean {
+        return items.setAll(*elements)
+    }
 
     /**
      * Support editing of the sorted/filtered list. Useful to support editing support in ListView/TableView etc
@@ -81,7 +171,7 @@ class SortedFilteredList<T>(
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
     fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
-        tableView.items = sortedItems
+        tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
         return this
     }
@@ -93,7 +183,7 @@ class SortedFilteredList<T>(
      *
      */
     fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = sortedItems
+        listView.items = this
         return this
     }
 
