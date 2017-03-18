@@ -4,7 +4,9 @@ package tornadofx
 
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.StringProperty
 import javafx.beans.value.ChangeListener
@@ -156,6 +158,42 @@ fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Propert
             super.set(v)
         }
 
+    }
+
+}
+
+fun <T> ObservableValue<T>.selectBoolean(nested: (T) -> BooleanExpression): BooleanExpression {
+    fun extractNested() = nested(value)
+
+    val dis = this
+    var currentNested = extractNested()
+
+    return object : SimpleBooleanProperty() {
+        val changeListener = ChangeListener<Boolean> { observableValue, oldValue, newValue ->
+            currentNested = extractNested()
+            fireValueChangedEvent()
+        }
+
+        init {
+            dis.onChange {
+                fireValueChangedEvent()
+                invalidated()
+            }
+        }
+
+        override fun invalidated() {
+            currentNested.removeListener(changeListener)
+            currentNested = extractNested()
+            currentNested.addListener(changeListener)
+        }
+
+        override fun getValue() = currentNested.value
+
+        override fun setValue(v: Boolean?) {
+            if (currentNested is WritableValue<*>)
+                (currentNested as WritableValue<Boolean>).value = v
+            super.setValue(v)
+        }
 
     }
 

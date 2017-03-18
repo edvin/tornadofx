@@ -478,7 +478,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         else -> getChildList()?.apply {
             if (!contains(node)) {
-                if (index != null)
+                if (index != null && index < size)
                     add(index, node)
                 else
                     add(node)

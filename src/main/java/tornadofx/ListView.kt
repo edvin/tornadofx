@@ -1,6 +1,9 @@
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.control.ListCell
@@ -56,7 +59,7 @@ abstract class ItemFragment<T> : Fragment() {
 abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>?> = SimpleObjectProperty()
     var cell by cellProperty
-    val editingProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val editingProperty = SimpleBooleanProperty(false)
     val editing by editingProperty
 
     open fun startEdit() {
@@ -132,11 +135,9 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
                 fresh = false
             }
             cellFragment?.apply {
-                itemProperty.value = item
                 cellProperty.value = this@SmartListCell
-                with(editingProperty as BooleanProperty) {
-                    cleanBind(editingProperty())
-                }
+                itemProperty.value = item
+                editingProperty.cleanBind(editingProperty())
                 graphic = root
             }
             cellFormat?.invoke(this, item)
@@ -147,9 +148,8 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
         cellFragment?.apply {
             itemProperty.value = null
             cellProperty.value = null
-            with(editingProperty as BooleanProperty) {
-                unbind()
-            }
+            editingProperty.unbind()
+            editingProperty.value = false
         }
     }
 

@@ -1114,34 +1114,10 @@ fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) {
 }
 
 fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
-    Platform.runLater {
-        val originalParent = parent
-        val placeholder = Region()
-
-        fun remove() {
-            if (!originalParent.childrenUnmodifiable.contains(this)) return
-            val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(this))
-            removeFromParent()
-            originalParent.addChildIfPossible(placeholder, index)
-        }
-
-        fun add() {
-            if (originalParent.childrenUnmodifiable.contains(this)) return
-            val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(placeholder))
-            removeFromParent()
-            originalParent.addChildIfPossible(this, index)
-        }
-
-        fun op(remove: Boolean) = if (remove) remove() else add()
-
-        val state = expr()
-
-        state.onChange {
-            op(it ?: false)
-        }
-
-        op(state.value)
-    }
+    val prop = expr()
+    val remove = booleanBinding(prop) { prop.value.not() }
+    visibleProperty().cleanBind(remove)
+    managedProperty().cleanBind(remove)
 }
 
 fun Node.onHover(onHover: (Boolean) -> Unit) = hoverProperty().onChange { onHover(isHover) }

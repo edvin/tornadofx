@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- ObservableXXXValue.onChange functions should support nullable values
+- Changed semantics of `Node.removeWhen` to switch visible/managed state instead of adding/removing from parent
 - Internal: ViewModel maintains a map between bound properties towards the ViewModel to support validators in a cleaner way without reflection calls to private APIs (https://github.com/edvin/tornadofx/issues/276)
 - Kotlin 1.1.1 and JvmTarget 1.8
 - SortedFilteredList.refilter() causes the existing predicate to be reevaluated
