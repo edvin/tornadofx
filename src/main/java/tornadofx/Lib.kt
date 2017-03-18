@@ -43,6 +43,9 @@ class SortedFilteredList<T>(
         val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
         val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> {
 
+    init {
+        items.onChange { refilter() }
+    }
     override val size: Int
         get() = sortedItems.size
 
