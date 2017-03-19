@@ -46,6 +46,7 @@ class SortedFilteredList<T>(
     init {
         items.onChange { refilter() }
     }
+
     override val size: Int
         get() = sortedItems.size
 
@@ -156,10 +157,7 @@ class SortedFilteredList<T>(
      * Force the filtered list to refilter it's items based on the current predicate without having to configure a new predicate.
      */
     fun refilter() {
-        filteredItems.javaClass.getDeclaredMethod("refilter").apply {
-            isAccessible = true
-            invoke(filteredItems)
-        }
+        predicate = predicate
     }
 
     val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
@@ -295,7 +293,7 @@ fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, 
 fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0f).toFloat()) } }
 fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0.0).toDouble()) } }
 fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
-    addListener(ListChangeListener{ op(it) })
+    addListener(ListChangeListener { op(it) })
 }
 
 /**
