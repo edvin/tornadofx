@@ -73,6 +73,10 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
     open fun cancelEdit() {
         cell?.cancelEdit()
     }
+
+    open fun onEdit(op: () -> Unit) {
+        editingProperty.onChange { if (it) op() }
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
