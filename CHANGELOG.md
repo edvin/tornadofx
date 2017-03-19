@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- ItemViewModel allows passing in the itemProperty
 - First togglebutton builder inside a togglegroup will be selected by default (disable with `selectFirst = false`)
 - ToggleButton.whenSelected
 - SortedFilteredList refilters when items change (add, remove, permutate)

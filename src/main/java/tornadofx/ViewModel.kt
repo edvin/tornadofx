@@ -427,8 +427,7 @@ val Property<*>.viewModel: ViewModel? get() {
     return null
 }
 
-open class ItemViewModel<T>(initialValue: T? = null) : ViewModel() {
-    val itemProperty = SimpleObjectProperty<T>(initialValue)
+open class ItemViewModel<T>(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
     var item by itemProperty
 
     val empty = itemProperty.isNull
