@@ -1026,6 +1026,14 @@ fun Node.show() {
     isManaged = true
 }
 
+fun Node.whenVisible(op: () -> Unit, runLater: Boolean = true) {
+    visibleProperty().onChange {
+        if (it) {
+            if (runLater) Platform.runLater(op) else op()
+        }
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
