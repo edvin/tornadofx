@@ -157,7 +157,8 @@ class SortedFilteredList<T>(
      * Force the filtered list to refilter it's items based on the current predicate without having to configure a new predicate.
      */
     fun refilter() {
-        predicate = predicate
+        val p = predicate
+        if (p != null) predicate = p
     }
 
     val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
