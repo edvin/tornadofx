@@ -1026,7 +1026,7 @@ fun Node.show() {
     isManaged = true
 }
 
-fun Node.whenVisible(op: () -> Unit, runLater: Boolean = true) {
+fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
     visibleProperty().onChange {
         if (it) {
             if (runLater) Platform.runLater(op) else op()
