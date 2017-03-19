@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- ToggleButton.whenSelected
 - SortedFilteredList refilters when items change (add, remove, permutate)
 - SortedFilteredList is editable and supports all functions of the ObservableList interface
 - ObservableXXXValue.onChange functions should support nullable values

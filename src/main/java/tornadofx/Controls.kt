@@ -226,6 +226,10 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
 fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (ToggleButton.() -> Unit)? = null) =
         opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
 
+fun ToggleButton.whenSelected(op: () -> Unit) {
+    selectedProperty().onChange { if (it) op() }
+}
+
 fun Node.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (RadioButton.() -> Unit)? = null)
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
 
