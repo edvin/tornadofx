@@ -18,9 +18,7 @@ import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
-import java.text.DecimalFormat
 import java.time.LocalDate
-import java.util.*
 
 fun EventTarget.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -223,8 +221,11 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
     return group
 }
 
-fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (ToggleButton.() -> Unit)? = null) =
-        opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
+fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, op: (ToggleButton.() -> Unit)? = null) =
+        opcr(this, ToggleButton(text).apply {
+            if (group != null) toggleGroup = group
+            if (toggleGroup.selectedToggle == null && selectFirst) isSelected = true
+        }, op)
 
 fun ToggleButton.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
