@@ -2,8 +2,10 @@ package tornadofx
 
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
+import javafx.scene.control.Dialog
 import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
+import javafx.stage.Stage
 import javafx.stage.Window
 import tornadofx.FileChooserMode.*
 import java.io.File
@@ -74,3 +76,5 @@ fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner
     op?.invoke(chooser)
     return chooser.showDialog(owner)
 }
+
+fun Dialog<*>.toFront() = (dialogPane.scene.window as? Stage)?.toFront()

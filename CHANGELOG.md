@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Dialog.toFront()
 - Node.whenVisible
 - ListCellFragment.onEdit
 - ItemViewModel allows passing in the itemProperty
