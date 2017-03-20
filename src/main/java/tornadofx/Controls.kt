@@ -4,6 +4,7 @@ import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
+import javafx.event.ActionEvent
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.scene.Node
@@ -285,3 +286,5 @@ fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.rep
  * Remove any non integer values from a Text Input Control.
  */
 fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
+
+fun Button.action(op: ActionEvent.() -> Unit) = setOnAction(op)
