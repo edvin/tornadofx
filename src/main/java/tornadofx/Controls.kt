@@ -289,3 +289,4 @@ fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", 
 
 fun ButtonBase.action(op: ActionEvent.() -> Unit) = setOnAction(op)
 fun TextField.action(op: ActionEvent.() -> Unit) = setOnAction(op)
+fun MenuItem.action(op: ActionEvent.() -> Unit) = setOnAction(op)
