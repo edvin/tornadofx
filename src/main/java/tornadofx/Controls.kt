@@ -287,4 +287,4 @@ fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.rep
  */
 fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
 
-fun Button.action(op: ActionEvent.() -> Unit) = setOnAction(op)
+fun ButtonBase.action(op: ActionEvent.() -> Unit) = setOnAction(op)
