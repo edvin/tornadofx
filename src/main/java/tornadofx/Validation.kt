@@ -2,6 +2,9 @@
 
 package tornadofx
 
+import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.control.TextInputControl
@@ -43,21 +46,21 @@ class ValidationContext {
             trigger: ValidationTrigger = ValidationTrigger.OnChange(),
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) = addValidator(Validator(node, property, trigger, validator))
 
-    fun <T> addValidator(validator: Validator<T>): Validator<T> {
+    fun <T> addValidator(validator: Validator<T>, decorateErrors: Boolean = true): Validator<T> {
         when (validator.trigger) {
             is ValidationTrigger.OnChange -> {
                 var delayActive = false
 
                 validator.property.onChange {
                     if (validator.trigger.delay == 0L) {
-                        validator.validate()
+                        validator.validate(decorateErrors)
                     } else {
                         if (!delayActive) {
                             delayActive = true
                             thread(true) {
                                 Thread.sleep(validator.trigger.delay)
                                 FX.runAndWait {
-                                    validator.validate()
+                                    validator.validate(decorateErrors)
                                 }
                                 delayActive = false
                             }
@@ -67,7 +70,7 @@ class ValidationContext {
             }
             is ValidationTrigger.OnBlur -> {
                 validator.node.focusedProperty().onChange {
-                    if (it == false) validator.validate()
+                    if (it == false) validator.validate(decorateErrors)
                 }
             }
         }
@@ -78,15 +81,16 @@ class ValidationContext {
     /**
      * A boolean indicating the current validation status.
      */
-    val isValid: Boolean get() = validators.find { !it.isValid } == null
+    val valid : ReadOnlyBooleanProperty = SimpleBooleanProperty(true)
+    val isValid by valid
 
     /**
      * Rerun all validators and return a boolean indicating if validation passes.
      */
-    fun validate(focusFirstError: Boolean = true): Boolean {
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true): Boolean {
         var firstErrorFocused = false
         for (validator in validators) {
-            if (!validator.validate() && focusFirstError && !firstErrorFocused) {
+            if (!validator.validate(decorateErrors) && focusFirstError && !firstErrorFocused) {
                 firstErrorFocused = true
                 validator.node.requestFocus()
             }
@@ -107,6 +111,14 @@ class ValidationContext {
     fun warning(message: String? = null) = ValidationMessage(message, ValidationSeverity.Warning)
     fun success(message: String? = null) = ValidationMessage(message, ValidationSeverity.Success)
 
+    /**
+     * Update the valid property state. If the calling validator was valid we need to see if any of the other properties are invalid.
+     * If the calling validator is invalid, we know the state is invalid so no need to check the other validators.
+     */
+    internal fun updateValidState(callingValidatorState: Boolean) {
+        (valid as BooleanProperty).value = if (callingValidatorState) validators.find { !it.isValid } == null else false
+    }
+
     inner class Validator<T>(
             val node: Node,
             val property: ObservableValue<T>,
@@ -116,17 +128,22 @@ class ValidationContext {
         var result: ValidationMessage? = null
         var decorator: Decorator? = null
 
-        fun validate(): Boolean {
-            decorator?.apply { undecorate(node) }
-            decorator = null
+        fun validate(decorateErrors: Boolean = true): Boolean {
+            if (decorateErrors) {
+                decorator?.apply { undecorate(node) }
+                decorator = null
+            }
 
             result = validator(this@ValidationContext, property.value)
 
-            result?.apply {
-                decorator = decorationProvider(this)
-                decorator!!.decorate(node)
+            if (decorateErrors) {
+                result?.apply {
+                    decorator = decorationProvider(this)
+                    decorator!!.decorate(node)
+                }
             }
 
+            updateValidState(isValid)
             return isValid
         }
 

@@ -25,6 +25,7 @@ class TableViewDirtyTest : View("Dirty Tables") {
                 enableCellEditing()
                 regainFocusAfterEdit()
                 enableDirtyTracking()
+                selectOnDrag()
                 contextmenu {
                     item(stringBinding(selectionModel.selectedCells) { "Rollback ${selectedColumn?.text}" }) {
                         disableWhen { editModel.selectedItemDirty.not() }

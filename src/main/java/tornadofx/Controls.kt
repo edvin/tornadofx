@@ -4,6 +4,7 @@ import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
+import javafx.event.ActionEvent
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.scene.Node
@@ -18,9 +19,7 @@ import javafx.scene.text.TextFlow
 import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
-import java.text.DecimalFormat
 import java.time.LocalDate
-import java.util.*
 
 fun EventTarget.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -223,8 +222,15 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
     return group
 }
 
-fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (ToggleButton.() -> Unit)? = null) =
-        opcr(this, ToggleButton(text).apply { if (group != null) toggleGroup = group }, op)
+fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, op: (ToggleButton.() -> Unit)? = null) =
+        opcr(this, ToggleButton(text).apply {
+            if (group != null) toggleGroup = group
+            if (toggleGroup.selectedToggle == null && selectFirst) isSelected = true
+        }, op)
+
+fun ToggleButton.whenSelected(op: () -> Unit) {
+    selectedProperty().onChange { if (it) op() }
+}
 
 fun Node.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (RadioButton.() -> Unit)? = null)
         = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
@@ -262,7 +268,9 @@ fun <T : Any?> Property<T>.mutateOnChange(mutator: (T?) -> T?) = onChange {
 /**
  * Remove leading or trailing whitespace from a Text Input Control.
  */
-fun TextInputControl.trimWhitespace() = textProperty().mutateOnChange { it?.trim() }
+fun TextInputControl.trimWhitespace() = focusedProperty().onChange { focused ->
+    if (!focused && text != null) text = text.trim()
+}
 
 /**
  * Remove any whitespace from a Text Input Control.
@@ -278,3 +286,7 @@ fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.rep
  * Remove any non integer values from a Text Input Control.
  */
 fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
+
+fun ButtonBase.action(op: ActionEvent.() -> Unit) = setOnAction(op)
+fun TextField.action(op: ActionEvent.() -> Unit) = setOnAction(op)
+fun MenuItem.action(op: ActionEvent.() -> Unit) = setOnAction(op)

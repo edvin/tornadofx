@@ -614,22 +614,6 @@ class BorderPaneConstraint(node: Node,
     }
 }
 
-var Node.margin: Insets?
-    get() = when (parent) {
-        is HBox -> HBox.getMargin(this)
-        is VBox -> VBox.getMargin(this)
-        is StackPane -> StackPane.getMargin(this)
-        else -> null
-    }
-    set(value) = when (parent) {
-        is HBox -> HBox.setMargin(this, value)
-        is VBox -> VBox.setMargin(this, value)
-        is StackPane -> StackPane.setMargin(this, value)
-        else -> {
-            FX.log.warning("Setting margin=$value on $this failed because parent doesn't support it ($parent)")
-        }
-    }
-
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
@@ -1042,6 +1026,14 @@ fun Node.show() {
     isManaged = true
 }
 
+fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
+    visibleProperty().onChange {
+        if (it) {
+            if (runLater) Platform.runLater(op) else op()
+        }
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
@@ -1121,6 +1113,7 @@ fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
+fun MenuItem.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
 fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableProperty().cleanBind(expr())
 fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) {
     val obs = expr()
@@ -1129,34 +1122,10 @@ fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) {
 }
 
 fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) {
-    Platform.runLater {
-        val originalParent = parent
-        val placeholder = Region()
-
-        fun remove() {
-            if (!originalParent.childrenUnmodifiable.contains(this)) return
-            val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(this))
-            removeFromParent()
-            originalParent.addChildIfPossible(placeholder, index)
-        }
-
-        fun add() {
-            if (originalParent.childrenUnmodifiable.contains(this)) return
-            val index = Math.max(0, originalParent.childrenUnmodifiable.indexOf(placeholder))
-            removeFromParent()
-            originalParent.addChildIfPossible(this, index)
-        }
-
-        fun op(remove: Boolean) = if (remove) remove() else add()
-
-        val state = expr()
-
-        state.onChange {
-            op(it ?: false)
-        }
-
-        op(state.value)
-    }
+    val prop = expr()
+    val remove = booleanBinding(prop) { prop.value.not() }
+    visibleProperty().cleanBind(remove)
+    managedProperty().cleanBind(remove)
 }
 
 fun Node.onHover(onHover: (Boolean) -> Unit) = hoverProperty().onChange { onHover(isHover) }

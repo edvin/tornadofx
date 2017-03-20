@@ -2,8 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.6.3-SNAPSHOT]
+## [1.7.1-SNAPSHOT]
 
+- Button.action() shortcut istead of Button.setOnAction()
+- ObservableList.invalidate()
+- Dialog.toFront()
+- Node.whenVisible
+- ListCellFragment.onEdit
+- ItemViewModel allows passing in the itemProperty
+- First togglebutton builder inside a togglegroup will be selected by default (disable with `selectFirst = false`)
+- ToggleButton.whenSelected
+- SortedFilteredList refilters when items change (add, remove, permutate)
+- SortedFilteredList is editable and supports all functions of the ObservableList interface
+- ObservableXXXValue.onChange functions should support nullable values
+- Changed semantics of `Node.removeWhen` to switch visible/managed state instead of adding/removing from parent
+- Internal: ViewModel maintains a map between bound properties towards the ViewModel to support validators in a cleaner way without reflection calls to private APIs (https://github.com/edvin/tornadofx/issues/276)
+- Kotlin 1.1.1 and JvmTarget 1.8
+- SortedFilteredList.refilter() causes the existing predicate to be reevaluated
+- openModal(resizable) and openWindow(resizable) optional parameter
+- TextInputControl.trimWhitespace() enforces on focus lost instead of onChange (prevented adding words with whitespace)
+- ViewModel.bind accepts cast to IntegerProperty/DoubleProperty/FloatProperty/BooleanProperty even when binding is null at construction time
+
+## [1.7.0] - 2017-03-04
+
+- EventTarget.bindComponents(sourceList, converter) syncs the child nodes of the event target to the given observable list of UIComponents via the converter
+- EventTarget.bindChildren(sourceList, converter) syncs the child nodes of the event target to the given observable list via the converter
+- ObservableList.bind(sourceList, converter) syncs two lists and converts from one type to another on the fly
+- API Break: Removed Node.margin helper because it shadowed margin property on Nodes which had their own margin property
+- ValidationContext.validate() has optional `decorateErrors` parameter
+- ValidationContext and ViewModel has `valid` observable boolean value
+- Kotlin 1.1 dependency
+- Added MenuItem.visibleWhen
+- Fixed: `workspace.dockInNewScope(params)` operates on current scope instead of the new
+- `buttonbar` builder in `form` now creates and operates on a `ButtonBar`
+- `contextmenu` builder now works on any Node, not just Control
+- EventBus `subscribe(times = n)` parameter will unregister listener after it has fired `n` times (http://stackoverflow.com/questions/42465786/how-to-unsubscribe-events-in-tornadofx)
 - TextInputControl `trimWhitespace()`, `stripWhitespace()`, `stripNonNumeric()`, `stripNonInteger` continually strips or trims whitespace in inputs
 - JSON `datetime` function has optional `millis` parameter to convert to/from milliseconds since epoch instead of seconds
 - `JsonConfig.DefaultDateTimeMillis = true` will cause `datetime` to convert to/from milliseconds since epoch by default
@@ -12,11 +45,11 @@ All notable changes to this project will be documented in this file.
 - Custom tab support for Views. Views can be docked in tabs and even delegate to refreshable and savable for the surrounding View
 - resources stream/url/get helpers are not non-nullable
 - Added resources helper to App class
-- Added TrayIcon support (https://github.com/edvin/tornadofx/issues/255)
+- Added TrayIcon support (https://gitallhub.com/edvin/tornadofx/issues/255)
 - EventBus `fire()` function is now available from the App class
 - `ComboBox.makeAutocompletable()`
 
-## [1.6.2]
+## [1.6.2] - 2017-02-21
 
 - resizeColumnsToFitContent takes nested columns into account
 - SmartResize.POLICY takes nested columns into account
@@ -49,7 +82,7 @@ All notable changes to this project will be documented in this file.
 - Accordion.fold has `expanded` parameter
 - Fixed: ComboBox with cellFormat does not show bound element (https://github.com/edvin/tornadofx/issues/245)
 
-## [1.6.1]
+## [1.6.1] -2017-01-26
 
 - whenSaved and whenRefreshed lambdas as alternative to overriding onSave and onRefresh
 - Workspace onSave and onDock delegates to the docked View
@@ -68,7 +101,7 @@ All notable changes to this project will be documented in this file.
 - ItemViewModel.asyncItem helper to reload the underlying item
 - Corrected Workspace.dockInNewScope, docking was performed in the old scope (!)
 
-## [1.6.0]
+## [1.6.0] - 2017-01-18
 
 - Workspaces (https://edvin.gitbooks.io/tornadofx-guide/content/16.%20Workspaces.html)
 - OpenXXX functions: Windows opens centered over owner if owner is passed in as parameter (https://github.com/edvin/tornadofx/issues/231)
@@ -126,7 +159,7 @@ All notable changes to this project will be documented in this file.
 - `titledpane` builder now accepts op parameter like every other builder. node parameter is now optional
 - Fieldset.wrapWidth is now Number instead of Double
 
-## [1.5.9]
+## [1.5.9] - 2016-12-24
 
 - UIComponent has `isdockedProperty` and `isDocked` boolean telling you if the ui component is currently docked
 - Added CSS elements to type safe stylesheets so you can now target f.ex HBox even if it doesn't have a CSS class

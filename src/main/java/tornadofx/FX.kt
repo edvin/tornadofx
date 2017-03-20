@@ -82,6 +82,7 @@ fun KClass<out Component>.scope(scope: Scope) = scope.invoke(this)
 var DefaultScope = Scope()
 
 class FX {
+    enum class IgnoreParentBuilder { No, Once }
     companion object {
         var defaultWorkspace: KClass<out Workspace> = Workspace::class
         internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
@@ -89,14 +90,13 @@ class FX {
             override fun initialValue() = DefaultScope
         }
         internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()
-        internal var ignoreParentForFirstBuilder: Boolean = false
+        internal var ignoreParentBuilder: IgnoreParentBuilder = IgnoreParentBuilder.No
             get() {
-                if (field) {
-                    field = false
-                    return true
-                } else {
-                    return false
+                if (field == IgnoreParentBuilder.Once) {
+                    field = IgnoreParentBuilder.No
+                    return IgnoreParentBuilder.Once
                 }
+                return field
             }
 
         val icon: Node get() = SVGIcon("M104.8,49.9c-0.3-2.5-0.7-4.8-1.2-7.1c-1-4.4-2.6-8.9-4.6-13C95.1,22,88.9,15.1,81.7,10c-3.5-2.5-7.1-4.4-11-5.9 c-4.3-1.6-8.7-2.8-13.1-3.4C55,0.2,52.4,0,49.9,0c-0.3,0-0.8,0-1.2,0c-1.8,3.5-3.5,6.9-4.6,10.5c-3.1,9.2-3.6,18.9-2.6,28.3 c0.5,4.6,1.3,9,2.5,13.6s2.5,9,3.9,13.5c2,6.6,3.8,13.1,4.1,19.9c0.3,4.9-0.8,9.9-2.6,14.8c-1.8-3.4-4.4-6.6-8-7.7 c3.3,2.1,4.8,5.8,5.4,9.2c-0.3,0-0.7,0-1,0c-2.6-0.3-5.1-0.7-7.7-1.3c-3.6-1-7.2-2.3-10.5-4.1c-6.9-3.8-12.6-9.2-17.1-15.6 C5.6,73.8,3,64.9,2.6,56.2c-0.3-9,2-17.9,6.4-25.8c4.3-7.4,10.5-13.6,17.9-17.9c2.8-1.6,5.8-3,8.9-3.9c0.7-0.2,1-0.3,1-0.3 S36.5,8.4,36,8.5c-7.6,2.1-14.5,6.2-20.2,11.5C9.4,26.1,4.4,34,2,42.5c-1.3,4.3-2,8.7-2,13.1c0,2.3,0,4.8,0.3,7.1 c0.2,2,0.7,3.8,1,5.8c0.5,2.3,1.2,4.4,2,6.6s1.8,4.3,3,6.4c2,3.3,4.3,6.6,6.9,9.5c3,3.3,6.4,6.2,10.2,8.7 c3.6,2.5,7.6,4.3,11.7,5.7c5.1,1.8,10.3,2.5,15.6,2.8c2.6,0.2,5.3,0,7.9-0.3c2.5-0.3,4.9-0.8,7.2-1.5c8.7-2.3,16.9-7.2,23.3-13.5 c6.6-6.6,11.3-14.6,13.8-23.5c0.8-2.8,1.3-5.6,1.6-8.5c0.2-1.8,0.3-3.6,0.3-5.4C105,53.7,105,51.8,104.8,49.9z M95.8,55.7 c0,2,0,3.9-0.3,5.9c-0.5,4.6-1.6,9-3.6,13.3c-3.8,8.5-10.2,15.8-18.2,20.7c-3.5,2.1-7.1,3.6-11,4.8c-3,0.8-5.9,1.3-9,1.6 c-0.2,0-0.3,0-0.3,0c-0.2,0-0.5,0-0.7,0c1.1-1.8,2.5-3.4,3.9-5.1c-1.5,0.8-3,1.8-4.4,2.8c2.1-4.3,3.8-9,3.9-14 c0.8-11.8-2.3-23-3.8-33.8c-2.3-14.1-0.7-28.1,5.3-39.3c0.3,0,0.7,0.2,1,0.2C67,14.1,74.9,18.2,81.3,24 c6.6,6.2,11.3,14.5,13.1,23.3C95.3,50.3,95.6,52.9,95.8,55.7L95.8,55.7L95.8,55.7z")
@@ -279,23 +279,14 @@ class FX {
     }
 }
 
-fun ignoreParentForFirstBuilder(op: () -> Unit) {
-    FX.ignoreParentForFirstBuilder = true
-    try {
-        op()
-    } finally {
-        FX.ignoreParentForFirstBuilder = false
-    }
-}
-
 fun setStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.apply { clear(); add(icon) } }
-    if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+    if (FX.initialized.value) adder() else FX.initialized.onChange { adder() }
 }
 
 fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
-    if (FX.initialized.value) adder() else FX.initialized.addListener { obs, o, n -> adder() }
+    if (FX.initialized.value) adder() else FX.initialized.onChange { adder() }
 }
 
 fun reloadStylesheetsOnFocus() {
@@ -410,7 +401,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
-    if (FX.ignoreParentForFirstBuilder) return
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     if (this is Node) {
         val target = builderTarget
         if (target != null) {
@@ -487,7 +478,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         else -> getChildList()?.apply {
             if (!contains(node)) {
-                if (index != null)
+                if (index != null && index < size)
                     add(index, node)
                 else
                     add(node)
@@ -495,6 +486,28 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
     }
 }
+
+/**
+ * Bind the children of this Layout node to the given observable list of items by converting
+ * them into nodes via the given converter function. Changes to the source list will be reflected
+ * in the children list of this layout node.
+ */
+inline fun <reified T> EventTarget.bindChildren(sourceList: ObservableList<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
+    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
+    return children.bind(sourceList, converter)
+}
+
+/**
+ * Bind the children of this Layout node to the given observable list of items by converting
+ * them into UIComponents via the given converter function. Changes to the source list will be reflected
+ * in the children list of this layout node.
+ */
+inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node> {
+    val children: MutableList<Node> = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
+    val componentConverter: (T) -> Node = { converter(it).root }
+    return children.bind(sourceList, componentConverter)
+}
+
 
 /**
  * Find the list of children from a Parent node. Gleaned code from ControlsFX for this.

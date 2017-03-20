@@ -21,6 +21,17 @@ Lightweight JavaFX Framework for Kotlin
 - REST client with automatic JSON conversion
 - Zero config, no XML, no annotations
 
+## Important version note
+
+Version 1.7.0 requires Kotlin 1.1. Make sure you update your IDE plugins to minimum:
+
+- Kotlin Plugin: 1.1.0-release
+- TornadoFX Plugin: 1.6.2.2
+
+After updating IntelliJ IDEA, make sure your Kotlin target version is 1.1 (Project Settings -> Modules -> Kotlin -> Language Version / API Version)
+
+You also need a full rebuild of your code. If you run into trouble, try to clean caches and restart IDEA (File -> Invalidate caches / Restart).
+ 
 ## Getting started
 
 - [Screencasts](https://www.youtube.com/user/MrEdvinsyse)
@@ -41,7 +52,7 @@ Lightweight JavaFX Framework for Kotlin
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.6.1
+  -DarchetypeVersion=1.7.0
 ```
 
 ### Add TornadoFX to your project
@@ -52,14 +63,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.6.1</version>
+	<version>1.7.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.6.1'
+compile 'no.tornado:tornadofx:1.7.0'
 ```
 
 ### What does it look like? (Code snippets)

@@ -9,12 +9,13 @@ import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.geometry.Orientation.HORIZONTAL
 import javafx.geometry.Orientation.VERTICAL
-import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.control.ButtonBar
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
+import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import java.util.concurrent.Callable
 
@@ -34,7 +35,7 @@ open class Form : VBox() {
     }
 
     internal fun labelContainerWidth(height: Double): Double
-        = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-height) }.max() ?: 0.0
+            = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-height) }.max() ?: 0.0
 
     val fieldsets: List<Fieldset>
         get() = children.filterIsInstance<Fieldset>()
@@ -63,15 +64,12 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    fun buttonbar(alignment: Pos? = null, op: (Pane.() -> Unit)? = null): Field {
-        val field = Field(forceLabelIndent = true)
+    /**
+     *  Creates a ButtonBarFiled with the given button order (refer to [javafx.scene.control.ButtonBar#buttonOrderProperty()] for more information about buttonOrder).
+     */
+    fun buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean = true, op: (ButtonBar.() -> Unit)? = null): ButtonBarField {
+        val field = ButtonBarField(buttonOrder, forceLabelIndent)
         children.add(field)
-        if (alignment != null) {
-            when (field.inputContainer) {
-                is HBox -> field.inputContainer.alignment = alignment
-                is VBox -> field.inputContainer.alignment = alignment
-            }
-        }
         op?.invoke(field.inputContainer)
         return field
     }
@@ -197,31 +195,53 @@ fun Node.mnemonicTarget() {
     }
 }
 
+
 @DefaultProperty("inputs")
-class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val forceLabelIndent: Boolean = false) : Pane() {
-    var text by property(text)
+class ButtonBarField(buttonOrder: String? = null, forceLabelIndent: Boolean = true) : AbstractField("", forceLabelIndent) {
+    override val inputContainer = ButtonBar(buttonOrder)
+    override val inputs: ObservableList<Node> = inputContainer.buttons
+
+    init {
+        inputContainer.addClass(Stylesheet.inputContainer)
+        children.add(inputContainer)
+    }
+}
+
+@DefaultProperty("inputs")
+class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false) : AbstractField(text, forceLabelIndent) {
+    override val inputContainer = if (orientation == HORIZONTAL) HBox() else VBox()
+    override val inputs: ObservableList<Node> = inputContainer.children
+
+    init {
+        inputContainer.addClass(Stylesheet.inputContainer)
+        inputContainer.addPseudoClass(orientation.name.toLowerCase())
+        children.add(inputContainer)
+    }
+}
+
+@DefaultProperty("inputs")
+abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
+    var text: String? by property(text)
     fun textProperty() = getProperty(Field::text)
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
-    val inputContainer: Pane = (if (orientation == HORIZONTAL) HBox() else VBox()).apply {
-        addClass(Stylesheet.inputContainer)
-        addPseudoClass(orientation.name.toLowerCase())
-    }
+    abstract val inputContainer: Region
+
     @Suppress("unused") // FXML Default Target
-    val inputs: ObservableList<Node> = inputContainer.children
+    abstract val inputs: ObservableList<Node>
 
     init {
         isFocusTraversable = false
         addClass(Stylesheet.field)
         label.textProperty().bind(textProperty())
-        children.addAll(labelContainer, inputContainer)
+        children.add(labelContainer)
     }
 
     val fieldset: Fieldset get() = parent as Fieldset
 
     override fun computePrefHeight(width: Double): Double {
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val labelHeight = if (labelHasContent) labelContainer.prefHeight(width) else 0.0
         val inputHeight = inputContainer.prefHeight(width)
@@ -236,7 +256,7 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val for
 
     override fun computePrefWidth(height: Double): Double {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth(height) else 0.0
         val inputWidth = inputContainer.prefWidth(height)
@@ -253,7 +273,7 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, val for
 
     override fun layoutChildren() {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || text.isNotBlank()
+        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
 
         val insets = insets
         val contentX = insets.left

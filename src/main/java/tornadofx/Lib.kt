@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.application.Platform
+import javafx.beans.InvalidationListener
 import javafx.beans.property.*
 import javafx.beans.value.*
 import javafx.collections.FXCollections
@@ -40,7 +41,101 @@ class SortedFilteredList<T>(
         val items: ObservableList<T> = FXCollections.observableArrayList(),
         initialPredicate: (T) -> Boolean = { true },
         val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
-        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> by sortedItems {
+        val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> {
+
+    init {
+        items.onChange { refilter() }
+    }
+
+    override val size: Int get() = sortedItems.size
+    override fun contains(element: T) = sortedItems.contains(element)
+    override fun containsAll(elements: Collection<T>) = sortedItems.containsAll(elements)
+    override fun get(index: Int) = sortedItems[index]
+    override fun indexOf(element: T) = sortedItems.indexOf(element)
+    override fun isEmpty() = sortedItems.isEmpty()
+    override fun iterator() = sortedItems.iterator()
+    override fun lastIndexOf(element: T) = sortedItems.lastIndexOf(element)
+    override fun add(element: T) = items.add(element)
+    override fun add(index: Int, element: T) {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            items.add(backingIndex, element)
+        }
+    }
+
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        if (backingIndex > -1) {
+            return items.addAll(backingIndex, elements)
+        }
+        return false
+    }
+
+    override fun addAll(elements: Collection<T>) = items.addAll(elements)
+
+    override fun clear() = items.clear()
+    override fun listIterator() = sortedItems.listIterator()
+    override fun listIterator(index: Int) = sortedItems.listIterator(index)
+    override fun remove(element: T) = items.remove(element)
+    override fun removeAll(elements: Collection<T>) = items.removeAll(elements)
+    override fun removeAt(index: Int): T? {
+        val item = sortedItems[index]
+        val backingIndex = items.indexOf(item)
+        return if (backingIndex > -1) {
+            items.removeAt(backingIndex)
+        } else {
+            null
+        }
+    }
+
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> {
+        val item = sortedItems[fromIndex]
+        val backingFromIndex = items.indexOf(item)
+        if (backingFromIndex > -1) {
+            return items.subList(backingFromIndex, items.indexOf(sortedItems[toIndex]))
+        }
+        return mutableListOf()
+    }
+
+    override fun removeAll(vararg elements: T) = items.removeAll(elements)
+
+    override fun addAll(vararg elements: T) = items.addAll(elements)
+
+    override fun remove(from: Int, to: Int) {
+        val item = sortedItems[from]
+        val backingFromIndex = items.indexOf(item)
+        if (backingFromIndex > -1) {
+            items.remove(backingFromIndex, items.indexOf(sortedItems[to]))
+        }
+    }
+
+    override fun retainAll(vararg elements: T) = items.retainAll(elements)
+
+    override fun retainAll(elements: Collection<T>) = items.retainAll(elements)
+
+    override fun removeListener(listener: ListChangeListener<in T>?) {
+        sortedItems.removeListener(listener)
+    }
+
+    override fun removeListener(listener: InvalidationListener?) {
+        sortedItems.removeListener(listener)
+    }
+
+    override fun addListener(listener: ListChangeListener<in T>?) {
+        sortedItems.addListener(listener)
+    }
+
+    override fun addListener(listener: InvalidationListener?) {
+        sortedItems.addListener(listener)
+    }
+
+    override fun setAll(col: MutableCollection<out T>?) = items.setAll(col)
+
+    override fun setAll(vararg elements: T): Boolean {
+        return items.setAll(*elements)
+    }
 
     /**
      * Support editing of the sorted/filtered list. Useful to support editing support in ListView/TableView etc
@@ -54,6 +149,17 @@ class SortedFilteredList<T>(
         return item
     }
 
+
+    /**
+     * Force the filtered list to refilter it's items based on the current predicate without having to configure a new predicate.
+     * Avoid reassigning the property value as that would impede binding.
+     */
+    fun refilter() {
+        val p = predicate
+        if (p != null) {
+            filteredItems.predicate = Predicate { p(it) }
+        }
+    }
 
     val predicateProperty: ObjectProperty<(T) -> Boolean> = object : SimpleObjectProperty<(T) -> Boolean>() {
         override fun set(newValue: ((T) -> Boolean)) {
@@ -71,7 +177,7 @@ class SortedFilteredList<T>(
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
     fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
-        tableView.items = sortedItems
+        tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
         return this
     }
@@ -83,7 +189,7 @@ class SortedFilteredList<T>(
      *
      */
     fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = sortedItems
+        listView.items = this
         return this
     }
 
@@ -182,13 +288,13 @@ fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) 
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
 fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
-fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new) } }
-fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op(new.toInt()) } }
-fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op(new.toLong()) } }
-fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op(new.toFloat()) } }
-fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op(new.toDouble()) } }
+fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new ?: false) } }
+fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0).toInt()) } }
+fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0L).toLong()) } }
+fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0f).toFloat()) } }
+fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0.0).toDouble()) } }
 fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
-    addListener(ListChangeListener{ op(it) })
+    addListener(ListChangeListener { op(it) })
 }
 
 /**

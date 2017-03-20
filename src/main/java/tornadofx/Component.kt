@@ -14,6 +14,7 @@ import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Orientation
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -49,7 +50,7 @@ abstract class Component {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val workspace: Workspace get() = scope.workspace
     val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
-    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<(FXEvent) -> Unit>>()
+    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
     val config: Properties
         get() = _config.value
@@ -265,15 +266,17 @@ abstract class Component {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(noinline action: (T) -> Unit) {
-        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(action as (FXEvent) -> Unit)
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): EventContext.(T) -> Unit {
+        val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
+        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
-        if (fireNow) FX.eventbus.subscribe(T::class, scope, action)
+        if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
+        return action
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> unsubscribe(noinline action: (T) -> Unit) {
-        subscribedEvents[T::class]?.remove(action)
+    inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) {
+        subscribedEvents[T::class]?.removeAll { it.action == action }
         FX.eventbus.unsubscribe(T::class, action)
     }
 
@@ -402,7 +405,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     private fun detachLocalEventBusListeners() {
         subscribedEvents.forEach { event, actions ->
             actions.forEach {
-                FX.eventbus.unsubscribe(event, it)
+                FX.eventbus.unsubscribe(event, it.action)
             }
         }
     }
@@ -526,10 +529,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false)
-            = openModal(stageStyle, modality, escapeClosesWindow, owner, block)
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
+            = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false) {
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -537,6 +540,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 modalStage = Stage(stageStyle)
                 // modalStage needs to be set before this code to make close() work in blocking mode
                 with(modalStage!!) {
+                    if (resizable != null) isResizable = resizable
                     titleProperty().bind(titleProperty)
                     initModality(modality)
                     if (owner != null) initOwner(owner)
@@ -689,6 +693,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun builderFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = BuilderFragment(scope, title, rootBuilder)
 
     fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
+        openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
+    }
+
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) }}).apply {
+        builder((root as Form).fieldsets.first())
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 

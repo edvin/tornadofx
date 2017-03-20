@@ -1,6 +1,9 @@
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.control.ListCell
@@ -8,6 +11,8 @@ import javafx.scene.control.ListView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
+import tornadofx.FX.IgnoreParentBuilder.No
+import tornadofx.FX.IgnoreParentBuilder.Once
 import kotlin.reflect.KClass
 
 
@@ -54,7 +59,8 @@ abstract class ItemFragment<T> : Fragment() {
 abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>?> = SimpleObjectProperty()
     var cell by cellProperty
-    val editingProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
+    val editingProperty = SimpleBooleanProperty(false)
+    val editing by editingProperty
 
     open fun startEdit() {
         cell?.startEdit()
@@ -66,6 +72,10 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 
     open fun cancelEdit() {
         cell?.cancelEdit()
+    }
+
+    open fun onEdit(op: () -> Unit) {
+        editingProperty.onChange { if (it) op() }
     }
 }
 
@@ -117,8 +127,11 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
             }
             clearCellFragment()
         } else {
-            ignoreParentForFirstBuilder {
+            FX.ignoreParentBuilder = Once
+            try {
                 cellCache?.apply { graphic = getOrCreateNode(item) }
+            } finally {
+                FX.ignoreParentBuilder = No
             }
             if (fresh) {
                 val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
@@ -126,11 +139,9 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
                 fresh = false
             }
             cellFragment?.apply {
+                editingProperty.cleanBind(editingProperty())
                 itemProperty.value = item
                 cellProperty.value = this@SmartListCell
-                with(editingProperty as BooleanProperty) {
-                    cleanBind(editingProperty())
-                }
                 graphic = root
             }
             cellFormat?.invoke(this, item)
@@ -139,11 +150,10 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
 
     private fun clearCellFragment() {
         cellFragment?.apply {
-            itemProperty.value = null
             cellProperty.value = null
-            with(editingProperty as BooleanProperty) {
-                unbind()
-            }
+            itemProperty.value = null
+            editingProperty.unbind()
+            editingProperty.value = false
         }
     }
 
