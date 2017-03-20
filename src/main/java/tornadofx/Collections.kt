@@ -224,3 +224,7 @@ class ListConversionListener<SourceType, TargetType>(targetList: MutableList<Tar
         return false
     }
 }
+
+fun <T> ObservableList<T>.invalidate() {
+    if (isNotEmpty()) this[0] = this[0]
+}
