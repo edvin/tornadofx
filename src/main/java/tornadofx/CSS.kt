@@ -596,7 +596,7 @@ open class PropertyHolder {
     var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
     var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
     var borderColor: MultiValue<CssBox<Paint?>> by cssprop("-fx-border-color")
-    var borderInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
+    var borderInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-insets")
     var borderRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
     var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
     var borderWidth: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-width")
