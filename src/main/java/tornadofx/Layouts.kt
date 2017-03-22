@@ -12,10 +12,10 @@ import javafx.scene.layout.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
-fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
-    val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
+private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
 
-    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 0
+fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
+    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()

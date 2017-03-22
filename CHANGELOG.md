@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- JsonObject.contains(text) and JsonModel.contains(text)
+- Fixed
 - Button.action() shortcut istead of Button.setOnAction()
 - ObservableList.invalidate()
 - Dialog.toFront()

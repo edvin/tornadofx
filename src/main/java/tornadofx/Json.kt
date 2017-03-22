@@ -359,3 +359,8 @@ fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { for
 
 fun InputStream.toJSONArray(): JsonArray = Json.createReader(this).use { it.readArray() }
 fun InputStream.toJSON(): JsonObject = Json.createReader(this).use { it.readObject() }
+
+fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true) =
+    if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
+
+fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true) = this?.toJSON()?.contains(text, ignoreCase) ?: false
