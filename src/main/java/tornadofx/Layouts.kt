@@ -214,8 +214,8 @@ fun Region.paddingRight(p: Double) {
     padding = Insets(padding.top, p, padding.bottom, padding.left)
 }
 
-var Region.paddingRight: Double get() = padding.right; set(value) {
-    padding = Insets(padding.top, value, padding.bottom, padding.left)
+var Region.paddingRight: Number get() = padding.right; set(value) {
+    padding = Insets(padding.top, value.toDouble(), padding.bottom, padding.left)
 }
 
 @Deprecated("Use the paddingLeft property instead", ReplaceWith("paddingLeft = p"))
@@ -223,8 +223,8 @@ fun Region.paddingLeft(p: Double) {
     padding = Insets(padding.top, padding.right, padding.bottom, p)
 }
 
-var Region.paddingLeft: Double get() = padding.left; set(value) {
-    padding = Insets(padding.top, padding.right, padding.bottom, value)
+var Region.paddingLeft: Number get() = padding.left; set(value) {
+    padding = Insets(padding.top, padding.right, padding.bottom, value.toDouble())
 }
 
 @Deprecated("Use the paddingTop property instead", ReplaceWith("paddingTop = p"))
