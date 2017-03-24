@@ -1099,6 +1099,7 @@ val Region.paddingAllProperty: DoubleProperty get() {
     } as DoubleProperty
 }
 
+fun Node.managedWhen(expr: () -> ObservableValue<Boolean>) = managedProperty().cleanBind(expr())
 fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
 fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) {
     val obs = expr()
