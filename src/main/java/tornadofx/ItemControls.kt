@@ -52,15 +52,15 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     return spinner
 }
 
-fun EventTarget.spinner(min: Int?, max: Int?, initialValue: Int?, amountToStepBy: Int = 1, editable: Boolean = false, property: Property<Int>? = null, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
-    val spinner = Spinner<Int>(min ?: 0, max ?: 100, initialValue ?: property?.value ?: 0, amountToStepBy)
-    spinner.isEditable = editable
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
-    return opcr(this, spinner, op)
-}
-
-fun EventTarget.spinner(min: Double?, max: Double?, initialValue: Double?, amountToStepBy: Double = 1.0, editable: Boolean = false, property: Property<Double>? = null, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
-    val spinner = Spinner<Double>(min ?: 0.0, max ?: 100.0, initialValue ?: property?.value ?: 0.0, amountToStepBy)
+inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = null, initialValue: T? = null, amountToStepBy: T? = null, editable: Boolean = false, property: Property<T>? = null, noinline op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner: Spinner<T>
+    val isInt = (property is IntegerProperty && property !is DoubleProperty && property !is FloatProperty) || min is Int || max is Int || initialValue is Int ||
+            T::class == Int::class || T::class == Integer::class || T::class.javaPrimitiveType == Integer::class.java
+    if (isInt) {
+        spinner = Spinner(min?.toInt() ?: 0, max?.toInt() ?: 100, initialValue?.toInt() ?: 0, amountToStepBy?.toInt() ?: 1)
+    } else {
+        spinner = Spinner(min?.toDouble() ?: 0.0, max?.toDouble() ?: 100.0, initialValue?.toDouble() ?: 0.0, amountToStepBy?.toDouble() ?: 1.0)
+    }
     if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
@@ -292,7 +292,7 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableCo
  */
 @JvmName("pojoColumn") fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
-    return this.column( title, propName )
+    return this.column(title, propName)
 }
 
 /**
@@ -311,7 +311,7 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: (Tre
  */
 @JvmName("pojoColumn") fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
-    return this.column( title, propName )
+    return this.column(title, propName)
 }
 
 fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
