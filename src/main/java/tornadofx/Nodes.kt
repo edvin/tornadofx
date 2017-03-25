@@ -966,6 +966,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTr
         if (transition != null) {
             transition.call(this, replacement) {
                 scene.root = it as Parent
+                scene.window.sizeToScene()
             }
         } else {
             removeFromParent()

@@ -355,7 +355,7 @@ operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
  * If you need to change the order of the stack during the transition, you have access to the stack as a parameter of
  * the create method, and there is also a StackPane extension function ([ViewTransition.moveToTop]) for convenience.
  */
-abstract class ViewTransition() {
+abstract class ViewTransition {
     /**
      * Create an animation to play for the transition between two nodes. The [StackPane] used as a placeholder during
      * the transition is also provided.
