@@ -3,6 +3,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
+import javafx.animation.PauseTransition
 import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.DoubleProperty
@@ -33,6 +34,7 @@ import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.util.Callback
+import javafx.util.Duration
 import javafx.util.StringConverter
 import javafx.util.converter.*
 import tornadofx.osgi.OSGIConsole
@@ -1146,4 +1148,33 @@ class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) :
             maxHeight = size.px
         }
     }
+}
+
+/**
+ * Add handler for differing actions on long or short press events
+ *
+ * @param threshold Duration after which a press is considered long. Default: 700ms
+ * @param consume whether the handler should consume the event (MOUSE_PRESSED and MOUSE_RELEASED)
+ * @param shortHandler handler for short press
+ * @param longHandler handler for long press
+ */
+fun Node.addShortLongPressHandler(threshold: Duration = Duration(700.0),
+                                  consume: Boolean = false,
+                                  shortHandler: (MouseEvent) -> Unit,
+                                  longHandler: (MouseEvent) -> Unit) {
+    var event: MouseEvent? = null
+    val holdTimer = PauseTransition(threshold)
+    holdTimer.setOnFinished { longHandler.invoke(event!!) }
+    this.addEventHandler(MouseEvent.MOUSE_PRESSED, {
+        event = it
+        holdTimer.playFromStart()
+        if (consume) it.consume()
+    })
+    this.addEventHandler(MouseEvent.MOUSE_RELEASED, {
+        if (holdTimer.status == javafx.animation.Animation.Status.RUNNING) {
+            holdTimer.stop()
+            shortHandler.invoke(event!!)
+            if (consume) it.consume()
+        }
+    })
 }
