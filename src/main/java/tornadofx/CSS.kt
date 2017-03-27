@@ -9,6 +9,7 @@ import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.OverrunStyle
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.TableColumnBase
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
@@ -1019,6 +1020,15 @@ class InlineCss : PropertyHolder(), Rendered {
 
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
+    val block = InlineCss().apply(op)
+
+    if (append && style.isNotBlank())
+        style += block.render()
+    else
+        style = block.render().trim()
+}
+
+fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
     if (append && style.isNotBlank())
