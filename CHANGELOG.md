@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Any?.toProperty() will wrap any value in an observable property, even nullable properties
 - TableColumnBase.style builder
 - Node.managedWhen builder binding
 - Int/Double Spinner builders merged into one Number builder for better compatibility
