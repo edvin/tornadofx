@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Simplified ItemViewModel binding: `val name = bind(Customer::nameProperty)` instead of the old `val name = bind { item?.nameProperty }`
 - Any?.toProperty() will wrap any value in an observable property, even nullable properties
 - TableColumnBase.style builder
 - Node.managedWhen builder binding
