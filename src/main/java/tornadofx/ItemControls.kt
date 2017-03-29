@@ -411,11 +411,15 @@ class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
 }
 
 fun <T> TableView<T>.bindSelected(property: Property<T>) {
-    property.bind(selectionModel.selectedItemProperty())
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it
+    }
 }
 
 fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
-    model.itemProperty.bind(selectionModel.selectedItemProperty())
+    selectionModel.selectedItemProperty().onChange {
+        model.item = it
+    }
 }
 
 val TableView<*>.selectedColumn: TableColumn<Any?, Any?>? get() = selectionModel.selectedCells.firstOrNull()?.tableColumn
