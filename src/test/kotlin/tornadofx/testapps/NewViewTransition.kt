@@ -60,7 +60,7 @@ abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View
             this += nameLabel
             button {
                 textProperty().bind(nextTransition)
-                setOnAction { swap() }
+                action { swap() }
             }
         }
     }

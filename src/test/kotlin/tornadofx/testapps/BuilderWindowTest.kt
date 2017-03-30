@@ -19,7 +19,7 @@ class DangerButtonView : View("Do not click the button!") {
                     fontWeight = FontWeight.BOLD
                     textFill = Color.RED
                 }
-                setOnAction {
+                action {
                     builderWindow("What do you want?", stageStyle = UNDECORATED, owner = primaryStage) {
                         vbox(10) {
                             style {
@@ -36,18 +36,18 @@ class DangerButtonView : View("Do not click the button!") {
 
                             hbox(10) {
                                 button("Tell them you clicked") {
-                                    setOnAction {
+                                    action {
                                         this@DangerButtonView.title = "It's not dangerous to click the button :)"
                                         close()
                                     }
                                 }
                                 button("Close app") {
-                                    setOnAction {
+                                    action {
                                         Platform.exit()
                                     }
                                 }
                                 button("Cancel") {
-                                    setOnAction {
+                                    action {
                                         close()
                                     }
                                 }
@@ -57,12 +57,12 @@ class DangerButtonView : View("Do not click the button!") {
                 }
             }
             button("the same in internalWindow") {
-                setOnAction {
+                action {
                     openInternalBuilderWindow("Internal window", modal = true, overlayPaint = Color.DARKRED) {
                         vbox(20) {
                             label("opened in an internalwindow")
                             button("close") {
-                                setOnAction { close() }
+                                action { close() }
                             }
                         }
                     }

@@ -15,7 +15,7 @@ class JustAView : View("Just A View") {
     override val root = vbox {
         label("I'm just a view - I do nothing")
         button("Load another View") {
-            setOnAction {
+            action {
                 workspace.dock<TestDrawerContributor>()
             }
         }
@@ -27,7 +27,7 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
         vbox {
             label("I add something to the drawer when I'm docked")
             button("Close") {
-                setOnAction {
+                action {
                     close()
                 }
             }
@@ -52,7 +52,7 @@ class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.S
         menubar {
             menu("Options") {
                 checkmenuitem("Toggle Navigation Mode") {
-                    setOnAction {
+                    action {
                         navigationMode = if (navigationMode == NavigationMode.Stack) NavigationMode.Tabs else NavigationMode.Stack
                     }
                 }

@@ -26,7 +26,7 @@ class EventBusTestView : View("Data Event Table") {
             }
         }
         button("Load data") {
-            setOnAction {
+            action {
                 fire(GiveMeData)
             }
         }

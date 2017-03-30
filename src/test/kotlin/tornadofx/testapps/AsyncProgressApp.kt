@@ -12,7 +12,7 @@ class AsyncProgressView : View("Async Progress") {
 
         center {
             button("Start") {
-                setOnAction {
+                action {
                     runAsync {
                         updateTitle("Doing some work")
                         for (i in 1..10) {
