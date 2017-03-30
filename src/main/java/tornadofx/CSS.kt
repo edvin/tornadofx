@@ -21,6 +21,7 @@ import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import sun.net.www.protocol.css.Handler
+import java.lang.invoke.MethodHandles
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
@@ -1151,6 +1152,9 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
+fun loadFont(path: String, size: Double): Font? {
+    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size) }
+}
 
 // Style Class
 
