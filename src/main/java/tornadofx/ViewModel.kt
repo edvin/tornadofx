@@ -197,6 +197,7 @@ open class ViewModel : Component(), Injectable {
             }
         }
 
+
         if (committed) {
             onCommit()
             successFn?.invoke()

@@ -35,12 +35,14 @@ import javafx.stage.StageStyle
 import javafx.stage.Window
 import javafx.util.Callback
 import java.io.InputStream
+import java.io.StringReader
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.logging.Logger
 import java.util.prefs.Preferences
+import javax.json.Json
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
@@ -61,6 +63,9 @@ abstract class Component {
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
+    fun Properties.jsonObject(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
+    fun Properties.jsonArray(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
+
     fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null): T = find(T::class, scope, params)
