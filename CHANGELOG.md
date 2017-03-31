@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- DataGrid correctly calculates horizontal scrollbar
+- DataGrid.maxRows will constrain the max number of rows and override maxCellsInRow if needed (https://github.com/edvin/tornadofx/issues/287)
+- DataGrid properties are now StylableObjectProperties to make them bindable
 - `config` can now read and write JsonObject and JsonArray
 - TableView.bindSelected uses listener instead of unidirectional binding
 - Simplified ItemViewModel binding: `val name = bind(Customer::nameProperty)` instead of the old `val name = bind { item?.nameProperty }`

@@ -15,10 +15,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
-import javafx.css.CssMetaData
-import javafx.css.Styleable
-import javafx.css.StyleableProperty
-import javafx.css.StyleablePropertyFactory
+import javafx.css.*
 import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -62,32 +59,45 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         this.cellCache = cachedGraphic
     }
 
-    val cellWidthProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0)
+    val cellWidthProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0) as StyleableObjectProperty<Number>
     var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) {
         cellWidthProperty.value = value
     }
 
-    val maxCellsInRowProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxCellsInRow", "-fx-max-cells-in-row", { it.maxCellsInRowProperty }, 999)
+    val maxCellsInRowProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxCellsInRow", "-fx-max-cells-in-row", { it.maxCellsInRowProperty }, Int.MAX_VALUE) as StyleableObjectProperty<Number>
     var maxCellsInRow: Int get() = maxCellsInRowProperty.value.toInt(); set(value) {
         maxCellsInRowProperty.value = value
     }
 
-    val cellHeightProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150.0)
+    val maxRowsProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxRows", "-fx-max-rows", { it.maxRowsProperty }, Int.MAX_VALUE) as StyleableObjectProperty<Number>
+    var maxRows: Int get() = maxRowsProperty.value.toInt(); set(value) {
+        maxRowsProperty.value = value
+    }
+
+    val cellHeightProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150.0) as StyleableObjectProperty<Number>
     var cellHeight: Double get() = cellHeightProperty.value as Double; set(value) {
         cellHeightProperty.value = value
     }
 
     val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty }, 8.0)
-    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) { horizontalCellSpacingProperty.value = value }
+    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) {
+        horizontalCellSpacingProperty.value = value
+    }
 
     val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty }, 8.0)
-    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) { verticalCellSpacingProperty.value = value }
+    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) {
+        verticalCellSpacingProperty.value = value
+    }
 
     val selectionModel = DataGridSelectionModel(this)
     val focusModel = DataGridFocusModel(this)
 
-    var singleSelect: Boolean get() = selectionModel.selectionMode == SINGLE; set(value) { selectionModel.selectionMode = if (value) SINGLE else MULTIPLE }
-    var multiSelect: Boolean get() = selectionModel.selectionMode == MULTIPLE; set(value) { selectionModel.selectionMode = if (value) MULTIPLE else SINGLE }
+    var singleSelect: Boolean get() = selectionModel.selectionMode == SINGLE; set(value) {
+        selectionModel.selectionMode = if (value) SINGLE else MULTIPLE
+    }
+    var multiSelect: Boolean get() = selectionModel.selectionMode == MULTIPLE; set(value) {
+        selectionModel.selectionMode = if (value) MULTIPLE else SINGLE
+    }
 
     override fun createDefaultSkin() = DataGridSkin(this)
 
@@ -206,7 +216,7 @@ class DataGridFocusModel<T>(val dataGrid: DataGrid<T>) : FocusModel<T>() {
 }
 
 
-open class DataGridRow<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
+open class DataGridRow<T>(val dataGrid: DataGrid<T>, val dataGridSkin: DataGridSkin<T>) : IndexedCell<T>() {
     init {
         addClass(Stylesheet.datagridRow)
 
@@ -315,6 +325,11 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
     override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
         val dataGrid = skinnable.dataGrid
         return dataGrid.cellHeight + (dataGrid.verticalCellSpacing * 2)
+    }
+
+    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
+        val dataGrid = skinnable.dataGrid
+        return (dataGrid.cellWidth + dataGrid.horizontalCellSpacing * 2) * skinnable.dataGridSkin.computeMaxCellsInRow()
     }
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
@@ -490,7 +505,6 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
         flow.id = "virtual-flow"
         flow.isPannable = false
-        flow.isVertical = true
         flow.isFocusTraversable = skinnable.isFocusTraversable
         flow.setCreateCell { createCell() }
 
@@ -507,6 +521,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         registerChangeListener(control.verticalCellSpacingProperty as ObservableValue<Number>, "VERTICAL_CELL_SPACING")
         registerChangeListener(control.widthProperty(), "WIDTH_PROPERTY")
         registerChangeListener(control.heightProperty(), "HEIGHT_PROPERTY")
+
     }
 
     override public fun handleControlPropertyChanged(p: String) {
@@ -536,7 +551,15 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
     override fun getItemCount() = Math.ceil(skinnable.items.size.toDouble() / computeMaxCellsInRow()).toInt()
 
-    fun computeMaxCellsInRow() = Math.min(Math.max(Math.floor(computeRowWidth() / computeCellWidth()).toInt(), 1), skinnable.maxCellsInRow)
+    /**
+     * Compute the maximum number of cells per row. If the calculated number of cells would result in
+     * more than the configured maxRow rows, the maxRow setting takes presedence and overrides the maxCellsInRow
+     */
+    fun computeMaxCellsInRow(): Int {
+        val maxCellsInRow = Math.min(Math.max(Math.floor(computeRowWidth() / computeCellWidth()).toInt(), 1), skinnable.maxCellsInRow)
+        val neededRows = Math.ceil(skinnable.items.size.toDouble() / maxCellsInRow)
+        return if (neededRows > skinnable.maxRows) (skinnable.items.size.toDouble() / skinnable.maxRows).toInt() else maxCellsInRow
+    }
 
     fun computeRowWidth() = skinnable.width + 14 // Account for scrollbar
 
@@ -561,7 +584,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         updateRows(newCount)
     }
 
-    override fun createCell() = DataGridRow(skinnable)
+    override fun createCell() = DataGridRow(skinnable, this)
 
     private fun updateItems() {
         skinnable.items.removeListener(weakGridViewItemsListener)
