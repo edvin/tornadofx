@@ -14,7 +14,6 @@ All notable changes to this project will be documented in this file.
 - Spinner builders have defaults for min (0), max(100), initialValue (property.value if supplied) (https://github.com/edvin/tornadofx/issues/274)
 - paddingLeft/paddingRight converted from Double to Number
 - JsonObject.contains(text) and JsonModel.contains(text)
-- Fixed
 - Button.action() shortcut istead of Button.setOnAction()
 - ObservableList.invalidate()
 - Dialog.toFront()
