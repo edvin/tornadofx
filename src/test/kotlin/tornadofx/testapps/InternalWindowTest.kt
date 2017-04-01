@@ -29,8 +29,8 @@ class Editor : View("Editor") {
                 textfield()
             }
             button("Save") {
-                accelerator("Alt+S")
-                setOnAction {
+                shortcut("Alt+S")
+                action {
                     save()
                 }
             }
