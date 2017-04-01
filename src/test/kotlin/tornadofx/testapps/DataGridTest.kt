@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
-import javafx.scene.input.KeyCombination
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
 
@@ -41,8 +40,8 @@ class DataGridTest : View("DataGrid") {
                     valueProperty().onChange {
                         datagrid.items = FXCollections.observableArrayList(images[it])
                     }
-                    accelerators[KeyCombination.valueOf("k")] = { value = "kittens" }
-                    accelerators[KeyCombination.valueOf("p")] = { value = "puppies" }
+                    shortcut("k") { value = "kittens" }
+                    shortcut("p") { value = "puppies" }
                 }
                 button("Add") {
                     action {

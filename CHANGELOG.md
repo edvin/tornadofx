@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- `shortcut("keyCombo") { .. }` and `shortcut(KeyCombo) { .. }` configures key press initiated actions
 - UIComponent.accelerators map now works from any View, not just Views embedded in a Workspace (https://github.com/edvin/tornadofx/issues/253)
 - Added Scope.hasActiveWorkspace to check if the workspace inside the current scope has been activated
 - Button.accelerator also works when button is embedded in sub view (https://github.com/edvin/tornadofx/issues/253)

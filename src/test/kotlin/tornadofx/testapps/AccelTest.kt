@@ -21,5 +21,4 @@ class AccelView : View() {
             alert(Alert.AlertType.INFORMATION, "Fire!", "You clicked.")
         }
     }
-
 }

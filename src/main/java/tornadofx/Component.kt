@@ -383,6 +383,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     private fun enableAccelerators() {
         root.scene?.addEventFilter(KEY_PRESSED, acceleratorListener)
+        root.sceneProperty().addListener { obs, old, new ->
+            old?.removeEventFilter(KEY_PRESSED, acceleratorListener)
+            new?.addEventFilter(KEY_PRESSED, acceleratorListener)
+        }
     }
 
     private fun disableAccelerators() {
@@ -453,34 +457,23 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     /**
      * Add the key combination as an accelerator for this Button. The accelerator
-     * will be applied and reapplied when the UIComponent is docked and undocked.
+     * is added to the UIComponent accelerators map.
      */
     fun Button.accelerator(combo: KeyCombination) {
-        var oldCombo: Runnable? = null
-        var currentScene: Scene? = null
-
-        fun attach() {
-            scene?.accelerators?.apply {
-                currentScene = scene
-                oldCombo = get(combo)
-                put(combo, Runnable { fire() })
-            }
-        }
-
-        fun detach() {
-            currentScene?.accelerators?.apply {
-                if (oldCombo != null) put(combo, oldCombo)
-                else remove(combo)
-            }
-        }
-
-        if (scene != null) attach()
-        sceneProperty().onChange {
-            detach()
-            if (it != null) attach()
-        }
-
+        accelerators[combo] = { fire() }
     }
+
+    /**
+     * Configure an action for a key combination.
+     */
+    fun shortcut(combo: KeyCombination, action: () -> Unit) {
+        accelerators[combo] = action
+    }
+
+    /**
+     * Configure an action for a key combination.
+     */
+    fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
 
