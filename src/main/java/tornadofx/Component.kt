@@ -453,13 +453,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
 
-    fun Button.accelerator(combo: String) = accelerator(KeyCombination.valueOf(combo))
+    fun Button.shortcut(combo: String) = shortcut(KeyCombination.valueOf(combo))
+
+    @Deprecated("Use shortcut instead", ReplaceWith("shortcut(combo)"))
+    fun Button.accelerator(combo: KeyCombination) = shortcut(combo)
 
     /**
-     * Add the key combination as an accelerator for this Button. The accelerator
-     * is added to the UIComponent accelerators map.
+     * Add the key combination as a shortcut for this Button's action.
      */
-    fun Button.accelerator(combo: KeyCombination) {
+    fun Button.shortcut(combo: KeyCombination) {
         accelerators[combo] = { fire() }
     }
 

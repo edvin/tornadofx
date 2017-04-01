@@ -16,7 +16,7 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
             action {
                 fire(AddFoldEvent)
             }
-            accelerator(KeyCombination.valueOf("Ctrl+A"))
+            shortcut(KeyCombination.valueOf("Ctrl+A"))
         }
 
         scrollpane(fitToWidth = true) {

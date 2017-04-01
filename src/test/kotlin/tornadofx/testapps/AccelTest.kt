@@ -16,7 +16,7 @@ class AccelTest : View() {
 
 class AccelView : View() {
     override val root = button("Click me") {
-        accelerator(KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_ANY, KeyCombination.SHIFT_ANY))
+        shortcut(KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_ANY, KeyCombination.SHIFT_ANY))
         action {
             alert(Alert.AlertType.INFORMATION, "Fire!", "You clicked.")
         }
