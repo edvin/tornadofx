@@ -12,6 +12,7 @@ import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Orientation
@@ -25,6 +26,7 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
@@ -366,6 +368,27 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         isInitialized = true
     }
 
+    private val acceleratorListener: EventHandler<KeyEvent> by lazy {
+        EventHandler<KeyEvent> { event ->
+            accelerators.keys.asSequence().find { it.match(event) }?.apply {
+                accelerators[this]?.invoke()
+                event.consume()
+            }
+        }
+    }
+
+    /**
+     * Add a key listener to the current scene and look for matches against the
+     * `accelerators` map in this UIComponent.
+     */
+    private fun enableAccelerators() {
+        root.scene?.addEventFilter(KEY_PRESSED, acceleratorListener)
+    }
+
+    private fun disableAccelerators() {
+        root.scene?.removeEventFilter(KEY_PRESSED, acceleratorListener)
+    }
+
     open fun onUndock() {
     }
 
@@ -395,6 +418,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (muteDocking) return
         if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
+        enableAccelerators()
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
@@ -419,6 +443,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (muteDocking) return
         detachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = false
+        disableAccelerators()
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
     }

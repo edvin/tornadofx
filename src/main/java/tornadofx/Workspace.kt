@@ -4,16 +4,13 @@ import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
-import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.TabPane
 import javafx.scene.control.ToolBar
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.KeyEvent.KEY_PRESSED
+import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
@@ -103,41 +100,23 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         maxViewStackDepth = 0
     }
 
-    private val shortcutProxy: EventHandler<KeyEvent> = EventHandler { event ->
-        dockedComponent?.apply {
-            val match = accelerators.keys.asSequence().find { it.match(event) }
-            if (match != null) {
-                accelerators[match]?.invoke()
-                event.consume()
-            } else if (event.isControlDown && event.code == KeyCode.S) {
-                if (!saveButton.isDisable) {
-                    onSave()
-                    event.consume()
-                }
-            } else if (event.code == KeyCode.F5 || (event.isControlDown && event.code == KeyCode.R)) {
-                if (!refreshButton.isDisable) {
-                    onRefresh()
-                    event.consume()
-                }
-            }
+    private fun registerWorkspaceAccelerators() {
+        accelerators[KeyCombination.valueOf("Ctrl+S")] = {
+            if (!saveButton.isDisable) onSave()
         }
-        if (!event.isConsumed) {
-            // Fallback to accelerators registered on the Workspace
-            val localMatch = accelerators.keys.asSequence().find { it.match(event) }
-            if (localMatch != null) {
-                accelerators[localMatch]?.invoke()
-                event.consume()
-            }
+        accelerators[KeyCombination.valueOf("Ctrl+R")] = {
+            if (!refreshButton.isDisable) onRefresh()
+        }
+        accelerators[KeyCombination.valueOf("F5")] = {
+            if (!refreshButton.isDisable) onRefresh()
         }
     }
 
     override fun onDock() {
-        root.scene?.addEventFilter(KEY_PRESSED, shortcutProxy)
         activeWorkspaces.add(this)
     }
 
     override fun onUndock() {
-        root.scene?.removeEventFilter(KEY_PRESSED, shortcutProxy)
         activeWorkspaces.remove(this)
     }
 
@@ -257,6 +236,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             }
         }
         navigationModeChanged(null, navigationMode)
+        registerWorkspaceAccelerators()
     }
 
     private fun navigationModeChanged(oldMode: NavigationMode?, newMode: NavigationMode?) {

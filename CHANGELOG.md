@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- UIComponent.accelerators map now works from any View, not just Views embedded in a Workspace (https://github.com/edvin/tornadofx/issues/253)
+- Added Scope.hasActiveWorkspace to check if the workspace inside the current scope has been activated
 - Button.accelerator also works when button is embedded in sub view (https://github.com/edvin/tornadofx/issues/253)
 - DataGrid correctly calculates horizontal scrollbar
 - DataGrid.maxRows will constrain the max number of rows and override maxCellsInRow if needed (https://github.com/edvin/tornadofx/issues/287)
