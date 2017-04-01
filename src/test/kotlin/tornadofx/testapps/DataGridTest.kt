@@ -44,7 +44,7 @@ class DataGridTest : View("DataGrid") {
                     }
                 }
                 button("Add") {
-                    setOnAction {
+                    action {
                         datagrid.items.add("http://i.imgur.com/bvqTBT0b.jpg")
                     }
                 }

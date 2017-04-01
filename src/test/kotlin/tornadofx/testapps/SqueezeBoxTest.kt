@@ -15,7 +15,7 @@ class AccelTestApp : App(AccelTest::class)
 class AccelTest : View() {
     override val root = button("Click me") {
         accelerator(KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_ANY, KeyCombination.SHIFT_ANY))
-        setOnAction {
+        action {
             alert(Alert.AlertType.INFORMATION, "Fire!", "You clicked.")
         }
     }
@@ -25,7 +25,7 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
         setPrefSize(300.0, 600.0)
 
         button("Add node") {
-            setOnAction {
+            action {
                 fire(AddFoldEvent)
             }
             accelerator(KeyCombination.valueOf("Ctrl+A"))

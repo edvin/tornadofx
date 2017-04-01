@@ -10,7 +10,7 @@ class InternalWindowTest : View("Internal Window") {
     override val root = stackpane {
         setPrefSize(600.0, 400.0)
         button("Open editor") {
-            setOnAction {
+            action {
                 openInternalWindow(Editor::class, modal = false, icon = FX.icon)
             }
         }
