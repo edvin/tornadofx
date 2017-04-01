@@ -228,9 +228,7 @@ fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
             graphic = text
             prefHeight = Control.USE_COMPUTED_SIZE
             text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())))
-            text.textProperty().bind(Bindings.createStringBinding(Callable {
-                itemProperty().get()?.toString() ?: ""
-            }, itemProperty()))
+            text.textProperty().bind(stringBinding(itemProperty()) { get()?.toString() ?: "" })
         }
     }
     return this

@@ -1,11 +1,9 @@
 package tornadofx.testapps
 
-import javafx.beans.binding.Bindings
 import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
-import java.util.concurrent.Callable
 
 class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
     companion object {
@@ -70,7 +68,7 @@ class DataGridTest : View("DataGrid") {
             }
         }
         bottom {
-            label(Bindings.createStringBinding(Callable {datagrid.selectionModel.selectedItems.joinToString(", ")}, datagrid.selectionModel.selectedItems))
+            label(stringBinding(datagrid.selectionModel.selectedItems) { joinToString(", ") })
         }
     }
 

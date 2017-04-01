@@ -20,7 +20,7 @@ class ContainerView : View("ContainerView") {
             }
         }
         center {
-            this += subView1
+            add(subView1)
         }
     }
 }
