@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.beans.binding.Bindings
 import javafx.collections.FXCollections
-import javafx.geometry.Orientation
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
@@ -56,9 +55,8 @@ class DataGridTest : View("DataGrid") {
                 setPrefSize(550.0, 550.0)
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
-                //maxCellsInRow = 3
-                orientation = Orientation.HORIZONTAL
-                maxRows = 3
+                maxCellsInRow = 3
+                //maxRows = 3
                 cellWidth = 164.0
                 cellHeight = 164.0
 
