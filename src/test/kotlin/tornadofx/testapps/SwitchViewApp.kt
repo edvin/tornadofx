@@ -19,7 +19,7 @@ class GotoContainerView : View("ContainerView") {
             }
         }
         center {
-            this += gotoSubView1
+            add(gotoSubView1)
         }
     }
 }

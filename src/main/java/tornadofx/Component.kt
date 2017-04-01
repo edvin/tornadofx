@@ -433,19 +433,28 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun Button.accelerator(combo: KeyCombination) {
         var oldCombo: Runnable? = null
         var currentScene: Scene? = null
-        whenDocked {
+
+        fun attach() {
             scene?.accelerators?.apply {
                 currentScene = scene
                 oldCombo = get(combo)
                 put(combo, Runnable { fire() })
             }
         }
-        whenUndocked {
+
+        fun detach() {
             currentScene?.accelerators?.apply {
                 if (oldCombo != null) put(combo, oldCombo)
                 else remove(combo)
             }
         }
+
+        if (scene != null) attach()
+        sceneProperty().onChange {
+            detach()
+            if (it != null) attach()
+        }
+
     }
 
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
@@ -701,7 +710,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) }}).apply {
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) } }).apply {
         builder((root as Form).fieldsets.first())
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
