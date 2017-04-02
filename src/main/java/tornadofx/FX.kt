@@ -52,6 +52,8 @@ open class Scope() {
         return this
     }
 
+    val hasActiveWorkspace: Boolean get() = workspaceInstance != null
+
     var workspace: Workspace
         get() {
             if (workspaceInstance == null) {

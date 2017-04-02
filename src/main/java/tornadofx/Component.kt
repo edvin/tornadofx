@@ -12,6 +12,7 @@ import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Orientation
@@ -25,6 +26,7 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Region
@@ -35,12 +37,14 @@ import javafx.stage.StageStyle
 import javafx.stage.Window
 import javafx.util.Callback
 import java.io.InputStream
+import java.io.StringReader
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 import java.util.logging.Logger
 import java.util.prefs.Preferences
+import javax.json.Json
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
@@ -61,6 +65,9 @@ abstract class Component {
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
+    fun Properties.jsonObject(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
+    fun Properties.jsonArray(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
+
     fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null): T = find(T::class, scope, params)
@@ -361,6 +368,31 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         isInitialized = true
     }
 
+    private val acceleratorListener: EventHandler<KeyEvent> by lazy {
+        EventHandler<KeyEvent> { event ->
+            accelerators.keys.asSequence().find { it.match(event) }?.apply {
+                accelerators[this]?.invoke()
+                event.consume()
+            }
+        }
+    }
+
+    /**
+     * Add a key listener to the current scene and look for matches against the
+     * `accelerators` map in this UIComponent.
+     */
+    private fun enableAccelerators() {
+        root.scene?.addEventFilter(KEY_PRESSED, acceleratorListener)
+        root.sceneProperty().addListener { obs, old, new ->
+            old?.removeEventFilter(KEY_PRESSED, acceleratorListener)
+            new?.addEventFilter(KEY_PRESSED, acceleratorListener)
+        }
+    }
+
+    private fun disableAccelerators() {
+        root.scene?.removeEventFilter(KEY_PRESSED, acceleratorListener)
+    }
+
     open fun onUndock() {
     }
 
@@ -390,6 +422,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (muteDocking) return
         if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
+        enableAccelerators()
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
@@ -414,34 +447,35 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (muteDocking) return
         detachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = false
+        disableAccelerators()
         onUndock()
         onUndockListeners?.forEach { it.invoke(this) }
     }
 
 
-    fun Button.accelerator(combo: String) = accelerator(KeyCombination.valueOf(combo))
+    fun Button.shortcut(combo: String) = shortcut(KeyCombination.valueOf(combo))
+
+    @Deprecated("Use shortcut instead", ReplaceWith("shortcut(combo)"))
+    fun Button.accelerator(combo: KeyCombination) = shortcut(combo)
 
     /**
-     * Add the key combination as an accelerator for this Button. The accelerator
-     * will be applied and reapplied when the UIComponent is docked and undocked.
+     * Add the key combination as a shortcut for this Button's action.
      */
-    fun Button.accelerator(combo: KeyCombination) {
-        var oldCombo: Runnable? = null
-        var currentScene: Scene? = null
-        whenDocked {
-            scene?.accelerators?.apply {
-                currentScene = scene
-                oldCombo = get(combo)
-                put(combo, Runnable { fire() })
-            }
-        }
-        whenUndocked {
-            currentScene?.accelerators?.apply {
-                if (oldCombo != null) put(combo, oldCombo)
-                else remove(combo)
-            }
-        }
+    fun Button.shortcut(combo: KeyCombination) {
+        accelerators[combo] = { fire() }
     }
+
+    /**
+     * Configure an action for a key combination.
+     */
+    fun shortcut(combo: KeyCombination, action: () -> Unit) {
+        accelerators[combo] = action
+    }
+
+    /**
+     * Configure an action for a key combination.
+     */
+    fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
 
@@ -696,7 +730,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) }}).apply {
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) } }).apply {
         builder((root as Form).fieldsets.first())
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
@@ -712,8 +746,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * @param transition The [ViewTransition] used to animate the transition
      * @return Whether or not the transition will run
      */
-    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
-        return root.replaceWith(replacement.root, transition) {
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null, sizeToScene: Boolean = false): Boolean {
+        return root.replaceWith(replacement.root, transition, sizeToScene) {
             if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
         }
     }

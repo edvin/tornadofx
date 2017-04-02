@@ -38,22 +38,29 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
+/**
+ * Create a spinner for an arbitrary type. This spinner requires you to configure a value factory, or it will throw an exception.
+ */
 fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>()
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
-    return opcr(this, spinner, op)
+    opcr(this, spinner, op)
+    if (property != null) {
+        if (spinner.valueFactory == null) throw IllegalArgumentException("You must configure the value factory or use the Number based spinner builder which configures a default value factory along with min, max and initialValue!")
+        spinner.valueFactory.valueProperty().bindBidirectional(property)
+    }
+    return spinner
 }
 
-fun EventTarget.spinner(min: Int, max: Int, initialValue: Int, amountToStepBy: Int = 1, editable: Boolean = false, property: Property<Int>? = null, op: (Spinner<Int>.() -> Unit)? = null): Spinner<Int> {
-    val spinner = Spinner<Int>(min, max, initialValue, amountToStepBy)
-    spinner.isEditable = editable
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
-    return opcr(this, spinner, op)
-}
-
-fun EventTarget.spinner(min: Double, max: Double, initialValue: Double, amountToStepBy: Double = 1.0, editable: Boolean = false, property: Property<Double>? = null, op: (Spinner<Double>.() -> Unit)? = null): Spinner<Double> {
-    val spinner = Spinner<Double>(min, max, initialValue, amountToStepBy)
+inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = null, initialValue: T? = null, amountToStepBy: T? = null, editable: Boolean = false, property: Property<T>? = null, noinline op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+    val spinner: Spinner<T>
+    val isInt = (property is IntegerProperty && property !is DoubleProperty && property !is FloatProperty) || min is Int || max is Int || initialValue is Int ||
+            T::class == Int::class || T::class == Integer::class || T::class.javaPrimitiveType == Integer::class.java
+    if (isInt) {
+        spinner = Spinner(min?.toInt() ?: 0, max?.toInt() ?: 100, initialValue?.toInt() ?: 0, amountToStepBy?.toInt() ?: 1)
+    } else {
+        spinner = Spinner(min?.toDouble() ?: 0.0, max?.toDouble() ?: 100.0, initialValue?.toDouble() ?: 0.0, amountToStepBy?.toDouble() ?: 1.0)
+    }
     if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
     spinner.isEditable = editable
     return opcr(this, spinner, op)
@@ -221,9 +228,7 @@ fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
             graphic = text
             prefHeight = Control.USE_COMPUTED_SIZE
             text.wrappingWidthProperty().bind(this@enableTextWrap.widthProperty().subtract(Bindings.multiply(2.0, graphicTextGapProperty())))
-            text.textProperty().bind(Bindings.createStringBinding(Callable {
-                itemProperty().get()?.toString() ?: ""
-            }, itemProperty()))
+            text.textProperty().bind(stringBinding(itemProperty()) { get()?.toString() ?: "" })
         }
     }
     return this
@@ -285,7 +290,7 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableCo
  */
 @JvmName("pojoColumn") fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
-    return this.column( title, propName )
+    return this.column(title, propName)
 }
 
 /**
@@ -304,7 +309,7 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: (Tre
  */
 @JvmName("pojoColumn") fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
-    return this.column( title, propName )
+    return this.column(title, propName)
 }
 
 fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
@@ -404,11 +409,15 @@ class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
 }
 
 fun <T> TableView<T>.bindSelected(property: Property<T>) {
-    property.bind(selectionModel.selectedItemProperty())
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it
+    }
 }
 
 fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
-    model.itemProperty.bind(selectionModel.selectedItemProperty())
+    selectionModel.selectedItemProperty().onChange {
+        model.item = it
+    }
 }
 
 val TableView<*>.selectedColumn: TableColumn<Any?, Any?>? get() = selectionModel.selectedCells.firstOrNull()?.tableColumn

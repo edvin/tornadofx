@@ -11,7 +11,7 @@ class GotoContainerView : View("ContainerView") {
 
     override val root = borderpane {
         top {
-            button("Goto view").setOnAction {
+            button("Goto view").action {
                 if (center.lookup("#view1") != null)
                     gotoSubView1.goto(gotoSubView2)
                 else
@@ -19,7 +19,7 @@ class GotoContainerView : View("ContainerView") {
             }
         }
         center {
-            this += gotoSubView1
+            add(gotoSubView1)
         }
     }
 }

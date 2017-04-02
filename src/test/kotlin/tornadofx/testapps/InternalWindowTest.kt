@@ -1,7 +1,6 @@
 package tornadofx.testapps
 
 import javafx.scene.control.Alert.AlertType.CONFIRMATION
-import javafx.scene.input.KeyCodeCombination
 import tornadofx.*
 
 class InternalWindowTestApp : App(InternalWindowTest::class)
@@ -10,7 +9,7 @@ class InternalWindowTest : View("Internal Window") {
     override val root = stackpane {
         setPrefSize(600.0, 400.0)
         button("Open editor") {
-            setOnAction {
+            action {
                 openInternalWindow(Editor::class, modal = false, icon = FX.icon)
             }
         }
@@ -23,7 +22,6 @@ class Editor : View("Editor") {
         prefWidth = 300.0
 
         fieldset("Editor") {
-
             field("First field") {
                 textfield()
             }
@@ -31,8 +29,8 @@ class Editor : View("Editor") {
                 textfield()
             }
             button("Save") {
-                accelerator("Alt+S")
-                setOnAction {
+                shortcut("Alt+S")
+                action {
                     save()
                 }
             }

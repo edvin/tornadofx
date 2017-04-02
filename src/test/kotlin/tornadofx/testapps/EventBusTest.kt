@@ -25,8 +25,8 @@ class EventBusTestView : View("Data Event Table") {
                 requestFocus()
             }
         }
-        button("Load filtredItems") {
-            setOnAction {
+        button("Load data") {
+            action {
                 fire(GiveMeData)
             }
         }

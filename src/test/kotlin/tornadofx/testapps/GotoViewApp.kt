@@ -10,7 +10,7 @@ class ContainerView : View("ContainerView") {
 
     override val root = borderpane {
         top {
-            button("Switch view").setOnAction {
+            button("Switch view").action {
                 if (center.lookup("#view1") != null)
                     subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
                 else
@@ -18,7 +18,7 @@ class ContainerView : View("ContainerView") {
             }
         }
         center {
-            this += subView1
+            add(subView1)
         }
     }
 }

@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- `replaceWith` gets `sizeToScene` boolean parameter, defaults to false (https://github.com/edvin/tornadofx/issues/283)
+- `shortcut("keyCombo") { .. }` and `shortcut(KeyCombo) { .. }` configures key press initiated actions
+- UIComponent.accelerators map now works from any View, not just Views embedded in a Workspace (https://github.com/edvin/tornadofx/issues/253)
+- Added Scope.hasActiveWorkspace to check if the workspace inside the current scope has been activated
+- Button.accelerator also works when button is embedded in sub view (https://github.com/edvin/tornadofx/issues/253)
+- DataGrid correctly calculates horizontal scrollbar
+- DataGrid.maxRows will constrain the max number of rows and override maxCellsInRow if needed (https://github.com/edvin/tornadofx/issues/287)
+- DataGrid properties are now StylableObjectProperties to make them bindable
+- `config` can now read and write JsonObject and JsonArray
+- TableView.bindSelected uses listener instead of unidirectional binding
+- Simplified ItemViewModel binding: `val name = bind(Customer::nameProperty)` instead of the old `val name = bind { item?.nameProperty }`
+- Any?.toProperty() will wrap any value in an observable property, even nullable properties
+- TableColumnBase.style builder
+- Node.managedWhen builder binding
+- Int/Double Spinner builders merged into one Number builder for better compatibility
+- Spinner builders have defaults for min (0), max(100), initialValue (property.value if supplied) (https://github.com/edvin/tornadofx/issues/274)
+- paddingLeft/paddingRight converted from Double to Number
+- JsonObject.contains(text) and JsonModel.contains(text)
 - Button.action() shortcut istead of Button.setOnAction()
 - ObservableList.invalidate()
 - Dialog.toFront()
@@ -22,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - openModal(resizable) and openWindow(resizable) optional parameter
 - TextInputControl.trimWhitespace() enforces on focus lost instead of onChange (prevented adding words with whitespace)
 - ViewModel.bind accepts cast to IntegerProperty/DoubleProperty/FloatProperty/BooleanProperty even when binding is null at construction time
+- Added `loadFont` helper function
 
 ## [1.7.0] - 2017-03-04
 

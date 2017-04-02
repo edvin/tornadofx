@@ -20,6 +20,7 @@ import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Callable
+import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty1
 
 open class ViewModel : Component(), Injectable {
@@ -195,6 +196,7 @@ open class ViewModel : Component(), Injectable {
                 clearDirtyState()
             }
         }
+
 
         if (committed) {
             onCommit()
@@ -443,4 +445,19 @@ open class ItemViewModel<T>(initialValue: T? = null, val itemProperty: ObjectPro
     fun asyncItem(func: () -> T?) =
             task { func() } success { if (itemProperty.isBound && item is JsonModel) (item as JsonModel).update(it as JsonModel) else item = it }
 
+    @JvmName("bindField")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.let { property.get(it).toProperty() } }
+
+    @JvmName("bindProperty")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
+
+    @JvmName("bindGetter")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.let { property.call(it).toProperty() } }
+
+    @JvmName("bindPropertyFunction")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.let { property.call(it) } }
 }

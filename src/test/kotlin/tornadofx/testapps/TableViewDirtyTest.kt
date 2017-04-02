@@ -29,11 +29,11 @@ class TableViewDirtyTest : View("Dirty Tables") {
                 contextmenu {
                     item(stringBinding(selectionModel.selectedCells) { "Rollback ${selectedColumn?.text}" }) {
                         disableWhen { editModel.selectedItemDirty.not() }
-                        setOnAction { editModel.rollback(selectedItem, selectedColumn) }
+                        action { editModel.rollback(selectedItem, selectedColumn) }
                     }
                     item(stringBinding(selectionModel.selectedCells) { "Commit ${selectedColumn?.text}" }) {
                         disableWhen { editModel.selectedItemDirty.not() }
-                        setOnAction { editModel.commit(selectedItem, selectedColumn) }
+                        action { editModel.commit(selectedItem, selectedColumn) }
                     }
                 }
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
@@ -45,11 +45,11 @@ class TableViewDirtyTest : View("Dirty Tables") {
                 paddingAll = 4
                 button("Commit row") {
                     disableWhen { table.editModel.selectedItemDirty.not() }
-                    setOnAction { table.editModel.commitSelected() }
+                    action { table.editModel.commitSelected() }
                 }
                 button("Rollback row") {
                     disableWhen { table.editModel.selectedItemDirty.not() }
-                    setOnAction { table.editModel.rollbackSelected() }
+                    action { table.editModel.rollbackSelected() }
                 }
             }
         }

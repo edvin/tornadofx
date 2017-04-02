@@ -9,6 +9,7 @@ import javafx.scene.Node
 import javafx.scene.control.ContentDisplay
 import javafx.scene.control.OverrunStyle
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.TableColumnBase
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
@@ -20,6 +21,7 @@ import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.shape.StrokeType
 import javafx.scene.text.*
 import sun.net.www.protocol.css.Handler
+import java.lang.invoke.MethodHandles
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
@@ -596,7 +598,7 @@ open class PropertyHolder {
     var backgroundRepeat: MultiValue<Pair<BackgroundRepeat, BackgroundRepeat>> by cssprop("-fx-background-repeat")
     var backgroundSize: MultiValue<BackgroundSize> by cssprop("-fx-background-size")
     var borderColor: MultiValue<CssBox<Paint?>> by cssprop("-fx-border-color")
-    var borderInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
+    var borderInsets: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-insets")
     var borderRadius: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-radius")
     var borderStyle: MultiValue<BorderStrokeStyle> by cssprop("-fx-border-style")
     var borderWidth: MultiValue<CssBox<Dimension<Dimension.LinearUnits>>> by cssprop("-fx-border-width")
@@ -1027,6 +1029,15 @@ fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
         style = block.render().trim()
 }
 
+fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
+    val block = InlineCss().apply(op)
+
+    if (append && style.isNotBlank())
+        style += block.render()
+    else
+        style = block.render().trim()
+}
+
 // Delegates
 
 fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssElementDelegate(value, snakeCase)
@@ -1141,6 +1152,9 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
+fun loadFont(path: String, size: Double): Font? {
+    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size) }
+}
 
 // Style Class
 

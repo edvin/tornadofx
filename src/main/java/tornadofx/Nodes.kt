@@ -949,7 +949,7 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
@@ -966,6 +966,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTr
         if (transition != null) {
             transition.call(this, replacement) {
                 scene.root = it as Parent
+                if (sizeToScene) scene.window.sizeToScene()
             }
         } else {
             removeFromParent()
@@ -1099,6 +1100,7 @@ val Region.paddingAllProperty: DoubleProperty get() {
     } as DoubleProperty
 }
 
+fun Node.managedWhen(expr: () -> ObservableValue<Boolean>) = managedProperty().cleanBind(expr())
 fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
 fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) {
     val obs = expr()

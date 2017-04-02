@@ -12,10 +12,10 @@ import javafx.scene.layout.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
-fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
-    val GridPaneRowIdKey = "TornadoFX.GridPaneRowId";
+private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
 
-    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 0
+fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
+    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()
@@ -214,8 +214,8 @@ fun Region.paddingRight(p: Double) {
     padding = Insets(padding.top, p, padding.bottom, padding.left)
 }
 
-var Region.paddingRight: Double get() = padding.right; set(value) {
-    padding = Insets(padding.top, value, padding.bottom, padding.left)
+var Region.paddingRight: Number get() = padding.right; set(value) {
+    padding = Insets(padding.top, value.toDouble(), padding.bottom, padding.left)
 }
 
 @Deprecated("Use the paddingLeft property instead", ReplaceWith("paddingLeft = p"))
@@ -223,8 +223,8 @@ fun Region.paddingLeft(p: Double) {
     padding = Insets(padding.top, padding.right, padding.bottom, p)
 }
 
-var Region.paddingLeft: Double get() = padding.left; set(value) {
-    padding = Insets(padding.top, padding.right, padding.bottom, value)
+var Region.paddingLeft: Number get() = padding.left; set(value) {
+    padding = Insets(padding.top, padding.right, padding.bottom, value.toDouble())
 }
 
 @Deprecated("Use the paddingTop property instead", ReplaceWith("paddingTop = p"))

@@ -272,3 +272,10 @@ private fun <T> createObservableArray(receiver: T, vararg dependencies: Observab
 fun <T> WritableValue<T>.assignIfNull(creator: () -> T) {
     if (value == null) value = creator()
 }
+
+fun String?.toProperty() = SimpleStringProperty(this ?: "")
+fun Double?.toProperty() = SimpleDoubleProperty(this ?: 0.0)
+fun Float?.toProperty() = SimpleFloatProperty(this ?: 0.0F)
+fun Long?.toProperty() = SimpleLongProperty(this ?: 0L)
+fun Boolean?.toProperty() = SimpleBooleanProperty(this ?: false)
+fun <T : Any> T?.toProperty() = SimpleObjectProperty<T>(this)
