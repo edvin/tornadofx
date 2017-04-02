@@ -8,10 +8,8 @@ class InternalWindowTestApp : App(InternalWindowTest::class)
 class InternalWindowTest : View("Internal Window") {
     override val root = stackpane {
         setPrefSize(600.0, 400.0)
-        button("Open editor") {
-            action {
-                openInternalWindow(Editor::class, modal = false, icon = FX.icon)
-            }
+        button("Open editor").action {
+            openInternalWindow(Editor::class, modal = false, icon = FX.icon)
         }
 
     }

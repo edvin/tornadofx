@@ -26,10 +26,8 @@ class TodoList : View("Todo List") {
 
     override fun onDock() {
         with(workspace) {
-            button("Print todos") {
-                action {
+            button("Print todos").action {
                     println(todos.joinToString("\n"))
-                }
             }
         }
     }
