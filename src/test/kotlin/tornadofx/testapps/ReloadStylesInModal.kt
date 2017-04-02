@@ -9,10 +9,8 @@ class ReloadStylesInModal : App(MainView::class, Styles::class) {
 
     class MainView : View() {
         override val root = hbox {
-            button("Open") {
-                action {
-                    find(MyModal::class).openModal()
-                }
+            button("Open").action {
+                find(MyModal::class).openModal()
             }
         }
     }
@@ -20,10 +18,8 @@ class ReloadStylesInModal : App(MainView::class, Styles::class) {
     class MyModal : Fragment() {
         override val root = vbox {
             label("My label")
-            button("Close") {
-                action {
-                    close()
-                }
+            button("Close").action {
+                close()
             }
         }
     }
