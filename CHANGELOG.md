@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Rest Client supports absolute URI's without appending base URI (https://github.com/edvin/tornadofx/issues/289)
 - `replaceWith` gets `sizeToScene` boolean parameter, defaults to false (https://github.com/edvin/tornadofx/issues/283)
 - `shortcut("keyCombo") { .. }` and `shortcut(KeyCombo) { .. }` configures key press initiated actions
 - UIComponent.accelerators map now works from any View, not just Views embedded in a Workspace (https://github.com/edvin/tornadofx/issues/253)

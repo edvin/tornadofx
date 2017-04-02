@@ -65,6 +65,9 @@ open class Rest : Controller() {
 
     fun getURI(path: String): URI {
         try {
+            val asURI = URI.create(path.replace(" ", "%20"))
+            if (asURI.isAbsolute) return asURI
+
             val uri = StringBuilder()
 
             if (baseURI != null)
