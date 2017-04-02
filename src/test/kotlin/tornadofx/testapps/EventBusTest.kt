@@ -25,10 +25,8 @@ class EventBusTestView : View("Data Event Table") {
                 requestFocus()
             }
         }
-        button("Load data") {
-            action {
-                fire(GiveMeData)
-            }
+        button("Load data").action {
+            fire(GiveMeData)
         }
     }
 }

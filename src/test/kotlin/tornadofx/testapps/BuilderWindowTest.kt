@@ -10,7 +10,7 @@ import tornadofx.*
 class BuilderWindowTestApp : App(DangerButtonView::class)
 
 class DangerButtonView : View("Do not click the button!") {
-    override val root = stackpane  {
+    override val root = stackpane {
         setPrefSize(400.0, 150.0)
         hbox {
             button("Don't click me") {
@@ -35,40 +35,29 @@ class DangerButtonView : View("Do not click the button!") {
                             }
 
                             hbox(10) {
-                                button("Tell them you clicked") {
-                                    action {
-                                        this@DangerButtonView.title = "It's not dangerous to click the button :)"
-                                        close()
-                                    }
+                                button("Tell them you clicked").action {
+                                    this@DangerButtonView.title = "It's not dangerous to click the button :)"
+                                    close()
                                 }
-                                button("Close app") {
-                                    action {
-                                        Platform.exit()
-                                    }
+                                button("Close app").action {
+                                    Platform.exit()
                                 }
-                                button("Cancel") {
-                                    action {
-                                        close()
-                                    }
+                                button("Cancel").action {
+                                    close()
                                 }
                             }
                         }
                     }
                 }
             }
-            button("the same in internalWindow") {
-                action {
-                    openInternalBuilderWindow("Internal window", modal = true, overlayPaint = Color.DARKRED) {
-                        vbox(20) {
-                            label("opened in an internalwindow")
-                            button("close") {
-                                action { close() }
-                            }
-                        }
+            button("the same in internalWindow").action {
+                openInternalBuilderWindow("Internal window", modal = true, overlayPaint = Color.DARKRED) {
+                    vbox(20) {
+                        label("opened in an internalwindow")
+                        button("close").action { close() }
                     }
                 }
             }
         }
     }
-
 }
