@@ -1,6 +1,5 @@
 package tornadofx.testapps
 
-import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
@@ -38,15 +37,13 @@ class DataGridTest : View("DataGrid") {
                 combobox(values = images.keys.toList()) {
                     promptText = "Select images"
                     valueProperty().onChange {
-                        datagrid.items = FXCollections.observableArrayList(images[it])
+                        datagrid.items.setAll(images[it])
                     }
                     shortcut("k") { value = "kittens" }
                     shortcut("p") { value = "puppies" }
                 }
-                button("Add") {
-                    action {
-                        datagrid.items.add("http://i.imgur.com/bvqTBT0b.jpg")
-                    }
+                button("Add").action {
+                    datagrid.items.add("http://i.imgur.com/bvqTBT0b.jpg")
                 }
             }
         }
@@ -55,7 +52,7 @@ class DataGridTest : View("DataGrid") {
                 setPrefSize(550.0, 550.0)
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
-                maxCellsInRow = 3
+                //maxCellsInRow = 3
                 //maxRows = 3
                 cellWidth = 164.0
                 cellHeight = 164.0
@@ -65,7 +62,7 @@ class DataGridTest : View("DataGrid") {
                 }
 
                 onUserSelect(1) {
-                    println("Selected $selectedItem")
+                    println("Selected $it")
                 }
             }
         }

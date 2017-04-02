@@ -746,8 +746,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * @param transition The [ViewTransition] used to animate the transition
      * @return Whether or not the transition will run
      */
-    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null): Boolean {
-        return root.replaceWith(replacement.root, transition) {
+    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null, sizeToScene: Boolean = false): Boolean {
+        return root.replaceWith(replacement.root, transition, sizeToScene) {
             if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
         }
     }

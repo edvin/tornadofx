@@ -949,7 +949,7 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTransit: (() -> Unit)? = null): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
@@ -966,7 +966,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, onTr
         if (transition != null) {
             transition.call(this, replacement) {
                 scene.root = it as Parent
-                scene.window.sizeToScene()
+                if (sizeToScene) scene.window.sizeToScene()
             }
         } else {
             removeFromParent()
