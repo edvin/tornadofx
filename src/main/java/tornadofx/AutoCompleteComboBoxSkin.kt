@@ -1,10 +1,12 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.behavior.ComboBoxListViewBehavior
+import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin
 import com.sun.javafx.scene.control.skin.ComboBoxPopupControl
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
 import javafx.css.PseudoClass
 import javafx.event.EventHandler
 import javafx.scene.AccessibleRole
@@ -13,6 +15,7 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.util.Callback
+import java.util.function.Predicate
 
 
 /**
@@ -24,11 +27,15 @@ fun <T> ComboBox<T>.makeAutocompletable(autoCompleteFilter: ((String) -> List<T>
     skin = AutoCompleteComboBoxSkin(this, autoCompleteFilter)
 }
 
+interface Resettable {
+    fun reset()
+}
+
 class FilterTooltipHandler(val control : Control,
                              val handleFilterChange : (String) -> Unit,
                              val hideSuggestion : () -> Boolean,
                              val showSuggetion : () -> Boolean,
-                             val validateSelection : () -> Unit) : EventHandler<KeyEvent> {
+                             val validateSelection : () -> Unit) : EventHandler<KeyEvent> , Resettable {
 
     private val filter = SimpleStringProperty("")
     private val tooltip = Tooltip()
@@ -42,17 +49,44 @@ class FilterTooltipHandler(val control : Control,
 
     override fun handle(event: KeyEvent) {
         val code = event.code
+        val isControlDown = event.isControlDown
+        val isShiftDown = event.isShiftDown
         var filterValue: String = filter.get()
-        if (code.isLetterKey) {
-            filterValue += event.text
-        } else if (code == KeyCode.BACK_SPACE && filterValue.length > 0) {
-            filterValue = filterValue.substring(0, filterValue.length - 1)
-        } else if (code == KeyCode.ESCAPE) {
-            filterValue = ""
-            hideSuggestion()
-        } else if (code == KeyCode.DOWN || code == KeyCode.UP) {
-            showSuggetion()
+
+        if (isControlDown) {
+            when (code) {
+                KeyCode.V -> Unit
+                else -> return
+            }
         }
+        if (isShiftDown) {
+            when (code) {
+                KeyCode.LEFT, KeyCode.RIGHT, KeyCode.HOME, KeyCode.END -> return
+                else -> Unit
+            }
+        }
+
+        when (code) {
+            KeyCode.DOWN, KeyCode.UP -> {
+                showSuggetion()
+            }
+            KeyCode.BACK_SPACE -> {
+                if(filterValue.isNotBlank()) {
+                    filterValue = filterValue.substring(0, filterValue.length - 1)
+                }
+            }
+            KeyCode.ESCAPE -> {
+                filter.value = ""
+                hideSuggestion()
+            }
+            KeyCode.ENTER -> {
+                validateSelection()
+                return
+            }
+            KeyCode.RIGHT, KeyCode.LEFT, KeyCode.HOME, KeyCode.END, KeyCode.TAB, KeyCode.SHIFT, KeyCode.CONTROL -> return
+            else -> filterValue += event.text
+        }
+
         filter.value = filterValue
     }
 
@@ -74,7 +108,7 @@ class FilterTooltipHandler(val control : Control,
         }
     }
 
-    fun reset() {
+    override fun reset() {
         filter.value = ""
         tooltip.hide()
     }
@@ -86,7 +120,7 @@ class FilterInputTextHandler(val editor : TextField,
           val handleFilterChange : (String) -> Unit,
           val hideSuggestion : () -> Boolean,
           val showSuggetion : () -> Boolean,
-          val validateSelection : () -> Unit) : EventHandler<KeyEvent> {
+          val validateSelection : () -> Unit) : EventHandler<KeyEvent>, Resettable {
     private var lastText: String = ""
 
     override fun handle(event: KeyEvent) {
@@ -142,7 +176,7 @@ class FilterInputTextHandler(val editor : TextField,
         }
     }
 
-    fun reset() {
+    override fun reset() {
         lastText = ""
     }
 }
@@ -154,37 +188,42 @@ class FilterInputTextHandler(val editor : TextField,
  * Created by anouira on 15/02/2017.
  */
 class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)) {
-    var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
+    /*var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
+    }*/
+
+    val filtredItems: FilteredList<T> = (comboBox.items ?: FXCollections.emptyObservableList()).filtered { true }
+    var localFilter = autoCompleteFilter == null
+    var autoCompleteFilter_ : (String) -> List<T> = autoCompleteFilter ?: {
+        filtredItems.predicate = Predicate{ current -> comboBox.converter.toString(current).contains(it, true) }
+        filtredItems
     }
 
+
     private val listView = ListView<T>(comboBox.items)
-    private var buttonCell: ListCell<T>? = null
     private var skipValueUpdate = false
-    private var comboBoxItems: ObservableList<T>? = null
+    private var comboBoxItems: ObservableList<T> = if (comboBox.items == null) FXCollections.emptyObservableList<T>() else comboBox.items
 
-    // These three pseudo class states are duplicated from Cell
-    private val PSEUDO_CLASS_SELECTED = PseudoClass.getPseudoClass("selected")
-    private val PSEUDO_CLASS_EMPTY = PseudoClass.getPseudoClass("empty")
-    private val PSEUDO_CLASS_FILLED = PseudoClass.getPseudoClass("filled")
+    private val filterHandler by lazy<EventHandler<KeyEvent>> {
+        if(comboBox.isEditable) {
+            FilterInputTextHandler(comboBox.editor, this@AutoCompleteComboBoxSkin::handleFilterChange,
+                    this@AutoCompleteComboBoxSkin::hideSuggestion,
+                    this@AutoCompleteComboBoxSkin::showSuggestion,
+                    this@AutoCompleteComboBoxSkin::validateSelection)
 
-    private val filterHandler = FilterInputTextHandler(comboBox.editor, this@AutoCompleteComboBoxSkin::handleFilterChange,
-                                                                        this@AutoCompleteComboBoxSkin::hideSuggestion,
-                                                                        this@AutoCompleteComboBoxSkin::showSuggestion,
-                                                                        this@AutoCompleteComboBoxSkin::validateSelection)
+        } else {
+            FilterTooltipHandler(comboBox, this@AutoCompleteComboBoxSkin::handleFilterChange,
+                    this@AutoCompleteComboBoxSkin::hideSuggestion,
+                    this@AutoCompleteComboBoxSkin::showSuggestion,
+                    this@AutoCompleteComboBoxSkin::validateSelection)
+        }
 
-
-    private val filterTooltipHandler = FilterTooltipHandler(comboBox, this@AutoCompleteComboBoxSkin::handleFilterChange,
-                                                                      this@AutoCompleteComboBoxSkin::hideSuggestion,
-                                                                      this@AutoCompleteComboBoxSkin::showSuggestion,
-                                                                      this@AutoCompleteComboBoxSkin::validateSelection)
+    }
 
     init {
-        updateComboBoxItems()
         with(comboBox) {
             val valueTmp = value
-            //isEditable = true
-            onKeyReleased = filterTooltipHandler
+            onKeyReleased = filterHandler
             value = valueTmp
             arrowButton.setOnMouseClicked {
                 if (isShowing) {
@@ -206,6 +245,51 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
         updateButtonCell()
         updateValue()
         comboBox.cellFactoryProperty().onChange { updateCellFactory() }
+        listView.items = filtredItems
+    }
+
+    private fun handleFilterChange(text : String) {
+        val list = autoCompleteFilter_.invoke(text)
+        listView.items = (list as? ObservableList<T>) ?: list.observable()
+        listView.requestLayout()
+
+        if (list.isEmpty()) {
+            comboBox.hide()
+        } else {
+            comboBox.show()
+            if (listView.selectedItem == null) {
+                skipValueUpdate = true
+                listView.selectionModel.selectFirst()
+                skipValueUpdate = false
+            }
+            listView.requestFocus()
+        }
+    }
+
+    /** Specific auto complete implementation */
+    private fun validateSelection() {
+        if (comboBox.isShowing) {
+            comboBox.hide()
+        }
+        if (!listView.selectionModel.isEmpty) {
+            comboBox.value = listView.selectedItem
+        }
+    }
+
+    private fun showSuggestion() : Boolean {
+        if(!comboBox.isShowing) {
+            comboBox.show()
+            return true
+        }
+        return false
+    }
+
+    private fun hideSuggestion() : Boolean {
+        if(comboBox.isShowing) {
+            comboBox.hide()
+            return true
+        }
+        return false
     }
 
     private fun updateCellFactory() {
@@ -233,55 +317,22 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
         listView.cellFactory = Callback { SmartListCell(DefaultScope, listView) }
     }
 
-    private fun hideSuggestion() : Boolean {
-        if(comboBox.isShowing) {
-            comboBox.hide()
-            return true
-        }
-        return false
-    }
-
-    private fun validateSelection() {
-        if (comboBox.isShowing) {
-            comboBox.hide()
-        }
-        if (!listView.selectionModel.isEmpty) {
-            comboBox.value = listView.selectedItem
-        }
-    }
-
-    private fun handleFilterChange(text : String) {
-        val list = autoCompleteFilter_.invoke(text)
-        listView.items = (list as? ObservableList<T>) ?: list.observable()
-        listView.requestLayout()
-
-        if (list.isEmpty()) {
-            comboBox.hide()
-        } else {
-            comboBox.show()
-            if (listView.selectedItem == null) {
-                skipValueUpdate = true
-                listView.selectionModel.selectFirst()
-                skipValueUpdate = false
-            }
-            listView.requestFocus()
-        }
-    }
-
-    private fun showSuggestion() : Boolean {
-        if(!comboBox.isShowing) {
-            comboBox.show()
-            return true
-        }
-        return false
-    }
-
-
     private fun resetFilter() {
         listView.items = comboBox.items
-        filterHandler.reset()
-        filterTooltipHandler.reset()
+        if(filterHandler is Resettable) {
+            (filterHandler as Resettable).reset()
+        }
     }
+
+    /** End of Specific auto complete implementation */
+
+    /** Implementation copied from ComboBoxListViewSkin */
+    private var buttonCell: ListCell<T>? = null
+
+    // These three pseudo class states are duplicated from Cell
+    private val PSEUDO_CLASS_SELECTED = PseudoClass.getPseudoClass("selected")
+    private val PSEUDO_CLASS_EMPTY = PseudoClass.getPseudoClass("empty")
+    private val PSEUDO_CLASS_FILLED = PseudoClass.getPseudoClass("filled")
 
     override fun getDisplayNode(): Node? {
         val displayNode: Node
@@ -363,8 +414,8 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
                 //listSelectionLock = false
             } else {
                 val index = comboBox.selectionModel.selectedIndex
-                if (index >= 0 && index < comboBoxItems!!.size) {
-                    val itemsObj = comboBoxItems!!.get(index)
+                if (index >= 0 && index < comboBoxItems.size) {
+                    val itemsObj = comboBoxItems.get(index)
                     if (itemsObj != null && itemsObj == newValue) {
                         listViewSM.select(index)
                     } else {
@@ -372,7 +423,7 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
                     }
                 } else {
                     // just select the first instance of newValue in the list
-                    val listViewIndex = comboBoxItems!!.indexOf(newValue)
+                    val listViewIndex = comboBoxItems.indexOf(newValue)
                     if (listViewIndex == -1) {
                         // RT-21336 Show the ComboBox value even though it doesn't
                         // exist in the ComboBox items list (part one of fix)
@@ -387,13 +438,8 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
 
     private fun getIndexOfComboBoxValueInItemsList(): Int {
         val value = comboBox.value
-        val index = comboBoxItems!!.indexOf(value)
+        val index = comboBoxItems.indexOf(value)
         return index
-    }
-
-    fun updateComboBoxItems() {
-        comboBoxItems = comboBox.items
-        comboBoxItems = if (comboBoxItems == null) FXCollections.emptyObservableList<T>() else comboBoxItems
     }
 
     override fun updateDisplayNode() {
@@ -428,4 +474,8 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
     override fun getEditor() = if (skinnable.isEditable) (skinnable as ComboBox<T>).editor else null
 
     override fun getConverter() = (skinnable as ComboBox<T>).converter
+
+    /* End of Implementation copied from ComboBoxListViewSkin */
+
+
 }
