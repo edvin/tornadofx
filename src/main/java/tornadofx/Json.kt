@@ -4,9 +4,15 @@ import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import java.io.InputStream
+import java.io.OutputStream
 import java.io.StringWriter
 import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
+import java.net.URL
+import java.nio.file.Files
+import java.nio.file.OpenOption
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -364,3 +370,68 @@ fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true) =
     if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
 
 fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true) = this?.toJSON()?.contains(text, ignoreCase) ?: false
+
+/**
+ * Save this Json structure (JsonObject or JsonArray) to the given output stream and close it.
+ */
+fun JsonStructure.save(output: OutputStream) = Json.createWriter(output).use { it.write(this) }
+
+/**
+ * Save this Json structure (JsonObject or JsonArray) to the given output path.
+ */
+fun JsonStructure.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = Files.newOutputStream(output, *options)
+
+/**
+ * Save this JsonModel to the given output stream and close it.
+ */
+fun JsonModel.save(output: OutputStream) = toJSON().save(output)
+
+/**
+ * Save this JsonModel to the given output path.
+ */
+fun JsonModel.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = toJSON().save(output, *options)
+
+/**
+ * Load a JsonObject from the given URL
+ */
+fun loadJsonObject(url: URL) = loadJsonObject(url.openStream())
+
+/**
+ * Load a JsonObject from the given InputStream
+ */
+fun loadJsonObject(input: InputStream) = Json.createReader(input).use { it.readObject() }
+
+/**
+ * Load a JsonObject from the given path with the optional OpenOptions
+ */
+fun loadJsonObject(path: Path, vararg options: OpenOption = arrayOf(READ)) = Files.newInputStream(path, *options).use { loadJsonObject(it) }
+
+/**
+ * Load a JsonArray from the given URL
+ */
+fun loadJsonArray(url: URL) = loadJsonArray(url.openStream())
+
+/**
+ * Load a JsonArray from the given InputStream
+ */
+fun loadJsonArray(input: InputStream) = Json.createReader(input).use { it.readArray() }
+
+/**
+ * Load a JsonArray from the given path with the optional OpenOptions
+ */
+fun loadJsonArray(path: Path, vararg options: OpenOption = arrayOf(READ)) = Files.newInputStream(path, *options).use { loadJsonArray(it) }
+
+/**
+ * Load a JsonModel of the given type from the given URL
+ */
+inline fun <reified T : JsonModel> loadJsonModel(url: URL) = loadJsonObject(url).toModel<T>()
+
+/**
+ * Load a JsonModel of the given type from the given InputStream
+ */
+inline fun <reified T : JsonModel> loadJsonModel(input: InputStream) = loadJsonObject(input).toModel<T>()
+
+/**
+ * Load a JsonModel of the given type from the given path with the optional OpenOptions
+ */
+inline fun <reified T : JsonModel> loadJsonModel(path: Path, vararg options: OpenOption = arrayOf(READ)) = loadJsonObject(path, *options).toModel<T>()
