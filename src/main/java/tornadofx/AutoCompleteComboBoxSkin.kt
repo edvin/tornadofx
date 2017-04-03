@@ -31,11 +31,15 @@ interface Resettable {
     fun reset()
 }
 
-class FilterTooltipHandler(val control : Control,
-                             val handleFilterChange : (String) -> Unit,
-                             val hideSuggestion : () -> Boolean,
-                             val showSuggetion : () -> Boolean,
-                             val validateSelection : () -> Unit) : EventHandler<KeyEvent> , Resettable {
+interface FilterHandler {
+    fun handleFilterChange(text : String)
+    fun validateSelection()
+    fun showSuggestion() : Boolean
+    fun hideSuggestion() : Boolean
+
+}
+
+class FilterTooltipHandler(val control : Control, val filterHandler : FilterHandler) : EventHandler<KeyEvent> , Resettable {
 
     private val filter = SimpleStringProperty("")
     private val tooltip = Tooltip()
@@ -43,8 +47,6 @@ class FilterTooltipHandler(val control : Control,
     init {
         tooltip.textProperty().bind(filter)
         filter.addListener { observable, oldValue, newValue -> handleFilterChanged_(newValue) }
-        //setOnKeyPressed(???({ this.handleOnKeyPressed(it) }))
-        //setOnHidden(???({ this.handleOnHiding(it) }))
     }
 
     override fun handle(event: KeyEvent) {
@@ -68,7 +70,7 @@ class FilterTooltipHandler(val control : Control,
 
         when (code) {
             KeyCode.DOWN, KeyCode.UP -> {
-                showSuggetion()
+                filterHandler.showSuggestion()
             }
             KeyCode.BACK_SPACE -> {
                 if(filterValue.isNotBlank()) {
@@ -76,11 +78,12 @@ class FilterTooltipHandler(val control : Control,
                 }
             }
             KeyCode.ESCAPE -> {
-                filter.value = ""
-                hideSuggestion()
+                reset()
+                filterHandler.hideSuggestion()
+                return
             }
             KeyCode.ENTER -> {
-                validateSelection()
+                filterHandler.validateSelection()
                 return
             }
             KeyCode.RIGHT, KeyCode.LEFT, KeyCode.HOME, KeyCode.END, KeyCode.TAB, KeyCode.SHIFT, KeyCode.CONTROL -> return
@@ -91,7 +94,7 @@ class FilterTooltipHandler(val control : Control,
     }
 
     private fun handleFilterChanged_(newValue: String) {
-        handleFilterChange(newValue)
+        filterHandler.handleFilterChange(newValue)
         if(newValue.isNotBlank()) {
             showTooltip()
         } else {
@@ -116,11 +119,7 @@ class FilterTooltipHandler(val control : Control,
 }
 
 
-class FilterInputTextHandler(val editor : TextField,
-          val handleFilterChange : (String) -> Unit,
-          val hideSuggestion : () -> Boolean,
-          val showSuggetion : () -> Boolean,
-          val validateSelection : () -> Unit) : EventHandler<KeyEvent>, Resettable {
+class FilterInputTextHandler(val editor : TextField, val filterHandler : FilterHandler) : EventHandler<KeyEvent>, Resettable {
     private var lastText: String = ""
 
     override fun handle(event: KeyEvent) {
@@ -147,22 +146,17 @@ class FilterInputTextHandler(val editor : TextField,
 
         when (code) {
             KeyCode.DOWN, KeyCode.UP -> {
-                if(!showSuggetion()) {
+                if(!filterHandler.showSuggestion()) {
                     editor.positionCaret(text.length)
                 }
                 return
             }
-        /* KeyCode.BACK_SPACE, KeyCode.DELETE -> {
-             move = true
-             caretPos = comboBox.editor.caretPosition
-
-         }*/
             KeyCode.ESCAPE -> {
-                hideSuggestion()
+                filterHandler.hideSuggestion()
                 return
             }
             KeyCode.ENTER -> {
-                validateSelection()
+                filterHandler.validateSelection()
                 return
             }
             KeyCode.RIGHT, KeyCode.LEFT, KeyCode.HOME, KeyCode.END, KeyCode.TAB, KeyCode.SHIFT, KeyCode.CONTROL -> return
@@ -170,7 +164,7 @@ class FilterInputTextHandler(val editor : TextField,
         }
 
         if (inputChanged) {
-            handleFilterChange(text)
+            filterHandler.handleFilterChange(text)
             editor.text = text
             editor.positionCaret(caretPosition)
         }
@@ -187,18 +181,10 @@ class FilterInputTextHandler(val editor : TextField,
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
  * Created by anouira on 15/02/2017.
  */
-class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)) {
-    /*var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
+class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
+    var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
-    }*/
-
-    val filtredItems: FilteredList<T> = (comboBox.items ?: FXCollections.emptyObservableList()).filtered { true }
-    var localFilter = autoCompleteFilter == null
-    var autoCompleteFilter_ : (String) -> List<T> = autoCompleteFilter ?: {
-        filtredItems.predicate = Predicate{ current -> comboBox.converter.toString(current).contains(it, true) }
-        filtredItems
     }
-
 
     private val listView = ListView<T>(comboBox.items)
     private var skipValueUpdate = false
@@ -206,38 +192,35 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
 
     private val filterHandler by lazy<EventHandler<KeyEvent>> {
         if(comboBox.isEditable) {
-            FilterInputTextHandler(comboBox.editor, this@AutoCompleteComboBoxSkin::handleFilterChange,
-                    this@AutoCompleteComboBoxSkin::hideSuggestion,
-                    this@AutoCompleteComboBoxSkin::showSuggestion,
-                    this@AutoCompleteComboBoxSkin::validateSelection)
+            FilterInputTextHandler(comboBox.editor, this)
 
         } else {
-            FilterTooltipHandler(comboBox, this@AutoCompleteComboBoxSkin::handleFilterChange,
-                    this@AutoCompleteComboBoxSkin::hideSuggestion,
-                    this@AutoCompleteComboBoxSkin::showSuggestion,
-                    this@AutoCompleteComboBoxSkin::validateSelection)
+            FilterTooltipHandler(comboBox, this)
         }
 
     }
 
     init {
         with(comboBox) {
-            val valueTmp = value
             onKeyReleased = filterHandler
-            value = valueTmp
+            focusedProperty().onChange { focus -> if(!focus) {
+                    resetFilter()
+                    comboBox.hide()
+            }}
             arrowButton.setOnMouseClicked {
                 if (isShowing) {
                     resetFilter()
                 }
             }
-            // = EventHandler{this@AutoCompleteComboBoxSkin.resetFilter()}
         }
         listView.selectionModel.selectedItemProperty().onChange {
             if (!skipValueUpdate) comboBox.value = it
         }
         listView.onUserSelect(clickCount = 1) {
             comboBox.value = it
-            resetFilter()
+            if(filterHandler is FilterTooltipHandler) {
+                resetFilter()
+            }
             comboBox.hide()
             updateDisplayArea()
         }
@@ -245,10 +228,9 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
         updateButtonCell()
         updateValue()
         comboBox.cellFactoryProperty().onChange { updateCellFactory() }
-        listView.items = filtredItems
     }
 
-    private fun handleFilterChange(text : String) {
+    override fun handleFilterChange(text : String) {
         val list = autoCompleteFilter_.invoke(text)
         listView.items = (list as? ObservableList<T>) ?: list.observable()
         listView.requestLayout()
@@ -267,16 +249,16 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
     }
 
     /** Specific auto complete implementation */
-    private fun validateSelection() {
-        if (comboBox.isShowing) {
-            comboBox.hide()
-        }
+    override fun validateSelection() {
         if (!listView.selectionModel.isEmpty) {
             comboBox.value = listView.selectedItem
         }
+        if (comboBox.isShowing) {
+            comboBox.hide()
+        }
     }
 
-    private fun showSuggestion() : Boolean {
+    override fun showSuggestion() : Boolean {
         if(!comboBox.isShowing) {
             comboBox.show()
             return true
@@ -284,7 +266,7 @@ class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter:
         return false
     }
 
-    private fun hideSuggestion() : Boolean {
+    override fun hideSuggestion() : Boolean {
         if(comboBox.isShowing) {
             comboBox.hide()
             return true

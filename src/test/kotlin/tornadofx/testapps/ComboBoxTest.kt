@@ -47,6 +47,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     makeAutocompletable()
                 }
                 textfield(selectedItem)
+                useMaxSize = true
             }
             /**
              * Example using custom filter using startswith instead of contains
@@ -58,6 +59,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     }
                 }
                 textfield(selectedItem2)
+                useMaxSize = true
             }
             /**
              * Example using converter
@@ -68,6 +70,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     makeAutocompletable()
                 }
                 label(selectedItemObject)
+                useMaxSize = true
             }
             /**
              * Example using converter and custom filter
@@ -80,6 +83,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     }
                 }
                 label(selectedItemObject2)
+                useMaxSize = true
             }
             /**
              * Example using custom cell factory
@@ -98,7 +102,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
             }
             field("Editable Default") {
                 combobox(selectedItemE, itemsGlobal) {
+                    val tmpValue = value
                     isEditable = true
+                    value = tmpValue
                     makeAutocompletable()
                 }
                 textfield(selectedItemE)
@@ -108,7 +114,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("Editable With custom Filter") {
                 combobox(selectedItem2E, itemsGlobal) {
+                    val tmpValue = value
                     isEditable = true
+                    value = tmpValue
                     makeAutocompletable {
                         itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
                     }
@@ -120,7 +128,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("Editable Default with custom converter") {
                 combobox(selectedItemObjectE, itemsGlobalObject) {
+                    val tmpValue = value
                     isEditable = true
+                    value = tmpValue
                     converter = LocaleStringConverter()
                     makeAutocompletable()
                 }
@@ -131,7 +141,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("Editable With custom converter and filter") {
                 combobox(selectedItemObject2E, itemsGlobalObject) {
+                    val tmpValue = value
                     isEditable = true
+                    value = tmpValue
                     converter = LocaleStringConverter()
                     makeAutocompletable {
                         itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
@@ -144,7 +156,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("Editable With custom cell factory") {
                 combobox(selectedItemObject3E, itemsGlobalObject) {
+                    val tmpValue = value
                     isEditable = true
+                    value = tmpValue
                     converter = LocaleStringConverter()
                     cellFormat {
                         text = "Locale: " + converter.toString(it)
