@@ -32,7 +32,6 @@ import javafx.util.Callback
 import javafx.util.StringConverter
 import tornadofx.ResizeType.*
 import java.util.*
-import java.util.concurrent.Callable
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
@@ -1049,13 +1048,33 @@ fun <T> TableView<T>.enableCellEditing() {
 }
 
 fun <T> TableView<T>.selectOnDrag() {
+    var startRow = 0
+    var startColumn = columns.first()
+
+    // Record start position and clear selection unless Control is down
+    addEventFilter(MouseEvent.MOUSE_PRESSED) {
+        startRow = 0
+
+        (it.pickResult.intersectedNode as? TableCell<*, *>)?.apply {
+            startRow = index
+            startColumn = tableColumn as TableColumn<T, *>?
+
+            if (selectionModel.isCellSelectionEnabled) {
+                selectionModel.clearAndSelect(startRow, startColumn)
+            } else {
+                selectionModel.clearAndSelect(startRow)
+            }
+        }
+    }
+
+    // Select items while dragging
     addEventFilter(MouseEvent.MOUSE_DRAGGED) {
         (it.pickResult.intersectedNode as? TableCell<*, *>)?.apply {
             if (items.size > index) {
                 if (selectionModel.isCellSelectionEnabled) {
-                    selectionModel.select(index, tableColumn as TableColumn<T, *>?)
+                    selectionModel.selectRange(startRow, startColumn, index, tableColumn as TableColumn<T, *>?)
                 } else {
-                    selectionModel.select(index)
+                    selectionModel.selectRange(startRow, index)
                 }
             }
         }
