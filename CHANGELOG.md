@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- UIComponent callbacks for `onNavigateBack` and `onNavigateForward` can veto Workspace navigation
 - Improved TableView.selectOnDrag (https://github.com/edvin/tornadofx/issues/262)
 - Functions to load and save Json objects and JsonModel
 - Rest Client supports absolute URI's without appending base URI (https://github.com/edvin/tornadofx/issues/289)

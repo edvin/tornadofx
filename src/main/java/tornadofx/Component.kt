@@ -340,6 +340,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.onRefresh"] = onRefresh
     }
 
+    /**
+     * Callback that runs before the Workspace navigates back in the View stack. Return false to veto the navigation.
+     */
+    open fun onNavigateBack() = true
+
+    /**
+     * Callback that runs before the Workspace navigates forward in the View stack. Return false to veto the navigation.
+     */
+    open fun onNavigateForward() = true
+
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     val accelerators = HashMap<KeyCombination, () -> Unit>()
