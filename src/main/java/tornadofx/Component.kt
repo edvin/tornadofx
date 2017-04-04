@@ -37,14 +37,11 @@ import javafx.stage.StageStyle
 import javafx.stage.Window
 import javafx.util.Callback
 import java.io.InputStream
-import java.io.StringReader
 import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.Path
 import java.util.*
 import java.util.logging.Logger
 import java.util.prefs.Preferences
-import javax.json.Json
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
@@ -56,28 +53,20 @@ abstract class Component {
     val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
-    val config: Properties
-        get() = _config.value
-
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
-    fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
-    fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
-    fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
-    fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
-    fun Properties.jsonObject(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
-    fun Properties.jsonArray(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
-
-    fun Properties.save() = Files.newOutputStream(configPath.value).use { output -> store(output, "") }
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null): T = find(T::class, scope, params)
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null) = find(type, scope, params)
 
-    private val _config = lazy {
-        Properties().apply {
-            if (Files.exists(configPath.value))
-                Files.newInputStream(configPath.value).use { load(it) }
-        }
+    //-- Config @see Settings.kt
+    /**
+     * Contains the config settings assosiated to the component.
+     */
+    val config: Config by lazy {
+        val conf = Config(javaClass.name, _configPath.value)
+        conf.load()
+        conf
     }
 
     /**
@@ -95,15 +84,25 @@ abstract class Component {
         op(node)
     }
 
+    /**
+     * The configPath can be overridden to change the default storage location of the properties file.
+     * If [configPath] is relative, the config file will be stored under App.configBasePath.resolve(configPath)
+     */
+    open val configPath: Path? = null
+
+    private val _configPath = lazy {
+        val conf: Path
+        if (configPath == null)
+            // We do this to stay conistend with the old api since the App.configBasePath defaults to Paths.get("conf")
+            conf = (FX.getApplication(scope)!! as App).configBasePath
+        else if (!configPath!!.isAbsolute)
+            conf = (FX.getApplication(scope)!! as App).configBasePath.resolve(configPath)
+        else conf = configPath!!
+        conf
+    }
+
     val properties by lazy { FXCollections.observableHashMap<Any, Any>() }
     val log by lazy { Logger.getLogger(this@Component.javaClass.name) }
-
-    private val configPath = lazy {
-        val conf = Paths.get("conf")
-        if (!Files.exists(conf))
-            Files.createDirectories(conf)
-        conf.resolve(javaClass.name + ".properties")
-    }
 
     private val _messages: SimpleObjectProperty<ResourceBundle> = object : SimpleObjectProperty<ResourceBundle>() {
         override fun get(): ResourceBundle? {
