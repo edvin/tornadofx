@@ -12,6 +12,8 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseEvent.BUTTON1
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
@@ -25,6 +27,32 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     private val trayIcons = ArrayList<TrayIcon>()
     val resources: ResourceLookup by lazy {
         ResourceLookup(this)
+    }
+
+    //-- Global Config @see Settings.kt
+    open val configBasePath: Path = Paths.get("conf")
+
+    /**
+     * The configPath can be overridden to change the default storage location of the global config file.
+     * If [configPath] is relative, the config file will be stored under App.configBasePath.resolve(configPath)
+     */
+    open val configPath: Path? = null
+
+    private val _configPath = lazy {
+        val path: Path
+        if (configPath == null)
+        // We do this to stay consistent with the old api since the App.configBasePath defaults to Paths.get("conf")
+            path = configBasePath
+        else if (!configPath!!.isAbsolute)
+            path = configBasePath.resolve(configPath)
+        else path = configPath!!
+        path
+    }
+
+    val config: Config by lazy {
+        val conf = Config(javaClass.name, _configPath.value)
+        conf.load()
+        conf
     }
 
     fun <T : FXEvent> fire(event: T) {
