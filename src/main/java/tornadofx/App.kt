@@ -12,6 +12,8 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseEvent.BUTTON1
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
@@ -19,9 +21,29 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
-open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application() {
+open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: KClass<out Stylesheet>) : Application(), Configurable {
     var scope: Scope = DefaultScope
     val workspace: Workspace get() = scope.workspace
+
+    /**
+     * Path to app/global configuration settings. Defaults to app.properties inside
+     * the configured configBasePath (By default conf in the current directory).
+     */
+    override val config: Properties by lazy { loadConfig() }
+    inline fun <reified M : JsonModel> Properties.jsonModel(key: String) = jsonObject(key)?.toModel<M>()
+
+    /**
+     * Default path for configuration. All components will by default
+     * store their configuration in a file below this path.
+     */
+    open val configBasePath: Path get() = Paths.get("conf")
+
+    /**
+     * Path for the application wide config element. It is `app.properties` by default,
+     * in the folder provided by #configBasePath
+     */
+    override val configPath: Path get() = configBasePath.resolve("app.properties")!!
+
     private val trayIcons = ArrayList<TrayIcon>()
     val resources: ResourceLookup by lazy {
         ResourceLookup(this)

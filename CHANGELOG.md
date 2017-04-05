@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+
+- `config` base path configurable via `App.configBasePath`
+- Per component `config` path configurable via `UIComponent.configPath`
+- Global configuration object `app.config` works like the one in `UIComponent`, saves to `conf/app.properties` by default
 - TabPane.contentUiComponent will retrieve the UIComponent embedded in the selected tab
 - UIComponent callbacks for `onNavigateBack` and `onNavigateForward` can veto Workspace navigation
 - Improved TableView.selectOnDrag (https://github.com/edvin/tornadofx/issues/262)
@@ -13,7 +17,7 @@ All notable changes to this project will be documented in this file.
 - `shortcut("keyCombo") { .. }` and `shortcut(KeyCombo) { .. }` configures key press initiated actions
 - UIComponent.accelerators map now works from any View, not just Views embedded in a Workspace (https://github.com/edvin/tornadofx/issues/253)
 - Added Scope.hasActiveWorkspace to check if the workspace inside the current scope has been activated
-- Button.accelerator also works when button is embedded in sub view (https://github.com/edvin/tornadofx/issues/253)
+- `Button.shortcut` also works when button is embedded in sub view (https://github.com/edvin/tornadofx/issues/253)
 - DataGrid correctly calculates horizontal scrollbar
 - DataGrid.maxRows will constrain the max number of rows and override maxCellsInRow if needed (https://github.com/edvin/tornadofx/issues/287)
 - DataGrid properties are now StylableObjectProperties to make them bindable
