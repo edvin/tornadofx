@@ -76,10 +76,11 @@ val TabPane.refreshable: BooleanExpression get() {
     return refreshable
 }
 
-fun TabPane.onSave() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onSave()
-fun TabPane.onRefresh() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onRefresh()
-fun TabPane.onNavigateBack() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onNavigateBack() ?: true
-fun TabPane.onNavigateForward() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.onNavigateForward() ?: true
+fun TabPane.uiComponent() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()
+fun TabPane.onSave() = uiComponent<UIComponent>()?.onSave()
+fun TabPane.onRefresh() = uiComponent<UIComponent>()?.onRefresh()
+fun TabPane.onNavigateBack() = uiComponent<UIComponent>()?.onNavigateBack() ?: true
+fun TabPane.onNavigateForward() = uiComponent<UIComponent>()?.onNavigateForward() ?: true
 
 fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab(text)
