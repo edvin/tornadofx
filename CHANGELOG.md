@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
-
+- Autocompleta tooltip mode for non editable ComboBox (https://github.com/edvin/tornadofx/pull/293)
 - `UIComponent.app` points to the current application instance
 - `config` base path configurable via `App.configBasePath`
 - Per component `config` path configurable via `UIComponent.configPath`
