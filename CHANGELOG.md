@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
-- TabPane.uiComponent will retrieve the UIComponent for the selected tab
+- TabPane.contentUiComponent will retrieve the UIComponent embedded in the selected tab
 - UIComponent callbacks for `onNavigateBack` and `onNavigateForward` can veto Workspace navigation
 - Improved TableView.selectOnDrag (https://github.com/edvin/tornadofx/issues/262)
 - Functions to load and save Json objects and JsonModel

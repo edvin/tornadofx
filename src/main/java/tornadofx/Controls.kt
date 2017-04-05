@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.event.ActionEvent
 import javafx.event.EventTarget
@@ -57,30 +58,48 @@ fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() 
 }
 
 val TabPane.savable: BooleanExpression get() {
-    val savable = SimpleBooleanProperty(false)
+    val savable = SimpleBooleanProperty(true)
+
     fun updateState() {
-        savable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(false))
+        savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(true))
     }
+    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+
     updateState()
-    selectionModel.selectedItemProperty().onChange { updateState() }
+
+    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        updateState()
+        oldTab?.contentProperty()?.removeListener(contentChangeListener)
+        newTab?.contentProperty()?.addListener(contentChangeListener)
+    }
+
     return savable
 }
 
 val TabPane.refreshable: BooleanExpression get() {
-    val refreshable = SimpleBooleanProperty(false)
-    fun updateState() {
-        refreshable.cleanBind(selectionModel.selectedItem?.content?.uiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(false))
-    }
+    val refreshable = SimpleBooleanProperty(true)
+
+    fun updateState() { refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(true)) }
+    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+
     updateState()
-    selectionModel.selectedItemProperty().onChange { updateState() }
+
+    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        updateState()
+        oldTab?.contentProperty()?.removeListener(contentChangeListener)
+        newTab?.contentProperty()?.addListener(contentChangeListener)
+    }
+
     return refreshable
 }
 
-fun TabPane.uiComponent() = selectionModel.selectedItem?.content?.uiComponent<UIComponent>()
-fun TabPane.onSave() = uiComponent<UIComponent>()?.onSave()
-fun TabPane.onRefresh() = uiComponent<UIComponent>()?.onRefresh()
-fun TabPane.onNavigateBack() = uiComponent<UIComponent>()?.onNavigateBack() ?: true
-fun TabPane.onNavigateForward() = uiComponent<UIComponent>()?.onNavigateForward() ?: true
+inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent<T>()
+fun TabPane.onSave() = contentUiComponent<UIComponent>()?.onSave()
+fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
+fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
+fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true
 
 fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab(text)
