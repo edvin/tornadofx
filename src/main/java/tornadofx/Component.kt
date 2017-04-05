@@ -54,7 +54,13 @@ interface Configurable {
     val config: Properties
     val configPath: Path
 
-    fun Properties.set(pair: Pair<String, Any?>) = set(pair.first, pair.second?.toString())
+    fun Properties.set(pair: Pair<String, Any?>) {
+        val value = pair.second?.let {
+            (it as? JsonModel)?.toJSON() ?: it.toString()
+        }
+        set(pair.first, value)
+    }
+
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
     fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
     fun Properties.double(key: String) = config.getProperty(key)?.toDouble()

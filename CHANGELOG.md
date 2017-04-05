@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.7.1-SNAPSHOT]
 
 
+- `UIComponent.app` points to the current application instance
 - `config` base path configurable via `App.configBasePath`
 - Per component `config` path configurable via `UIComponent.configPath`
 - Global configuration object `app.config` works like the one in `UIComponent`, saves to `conf/app.properties` by default
