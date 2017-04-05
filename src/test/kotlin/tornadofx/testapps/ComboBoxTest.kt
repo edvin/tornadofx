@@ -33,6 +33,12 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
     val selectedItemObject2 = SimpleObjectProperty(itemsGlobalObject.first())
     val selectedItemObject3 = SimpleObjectProperty(itemsGlobalObject.first())
 
+    val selectedItemE = SimpleStringProperty(itemsGlobal.first())
+    val selectedItem2E = SimpleStringProperty(itemsGlobal.first())
+    val selectedItemObjectE = SimpleObjectProperty(itemsGlobalObject.first())
+    val selectedItemObject2E = SimpleObjectProperty(itemsGlobalObject.first())
+    val selectedItemObject3E = SimpleObjectProperty(itemsGlobalObject.first())
+
     override val root = form {
         setPrefSize(400.0, 400.0)
         fieldset {
@@ -40,6 +46,8 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                 combobox(selectedItem, itemsGlobal) {
                     makeAutocompletable()
                 }
+                textfield(selectedItem)
+                useMaxSize = true
             }
             /**
              * Example using custom filter using startswith instead of contains
@@ -50,6 +58,8 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                         itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
                     }
                 }
+                textfield(selectedItem2)
+                useMaxSize = true
             }
             /**
              * Example using converter
@@ -59,6 +69,8 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     converter = LocaleStringConverter()
                     makeAutocompletable()
                 }
+                label(selectedItemObject)
+                useMaxSize = true
             }
             /**
              * Example using converter and custom filter
@@ -70,6 +82,8 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                         itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
+                label(selectedItemObject2)
+                useMaxSize = true
             }
             /**
              * Example using custom cell factory
@@ -84,6 +98,76 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                         itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
+                label(selectedItemObject3)
+            }
+            field("Editable Default") {
+                combobox(selectedItemE, itemsGlobal) {
+                    val tmpValue = value
+                    isEditable = true
+                    value = tmpValue
+                    makeAutocompletable()
+                }
+                textfield(selectedItemE)
+            }
+            /**
+             * Example using custom filter using startswith instead of contains
+             */
+            field("Editable With custom Filter") {
+                combobox(selectedItem2E, itemsGlobal) {
+                    val tmpValue = value
+                    isEditable = true
+                    value = tmpValue
+                    makeAutocompletable {
+                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
+                    }
+                }
+                textfield(selectedItem2E)
+            }
+            /**
+             * Example using converter
+             */
+            field("Editable Default with custom converter") {
+                combobox(selectedItemObjectE, itemsGlobalObject) {
+                    val tmpValue = value
+                    isEditable = true
+                    value = tmpValue
+                    converter = LocaleStringConverter()
+                    makeAutocompletable()
+                }
+                label(selectedItemObjectE)
+            }
+            /**
+             * Example using converter and custom filter
+             */
+            field("Editable With custom converter and filter") {
+                combobox(selectedItemObject2E, itemsGlobalObject) {
+                    val tmpValue = value
+                    isEditable = true
+                    value = tmpValue
+                    converter = LocaleStringConverter()
+                    makeAutocompletable {
+                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                    }
+                }
+                label(selectedItemObject2E)
+            }
+            /**
+             * Example using custom cell factory
+             */
+            field("Editable With custom cell factory") {
+                combobox(selectedItemObject3E, itemsGlobalObject) {
+                    val tmpValue = value
+                    isEditable = true
+                    value = tmpValue
+                    converter = LocaleStringConverter()
+                    cellFormat {
+                        text = "Locale: " + converter.toString(it)
+                    }
+                    makeAutocompletable {
+                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                    }
+                }
+                label(selectedItemObject3E)
             }
         }
     }

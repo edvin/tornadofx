@@ -475,7 +475,7 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S,
 
 /**
  * Add a global edit commit handler to the TableView. You avoid assuming the responsibility
- * for writing back the data into your domain object and can consentrate on the actual
+ * for writing back the filtredItems into your domain object and can consentrate on the actual
  * response you want to happen when a column commits and edit.
  */
 fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S) -> Unit) {

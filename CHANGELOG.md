@@ -493,7 +493,7 @@ This release fixes an issue with type safe stylesheets. `importStylesheet(Styles
 
 - External dependency injection support - Guice, Spring++ (https://github.com/edvin/tornadofx/issues/79)
 - `SingleViewApp` for small/example applications (https://github.com/edvin/tornadofx/issues/74)
-- `SortedFilteredList` for sorting and filtering data in list controls (https://github.com/edvin/tornadofx/issues/62)
+- `SortedFilteredList` for sorting and filtering filtredItems in list controls (https://github.com/edvin/tornadofx/issues/62)
 - `TableView.makeIndexColumn` (https://github.com/edvin/tornadofx/pull/64)
 - `tableview` builder accepts optional item list
 - `TableColumn` cell factories: `useComboBox`, `useTextField`, `useChoiceBox`, `useProgressBar`, `useCheckbox` and `useDatePicker` (https://github.com/edvin/tornadofx/issues/67)

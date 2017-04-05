@@ -45,7 +45,7 @@ class FXResourceBundleControl private constructor(): ResourceBundle.Control() {
                                 if (url != null) {
                                     val connection = url.openConnection()
                                     if (connection != null) {
-                                        // Disable caches to get fresh data for
+                                        // Disable caches to get fresh filtredItems for
                                         // reloading.
                                         connection.useCaches = false
                                         `is` = connection.inputStream
