@@ -23,10 +23,10 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Important version note
 
-Version 1.7.0 requires Kotlin 1.1. Make sure you update your IDE plugins to minimum:
+Version 1.7.1 requires Kotlin 1.1.1. Make sure you update your IDE plugins to minimum:
 
-- Kotlin Plugin: 1.1.0-release
-- TornadoFX Plugin: 1.6.2.2
+- Kotlin Plugin: 1.1.1-release
+- TornadoFX Plugin: 1.7.1
 
 After updating IntelliJ IDEA, make sure your Kotlin target version is 1.1 (Project Settings -> Modules -> Kotlin -> Language Version / API Version)
 
@@ -52,7 +52,7 @@ You also need a full rebuild of your code. If you run into trouble, try to clean
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.0
+  -DarchetypeVersion=1.7.1
 ```
 
 ### Add TornadoFX to your project
@@ -63,15 +63,39 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
 	<groupId>no.tornado</groupId>
 	<artifactId>tornadofx</artifactId>
-	<version>1.7.0</version>
+	<version>1.7.1</version>
 </dependency>
+
+
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.0'
+compile 'no.tornado:tornadofx:1.7.1'
 ```
+
+## Important version note
+
+TornadoFX is now built against Kotlin 1.1.1 and compiled with `jvmTarget 1.8`, which means that your code must do the same. Update your build system to configure the `jvmTarget` accordingly.
+
+For Maven, you add the following configuration block to `kotlin-maven-plugin`:
+
+```xml
+<configuration>
+    <jvmTarget>1.8</jvmTarget>
+</configuration>
+```
+
+For Gradle, it means configuring the `kotlinOptions` of the Kotlin compilation task:
+
+```gradle
+compileKotlin {
+    kotlinOptions.jvmTarget= "1.8"
+}
+```
+
+Failing to do so will yield errors about the compiler not being able to inline certain calls.
 
 ### What does it look like? (Code snippets)
 
