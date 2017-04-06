@@ -329,10 +329,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     private var isInitialized = false
     val currentWindow: Window? get() = modalStage?.owner ?: FX.primaryStage
 
-    open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
-    open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
-    open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(true) } as BooleanExpression
-    open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(true) } as BooleanExpression
+    open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(Workspace.defaultRefreshable) } as BooleanExpression
+    open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
+    open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
 
     fun savableWhen(savable: () -> BooleanExpression) {
         properties["tornadofx.savable"] = savable()

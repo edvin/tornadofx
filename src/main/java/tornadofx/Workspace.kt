@@ -90,6 +90,10 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             activeWorkspaces.forEach(Workspace::close)
         }
 
+        var defaultSavable = true
+        var defaultDeletable = true
+        var defaultRefreshable = true
+
         init {
             FX.log.warning("The Workspace feature is experimental and subject to change even in minor releases!")
             importStylesheet("/tornadofx/workspace.css")
