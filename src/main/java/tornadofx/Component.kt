@@ -366,7 +366,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         savableWhen { savable }
         whenSaved { onSave() }
 
-        deletableWhen { savable }
+        deletableWhen { deletable }
         whenDeleted { onDelete() }
 
         refreshableWhen { refreshable }
