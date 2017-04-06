@@ -61,7 +61,7 @@ val TabPane.savable: BooleanExpression get() {
     val savable = SimpleBooleanProperty(true)
 
     fun updateState() {
-        savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(true))
+        savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
     }
     val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
@@ -77,10 +77,30 @@ val TabPane.savable: BooleanExpression get() {
     return savable
 }
 
+val TabPane.deletable: BooleanExpression get() {
+    val deletable = SimpleBooleanProperty(true)
+
+    fun updateState() {
+        deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
+    }
+    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+
+    updateState()
+
+    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        updateState()
+        oldTab?.contentProperty()?.removeListener(contentChangeListener)
+        newTab?.contentProperty()?.addListener(contentChangeListener)
+    }
+
+    return deletable
+}
+
 val TabPane.refreshable: BooleanExpression get() {
     val refreshable = SimpleBooleanProperty(true)
 
-    fun updateState() { refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(true)) }
+    fun updateState() { refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable)) }
     val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
     updateState()
