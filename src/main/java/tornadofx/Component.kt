@@ -331,10 +331,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(true) } as BooleanExpression
+    open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(true) } as BooleanExpression
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(true) } as BooleanExpression
 
     fun savableWhen(savable: () -> BooleanExpression) {
         properties["tornadofx.savable"] = savable()
+    }
+
+    fun deletableWhen(deletable: () -> BooleanExpression) {
+        properties["tornadofx.deletable"] = deletable()
     }
 
     fun closeableWhen(closeable: () -> BooleanExpression) {
@@ -345,12 +350,27 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.onSave"] = onSave
     }
 
+    fun whenDeleted(onDelete: () -> Unit) {
+        properties["tornadofx.onDelete"] = onDelete
+    }
+
     fun refreshableWhen(refreshable: () -> BooleanExpression) {
         properties["tornadofx.refreshable"] = refreshable()
     }
 
     fun whenRefreshed(onRefresh: () -> Unit) {
         properties["tornadofx.onRefresh"] = onRefresh
+    }
+
+    fun TabPane.connectWorkspaceActions() {
+        savableWhen { savable }
+        whenSaved { onSave() }
+
+        deletableWhen { savable }
+        whenDeleted { onDelete() }
+
+        refreshableWhen { refreshable }
+        whenRefreshed { onRefresh() }
     }
 
     /**
@@ -428,6 +448,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     open fun onSave() {
         (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
+    }
+
+    open fun onDelete() {
+        (properties["tornadofx.onDelete"] as? () -> Unit)?.invoke()
     }
 
     open fun onGoto(source: UIComponent) {

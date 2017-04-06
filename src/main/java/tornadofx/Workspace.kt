@@ -36,6 +36,7 @@ class WorkspaceArea : BorderPane() {
 open class Workspace(title: String = "Workspace", navigationMode: NavigationMode = Stack) : View(title) {
     var refreshButton: Button by singleAssign()
     var saveButton: Button by singleAssign()
+    var deleteButton: Button by singleAssign()
     var backButton: Button by singleAssign()
     var forwardButton: Button by singleAssign()
 
@@ -179,6 +180,15 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                             onSave()
                         }
                     }
+                    button {
+                        addClass("icon-only")
+                        deleteButton = this
+                        isDisable = true
+                        graphic = label { addClass("icon", "delete") }
+                        action {
+                            onDelete()
+                        }
+                    }
                     add(headingContainer)
                     spacer()
                 }
@@ -196,6 +206,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                             titleProperty.unbind()
                             refreshButton.disableProperty().unbind()
                             saveButton.disableProperty().unbind()
+                            deleteButton.disableProperty().unbind()
                         }
                     }
                 }
@@ -271,6 +282,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             dockedComponentProperty.value?.onSave()
     }
 
+    override fun onDelete() {
+        if (dockedComponentProperty.value?.deletable?.value ?: false)
+            dockedComponentProperty.value?.onDelete()
+    }
+
     override fun onRefresh() {
         if (dockedComponentProperty.value?.refreshable?.value ?: false)
             dockedComponentProperty.value?.onRefresh()
@@ -303,6 +319,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         titleProperty.bind(child.titleProperty)
         refreshButton.disableProperty().cleanBind(child.refreshable.not())
         saveButton.disableProperty().cleanBind(child.savable.not())
+        deleteButton.disableProperty().cleanBind(child.deletable.not())
 
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty) {

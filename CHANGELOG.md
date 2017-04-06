@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- `Workspace.delete` button and `onDelete`, `deletableWhen` and `onDelete` on `UIComponent`
+- `TabPane.connectWorkspaceActions` makes the `TabPane` a target for save/refresh/delete actions
 - Autocompleta tooltip mode for non editable ComboBox (https://github.com/edvin/tornadofx/pull/293)
 - `UIComponent.app` points to the current application instance
 - `config` base path configurable via `App.configBasePath`
