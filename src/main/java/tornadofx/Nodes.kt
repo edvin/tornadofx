@@ -1039,7 +1039,9 @@ fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
     if (parent.javaClass.kotlin == parentType) return parent as T
-    return parent!!.findParentOfType(parentType)
+    val uicmp = parent.uiComponent<UIComponent>()
+    if (uicmp?.javaClass?.kotlin == parentType) return uicmp as T
+    return parent?.findParentOfType(parentType)
 }
 
 val Region.paddingTopProperty: DoubleProperty get() {

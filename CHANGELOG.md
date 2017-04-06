@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.1-SNAPSHOT]
 
+- Node.findParentOfType will now also detect UIComponents
 - Configurable default states for `savable`, `refreshable` and `deletable` (Workspace.defaultXXX property)
 - `Workspace.delete` button and `onDelete`, `deletableWhen` and `onDelete` on `UIComponent`
 - `TabPane.connectWorkspaceActions` makes the `TabPane` a target for save/refresh/delete actions
