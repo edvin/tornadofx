@@ -15,7 +15,7 @@ import kotlin.reflect.KFunction1
 private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
 
 fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
-    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 1
+    properties[GridPaneRowIdKey] = if (properties.containsKey(GridPaneRowIdKey)) properties[GridPaneRowIdKey] as Int + 1 else 0
 
     // Allow the caller to add children to a fake pane
     val fake = Pane()
