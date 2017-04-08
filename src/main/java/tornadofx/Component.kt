@@ -331,6 +331,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(Workspace.defaultRefreshable) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
+    open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
 
     fun savableWhen(savable: () -> BooleanExpression) {
@@ -389,6 +390,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun disableSave() { properties["tornadofx.savable"] = SimpleBooleanProperty(false) }
     fun disableRefresh() { properties["tornadofx.refreshable"] = SimpleBooleanProperty(false) }
     fun disableDelete() { properties["tornadofx.deletable"] = SimpleBooleanProperty(false) }
+    fun disableClose() { properties["tornadofx.closeable"] = SimpleBooleanProperty(false) }
 
     fun init() {
         if (isInitialized) return

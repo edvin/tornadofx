@@ -21,6 +21,7 @@ import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
 import java.time.LocalDate
+import kotlin.reflect.KClass
 
 fun EventTarget.webview(op: (WebView.() -> Unit)? = null) = opcr(this, WebView(), op)
 
@@ -47,12 +48,22 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
+@Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
 fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab()
     tab.isClosable = closable
     tab.textProperty().bind(uiComponent.titleProperty)
     tab.content = uiComponent.root
     tabs.add(tab)
+    op?.invoke(tab)
+    return tab
+}
+
+fun TabPane.tab(uiComponent: KClass<out UIComponent>, op: (Tab.() -> Unit)? = null) = tab(find(uiComponent), op)
+
+fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
+    add(uiComponent.root)
+    val tab = tabs.last()
     op?.invoke(tab)
     return tab
 }

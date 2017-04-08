@@ -2,6 +2,8 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- UIComponent.closeable property and corresponding default configuration in `Workspace.defaultCloseable`
+- TabPane.add(SomeView::class) will bind towards title and closeable state of the UIComponent (https://github.com/edvin/tornadofx/issues/294)
 - TreeView.populate() is now data driven. If the returned list is observable, changes will be reflected in the tree
 
 ## [1.7.1] - 2017-04-06

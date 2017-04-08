@@ -457,8 +457,16 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is BorderPane -> {
         } // Either pos = builder { or caught by builderTarget above
         is TabPane -> {
-            val uicmp = if (node is Parent) node.uiComponent<UIComponent>() else null
-            val tab = Tab(uicmp?.title ?: node.toString(), node)
+            val uicmp = node.uiComponent<UIComponent>()
+            val tab = if (uicmp != null) {
+                Tab().apply {
+                    content = node
+                    textProperty().bind(uicmp.titleProperty)
+                    closableProperty().bind(uicmp.closeable)
+                }
+            } else {
+                Tab(node.toString(), node)
+            }
             tabs.add(tab)
         }
         is TitledPane -> {
