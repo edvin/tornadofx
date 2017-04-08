@@ -386,13 +386,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     val accelerators = HashMap<KeyCombination, () -> Unit>()
 
-    fun disableSave() {
-        properties["tornadofx.savable"] = SimpleBooleanProperty(false)
-    }
-
-    fun disableRefresh() {
-        properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
-    }
+    fun disableSave() { properties["tornadofx.savable"] = SimpleBooleanProperty(false) }
+    fun disableRefresh() { properties["tornadofx.refreshable"] = SimpleBooleanProperty(false) }
+    fun disableDelete() { properties["tornadofx.deletable"] = SimpleBooleanProperty(false) }
 
     fun init() {
         if (isInitialized) return
