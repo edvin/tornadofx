@@ -76,9 +76,7 @@ open class ViewModelTests {
         val model = PersonModel(person1)
         assertEquals(model.name.value, "Person 1")
 
-        model.rebind {
-            person = person2
-        }
+        model.item = person2
 
         assertEquals(model.name.value, "Person 2")
     }
@@ -129,22 +127,19 @@ open class ViewModelTests {
         tableview.items.addAll(Person("John", 37), Person("Jay", 33))
         val model = PersonModel(tableview.items.first())
         assertEquals(model.name.value, "John")
-        model.rebindOnChange(tableview) {
-            person = it ?: Person()
-        }
+        tableview.bindSelected(model)
         tableview.selectionModel.select(1)
         assertEquals(model.name.value, "Jay")
     }
 
     @Test fun treeview_master_detail() {
-        val treeview = TreeView<Person>()
-        treeview.root = TreeItem(Person("John", 37))
-        treeview.root.children.add(TreeItem(Person("Jay", 33)))
-        val model = PersonModel(treeview.root.value)
+        val rootPerson = Person("John", 37)
+        val treeview = TreeView<Person>(TreeItem(rootPerson))
+        treeview.populate { it.value.children }
+        rootPerson.children.add(Person("Jay", 33))
+        val model = PersonModel(rootPerson)
         assertEquals(model.name.value, "John")
-        model.rebindOnChange(treeview) {
-            person = it ?: Person()
-        }
+        treeview.bindSelected(model)
         treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
     }
@@ -155,8 +150,8 @@ class PersonAutoModel(var person: Person? = null) : ViewModel() {
 }
 
 // JavaFX Property
-class PersonModel(var person: Person) : ViewModel() {
-    val name = bind { person.nameProperty() }
+class PersonModel(person: Person) : ItemViewModel<Person>(person) {
+    val name = bind { item?.nameProperty() }
 }
 
 // Java POJO getter/setter property

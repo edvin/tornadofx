@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.7.2-SNAPSHOT]
+
+- TreeView.populate() is now data driven. If the returned list is observable, changes will be reflected in the tree
+
 ## [1.7.1] - 2017-04-06
 
 - Node.findParentOfType will now also find UIComponents

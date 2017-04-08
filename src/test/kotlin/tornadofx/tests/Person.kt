@@ -1,7 +1,7 @@
 package tornadofx.tests
 
-import tornadofx.getProperty
-import tornadofx.property
+import javafx.collections.FXCollections
+import tornadofx.*
 
 class Person(name: String, age: Int) {
     constructor() : this("", 18)
@@ -14,6 +14,8 @@ class Person(name: String, age: Int) {
 
     var parent by property<Person>()
     fun parentProperty() = getProperty(Person::parent)
+
+    val children = FXCollections.observableArrayList<Person>()
 
     override fun toString() = name
 }

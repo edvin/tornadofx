@@ -10,6 +10,7 @@ import javafx.beans.property.ListProperty
 import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
 import javafx.event.EventTarget
@@ -854,10 +855,33 @@ fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
  * function is called for each of the generated child items.
  */
 fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFactory: (TreeItem<T>) -> Iterable<T>?) {
-    childFactory.invoke(item)?.map { itemFactory.invoke(it) }?.apply {
+    val children = childFactory.invoke(item)
+
+    children?.map { itemFactory.invoke(it) }?.apply {
         item.children.setAll(this)
         forEach { populateTree(it, itemFactory, childFactory) }
     }
+
+    (children as? ObservableList<T>)?.addListener(ListChangeListener { change ->
+        while (change.next()) {
+            if (change.wasPermutated()) {
+                item.children.subList(change.from, change.to).clear()
+                val permutated = change.list.subList(change.from, change.to).map { itemFactory.invoke(it) }
+                item.children.addAll(change.from, permutated)
+                permutated.forEach { populateTree(it, itemFactory, childFactory) }
+            } else {
+                if (change.wasRemoved()) {
+                    val removed = change.removed.flatMap { removed -> item.children.filter { it.value == removed } }
+                    item.children.removeAll(removed)
+                }
+                if (change.wasAdded()) {
+                    val added = change.addedSubList.map { itemFactory.invoke(it) }
+                    item.children.addAll(change.from, added)
+                    added.forEach { populateTree(it, itemFactory, childFactory) }
+                }
+            }
+        }
+    })
 }
 
 /**
