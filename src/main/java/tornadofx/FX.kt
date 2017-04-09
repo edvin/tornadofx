@@ -435,6 +435,10 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is Workspace -> {
             root.addChildIfPossible(node, index)
         }
+        is Wizard -> {
+            val uicp = node.uiComponent<UIComponent>()
+            if (uicp != null) pages.add(uicp)
+        }
         is Drawer -> {
             val uicmp = node.uiComponent<UIComponent>()
             if (uicmp != null) {

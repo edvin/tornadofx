@@ -5,6 +5,7 @@ import javafx.beans.binding.*
 import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
+import javafx.collections.ObservableList
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -251,6 +252,19 @@ fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (
 
 fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding
     = Bindings.createBooleanBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
+
+/**
+ * A Boolean binding that tracks all items in an observable list and create an observable boolean
+ * value by anding together an observable boolean representing each element in the observable list.
+ * Whenever the list changes, the binding is updated as well
+ */
+fun <T : Any> booleanListBinding(list: ObservableList<T>, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
+    val facade = SimpleBooleanProperty()
+    list.onChange {
+        facade.cleanBind(list.map(itemToBooleanExpr).reduce { a, b -> a.and(b) })
+    }
+    return facade
+}
 
 fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T?) -> String?): StringBinding
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)

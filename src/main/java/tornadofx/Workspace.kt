@@ -94,6 +94,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         var defaultDeletable = true
         var defaultRefreshable = true
         var defaultCloseable = true
+        var defaultComplete = true
 
         init {
             FX.log.warning("The Workspace feature is experimental and subject to change even in minor releases!")

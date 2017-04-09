@@ -232,6 +232,8 @@ open class ViewModel : Component(), Injectable {
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) {
 
         validationContext.addValidator(node, property, trigger, validator)
+        // Force update of valid state
+        validationContext.validate(false, false)
     }
 
     fun setDecorationProvider(decorationProvider: (ValidationMessage) -> Decorator?) {

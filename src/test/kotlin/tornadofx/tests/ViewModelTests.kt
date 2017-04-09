@@ -152,6 +152,8 @@ class PersonAutoModel(var person: Person? = null) : ViewModel() {
 // JavaFX Property
 class PersonModel(person: Person) : ItemViewModel<Person>(person) {
     val name = bind { item?.nameProperty() }
+    val phone = bind { item?.phoneProperty() }
+    val email = bind { item?.emailProperty() }
 }
 
 // Java POJO getter/setter property

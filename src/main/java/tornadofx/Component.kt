@@ -7,8 +7,6 @@ import com.sun.javafx.application.HostServicesDelegate
 import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
-import javafx.beans.value.ObservableValue
-import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -333,9 +331,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
+    open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
+    val isComplete: Boolean get() = complete.value
 
     fun savableWhen(savable: () -> BooleanExpression) {
         properties["tornadofx.savable"] = savable()
+    }
+
+    fun completeWhen(complete: () -> BooleanExpression) {
+        properties["tornadofx.complete"] = complete()
     }
 
     fun deletableWhen(deletable: () -> BooleanExpression) {
@@ -387,10 +391,21 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
     val accelerators = HashMap<KeyCombination, () -> Unit>()
 
-    fun disableSave() { properties["tornadofx.savable"] = SimpleBooleanProperty(false) }
-    fun disableRefresh() { properties["tornadofx.refreshable"] = SimpleBooleanProperty(false) }
-    fun disableDelete() { properties["tornadofx.deletable"] = SimpleBooleanProperty(false) }
-    fun disableClose() { properties["tornadofx.closeable"] = SimpleBooleanProperty(false) }
+    fun disableSave() {
+        properties["tornadofx.savable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableRefresh() {
+        properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableDelete() {
+        properties["tornadofx.deletable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableClose() {
+        properties["tornadofx.closeable"] = SimpleBooleanProperty(false)
+    }
 
     fun init() {
         if (isInitialized) return
@@ -443,6 +458,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         (properties["tornadofx.onRefresh"] as? () -> Unit)?.invoke()
     }
 
+    /**
+     * Save callback which is triggered when the Save button in the Workspace
+     * is clicked, or when the Next button in a Wizard is clicked.
+     *
+     * For Wizard pages, you should set the complete state of the Page after save
+     * to signal whether the Wizard can move to the next page or finish.
+     *
+     * For Wizards, you should set the complete state of the Wizard
+     * after save to signal whether the Wizard can be closed.
+     */
     open fun onSave() {
         (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
     }
@@ -694,17 +719,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
 
-    open val headingProperty: ObservableValue<String> get() = (properties["tornadofx.heading"] ?: titleProperty) as StringProperty
+    open val headingProperty: StringProperty = SimpleStringProperty(viewTitle)
 
-    @Suppress("UNCHECKED_CAST")
     var heading: String
-        get() = headingProperty.value ?: ""
-        set(value) {
-            if (headingProperty == titleProperty)
-                properties["tornadofx.heading"] = SimpleStringProperty()
-            if (headingProperty is WritableValue<*>)
-                (headingProperty as WritableValue<String>).value = value
-        }
+        get() = headingProperty.get() ?: ""
+        set(value) = headingProperty.set(value)
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent
