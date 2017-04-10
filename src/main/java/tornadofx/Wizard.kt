@@ -33,6 +33,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val showStepsProperty = SimpleBooleanProperty(true)
     var showSteps by showStepsProperty
 
+    val showHeaderProperty = SimpleBooleanProperty(true)
+    var showHeader by showHeaderProperty
+
     val graphicProperty = SimpleObjectProperty<Node>()
     var graphic by graphicProperty
 
@@ -57,6 +60,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         top {
             hbox {
                 addClass(WizardStyles.header)
+                removeWhen { showHeaderProperty.not() }
                 vbox(5) {
                     label(titleProperty)
                     label(headingProperty) {

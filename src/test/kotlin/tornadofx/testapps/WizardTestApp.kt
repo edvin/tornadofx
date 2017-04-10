@@ -25,6 +25,7 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         add(WizardStep1::class)
         add(WizardStep2::class)
         showSteps = true
+        showHeader = true
     }
 
     override fun onSave() {
