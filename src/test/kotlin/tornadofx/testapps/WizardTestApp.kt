@@ -5,6 +5,7 @@ import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
 
 class WizardTestApp : App(WizardTestView::class)
+class WizardWorkspaceApp : WorkspaceApp(CustomerWizard::class)
 
 class WizardTestView : View("Wizard Test") {
     override val root = button("Create customer") {
