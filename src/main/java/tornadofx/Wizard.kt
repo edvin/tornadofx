@@ -77,7 +77,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         }
         center {
             stackpane {
-                center?.addClass(WizardStyles.content)
+                addClass(WizardStyles.content)
                 bindChildren(pages) { page ->
                     page.root.apply {
                         visibleWhen { currentPageProperty.isEqualTo(page) }
