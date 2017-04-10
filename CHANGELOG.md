@@ -2,6 +2,7 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- ViewModel partial commit and validate: `commit(field1, field2)`
 - Wizard component
 - ViewModel.valid property will be updated as validators
 - UIComponent.closeable property and corresponding default configuration in `Workspace.defaultCloseable`

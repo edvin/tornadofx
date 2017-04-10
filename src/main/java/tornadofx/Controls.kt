@@ -158,12 +158,12 @@ fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
 
 fun EventTarget.text(initialValue: String? = null, op: (Text.() -> Unit)? = null) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
 fun EventTarget.text(property: Property<String>, op: (Text.() -> Unit)? = null) = text().apply {
-    textProperty().bindBidirectional(property)
+    bind(property)
     op?.invoke(this)
 }
 
 fun EventTarget.text(observable: ObservableValue<String>, op: (Text.() -> Unit)? = null) = text().apply {
-    textProperty().bind(observable)
+    bind(observable)
     op?.invoke(this)
 }
 
@@ -188,26 +188,25 @@ fun EventTarget.passwordfield(property: ObservableValue<String>, op: (PasswordFi
 
 fun <T> EventTarget.textfield(property: Property<T>, converter: StringConverter<T>, op: (TextField.() -> Unit)? = null) = textfield().apply {
     textProperty().bindBidirectional(property, converter)
+    ViewModel.register(textProperty(), property)
     op?.invoke(this)
 }
 
 fun EventTarget.datepicker(op: (DatePicker.() -> Unit)? = null) = opcr(this, DatePicker(), op)
 fun EventTarget.datepicker(property: Property<LocalDate>, op: (DatePicker.() -> Unit)? = null) = datepicker().apply {
-    valueProperty().bindBidirectional(property)
+    bind(property)
     op?.invoke(this)
 }
 
 fun EventTarget.textarea(value: String? = null, op: (TextArea.() -> Unit)? = null) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
 fun EventTarget.textarea(property: ObservableValue<String>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
-    if (property is Property<String>)
-        textProperty().bindBidirectional(property)
-    else
-        textProperty().bind(property)
+    bind(property)
     op?.invoke(this)
 }
 
 fun <T> EventTarget.textarea(property: Property<T>, converter: StringConverter<T>, op: (TextArea.() -> Unit)? = null) = textarea().apply {
     textProperty().bindBidirectional(property, converter)
+    ViewModel.register(textProperty(), property)
     op?.invoke(this)
 }
 
@@ -220,18 +219,18 @@ fun EventTarget.buttonbar(buttonOrder: String? = null, op: (ButtonBar.() -> Unit
 fun EventTarget.htmleditor(html: String? = null, op: (HTMLEditor.() -> Unit)? = null) = opcr(this, HTMLEditor().apply { if (html != null) htmlText = html }, op)
 
 fun EventTarget.checkbox(text: String? = null, property: Property<Boolean>? = null, op: (CheckBox.() -> Unit)? = null) = opcr(this, CheckBox(text).apply {
-    if (property != null) selectedProperty().bindBidirectional(property)
+    if (property != null) bind(property)
 }, op)
 
 fun EventTarget.progressindicator(op: (ProgressIndicator.() -> Unit)? = null) = opcr(this, ProgressIndicator(), op)
 fun EventTarget.progressindicator(property: Property<Number>, op: (ProgressIndicator.() -> Unit)? = null) = progressindicator().apply {
-    progressProperty().bind(property)
+    bind(property)
     op?.invoke(this)
 }
 
 fun EventTarget.progressbar(initialValue: Double? = null, op: (ProgressBar.() -> Unit)? = null) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
 fun EventTarget.progressbar(property: ObservableValue<Number>, op: (ProgressBar.() -> Unit)? = null) = progressbar().apply {
-    progressProperty().bind(property)
+    bind(property)
     op?.invoke(this)
 }
 
@@ -302,7 +301,7 @@ inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, noinlin
 
 fun EventTarget.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
 fun EventTarget.hyperlink(observable: ObservableValue<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink().apply {
-    textProperty().bind(observable)
+    bind(observable)
     op?.invoke(this)
 }
 

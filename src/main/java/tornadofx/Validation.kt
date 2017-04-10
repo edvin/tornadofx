@@ -70,7 +70,7 @@ class ValidationContext {
             }
             is ValidationTrigger.OnBlur -> {
                 validator.node.focusedProperty().onChange {
-                    if (it == false) validator.validate(decorateErrors)
+                    if (!it) validator.validate(decorateErrors)
                 }
             }
         }
@@ -85,17 +85,31 @@ class ValidationContext {
     val isValid by valid
 
     /**
-     * Rerun all validators and return a boolean indicating if validation passes.
+     * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      */
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true): Boolean {
+    fun validate(vararg fields: ObservableValue<*>) = validate(true, true, fields = *fields)
+
+    /**
+     * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
+     */
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
         var firstErrorFocused = false
-        for (validator in validators) {
-            if (!validator.validate(decorateErrors) && focusFirstError && !firstErrorFocused) {
-                firstErrorFocused = true
-                validator.node.requestFocus()
+        var validationSucceeded = true
+        val validateThese = if (fields.isEmpty()) validators else validators.filter {
+            val facade = it.property.viewModelFacade
+            facade != null && fields.contains(facade)
+        }
+
+        for (validator in validateThese) {
+            if (!validator.validate(decorateErrors)) {
+                validationSucceeded = false
+                if (focusFirstError && !firstErrorFocused) {
+                    firstErrorFocused = true
+                    validator.node.requestFocus()
+                }
             }
         }
-        return isValid
+        return validationSucceeded
     }
 
     /**

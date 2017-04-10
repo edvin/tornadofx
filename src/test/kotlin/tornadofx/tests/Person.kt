@@ -9,10 +9,10 @@ class Person(name: String, age: Int) {
     var name: String by property(name)
     fun nameProperty() = getProperty(Person::name)
 
-    var phone: String by property(phone)
+    var phone: String by property()
     fun phoneProperty() = getProperty(Person::phone)
 
-    var email: String by property(email)
+    var email: String by property()
     fun emailProperty() = getProperty(Person::email)
 
     var age by property(age)

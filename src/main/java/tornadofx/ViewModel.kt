@@ -2,8 +2,6 @@
 
 package tornadofx
 
-import com.sun.javafx.binding.BidirectionalBinding
-import com.sun.javafx.binding.ExpressionHelper
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.*
@@ -37,11 +35,22 @@ open class ViewModel : Component(), Injectable {
     val autocommitProperties = FXCollections.observableArrayList<ObservableValue<out Any>>()
 
     companion object {
-        internal val propertyToViewModel = WeakHashMap<ObservableValue<*>, ViewModel>()
-        fun getForProperty(property: ObservableValue<*>): ViewModel? {
-            val viewModel = propertyToViewModel[property]
-            println("Found ViewModel $viewModel for property $property")
-            return viewModel
+        val propertyToViewModel = WeakHashMap<ObservableValue<*>, ViewModel>()
+        val propertyToFacade = WeakHashMap<ObservableValue<*>, Property<*>>()
+        fun getViewModelForProperty(property: ObservableValue<*>): ViewModel? = propertyToViewModel[property]
+        fun getFacadeForProperty(property: ObservableValue<*>): Property<*>? = propertyToFacade[property]
+
+        /**
+         * Register the combination of a property that has been bound to a property
+         * that might be a facade in a ViewModel. This is done to be able to locate
+         * the validation context for this binding.
+         */
+        fun register(property: ObservableValue<*>, possiblyFacade: ObservableValue<*>?) {
+            val propertyOwner = (possiblyFacade as? Property<*>)?.bean as? ViewModel
+            if (propertyOwner != null) {
+                propertyToFacade[property] = possiblyFacade as Property<*>
+                propertyToViewModel[property] = propertyOwner
+            }
         }
     }
 
@@ -50,7 +59,7 @@ open class ViewModel : Component(), Injectable {
             while (it.next()) {
                 if (it.wasAdded()) {
                     it.addedSubList.forEach { facade ->
-                        facade.addListener { obs, ov, nv ->
+                        facade.addListener { obs, _, nv ->
                             propertyMap[obs]!!.invoke()?.value = nv
                         }
                     }
@@ -169,7 +178,8 @@ open class ViewModel : Component(), Injectable {
     val isDirty: Boolean get() = dirty.value
     val isNotDirty: Boolean get() = !isDirty
 
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true): Boolean = validationContext.validate(focusFirstError, decorateErrors)
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean =
+            validationContext.validate(focusFirstError, decorateErrors, *fields)
 
     /**
      * This function is called after a successful commit, right before the optional successFn call sent to the commit
@@ -179,24 +189,30 @@ open class ViewModel : Component(), Injectable {
 
     }
 
+    fun commit(vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null) =
+            commit(false, true, fields = *fields, successFn = successFn)
+
     /**
      * Perform validation and flush the values into the source object if validation passes.
+     *
+     * Optionally commit only the passed in properties instead of all (default).
+     *
      * @param force Force flush even if validation fails
      */
-    fun commit(force: Boolean = false, focusFirstError: Boolean = true, successFn: (() -> Unit)? = null): Boolean {
+    fun commit(force: Boolean = false, focusFirstError: Boolean = true, vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null): Boolean {
         var committed = true
 
         runAndWait {
-            if (!validate(focusFirstError) && !force) {
+            if (!validate(focusFirstError, fields = *fields) && !force) {
                 committed = false
             } else {
-                for ((facade, propExtractor) in propertyMap)
-                    propExtractor()?.value = facade.value
-
-                clearDirtyState()
+                val commitThese = if (fields.isNotEmpty()) fields.toList() else propertyMap.keys
+                for (facade in commitThese) {
+                    propertyMap[facade]?.invoke()?.value = facade.value
+                }
+                dirtyProperties.removeAll(commitThese)
             }
         }
-
 
         if (committed) {
             onCommit()
@@ -221,7 +237,7 @@ open class ViewModel : Component(), Injectable {
                 }
                 facade.value = prop?.value
             }
-            clearDirtyState()
+            dirtyProperties.clear()
         }
     }
 
@@ -250,10 +266,6 @@ open class ViewModel : Component(), Injectable {
 
     fun <T> isDirty(property: Property<T>) = backingValue(property) != property.value
     fun <T> isNotDirty(property: Property<T>) = !isDirty(property)
-
-    private fun clearDirtyState() {
-        dirtyProperties.clear()
-    }
 }
 
 /**
@@ -397,39 +409,15 @@ inline fun <reified T> validator(control: Control, property: Property<T>, trigge
         ?: throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
 
 /**
- * Extract the ViewModel from a bound ViewModel property
+ * Extract the ViewModel from a property that is bound towards a ViewModel Facade
  */
 @Suppress("UNCHECKED_CAST")
-val Property<*>.viewModel: ViewModel? get() {
-    val helperField = javaClass.findFieldByName("helper")
-    if (helperField != null) {
-        helperField.isAccessible = true
-        val helper = helperField.get(this) as? ExpressionHelper<String>
-        if (helper != null) {
-            val clField = helper.javaClass.findFieldByName("changeListeners")
-            if (clField != null) {
-                clField.isAccessible = true
-                val bindings = clField.get(helper)
-                if (bindings is Array<*>) {
-                    val binding = bindings.find { it is BidirectionalBinding<*> }
+val Property<*>.viewModel: ViewModel? get() = ViewModel.getViewModelForProperty(this)
 
-                    if (binding != null) {
-                        val propField = binding.javaClass.findMethodByName("getProperty2")
-                        if (propField != null) {
-                            propField.isAccessible = true
-                            val modelProp = propField.invoke(binding) as Property<String>
-
-                            if (modelProp.bean is ViewModel)
-                                return modelProp.bean as ViewModel
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return null
-}
+/**
+ * Extract the ViewModel Facade from a property that is bound towards it
+ */
+val ObservableValue<*>.viewModelFacade: Property<*>? get() = ViewModel.getFacadeForProperty(this)
 
 open class ItemViewModel<T>(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
     var item by itemProperty

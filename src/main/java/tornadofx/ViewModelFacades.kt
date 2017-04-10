@@ -10,7 +10,8 @@ import javafx.beans.value.ObservableValue
  * this property is bound to.
  */
 interface BindingAwareProperty<T> : Property<T> {
-    fun bindPropertyToViewModel(observableValue: ObservableValue<*>?) {
+    fun recordBinding(observableValue: ObservableValue<*>?) {
+        ViewModel.propertyToFacade[observableValue] = this
         if (observableValue != null) {
             ViewModel.propertyToViewModel[observableValue] = bean as ViewModel
         }
@@ -23,12 +24,12 @@ class BindingAwareSimpleBooleanProperty : SimpleBooleanProperty, BindingAwarePro
     
     override fun bind(rawObservable: ObservableValue<out Boolean>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<Boolean>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -38,12 +39,12 @@ class BindingAwareSimpleStringProperty : SimpleStringProperty, BindingAwarePrope
     
     override fun bind(rawObservable: ObservableValue<out String>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<String>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -53,12 +54,12 @@ class BindingAwareSimpleObjectProperty<T> : SimpleObjectProperty<T>, BindingAwar
     
     override fun bind(rawObservable: ObservableValue<out T>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<T>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -68,12 +69,12 @@ class BindingAwareSimpleFloatProperty : SimpleFloatProperty, BindingAwarePropert
     
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<Number>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -83,12 +84,12 @@ class BindingAwareSimpleDoubleProperty : SimpleDoubleProperty, BindingAwarePrope
     
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<Number>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -98,12 +99,12 @@ class BindingAwareSimpleLongProperty : SimpleLongProperty, BindingAwareProperty<
     
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<Number>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }
 
@@ -113,11 +114,11 @@ class BindingAwareSimpleIntegerProperty : SimpleIntegerProperty, BindingAwarePro
     
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
-        bindPropertyToViewModel(rawObservable)
+        recordBinding(rawObservable)
     }
 
     override fun bindBidirectional(other: Property<Number>?) {
         super.bindBidirectional(other)
-        bindPropertyToViewModel(other)
+        recordBinding(other)
     }
 }

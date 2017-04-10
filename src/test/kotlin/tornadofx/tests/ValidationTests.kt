@@ -40,6 +40,5 @@ class ValidationTests {
             assertTrue(validator.validate())
             assertNull(validator.result)
         }
-
     }
 }

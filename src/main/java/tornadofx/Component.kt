@@ -333,7 +333,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
     open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
-    val isComplete: Boolean get() = complete.value
+    var isComplete: Boolean get() = complete.value; set(value) {
+        (complete as? BooleanProperty)?.value = value
+    }
 
     fun savableWhen(savable: () -> BooleanExpression) {
         properties["tornadofx.savable"] = savable()

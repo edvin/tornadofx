@@ -16,10 +16,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
     var currentPage by currentPageProperty
 
-    private val hasNextProperty = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
-    private val currentPageComplete = SimpleBooleanProperty()
-
-    private val canGoNext = hasNextProperty.and(currentPageComplete)
+    private val canGoNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
     private val canGoBack = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
     private val canFinish = booleanListBinding(pages) { complete }
 
@@ -135,14 +132,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     init {
         importStylesheet(WizardStyles::class)
-        this@Wizard.heading = heading ?: ""
-
-        // Rebind currentPageComplete on change
-        currentPageProperty.addListener { _, oldPage, newPage ->
-            if (newPage != null && newPage != oldPage) {
-                currentPageComplete.cleanBind(newPage.complete)
-            }
-        }
+        this.heading = heading ?: ""
     }
 }
 

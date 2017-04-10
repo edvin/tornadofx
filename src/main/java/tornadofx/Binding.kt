@@ -27,26 +27,38 @@ import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Callable
 
-inline fun <reified T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
+inline fun <reified T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
+    ViewModel.register(valueProperty(), property)
+    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
+}
+fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) {
+    ViewModel.register(valueProperty(), property)
+    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<LocalDate>)
+}
 
-fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<LocalDate>)
+fun ProgressIndicator.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
+    ViewModel.register(progressProperty(), property)
+    if (readonly || (property !is Property<*>)) progressProperty().bind(property) else progressProperty().bindBidirectional(property as Property<Number>)
+}
 
-fun ProgressIndicator.bind(property: ObservableValue<Number>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) progressProperty().bind(property) else progressProperty().bindBidirectional(property as Property<Number>)
+inline fun <reified T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
+    ViewModel.register(valueProperty(), property)
+    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
+}
 
-inline fun <reified T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
+fun CheckBox.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) {
+    ViewModel.register(selectedProperty(), property)
+    if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
+}
 
-fun CheckBox.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
+fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
+    ViewModel.register(valueProperty(), property)
+    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<Number>)
+}
 
-fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) =
-        if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<Number>)
-
-inline fun <reified T : Any> Labeled.bind(property: ObservableValue<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
-        bindStringProperty(textProperty(), converter, format, property, readonly)
+inline fun <reified T : Any> Labeled.bind(property: ObservableValue<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) {
+    bindStringProperty(textProperty(), converter, format, property, readonly)
+}
 
 inline fun <reified T : Any> TitledPane.bind(property: ObservableValue<T>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
         bindStringProperty(textProperty(), converter, format, property, readonly)
@@ -60,6 +72,8 @@ inline fun <reified T : Any> TextInputControl.bind(property: ObservableValue<T>,
 inline fun <reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: ObservableValue<T>, readonly: Boolean) {
     if (stringProperty.isBound) stringProperty.unbind()
     val effectiveReadonly = if (readonly) readonly else property !is Property<T>
+
+    ViewModel.register(stringProperty, property)
 
     if (T::class == String::class) {
         if (effectiveReadonly)

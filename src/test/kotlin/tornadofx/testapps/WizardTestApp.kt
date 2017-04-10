@@ -59,9 +59,7 @@ class WizardStep1 : View("Customer Data") {
                 alignment = Pos.BASELINE_RIGHT
                 hyperlink("Skip") {
                     action {
-                        val targetPage = wizard.pages.last()
-                        println("Switching to $targetPage")
-                        wizard.currentPage = targetPage
+                        wizard.currentPage = wizard.pages.last()
                     }
                 }
             }
