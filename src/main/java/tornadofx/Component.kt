@@ -47,6 +47,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
 interface Injectable
+interface InstanceScoped
 
 interface Configurable {
     val config: Properties

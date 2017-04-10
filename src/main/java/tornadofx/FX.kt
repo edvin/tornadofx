@@ -349,7 +349,7 @@ fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
-    val useScope = FX.fixedScopes[type] ?: scope
+    val useScope = if (InstanceScoped::class.java.isAssignableFrom(type.java)) Scope() else FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
     val stringKeyedMap = HashMap<String, Any?>()
     params?.forEach {

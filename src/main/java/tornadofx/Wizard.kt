@@ -11,7 +11,7 @@ import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlin.reflect.KClass
 
-abstract class Wizard(title: String? = null, heading: String? = null) : View(title) {
+abstract class Wizard(title: String? = null, heading: String? = null) : View(title), InstanceScoped {
     val pages = FXCollections.observableArrayList<UIComponent>()
 
     private val currentPageProperty = SimpleObjectProperty<UIComponent>()
@@ -24,10 +24,14 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     private val canGoBack = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
     private val canFinish = booleanListBinding(pages) { complete }
 
+    val stepsTextProperty = SimpleStringProperty("Steps")
     val backButtonTextProperty = SimpleStringProperty("< Back")
     val nextButtonTextProperty = SimpleStringProperty("Next >")
     val finishButtonTextProperty = SimpleStringProperty("Finish")
     val cancelButtonTextProperty = SimpleStringProperty("Cancel")
+
+    val showStepsProperty = SimpleBooleanProperty(true)
+    var showSteps by showStepsProperty
 
     val graphicProperty = SimpleObjectProperty<Node>()
     var graphic by graphicProperty
@@ -45,6 +49,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     fun back() {
         currentPage = pages[getPreviousPage()]
+        root.scene.window.sizeToScene()
     }
 
     override val root = borderpane {
@@ -75,21 +80,20 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 }
             }
         }
-        // TODO: Optional list of wizard pages - if anybody needs it
-/*
         left {
-            stackpane {
+            vbox {
+                removeWhen { showStepsProperty.not() }
                 addClass(WizardStyles.stepInfo)
+                label(stepsTextProperty).addClass(WizardStyles.stepsHeading)
                 vbox(5) {
                     bindChildren(pages) {
-                        label(it.titleProperty) {
+                        label("${pages.indexOf(it) + 1}. ${it.title}") {
                             toggleClass(WizardStyles.bold, it.isDockedProperty)
                         }
                     }
                 }
             }
         }
-*/
         bottom {
             buttonbar {
                 addClass(WizardStyles.buttons)
@@ -142,6 +146,7 @@ class WizardStyles : Stylesheet() {
         val wizard by cssclass()
         val header by cssclass()
         val stepInfo by cssclass()
+        val stepsHeading by cssclass()
         val heading by cssclass()
         val graphic by cssclass()
         val content by cssclass()
@@ -156,7 +161,12 @@ class WizardStyles : Stylesheet() {
             }
             stepInfo {
                 backgroundColor += Color.WHITE
-                alignment = Pos.CENTER
+                padding = box(15.px)
+                stepsHeading {
+                    fontWeight = FontWeight.BOLD
+                    underline = true
+                    padding = box(15.px, 0.px)
+                }
             }
             header {
                 label {
@@ -178,10 +188,10 @@ class WizardStyles : Stylesheet() {
             }
             content {
                 padding = box(10.px)
-                borderColor += box(Color.TRANSPARENT, Color.TRANSPARENT, Color.LIGHTGRAY, Color.TRANSPARENT)
             }
             buttons {
                 padding = box(10.px)
+                borderColor += box(Color.LIGHTGRAY, Color.TRANSPARENT, Color.TRANSPARENT, Color.TRANSPARENT)
             }
         }
     }

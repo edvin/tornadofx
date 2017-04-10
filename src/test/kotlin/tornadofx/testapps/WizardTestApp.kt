@@ -9,8 +9,8 @@ class WizardTestView : View("Wizard Test") {
     override val root = button("Create customer") {
         isDefaultButton = true
         action {
-            // TODO: Find a nicer way to find the Wizard in a new scope
-            find<CustomerWizard>(Scope()).openModal()
+            val wizard = find<CustomerWizard>()
+            wizard.openModal()
         }
     }
 }
@@ -21,6 +21,7 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
     init {
         add(WizardStep1::class)
         add(WizardStep2::class)
+        showSteps = true
     }
 
     override fun onSave() {
