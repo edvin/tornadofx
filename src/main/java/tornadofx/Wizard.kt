@@ -115,8 +115,11 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                     textProperty().bind(finishButtonTextProperty)
                     enableWhen { canFinish }
                     action {
-                        onSave()
-                        if (isComplete) close()
+                        currentPage.onSave()
+                        if (currentPage.isComplete) {
+                            onSave()
+                            if (isComplete) close()
+                        }
                     }
                 }
             }

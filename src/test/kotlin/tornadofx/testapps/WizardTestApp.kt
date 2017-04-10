@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import tornadofx.*
+import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
 
 class WizardTestApp : App(WizardTestView::class)
@@ -19,13 +20,14 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
     val customer: CustomerModel by inject()
 
     init {
+        customer.item = Customer()
         add(WizardStep1::class)
         add(WizardStep2::class)
         showSteps = true
     }
 
     override fun onSave() {
-        println(customer.name)
+        println("Saving ${customer.item.name}")
     }
 }
 
