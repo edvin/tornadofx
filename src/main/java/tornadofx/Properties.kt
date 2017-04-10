@@ -295,11 +295,3 @@ fun Float?.toProperty() = SimpleFloatProperty(this ?: 0.0F)
 fun Long?.toProperty() = SimpleLongProperty(this ?: 0L)
 fun Boolean?.toProperty() = SimpleBooleanProperty(this ?: false)
 fun <T : Any> T?.toProperty() = SimpleObjectProperty<T>(this)
-
-fun maxDoubleBinding(vararg deps: ObservableDoubleValue) = object : DoubleBinding() {
-    init {
-        bind(*deps)
-    }
-
-    override fun computeValue() = (dependencies.maxBy { value } as? ObservableDoubleValue)?.doubleValue() ?: 0.0
-}

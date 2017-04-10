@@ -1,16 +1,14 @@
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
-import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
 import javafx.scene.layout.BorderStrokeStyle
-import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
-import kotlin.reflect.KClass
 
 abstract class Wizard(title: String? = null, heading: String? = null) : View(title), InstanceScoped {
     val pages = FXCollections.observableArrayList<UIComponent>()
@@ -79,28 +77,11 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         }
         center {
             stackpane {
-                addClass(WizardStyles.content)
-
-                // Bind pref width/height to the larges page's preferred size
-                pages.onChange {
-                    val prefWidth: List<DoubleProperty> = pages.filter { it.root is Region }.map { (it.root as Region).prefWidthProperty() }
-                    prefWidthProperty().cleanBind(maxDoubleBinding(*prefWidth.toTypedArray()))
-
-                    val prefHeight: List<DoubleProperty> = pages.filter { it.root is Region }.map { (it.root as Region).prefHeightProperty() }
-                    prefHeightProperty().cleanBind(maxDoubleBinding(*prefHeight.toTypedArray()))
-                }
-
-                // Resize when largest pref changes
-                prefHeightProperty().onChange {
-                    scene?.window?.sizeToScene()
-                }
-                prefWidthProperty().onChange {
-                    scene?.window?.sizeToScene()
-                }
-
-                currentPageProperty.onChange {
-                    clear()
-                    if (it != null) add(it)
+                center?.addClass(WizardStyles.content)
+                bindChildren(pages) { page ->
+                    page.root.apply {
+                        visibleWhen { currentPageProperty.isEqualTo(page) }
+                    }
                 }
             }
         }
@@ -112,7 +93,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 vbox(5) {
                     bindChildren(pages) { page ->
                         hyperlink("${pages.indexOf(page) + 1}. ${page.title}") {
-                            toggleClass(WizardStyles.bold, page.isDockedProperty)
+                            toggleClass(WizardStyles.bold, currentPageProperty.isEqualTo(page))
                             action { currentPage = page }
                             enableWhen { enableStepLinksProperty }
                         }
@@ -180,6 +161,22 @@ class WizardStyles : Stylesheet() {
 
     init {
         wizard {
+            hyperlink {
+                borderStyle += BorderStrokeStyle.NONE
+                borderWidth += box(0.px)
+                underline = false
+            }
+            hyperlink and visited {
+                unsafe("-fx-text-fill", raw("-fx-accent"))
+
+            }
+            hyperlink and visited and hover {
+                unsafe("-fx-text-fill", raw("-fx-accent"))
+            }
+            hyperlink and disabled {
+                textFill = Color.BLACK
+                opacity = 1.0
+            }
             bold {
                 fontWeight = FontWeight.BOLD
             }
@@ -190,22 +187,6 @@ class WizardStyles : Stylesheet() {
                     fontWeight = FontWeight.BOLD
                     underline = true
                     padding = box(15.px, 0.px)
-                }
-                hyperlink {
-                    borderStyle += BorderStrokeStyle.NONE
-                    borderWidth += box(0.px)
-                    underline = false
-                }
-                hyperlink and visited {
-                    unsafe("-fx-text-fill", raw("-fx-accent"))
-
-                }
-                hyperlink and visited and hover {
-                    unsafe("-fx-text-fill", raw("-fx-accent"))
-                }
-                hyperlink and disabled {
-                    textFill = Color.BLACK
-                    opacity = 1.0
                 }
             }
             header {
