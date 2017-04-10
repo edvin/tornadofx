@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.geometry.Pos
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
@@ -26,6 +27,7 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         add(WizardStep2::class)
         showSteps = true
         showHeader = true
+        enableStepLinks = true
     }
 
     override fun onSave() {
@@ -35,6 +37,8 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
 
 class WizardStep1 : View("Customer Data") {
     val customer: CustomerModel by inject()
+    val wizard: CustomerWizard by inject()
+
     override val complete = customer.valid
 
     override val root = form {
@@ -49,6 +53,16 @@ class WizardStep1 : View("Customer Data") {
                 }
                 textfield(customer.city) {
                     required()
+                }
+            }
+            hbox {
+                alignment = Pos.BASELINE_RIGHT
+                hyperlink("Skip") {
+                    action {
+                        val targetPage = wizard.pages.last()
+                        println("Switching to $targetPage")
+                        wizard.currentPage = targetPage
+                    }
                 }
             }
         }

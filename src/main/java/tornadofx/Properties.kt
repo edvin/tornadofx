@@ -70,6 +70,7 @@ fun <S, T> observable(owner: S, prop: KMutableProperty1<S, T>): ObjectProperty<T
         override fun set(v: T) = prop.set(owner, v)
     }
 }
+
 /**
  * Convert an owner instance and a corresponding property reference into a readonly observable
  */
@@ -104,7 +105,7 @@ open class PojoProperty<T>(bean: Any, propName: String) : SimpleObjectProperty<T
 
 @JvmName("pojoObservable")
 inline fun <reified T : Any> Any.observable(propName: String) =
-        this.observable( propertyName = propName, propertyType = T::class )
+        this.observable(propertyName = propName, propertyType = T::class)
 
 /**
  * Convert a pojo bean instance into a writable observable.
@@ -116,18 +117,18 @@ inline fun <reified T : Any> Any.observable(propName: String) =
  *          val observableName = myPojo.observable("name")
  */
 @Suppress("UNCHECKED_CAST")
-inline fun <reified S : Any, reified T : Any> S.observable( getter: KFunction<T>? = null, setter: KFunction2<S, T, Unit>? = null, propertyName: String? = null, @Suppress("UNUSED_PARAMETER")propertyType: KClass<T>? = null ): ObjectProperty<T> {
-    if( getter == null && propertyName == null ) throw AssertionError("Either getter or propertyName must be provided")
+inline fun <reified S : Any, reified T : Any> S.observable(getter: KFunction<T>? = null, setter: KFunction2<S, T, Unit>? = null, propertyName: String? = null, @Suppress("UNUSED_PARAMETER") propertyType: KClass<T>? = null): ObjectProperty<T> {
+    if (getter == null && propertyName == null) throw AssertionError("Either getter or propertyName must be provided")
     var propName = propertyName
-    if( propName == null && getter != null ){
+    if (propName == null && getter != null) {
         propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
     }
-    return JavaBeanObjectPropertyBuilder.create().apply{
-        bean( this@observable )
-        this.name( propName )
-        if( getter != null ) this.getter( getter.javaMethod )
-        if( setter != null ) this.setter( setter.javaMethod )
-    } .build() as ObjectProperty<T>
+    return JavaBeanObjectPropertyBuilder.create().apply {
+        bean(this@observable)
+        this.name(propName)
+        if (getter != null) this.getter(getter.javaMethod)
+        if (setter != null) this.setter(setter.javaMethod)
+    }.build() as ObjectProperty<T>
 }
 
 enum class SingleAssignThreadSafetyMode {
@@ -215,7 +216,7 @@ operator fun ObservableFloatValue.getValue(thisRef: Any, property: KProperty<*>)
 operator fun FloatProperty.setValue(thisRef: Any, property: KProperty<*>, value: Float) = set(value)
 
 operator fun ObservableLongValue.getValue(thisRef: Any, property: KProperty<*>) = get()
-operator fun LongProperty.setValue(thisRef: Any, property: KProperty<*>, value: Long)  = set(value)
+operator fun LongProperty.setValue(thisRef: Any, property: KProperty<*>, value: Long) = set(value)
 
 operator fun ObservableIntegerValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, value: Int) = set(value)
@@ -248,10 +249,10 @@ fun <T : Any> floatBinding(receiver: T, vararg dependencies: Observable, op: T.(
         = Bindings.createFloatBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T> ObservableValue<T>.booleanBinding(vararg dependencies: Observable, op: (T?) -> Boolean): BooleanBinding =
-    Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
+        Bindings.createBooleanBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T.() -> Boolean): BooleanBinding
-    = Bindings.createBooleanBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
+        = Bindings.createBooleanBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 /**
  * A Boolean binding that tracks all items in an observable list and create an observable boolean
@@ -270,7 +271,7 @@ fun <T> ObservableValue<T>.stringBinding(vararg dependencies: Observable, op: (T
         = Bindings.createStringBinding(Callable { op(value) }, this, *dependencies)
 
 fun <T : Any> stringBinding(receiver: T, vararg dependencies: Observable, op: T.() -> String?): StringBinding =
-    Bindings.createStringBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
+        Bindings.createStringBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
 fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op: (T?) -> R?): Binding<R?>
         = Bindings.createObjectBinding(Callable { op(value) }, this, *dependencies)
@@ -278,8 +279,9 @@ fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op:
 fun <T : Any, R> objectBinding(receiver: T, vararg dependencies: Observable, op: T.() -> R?): ObjectBinding<R?>
         = Bindings.createObjectBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
-private fun <T> createObservableArray(receiver: T, vararg dependencies: Observable):Array<out Observable> =
-    if (receiver is Observable) arrayOf(receiver, *dependencies) else dependencies
+private fun <T> createObservableArray(receiver: T, vararg dependencies: Observable): Array<out Observable> =
+        if (receiver is Observable) arrayOf(receiver, *dependencies) else dependencies
+
 /**
  * Assign the value from the creator to this WritableValue if and only if it is currently null
  */
@@ -293,3 +295,11 @@ fun Float?.toProperty() = SimpleFloatProperty(this ?: 0.0F)
 fun Long?.toProperty() = SimpleLongProperty(this ?: 0L)
 fun Boolean?.toProperty() = SimpleBooleanProperty(this ?: false)
 fun <T : Any> T?.toProperty() = SimpleObjectProperty<T>(this)
+
+fun maxDoubleBinding(vararg deps: ObservableDoubleValue) = object : DoubleBinding() {
+    init {
+        bind(*deps)
+    }
+
+    override fun computeValue() = (dependencies.maxBy { value } as? ObservableDoubleValue)?.doubleValue() ?: 0.0
+}

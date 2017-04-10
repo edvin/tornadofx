@@ -349,7 +349,12 @@ fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
-    val useScope = if (InstanceScoped::class.java.isAssignableFrom(type.java)) Scope() else FX.fixedScopes[type] ?: scope
+    val useScope = if (InstanceScoped::class.java.isAssignableFrom(type.java)) {
+        // InstanceScoped types must keep their scope if already instantiated, else create a new scope
+        if (Injectable::class.java.isAssignableFrom(type.java) && FX.getComponents(scope).containsKey(type as KClass<out Injectable>)) scope else Scope()
+    } else {
+        FX.fixedScopes[type] ?: scope
+    }
     inheritScopeHolder.set(useScope)
     val stringKeyedMap = HashMap<String, Any?>()
     params?.forEach {
@@ -436,8 +441,12 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             root.addChildIfPossible(node, index)
         }
         is Wizard -> {
-            val uicp = node.uiComponent<UIComponent>()
-            if (uicp != null) pages.add(uicp)
+            val uicmp = node.uiComponent<UIComponent>()
+            if (uicmp != null) {
+                pages.add(uicmp)
+                if (pages.size == 1)
+                    currentPage = uicmp
+            }
         }
         is Drawer -> {
             val uicmp = node.uiComponent<UIComponent>()

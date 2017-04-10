@@ -1,12 +1,13 @@
 package tornadofx
 
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
+import javafx.scene.layout.BorderStrokeStyle
+import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 import kotlin.reflect.KClass
@@ -14,11 +15,11 @@ import kotlin.reflect.KClass
 abstract class Wizard(title: String? = null, heading: String? = null) : View(title), InstanceScoped {
     val pages = FXCollections.observableArrayList<UIComponent>()
 
-    private val currentPageProperty = SimpleObjectProperty<UIComponent>()
-    private var currentPage by currentPageProperty
+    val currentPageProperty = SimpleObjectProperty<UIComponent>()
+    var currentPage by currentPageProperty
 
     private val hasNextProperty = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
-    private val currentPageComplete = SimpleBooleanProperty(false)
+    private val currentPageComplete = SimpleBooleanProperty()
 
     private val canGoNext = hasNextProperty.and(currentPageComplete)
     private val canGoBack = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
@@ -33,6 +34,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val showStepsProperty = SimpleBooleanProperty(true)
     var showSteps by showStepsProperty
 
+    val enableStepLinksProperty = SimpleBooleanProperty(false)
+    var enableStepLinks by enableStepLinksProperty
+
     val showHeaderProperty = SimpleBooleanProperty(true)
     var showHeader by showHeaderProperty
 
@@ -46,13 +50,11 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         currentPage.onSave()
         if (currentPage.isComplete) {
             currentPage = pages[getNextPage()]
-            root.scene.window.sizeToScene()
         }
     }
 
     fun back() {
         currentPage = pages[getPreviousPage()]
-        root.scene.window.sizeToScene()
     }
 
     override val root = borderpane {
@@ -78,6 +80,24 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         center {
             stackpane {
                 addClass(WizardStyles.content)
+
+                // Bind pref width/height to the larges page's preferred size
+                pages.onChange {
+                    val prefWidth: List<DoubleProperty> = pages.filter { it.root is Region }.map { (it.root as Region).prefWidthProperty() }
+                    prefWidthProperty().cleanBind(maxDoubleBinding(*prefWidth.toTypedArray()))
+
+                    val prefHeight: List<DoubleProperty> = pages.filter { it.root is Region }.map { (it.root as Region).prefHeightProperty() }
+                    prefHeightProperty().cleanBind(maxDoubleBinding(*prefHeight.toTypedArray()))
+                }
+
+                // Resize when largest pref changes
+                prefHeightProperty().onChange {
+                    scene?.window?.sizeToScene()
+                }
+                prefWidthProperty().onChange {
+                    scene?.window?.sizeToScene()
+                }
+
                 currentPageProperty.onChange {
                     clear()
                     if (it != null) add(it)
@@ -86,13 +106,15 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         }
         left {
             vbox {
-                removeWhen { showStepsProperty.not() }
                 addClass(WizardStyles.stepInfo)
+                removeWhen { showStepsProperty.not() }
                 label(stepsTextProperty).addClass(WizardStyles.stepsHeading)
                 vbox(5) {
-                    bindChildren(pages) {
-                        label("${pages.indexOf(it) + 1}. ${it.title}") {
-                            toggleClass(WizardStyles.bold, it.isDockedProperty)
+                    bindChildren(pages) { page ->
+                        hyperlink("${pages.indexOf(page) + 1}. ${page.title}") {
+                            toggleClass(WizardStyles.bold, page.isDockedProperty)
+                            action { currentPage = page }
+                            enableWhen { enableStepLinksProperty }
                         }
                     }
                 }
@@ -132,18 +154,13 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     init {
         importStylesheet(WizardStyles::class)
-        this@Wizard.heading = heading?: ""
-        pages.onChange {
-            if (currentPage == null && !pages.isEmpty()) currentPage = pages.first()
-        }
-        currentPageProperty.onChange {
-            if (it != null) currentPageComplete.cleanBind(it.complete)
-        }
-    }
+        this@Wizard.heading = heading ?: ""
 
-    companion object {
-        fun open(wizard: KClass<out Wizard>, scope: Scope = Scope()) {
-            find(wizard, scope).openModal()
+        // Rebind currentPageComplete on change
+        currentPageProperty.addListener { _, oldPage, newPage ->
+            if (newPage != null && newPage != oldPage) {
+                currentPageComplete.cleanBind(newPage.complete)
+            }
         }
     }
 }
@@ -173,6 +190,22 @@ class WizardStyles : Stylesheet() {
                     fontWeight = FontWeight.BOLD
                     underline = true
                     padding = box(15.px, 0.px)
+                }
+                hyperlink {
+                    borderStyle += BorderStrokeStyle.NONE
+                    borderWidth += box(0.px)
+                    underline = false
+                }
+                hyperlink and visited {
+                    unsafe("-fx-text-fill", raw("-fx-accent"))
+
+                }
+                hyperlink and visited and hover {
+                    unsafe("-fx-text-fill", raw("-fx-accent"))
+                }
+                hyperlink and disabled {
+                    textFill = Color.BLACK
+                    opacity = 1.0
                 }
             }
             header {
