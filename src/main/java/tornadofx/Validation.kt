@@ -2,10 +2,12 @@
 
 package tornadofx
 
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.value.ObservableValue
+import javafx.collections.FXCollections
 import javafx.scene.Node
 import javafx.scene.control.TextInputControl
 import kotlin.concurrent.thread
@@ -21,7 +23,7 @@ sealed class ValidationTrigger {
 class ValidationMessage(val message: String?, val severity: ValidationSeverity)
 
 class ValidationContext {
-    val validators = mutableListOf<Validator<*>>()
+    val validators = FXCollections.observableArrayList<Validator<*>>()
 
     /**
      * The decoration provider decides what kind of decoration should be applied to
@@ -141,6 +143,8 @@ class ValidationContext {
 
         var result: ValidationMessage? = null
         var decorator: Decorator? = null
+        val valid: BooleanExpression = SimpleBooleanProperty(true)
+        val isValid: Boolean get() = valid.value
 
         fun validate(decorateErrors: Boolean = true): Boolean {
             if (decorateErrors) {
@@ -149,6 +153,7 @@ class ValidationContext {
             }
 
             result = validator(this@ValidationContext, property.value)
+            (valid as BooleanProperty).value = result == null || result!!.severity != ValidationSeverity.Error
 
             if (decorateErrors) {
                 result?.apply {
@@ -161,7 +166,6 @@ class ValidationContext {
             return isValid
         }
 
-        val isValid: Boolean get() = result == null || result!!.severity != ValidationSeverity.Error
     }
 
 }

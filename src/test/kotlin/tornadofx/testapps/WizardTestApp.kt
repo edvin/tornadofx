@@ -39,7 +39,7 @@ class WizardStep1 : View("Customer Data") {
     val customer: CustomerModel by inject()
     val wizard: CustomerWizard by inject()
 
-    override val complete = customer.valid
+    override val complete = customer.valid(customer.name, customer.zip, customer.city)
 
     override val root = form {
         fieldset(title) {
@@ -67,7 +67,8 @@ class WizardStep1 : View("Customer Data") {
     }
 
     override fun onSave() {
-        isComplete = customer.commit(customer.name, customer.zip, customer.city)
+        customer.commit(customer.name, customer.zip, customer.city)
+        println(complete)
     }
 }
 

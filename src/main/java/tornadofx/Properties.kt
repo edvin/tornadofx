@@ -261,9 +261,16 @@ fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T
  */
 fun <T : Any> booleanListBinding(list: ObservableList<T>, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
     val facade = SimpleBooleanProperty()
-    list.onChange {
-        facade.cleanBind(list.map(itemToBooleanExpr).reduce { a, b -> a.and(b) })
+    fun rebind() {
+        if (list.isEmpty()) {
+            facade.unbind()
+            facade.value = false
+        } else {
+            facade.cleanBind(list.map(itemToBooleanExpr).reduce { a, b -> a.and(b) })
+        }
     }
+    list.onChange { rebind() }
+    rebind()
     return facade
 }
 

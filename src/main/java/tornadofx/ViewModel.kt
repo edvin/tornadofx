@@ -4,6 +4,7 @@ package tornadofx
 
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.BooleanBinding
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -258,6 +259,26 @@ open class ViewModel : Component(), Injectable {
 
     val isValid: Boolean get() = validationContext.isValid
     val valid: ReadOnlyBooleanProperty get() = validationContext.valid
+
+    /**
+     * Create a boolean binding indicating if the given list of properties are currently valid
+     * with regards to the ValidationContext of this ViewModel.
+     */
+    fun valid(vararg fields: Property<*>): BooleanExpression {
+        val matchingValidators = FXCollections.observableArrayList<ValidationContext.Validator<*>>()
+
+        fun updateMatchingValidators() {
+            matchingValidators.setAll(validationContext.validators.filter {
+                val facade = it.property.viewModelFacade
+                facade != null && fields.contains(facade)
+            })
+        }
+
+        validationContext.validators.onChange { updateMatchingValidators() }
+        updateMatchingValidators()
+
+        return booleanListBinding(matchingValidators) { valid }
+    }
 
     /**
      * Extract the value of the corresponding source property
