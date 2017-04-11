@@ -1,3 +1,5 @@
+@file:Suppress("IMPLICIT_CAST_TO_ANY")
+
 package tornadofx
 
 import javafx.beans.binding.BooleanExpression
@@ -36,6 +38,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     val showStepsProperty = SimpleBooleanProperty(true)
     var showSteps by showStepsProperty
+
+    val numberedStepsProperty = SimpleBooleanProperty(true)
+    var numberedSteps by numberedStepsProperty
 
     val enableStepLinksProperty = SimpleBooleanProperty(false)
     var enableStepLinks by enableStepLinksProperty
@@ -102,7 +107,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 vbox(5) {
                     bindChildren(pages) { page ->
                         val isPageActive = currentPageProperty.isEqualTo(page)
-                        hyperlink("${pages.indexOf(page) + 1}. ${page.title}") {
+
+                        hyperlink("") {
+                            textProperty().bind(stringBinding(numberedStepsProperty) { "${if (numberedSteps) (pages.indexOf(page) + 1).toString() + ". " else ""}${page.title}" })
                             toggleClass(WizardStyles.bold, isPageActive)
                             action { currentPage = page }
                             enableWhen { enableStepLinksProperty }

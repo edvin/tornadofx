@@ -1,8 +1,6 @@
 package tornadofx.testapps
 
-import javafx.beans.binding.BooleanExpression
 import javafx.geometry.Pos
-import javafx.scene.control.TextField
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
@@ -29,6 +27,8 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         add(WizardStep2::class)
         showSteps = true
         showHeader = true
+        numberedSteps = true
+        showStepsHeader = false
         enableStepLinks = true
     }
 
