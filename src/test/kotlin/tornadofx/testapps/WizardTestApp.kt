@@ -1,6 +1,8 @@
 package tornadofx.testapps
 
+import javafx.beans.binding.BooleanExpression
 import javafx.geometry.Pos
+import javafx.scene.control.TextField
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
@@ -68,7 +70,6 @@ class WizardStep1 : View("Customer Data") {
 
     override fun onSave() {
         customer.commit(customer.name, customer.zip, customer.city)
-        println(complete)
     }
 }
 

@@ -19,6 +19,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
     val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
+    val allPagesComplete: BooleanExpression get() = booleanListBinding(pages) { complete }
 
     open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
     open val canGoNext: BooleanExpression = hasNext
