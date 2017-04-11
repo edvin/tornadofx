@@ -278,7 +278,7 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
 fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, op: (ToggleButton.() -> Unit)? = null) =
         opcr(this, ToggleButton(text).apply {
             if (group != null) toggleGroup = group
-            if (toggleGroup.selectedToggle == null && selectFirst) isSelected = true
+            if (toggleGroup?.selectedToggle == null && selectFirst) isSelected = true
         }, op)
 
 fun ToggleButton.whenSelected(op: () -> Unit) {

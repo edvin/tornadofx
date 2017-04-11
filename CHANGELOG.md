@@ -2,6 +2,7 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- Node.toggleButton behaves correctly if no togglegroup is available (https://github.com/edvin/tornadofx/issues/296)
 - ViewModel partial commit and validate: `commit(field1, field2)`
 - Wizard component
 - ViewModel.valid property will be updated as validators
