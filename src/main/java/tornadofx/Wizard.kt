@@ -31,6 +31,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val finishButtonTextProperty = SimpleStringProperty("Finish")
     val cancelButtonTextProperty = SimpleStringProperty("Cancel")
 
+    val showStepsHeaderProperty = SimpleBooleanProperty(true)
+    var showStepsHeader by showStepsHeaderProperty
+
     val showStepsProperty = SimpleBooleanProperty(true)
     var showSteps by showStepsProperty
 
@@ -92,7 +95,10 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
             vbox {
                 addClass(WizardStyles.stepInfo)
                 removeWhen { showStepsProperty.not() }
-                label(stepsTextProperty).addClass(WizardStyles.stepsHeading)
+                label(stepsTextProperty) {
+                    addClass(WizardStyles.stepsHeading)
+                    removeWhen { showStepsHeaderProperty.not() }
+                }
                 vbox(5) {
                     bindChildren(pages) { page ->
                         val isPageActive = currentPageProperty.isEqualTo(page)
