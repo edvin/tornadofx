@@ -94,8 +94,8 @@ abstract class Component : Configurable {
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
 
-    inline fun <reified T : Component> find(params: Map<*, Any?>? = null): T = find(T::class, scope, params)
-    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null) = find(type, scope, params)
+    inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
+    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
 
     /**
      * Store and retrieve preferences.

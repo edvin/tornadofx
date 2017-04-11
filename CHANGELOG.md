@@ -2,6 +2,7 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- find<Component> takes op block to let you operate on the found Component directly
 - Node.toggleButton behaves correctly if no togglegroup is available (https://github.com/edvin/tornadofx/issues/296)
 - ViewModel partial commit and validate: `commit(field1, field2)`
 - Wizard component

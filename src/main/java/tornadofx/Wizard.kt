@@ -165,7 +165,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
 
     override fun onDock() {
         complete.onChange {
-            if (it) completeListeners.forEach { it()}
+            if (it) completeListeners.forEach { it() }
         }
     }
 }
