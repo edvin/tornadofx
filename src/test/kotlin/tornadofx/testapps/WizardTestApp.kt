@@ -12,8 +12,7 @@ class WizardTestView : View("Wizard Test") {
     override val root = button("Create customer") {
         isDefaultButton = true
         action {
-            val wizard = find<CustomerWizard>()
-            wizard.openModal()
+            find<CustomerWizard>().openModal()
         }
     }
 }
