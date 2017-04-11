@@ -67,7 +67,7 @@ class WizardStep1 : View("Customer Data") {
     }
 
     override fun onSave() {
-        customer.commit()
+        isComplete = customer.commit(customer.name, customer.zip, customer.city)
     }
 }
 

@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -16,9 +17,10 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
     var currentPage by currentPageProperty
 
-    private val canGoNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
-    private val canGoBack = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
-    private val canFinish = booleanListBinding(pages) { complete }
+    open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
+
+    private val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
+    private val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
 
     val stepsTextProperty = SimpleStringProperty("Steps")
     val backButtonTextProperty = SimpleStringProperty("< Back")
@@ -76,8 +78,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
             stackpane {
                 addClass(WizardStyles.content)
                 bindChildren(pages) { page ->
+                    val isPageActive = currentPageProperty.isEqualTo(page)
                     page.root.apply {
-                        visibleWhen { currentPageProperty.isEqualTo(page) }
+                        visibleWhen { isPageActive }
                     }
                 }
             }
@@ -89,8 +92,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 label(stepsTextProperty).addClass(WizardStyles.stepsHeading)
                 vbox(5) {
                     bindChildren(pages) { page ->
+                        val isPageActive = currentPageProperty.isEqualTo(page)
                         hyperlink("${pages.indexOf(page) + 1}. ${page.title}") {
-                            toggleClass(WizardStyles.bold, currentPageProperty.isEqualTo(page))
+                            toggleClass(WizardStyles.bold, isPageActive)
                             action { currentPage = page }
                             enableWhen { enableStepLinksProperty }
                         }
@@ -103,12 +107,12 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 addClass(WizardStyles.buttons)
                 button(type = ButtonBar.ButtonData.BACK_PREVIOUS) {
                     textProperty().bind(backButtonTextProperty)
-                    enableWhen { canGoBack }
+                    enableWhen { hasPrevious }
                     action { back() }
                 }
                 button(type = ButtonBar.ButtonData.NEXT_FORWARD) {
                     textProperty().bind(nextButtonTextProperty)
-                    enableWhen { canGoNext }
+                    enableWhen { hasNext }
                     action { next() }
                 }
                 button(type = ButtonBar.ButtonData.CANCEL_CLOSE) {
