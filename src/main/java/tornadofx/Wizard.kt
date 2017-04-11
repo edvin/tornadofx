@@ -17,10 +17,12 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
     var currentPage by currentPageProperty
 
-    open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
+    val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
+    val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
 
-    private val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
-    private val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
+    open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
+    open val canGoNext: BooleanExpression = hasNext
+    open val canGoBack: BooleanExpression = hasPrevious
 
     val stepsTextProperty = SimpleStringProperty("Steps")
     val backButtonTextProperty = SimpleStringProperty("< Back")
@@ -107,12 +109,12 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 addClass(WizardStyles.buttons)
                 button(type = ButtonBar.ButtonData.BACK_PREVIOUS) {
                     textProperty().bind(backButtonTextProperty)
-                    enableWhen { hasPrevious }
+                    enableWhen { canGoBack }
                     action { back() }
                 }
                 button(type = ButtonBar.ButtonData.NEXT_FORWARD) {
                     textProperty().bind(nextButtonTextProperty)
-                    enableWhen { hasNext }
+                    enableWhen { canGoNext }
                     action { next() }
                 }
                 button(type = ButtonBar.ButtonData.CANCEL_CLOSE) {
