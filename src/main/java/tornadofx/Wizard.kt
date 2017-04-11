@@ -23,6 +23,8 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
     val allPagesComplete: BooleanExpression get() = booleanListBinding(pages) { complete }
 
+    override val complete = SimpleBooleanProperty(false)
+
     open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
     open val canGoNext: BooleanExpression = hasNext
     open val canGoBack: BooleanExpression = hasPrevious
@@ -150,9 +152,21 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         }
     }
 
+    private val completeListeners = arrayListOf<() -> Unit>()
+
+    fun onComplete(resultListener: () -> Unit) {
+        completeListeners.add(resultListener)
+    }
+
     init {
         importStylesheet(WizardStyles::class)
         this.heading = heading ?: ""
+    }
+
+    override fun onDock() {
+        complete.onChange {
+            if (it) completeListeners.forEach { it()}
+        }
     }
 }
 
