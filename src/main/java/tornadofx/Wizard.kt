@@ -43,6 +43,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     val showStepsHeaderProperty = SimpleBooleanProperty(true)
     var showStepsHeader by showStepsHeaderProperty
 
+    val stepLinksCommitsProperty = SimpleBooleanProperty(true)
+    var stepLinksCommits by stepLinksCommitsProperty
+
     val showStepsProperty = SimpleBooleanProperty(true)
     var showSteps by showStepsProperty
 
@@ -118,7 +121,14 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                         hyperlink("") {
                             textProperty().bind(stringBinding(numberedStepsProperty) { "${if (numberedSteps) (pages.indexOf(page) + 1).toString() + ". " else ""}${page.title}" })
                             toggleClass(WizardStyles.bold, isPageActive)
-                            action { currentPage = page }
+                            action {
+                                if (stepLinksCommits && pages.indexOf(page) > pages.indexOf(currentPage)) {
+                                    currentPage.onSave()
+                                    if (currentPage.isComplete) currentPage = page
+                                } else {
+                                    currentPage = page
+                                }
+                            }
                             enableWhen { enableStepLinksProperty }
                         }
                     }

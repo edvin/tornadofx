@@ -23,9 +23,10 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
     override val canFinish = allPagesComplete
 
     init {
-        customer.item = Customer()
         add(WizardStep1::class)
         add(WizardStep2::class)
+        customer.item = Customer()
+//        graphic = imageview("")
         showSteps = true
         showHeader = true
         numberedSteps = true

@@ -21,8 +21,8 @@ import javax.json.*
 import javax.json.JsonValue.ValueType.NULL
 import javax.json.stream.JsonGenerator
 import kotlin.reflect.KProperty
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
-import kotlin.reflect.memberProperties
 
 interface JsonModel {
     /**
