@@ -77,7 +77,7 @@ compile 'no.tornado:tornadofx:1.7.1'
 
 ### Snapshots are published to Sonatype
 
-Configure your build environment to use snapshots to try out the latest features:
+Configure your build environment to use snapshots if you want to try out the latest features:
 
 ```xml
  <repositories>
