@@ -3,8 +3,12 @@ package tornadofx.tests
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
+import tornadofx.getValue
+import tornadofx.setValue
 
 class Customer {
+    enum class Type { Private, Company }
+
     val nameProperty = SimpleStringProperty()
     var name by nameProperty
 
@@ -14,14 +18,17 @@ class Customer {
     val cityProperty = SimpleStringProperty()
     var city by cityProperty
 
+    val typeProperty = SimpleObjectProperty<Type>()
+    var type by typeProperty
 
-    val primaryContactProperty = SimpleObjectProperty<Person>()
-    var primaryContact by primaryContactProperty
+    override fun toString(): String {
+        return "Customer(name=$name, zip=$zip, city=$city)"
+    }
 }
 
 class CustomerModel : ItemViewModel<Customer>() {
-    val name = bind { item?.nameProperty }
-    val zip = bind { item?.zipProperty }
-    val city = bind { item?.cityProperty }
-    val primaryContact = bind { item?.primaryContactProperty }
+    val name = bind(autocommit = true) { item?.nameProperty }
+    val zip = bind(autocommit = true) { item?.zipProperty }
+    val city = bind(autocommit = true) { item?.cityProperty }
+    val type = bind(autocommit = true) { item?.typeProperty }
 }

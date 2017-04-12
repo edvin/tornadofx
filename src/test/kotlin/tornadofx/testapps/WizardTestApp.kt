@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
@@ -9,16 +10,17 @@ class WizardTestApp : App(WizardTestView::class)
 class WizardWorkspaceApp : WorkspaceApp(CustomerWizard::class)
 
 class WizardTestView : View("Wizard Test") {
-    override val root = button("Create customer") {
-        isDefaultButton = true
-        action {
-            find<CustomerWizard>().openModal()
-        }
+    override val root = stackpane {
+        paddingAll = 100
+        button("Create customer").action { find<CustomerWizard>().openModal() }
     }
 }
 
 class CustomerWizard : Wizard("Create customer", "Provide customer information") {
     val customer: CustomerModel by inject()
+
+    override val canGoNext = currentPageComplete
+    override val canFinish = allPagesComplete
 
     init {
         customer.item = Customer()
@@ -32,7 +34,8 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
     }
 
     override fun onSave() {
-        println("Saving ${customer.item.name}")
+        alert(Alert.AlertType.INFORMATION, "Saving customer", "Collected data: ${customer.item}")
+        super.onSave()
     }
 }
 
@@ -40,20 +43,17 @@ class WizardStep1 : View("Customer Data") {
     val customer: CustomerModel by inject()
     val wizard: CustomerWizard by inject()
 
-    override val complete = customer.valid(customer.name, customer.zip, customer.city)
+    override val complete = customer.valid(customer.name)
 
     override val root = form {
         fieldset(title) {
-            field("Name") {
-                textfield(customer.name).required()
+            field("Type") {
+                combobox(customer.type, Customer.Type.values().toList())
             }
-            field("Zip/City") {
-                textfield(customer.zip) {
-                    prefColumnCount = 7
+            field("Name") {
+                textfield(customer.name) {
                     required()
-                }
-                textfield(customer.city) {
-                    required()
+                    whenDocked { requestFocus() }
                 }
             }
             hbox {
@@ -66,23 +66,22 @@ class WizardStep1 : View("Customer Data") {
             }
         }
     }
-
-    override fun onSave() {
-        customer.commit(customer.name, customer.zip, customer.city)
-    }
 }
 
-class WizardStep2 : View("Contact person") {
+class WizardStep2 : View("Address") {
+    val customer: CustomerModel by inject()
+    override val complete = customer.valid(customer.zip, customer.city)
+
     override val root = form {
         fieldset(title) {
-            field("Name") {
-                textfield()
-            }
-            field("Phone") {
-                textfield()
-            }
-            field("Email") {
-                textfield()
+            field("Zip/City") {
+                textfield(customer.zip) {
+                    prefColumnCount = 7
+                    required()
+                }
+                textfield(customer.city) {
+                    required()
+                }
             }
         }
     }

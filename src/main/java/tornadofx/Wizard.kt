@@ -1,12 +1,15 @@
-@file:Suppress("IMPLICIT_CAST_TO_ANY")
+@file:Suppress("unused")
 
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
+import javafx.beans.property.BooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
 import javafx.scene.layout.BorderStrokeStyle
@@ -14,14 +17,16 @@ import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 
 abstract class Wizard(title: String? = null, heading: String? = null) : View(title), InstanceScoped {
-    val pages = FXCollections.observableArrayList<UIComponent>()
+    val pages: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
 
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
-    var currentPage by currentPageProperty
+    var currentPage: UIComponent by currentPageProperty
 
     val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
     val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
     val allPagesComplete: BooleanExpression get() = booleanListBinding(pages) { complete }
+
+    val currentPageComplete: BooleanExpression = SimpleBooleanProperty(false)
 
     override val complete = SimpleBooleanProperty(false)
 
@@ -30,10 +35,10 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     open val canGoBack: BooleanExpression = hasPrevious
 
     val stepsTextProperty = SimpleStringProperty("Steps")
-    val backButtonTextProperty = SimpleStringProperty("< Back")
-    val nextButtonTextProperty = SimpleStringProperty("Next >")
-    val finishButtonTextProperty = SimpleStringProperty("Finish")
-    val cancelButtonTextProperty = SimpleStringProperty("Cancel")
+    val backButtonTextProperty = SimpleStringProperty("< _Back")
+    val nextButtonTextProperty = SimpleStringProperty("_Next >")
+    val finishButtonTextProperty = SimpleStringProperty("_Finish")
+    val cancelButtonTextProperty = SimpleStringProperty("_Cancel")
 
     val showStepsHeaderProperty = SimpleBooleanProperty(true)
     var showStepsHeader by showStepsHeaderProperty
@@ -51,7 +56,7 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
     var showHeader by showHeaderProperty
 
     val graphicProperty = SimpleObjectProperty<Node>()
-    var graphic by graphicProperty
+    var graphic: Node by graphicProperty
 
     open fun getNextPage() = pages.indexOf(currentPage) + 1
     open fun getPreviousPage() = pages.indexOf(currentPage) - 1
@@ -130,7 +135,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 }
                 button(type = ButtonBar.ButtonData.NEXT_FORWARD) {
                     textProperty().bind(nextButtonTextProperty)
-                    enableWhen { canGoNext }
+                    Platform.runLater {
+                        enableWhen { canGoNext.and(hasNext) }
+                    }
                     action { next() }
                 }
                 button(type = ButtonBar.ButtonData.CANCEL_CLOSE) {
@@ -139,7 +146,9 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
                 }
                 button(type = ButtonBar.ButtonData.FINISH) {
                     textProperty().bind(finishButtonTextProperty)
-                    enableWhen { canFinish }
+                    Platform.runLater {
+                        enableWhen { canFinish }
+                    }
                     action {
                         currentPage.onSave()
                         if (currentPage.isComplete) {
@@ -158,9 +167,24 @@ abstract class Wizard(title: String? = null, heading: String? = null) : View(tit
         completeListeners.add(resultListener)
     }
 
+    override fun onSave() {
+        super.onSave()
+        isComplete = true
+    }
+
     init {
         importStylesheet(WizardStyles::class)
         this.heading = heading ?: ""
+        currentPageProperty.addListener { _, oldPage, newPage ->
+            if (newPage != null) {
+                (currentPageComplete as BooleanProperty).bind(newPage.complete)
+                Platform.runLater {
+                    newPage.root.lookupAll("*").find { it.isFocusTraversable }?.requestFocus()
+                    newPage.callOnDock()
+                }
+            }
+            oldPage?.callOnUndock()
+        }
     }
 
     override fun onDock() {

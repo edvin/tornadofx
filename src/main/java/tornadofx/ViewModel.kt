@@ -61,7 +61,7 @@ open class ViewModel : Component(), Injectable {
                 if (it.wasAdded()) {
                     it.addedSubList.forEach { facade ->
                         facade.addListener { obs, _, nv ->
-                            propertyMap[obs]!!.invoke()?.value = nv
+                            if (validate(fields = facade)) propertyMap[obs]!!.invoke()?.value = nv
                         }
                     }
                 }
@@ -157,7 +157,7 @@ open class ViewModel : Component(), Injectable {
         // Update facade when the property returned to us is changed externally
         prop?.addListener(externalChangeListeners[facade]!!)
 
-        // Autocommit makes sure changes are written back to the underlying property. This bypasses validation.
+        // Autocommit makes sure changes are written back to the underlying property. Validation will run before the commit is performed.
         if (autocommit) autocommitProperties.add(facade)
 
         return facade as ResultType

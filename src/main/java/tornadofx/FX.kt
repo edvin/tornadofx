@@ -443,7 +443,10 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is Wizard -> {
             val uicmp = node.uiComponent<UIComponent>()
             if (uicmp != null) {
+                val muteState = uicmp.muteDocking
+                uicmp.muteDocking = true
                 pages.add(uicmp)
+                uicmp.muteDocking = muteState
                 if (pages.size == 1)
                     currentPage = uicmp
             }
