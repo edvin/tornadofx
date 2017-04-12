@@ -845,7 +845,7 @@ class ResourceLookup(val component: Any) {
     fun url(resource: String): URL = component.javaClass.getResource(resource)
     fun stream(resource: String): InputStream = component.javaClass.getResourceAsStream(resource)
     fun image(resource: String): Image = Image(stream(resource))
-    fun imageview(resource: String): ImageView = ImageView(Image(stream(resource)))
+    fun imageview(resource: String, lazyload: Boolean = false): ImageView = ImageView(Image(url(resource).toExternalForm(), lazyload))
     fun json(resource: String) = stream(resource).toJSON()
     fun jsonArray(resource: String) = stream(resource).toJSONArray()
     fun text(resource: String): String = stream(resource).use { it.bufferedReader().readText() }
