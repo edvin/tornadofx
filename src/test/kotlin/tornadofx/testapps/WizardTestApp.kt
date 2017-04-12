@@ -26,8 +26,9 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         add(WizardStep1::class)
         add(WizardStep2::class)
         customer.item = Customer()
-//        graphic = imageview("")
+        graphic = imageview(resources.url("/tornadofx/tests/person.png").toExternalForm(), false)
         showSteps = true
+        stepLinksCommits = true
         showHeader = true
         numberedSteps = true
         showStepsHeader = false
