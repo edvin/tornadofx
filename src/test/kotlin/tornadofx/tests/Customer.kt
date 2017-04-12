@@ -3,8 +3,9 @@ package tornadofx.tests
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import tornadofx.*
+import javax.json.JsonObject
 
-class Customer {
+class Customer : JsonModel {
     enum class Type { Private, Company }
 
     val nameProperty = SimpleStringProperty()
@@ -22,6 +23,19 @@ class Customer {
     override fun toString(): String {
         return "Customer(name=$name, zip=$zip, city=$city)"
     }
+
+    override fun updateModel(json: JsonObject) {
+        with(json) {
+            name = string("name")
+        }
+    }
+
+    override fun toJSON(json: JsonBuilder) {
+        with(json) {
+            add("name", name)
+        }
+    }
+
 }
 
 class CustomerModel : ItemViewModel<Customer>() {

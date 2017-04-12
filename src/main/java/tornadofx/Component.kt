@@ -55,7 +55,7 @@ interface Configurable {
 
     fun Properties.set(pair: Pair<String, Any?>) {
         val value = pair.second?.let {
-            (it as? JsonModel)?.toJSON() ?: it.toString()
+            (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
         }
         set(pair.first, value)
     }
