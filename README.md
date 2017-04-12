@@ -90,6 +90,8 @@ Configure your build environment to use snapshots if you want to try out the lat
  </repositories>
 ```
 
+Snapshots are pushed every day at GMT 16:00 if there was any changes.
+
 ## Important version note
 
 TornadoFX is now built against Kotlin 1.1.1 and compiled with `jvmTarget 1.8`, which means that your code must do the same. Update your build system to configure the `jvmTarget` accordingly.
