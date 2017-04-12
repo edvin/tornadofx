@@ -1,20 +1,12 @@
 package tornadofx.testapps
 
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
-import javafx.scene.control.Alert
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
 
-class WizardTestApp : App(WizardTestView::class)
-class WizardWorkspaceApp : WorkspaceApp(CustomerWizard::class)
-
-class WizardTestView : View("Wizard Test") {
-    override val root = stackpane {
-        paddingAll = 100
-        button("Create customer").action { find<CustomerWizard>().openModal() }
-    }
-}
+class WizardTestApp : WorkspaceApp(WizardCustomerList::class)
 
 class CustomerWizard : Wizard("Create customer", "Provide customer information") {
     val customer: CustomerModel by inject()
@@ -33,11 +25,6 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         numberedSteps = true
         showStepsHeader = false
         enableStepLinks = true
-    }
-
-    override fun onSave() {
-        alert(Alert.AlertType.INFORMATION, "Saving customer", "Collected data: ${customer.item}")
-        super.onSave()
     }
 }
 
@@ -84,6 +71,26 @@ class WizardStep2 : View("Address") {
                 }
                 textfield(customer.city) {
                     required()
+                }
+            }
+        }
+    }
+}
+
+class WizardCustomerList : View() {
+    val customers = FXCollections.observableArrayList<Customer>()
+
+    override val root = tableview(customers) {
+        column("Name", Customer::nameProperty)
+        columnResizePolicy = SmartResize.POLICY
+    }
+
+    override fun onDock() {
+        with(workspace) {
+            button("_Add").action {
+                find<CustomerWizard> {
+                    onComplete { customers.add(customer.item) }
+                    openModal()
                 }
             }
         }
