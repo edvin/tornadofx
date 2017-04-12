@@ -53,6 +53,7 @@ class WizardStep1 : View("Customer Data") {
             field("Name") {
                 textfield(customer.name) {
                     required()
+                    // Make sure we get focus instead of the type combo
                     whenDocked { requestFocus() }
                 }
             }
