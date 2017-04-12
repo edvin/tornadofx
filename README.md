@@ -75,7 +75,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 compile 'no.tornado:tornadofx:1.7.1'
 ```
 
-### Snapshots are published to SonaType
+### Snapshots are published to Sonatype
 
 Configure your build environment to use snapshots to try out the latest features:
 
