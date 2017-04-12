@@ -90,7 +90,7 @@ Configure your build environment to use snapshots if you want to try out the lat
  </repositories>
 ```
 
-Snapshots are pushed every day at GMT 16:00 if there has been any changes.
+Snapshots are published every day at GMT 16:00 if there has been any changes.
 
 ## Important version note
 
