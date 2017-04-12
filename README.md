@@ -75,6 +75,21 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 compile 'no.tornado:tornadofx:1.7.1'
 ```
 
+### Snapshots are published to SonaType
+
+Configure your build environment to use snapshots to try out the latest features:
+
+```xml
+ <repositories>
+   <repository>
+     <id>snapshots-repo</id>
+     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+     <releases><enabled>false</enabled></releases>
+     <snapshots><enabled>true</enabled></snapshots>
+   </repository>
+ </repositories>
+```
+
 ## Important version note
 
 TornadoFX is now built against Kotlin 1.1.1 and compiled with `jvmTarget 1.8`, which means that your code must do the same. Update your build system to configure the `jvmTarget` accordingly.
