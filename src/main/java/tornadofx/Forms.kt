@@ -110,10 +110,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         this@Fieldset.labelPosition = labelPosition
         if (text != null) this@Fieldset.text = text
 
-        // Register with parent Form
+        // Register/deregister with parent Form
         parentProperty().addListener { _, oldParent, newParent ->
-            oldParent?.findParentOfType(Form::class)?.fieldsets?.remove(this)
-            newParent?.findParentOfType(Form::class)?.fieldsets?.add(this)
+            ((oldParent as? Form) ?: oldParent?.findParentOfType(Form::class))?.fieldsets?.remove(this)
+            ((newParent as? Form) ?: newParent?.findParentOfType(Form::class))?.fieldsets?.add(this)
         }
     }
 
@@ -223,10 +223,10 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
         inputContainer.addPseudoClass(orientation.name.toLowerCase())
         children.add(inputContainer)
 
-        // Register with parent Fieldset
+        // Register/deregister with parent Fieldset
         parentProperty().addListener { _, oldParent, newParent ->
-            oldParent?.findParentOfType(Fieldset::class)?.fields?.remove(this)
-            newParent?.findParentOfType(Fieldset::class)?.fields?.add(this)
+            ((oldParent as? Fieldset) ?: oldParent?.findParentOfType(Fieldset::class))?.fields?.remove(this)
+            ((newParent as? Fieldset) ?: newParent?.findParentOfType(Fieldset::class))?.fields?.add(this)
         }
     }
 }
