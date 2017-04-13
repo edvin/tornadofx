@@ -3,6 +3,8 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
+import javafx.animation.Animation
+import javafx.animation.PauseTransition
 import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.DoubleProperty
@@ -34,6 +36,7 @@ import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.util.Callback
+import javafx.util.Duration
 import javafx.util.StringConverter
 import javafx.util.converter.*
 import tornadofx.osgi.OSGIConsole
@@ -1171,5 +1174,55 @@ class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) :
             maxWidth = size.px
             maxHeight = size.px
         }
+    }
+}
+
+internal class ShortLongPressHandler(node: Node) {
+    var holdTimer = PauseTransition(700.millis)
+    var consume: Boolean = false
+    var originatingEvent: MouseEvent? = null
+
+    var shortAction: ((MouseEvent) -> Unit)? = null
+    var longAction: ((MouseEvent) -> Unit)? = null
+
+    init {
+        holdTimer.setOnFinished { longAction?.invoke(originatingEvent!!) }
+
+        node.addEventHandler(MouseEvent.MOUSE_PRESSED) {
+            originatingEvent = it
+            if (longAction == null) {
+                shortAction?.invoke(originatingEvent!!)
+            } else {
+                holdTimer.playFromStart()
+            }
+            if (consume) it.consume()
+        }
+
+        node.addEventHandler(MouseEvent.MOUSE_RELEASED) {
+            if (holdTimer.status == Animation.Status.RUNNING) {
+                holdTimer.stop()
+                shortAction?.invoke(originatingEvent!!)
+                if (consume) it.consume()
+            }
+        }
+    }
+}
+
+internal val Node.shortLongPressHandler: ShortLongPressHandler get() = properties.getOrPut("tornadofx.shortLongPressHandler") {
+    ShortLongPressHandler(this)
+} as ShortLongPressHandler
+
+fun Node.shortpress(consume: Boolean = false, action: (InputEvent) -> Unit) {
+    shortLongPressHandler.apply {
+        this.consume = consume
+        this.shortAction = action
+    }
+}
+
+fun Node.longpress(threshold: Duration = 700.millis, consume: Boolean = false, action: (MouseEvent) -> Unit) {
+    shortLongPressHandler.apply {
+        this.consume = consume
+        this.holdTimer.duration = threshold
+        this.longAction = action
     }
 }

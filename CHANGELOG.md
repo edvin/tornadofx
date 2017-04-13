@@ -2,6 +2,7 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- `shortpress`/`longpress` actions (https://github.com/edvin/tornadofx/pull/286)
 - Form layout supports arbitrary layout containers inside fieldsets (to support multiple rows of fields or any other form layout)
 - radiomenuitem builder default argument for keyCombination (https://github.com/edvin/tornadofx/issues/298)
 - ViewModel bindings configured with autocommit must pass validation before the value is committed
