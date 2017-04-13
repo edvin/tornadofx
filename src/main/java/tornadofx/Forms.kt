@@ -111,8 +111,9 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         if (text != null) this@Fieldset.text = text
 
         // Register with parent Form
-        parentProperty().onChange {
-            findParentOfType(Form::class)?.fieldsets?.add(this)
+        parentProperty().addListener { _, oldParent, newParent ->
+            oldParent?.findParentOfType(Form::class)?.fieldsets?.remove(this)
+            newParent?.findParentOfType(Form::class)?.fieldsets?.add(this)
         }
     }
 
@@ -223,8 +224,9 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
         children.add(inputContainer)
 
         // Register with parent Fieldset
-        parentProperty().onChange {
-            findParentOfType(Fieldset::class)?.fields?.add(this)
+        parentProperty().addListener { _, oldParent, newParent ->
+            oldParent?.findParentOfType(Fieldset::class)?.fields?.remove(this)
+            newParent?.findParentOfType(Fieldset::class)?.fields?.add(this)
         }
     }
 }
