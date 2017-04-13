@@ -6,7 +6,6 @@ import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
-import javafx.scene.input.MouseEvent
 
 //Menu-related operator functions
 operator fun <T : MenuItem> Menu.plusAssign(menuItem: T): Unit {
@@ -174,7 +173,7 @@ fun Menu.separator() {
     this += SeparatorMenuItem()
 }
 
-fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination?, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)? = null): RadioMenuItem {
+fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)? = null): RadioMenuItem {
     val radioMenuItem = RadioMenuItem(name, graphic)
     toggleGroup?.apply { radioMenuItem.toggleGroup = this }
     keyCombination?.apply { radioMenuItem.accelerator = this }

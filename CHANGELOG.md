@@ -2,6 +2,7 @@
 
 ## [1.7.2-SNAPSHOT]
 
+- radiomenuitem builder default argument for keyCombination (https://github.com/edvin/tornadofx/issues/298)
 - ViewModel bindings configured with autocommit must pass validation before the value is committed
 - find<Component> takes op block to let you operate on the found Component directly
 - Node.toggleButton behaves correctly if no togglegroup is available (https://github.com/edvin/tornadofx/issues/296)
