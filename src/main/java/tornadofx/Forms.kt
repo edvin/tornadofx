@@ -17,6 +17,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import java.util.*
 import java.util.concurrent.Callable
 
 fun EventTarget.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
@@ -26,7 +27,34 @@ fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition
     if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
     if (labelPosition != null) fieldset.labelPosition = labelPosition
     if (icon != null) fieldset.icon = icon
-    return opcr(this, fieldset, op)
+    opcr(this, fieldset, op)
+    return fieldset
+}
+
+/**
+ *  Creates a ButtonBarFiled with the given button order (refer to [javafx.scene.control.ButtonBar#buttonOrderProperty()] for more information about buttonOrder).
+ */
+fun EventTarget.buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean = true, op: (ButtonBar.() -> Unit)? = null): ButtonBarField {
+    val field = ButtonBarField(buttonOrder, forceLabelIndent)
+    opcr(this, field, null)
+    op?.invoke(field.inputContainer)
+    return field
+}
+
+/**
+ * Create a field with the given text and operate on it.
+ * @param text The label of the field
+ * @param forceLabelIndent Indent the label even if it's empty, good for aligning buttons etc
+ * @orientation Whether to create an HBox (HORIZONTAL) or a VBox (VERTICAL) container for the field content
+ * @op Code that will run in the context of the content container (Either HBox or VBox per the orientation)
+ *
+ * @see buttonbar
+ */
+fun EventTarget.field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Pane.() -> Unit)? = null): Field {
+    val field = Field(text ?: "", orientation, forceLabelIndent)
+    opcr(this, field, null)
+    op?.invoke(field.inputContainer)
+    return field
 }
 
 open class Form : VBox() {
@@ -37,8 +65,7 @@ open class Form : VBox() {
     internal fun labelContainerWidth(height: Double): Double
             = fieldsets.flatMap { it.fields }.map { it.labelContainer }.map { f -> f.prefWidth(-height) }.max() ?: 0.0
 
-    val fieldsets: List<Fieldset>
-        get() = children.filterIsInstance<Fieldset>()
+    internal val fieldsets = HashSet<Fieldset>()
 
     override fun getUserAgentStylesheet() =
             Form::class.java.getResource("form.css").toExternalForm()!!
@@ -64,32 +91,6 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     var legend by property<Label?>()
     fun legendProperty() = getProperty(Fieldset::legend)
 
-    /**
-     *  Creates a ButtonBarFiled with the given button order (refer to [javafx.scene.control.ButtonBar#buttonOrderProperty()] for more information about buttonOrder).
-     */
-    fun buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean = true, op: (ButtonBar.() -> Unit)? = null): ButtonBarField {
-        val field = ButtonBarField(buttonOrder, forceLabelIndent)
-        children.add(field)
-        op?.invoke(field.inputContainer)
-        return field
-    }
-
-    /**
-     * Create a field with the given text and operate on it.
-     * @param text The label of the field
-     * @param forceLabelIndent Indent the label even if it's empty, good for aligning buttons etc
-     * @orientation Whether to create an HBox (HORIZONTAL) or a VBox (VERTICAL) container for the field content
-     * @op Code that will run in the context of the content container (Either HBox or VBox per the orientation)
-     *
-     * @see buttonbar
-     */
-    fun field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Pane.() -> Unit)? = null): Field {
-        val field = Field(text ?: "", orientation, forceLabelIndent)
-        children.add(field)
-        op?.invoke(field.inputContainer)
-        return field
-    }
-
     init {
         addClass(Stylesheet.fieldset)
 
@@ -97,10 +98,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         syncOrientationState()
 
         // Add legend label when text is populated
-        textProperty().addListener { observable, oldValue, newValue -> if (!newValue.isNullOrBlank()) addLegend() }
+        textProperty().onChange { newValue -> if (!newValue.isNullOrBlank()) addLegend() }
 
         // Add legend when icon is populated
-        iconProperty().addListener { observable1, oldValue1, newValue -> if (newValue != null) addLegend() }
+        iconProperty().onChange { newValue -> if (newValue != null) addLegend() }
 
         // Make sure input children gets the configured HBox.hgrow property
         syncHgrow()
@@ -108,6 +109,11 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         // Initial values
         this@Fieldset.labelPosition = labelPosition
         if (text != null) this@Fieldset.text = text
+
+        // Register with parent Form
+        parentProperty().onChange {
+            findParentOfType(Form::class)?.fieldsets?.add(this)
+        }
     }
 
     private fun syncHgrow() {
@@ -127,7 +133,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         })
 
         // Change HGrow for unconfigured children when inputGrow changes
-        inputGrowProperty().addListener { observable, oldValue, newValue ->
+        inputGrowProperty().onChange {
             children.asSequence().filterIsInstance<Field>().forEach { field ->
                 field.inputContainer.children.forEach { configureHgrow(it) }
             }
@@ -135,7 +141,7 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     }
 
     private fun syncOrientationState() {
-        labelPositionProperty().addListener { observable, oldValue, newValue ->
+        labelPositionProperty().onChange { newValue ->
             if (newValue == HORIZONTAL) {
                 pseudoClassStateChanged(VERTICAL_PSEUDOCLASS_STATE, false)
                 pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true)
@@ -173,10 +179,9 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         HBox.setHgrow(input, inputGrow)
     }
 
-    val form: Form get() = parent as Form
+    val form: Form get() = findParentOfType(Form::class)!!
 
-    internal val fields: List<Field>
-        get() = children.filterIsInstance<Field>()
+    internal val fields = HashSet<Field>()
 
     companion object {
         private val HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal")
@@ -216,6 +221,11 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
         inputContainer.addClass(Stylesheet.inputContainer)
         inputContainer.addPseudoClass(orientation.name.toLowerCase())
         children.add(inputContainer)
+
+        // Register with parent Fieldset
+        parentProperty().onChange {
+            findParentOfType(Fieldset::class)?.fields?.add(this)
+        }
     }
 }
 
@@ -238,7 +248,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
         children.add(labelContainer)
     }
 
-    val fieldset: Fieldset get() = parent as Fieldset
+    val fieldset: Fieldset get() = findParentOfType(Fieldset::class)!!
 
     override fun computePrefHeight(width: Double): Double {
         val labelHasContent = forceLabelIndent || !text.isNullOrBlank()

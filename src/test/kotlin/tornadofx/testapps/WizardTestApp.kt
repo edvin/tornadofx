@@ -66,7 +66,7 @@ class WizardStep2 : View("Address") {
         fieldset(title) {
             field("Zip/City") {
                 textfield(customer.zip) {
-                    prefColumnCount = 7
+                    prefColumnCount = 5
                     required()
                 }
                 textfield(customer.city) {
