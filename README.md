@@ -61,9 +61,9 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 
 ```xml
 <dependency>
-	<groupId>no.tornado</groupId>
-	<artifactId>tornadofx</artifactId>
-	<version>1.7.1</version>
+    <groupId>no.tornado</groupId>
+    <artifactId>tornadofx</artifactId>
+    <version>1.7.1</version>
 </dependency>
 
 
@@ -120,9 +120,9 @@ Create a View
 
 ```kotlin
 class HelloWorld : View() {
-	override val root = hbox {
-	    label("Hello world")
-	}
+    override val root = hbox {
+        label("Hello world")
+    }
 }
 ```
     
@@ -130,12 +130,12 @@ Load the root node from `HelloWorld.fxml` and inject controls by `fx:id`
   
 ```kotlin
 class HelloWorld : View() {
-	override val root: HBox by fxml()
-	val myLabel: Label by fxid()
-	
-	init {
-		myLabel.text = "Hello world"
-	}
+    override val root: HBox by fxml()
+    val myLabel: Label by fxid()
+    
+    init {
+        myLabel.text = "Hello world"
+    }
 }
 ```
 
@@ -214,29 +214,29 @@ Create a controller which downloads a JSON list of customers with the REST api:
 
 ```kotlin
 class HelloWorldController : Controller() {
-	val api : Rest by inject()
-	
-	fun loadCustomers(): ObservableList<Customer> = 
-		api.get("customers").list().toModel() 
+    val api : Rest by inject()
+    
+    fun loadCustomers(): ObservableList<Customer> = 
+        api.get("customers").list().toModel() 
 }
 ```
-	
+    
 Configure the REST API with a base URI and Basic Authentication:
-	
+    
 ```kotlin
 with (api) {
     baseURI = "http://contoso.com/api"
     setBasicAuth("user", "secret")
 }
 ```
-	
+    
 Load customers in the background and update a TableView on the UI thread:
 
 ```kotlin
 runAsync {
-	controller.loadCustomers()
+    controller.loadCustomers()
 } ui {
-	customerTable.items = it
+    customerTable.items = it
 }
 ```
 
@@ -259,11 +259,11 @@ class Styles : Stylesheet() {
     }
 
     init {
-		heading {
-		    textFill = mainColor
-		    fontSize = 20.px
-		    fontWeight = BOLD
-		}
+        heading {
+            textFill = mainColor
+            fontSize = 20.px
+            fontWeight = BOLD
+        }
         
         button {
             padding = box(10.px, 20.px)
@@ -286,59 +286,59 @@ Create an HBox with a Label and a TextField with type safe builders:
 
 ```kotlin
 hbox {
-	label("Hello world") {
-		addClass(heading)
-	}
-	
-	textfield {
-		promptText = "Enter your name"
-	}
+    label("Hello world") {
+        addClass(heading)
+    }
+    
+    textfield {
+        promptText = "Enter your name"
+    }
 }
 ```
-	
+    
 Get and set per component configuration settings:
-	
+    
 ```kotlin
 // set prefWidth from setting or default to 200.0
 node.prefWidth(config.double("width", 200.0))
 
 // set username and age, then save
 with (config) {
-	set("username", "john")
-	set("age", 30)
-	save()
+    set("username", "john")
+    set("age", 30)
+    save()
 }
 ```
-	
+    
 Create a `Fragment` instead of a `View`. A `Fragment` is not a `Singleton` like `View` is, so you will
 create a new instance and you can reuse the Fragment in multiple ui locations simultaneously.
- 	
+     
 ```kotlin
 class MyFragment : Fragment() {
-	override val root = hbox {
-	}
+    override val root = hbox {
+    }
 }
 ```
- 	
+     
 Open it in a Modal Window:
- 		 	 	
+                   
 ```kotlin
 find(MyFragment::class).openModal()
 ``` 
-	 	
+         
 Lookup and embed a `View` inside another `Pane` in one go
-  	 	
+           
 ```kotlin
 root += MyFragment::class
 ```
 
 Inject a `View` and embed inside another `Pane`
-  	 
+       
 ```kotlin
 val myView: MyView by inject()
  
 init {
-	root += myFragment
+    root += myFragment
 }
 ```
 
@@ -347,7 +347,7 @@ Swap a View for another (change Scene root or embedded View)
 ```kotlin
 button("Go to next page") {
     setOnAction {
-    	replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
+        replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
     }
 }
 ```
