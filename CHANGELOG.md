@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.7.2-SNAPSHOT]
+## [1.7.2] - 2017-04-14
 
 - `shortpress`/`longpress` actions (https://github.com/edvin/tornadofx/pull/286)
 - Form layout supports arbitrary layout containers inside fieldsets (to support multiple rows of fields or any other form layout)

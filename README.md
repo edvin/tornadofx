@@ -23,10 +23,10 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Important version note
 
-Version 1.7.1 requires Kotlin 1.1.1. Make sure you update your IDE plugins to minimum:
+TornadoFX requires Kotlin 1.1.1. Make sure you update your IDE plugins to minimum:
 
 - Kotlin Plugin: 1.1.1-release
-- TornadoFX Plugin: 1.7.1
+- TornadoFX Plugin: 1.7.2
 
 After updating IntelliJ IDEA, make sure your Kotlin target version is 1.1 (Project Settings -> Modules -> Kotlin -> Language Version / API Version)
 
@@ -52,7 +52,7 @@ You also need a full rebuild of your code. If you run into trouble, try to clean
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.1
+  -DarchetypeVersion=1.7.2
 ```
 
 ### Add TornadoFX to your project
@@ -63,7 +63,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2</version>
 </dependency>
 
 
@@ -72,7 +72,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.1'
+compile 'no.tornado:tornadofx:1.7.2'
 ```
 
 ### Snapshots are published to Sonatype
