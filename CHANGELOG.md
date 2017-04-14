@@ -1,5 +1,7 @@
 # Change Log
 
+## [1.7.3-SNAPSHOT]
+
 ## [1.7.2] - 2017-04-14
 
 - `shortpress`/`longpress` actions (https://github.com/edvin/tornadofx/pull/286)
