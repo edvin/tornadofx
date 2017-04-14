@@ -10,7 +10,7 @@
 - Node.toggleButton behaves correctly if no togglegroup is available (https://github.com/edvin/tornadofx/issues/296)
 - ViewModel partial commit and validate: `commit(field1, field2)`
 - Wizard component
-- ViewModel.valid property will be updated as validators
+- ViewModel.valid property will be updated as validators are added
 - UIComponent.closeable property and corresponding default configuration in `Workspace.defaultCloseable`
 - TabPane.add(SomeView::class) will bind towards title and closeable state of the UIComponent (https://github.com/edvin/tornadofx/issues/294)
 - TreeView.populate() is now data driven. If the returned list is observable, changes will be reflected in the tree

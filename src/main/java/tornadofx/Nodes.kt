@@ -1190,11 +1190,7 @@ internal class ShortLongPressHandler(node: Node) {
 
         node.addEventHandler(MouseEvent.MOUSE_PRESSED) {
             originatingEvent = it
-            if (longAction == null) {
-                shortAction?.invoke(originatingEvent!!)
-            } else {
-                holdTimer.playFromStart()
-            }
+            holdTimer.playFromStart()
             if (consume) it.consume()
         }
 
