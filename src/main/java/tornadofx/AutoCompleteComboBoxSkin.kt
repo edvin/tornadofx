@@ -183,7 +183,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
 
-    private val listView = ListView<T>(comboBox.items)
+    protected val listView = ListView<T>(comboBox.items)
     private var skipValueUpdate = false
     private var comboBoxItems: ObservableList<T> = if (comboBox.items == null) FXCollections.emptyObservableList<T>() else comboBox.items
 
