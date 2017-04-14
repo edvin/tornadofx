@@ -178,7 +178,7 @@ class FilterInputTextHandler(val editor : TextField, val filterHandler : FilterH
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
  * Created by anouira on 15/02/2017.
  */
-class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
+open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
     var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
