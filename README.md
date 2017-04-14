@@ -329,7 +329,7 @@ find(MyFragment::class).openModal()
 Lookup and embed a `View` inside another `Pane` in one go
            
 ```kotlin
-root += MyFragment::class
+add(MyFragment::class)
 ```
 
 Inject a `View` and embed inside another `Pane`
@@ -338,7 +338,7 @@ Inject a `View` and embed inside another `Pane`
 val myView: MyView by inject()
  
 init {
-    root += myFragment
+    root.add(myFragment)
 }
 ```
 
@@ -346,7 +346,7 @@ Swap a View for another (change Scene root or embedded View)
 
 ```kotlin
 button("Go to next page") {
-    setOnAction {
+    action {
         replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
     }
 }
@@ -356,7 +356,7 @@ Open a View in an internal window over the current scene graph
 
 ```kotlin
 button("Open") {
-    setOnAction {
+    action {
         openInternalWindow(MyOtherView::class)
     }
 }
