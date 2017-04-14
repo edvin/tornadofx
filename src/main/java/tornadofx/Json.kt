@@ -379,7 +379,7 @@ fun JsonStructure.save(output: OutputStream) = Json.createWriter(output).use { i
 /**
  * Save this Json structure (JsonObject or JsonArray) to the given output path.
  */
-fun JsonStructure.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = Files.newOutputStream(output, *options)
+fun JsonStructure.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = this.save(Files.newOutputStream(output, *options))
 
 /**
  * Save this JsonModel to the given output stream and close it.
