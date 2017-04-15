@@ -84,7 +84,7 @@ interface SelectionHolder {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
         if (ruleSets.size > 1) {
-            Stylesheet.log.warning { "Selection has ${ruleSets.size} selectors, but only the first will be used" }
+            Stylesheet.log.warning ( "Selection has ${ruleSets.size} selectors, but only the first will be used" )
         }
         val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
         addSelection(selection)

@@ -2,6 +2,9 @@
 
 ## [1.7.3-SNAPSHOT]
 
+- Android SDK compatibilty (See https://github.com/edvin/tornadofx-android-compat)
+- JsonStructure.save(path) actually saves (https://github.com/edvin/tornadofx/pull/300)
+
 ## [1.7.2] - 2017-04-14
 
 - `shortpress`/`longpress` actions (https://github.com/edvin/tornadofx/pull/286)

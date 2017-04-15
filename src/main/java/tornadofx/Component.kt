@@ -126,7 +126,7 @@ abstract class Component : Configurable {
                         bundle.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
-                    FX.log.fine({ "No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle" })
+                    FX.log.fine( "No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle" )
                     set(FX.messages)
                 }
             }

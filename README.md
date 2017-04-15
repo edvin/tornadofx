@@ -65,8 +65,6 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
     <artifactId>tornadofx</artifactId>
     <version>1.7.2</version>
 </dependency>
-
-
 ```
 
 ### Gradle

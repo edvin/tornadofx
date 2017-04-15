@@ -142,6 +142,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
             trayIcons.add(trayIcon)
         }
     }
+
     fun trayicon(icon: InputStream, tooltip: String? = null, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit) {
         trayicon(ImageIO.read(icon), tooltip, implicitExit, autoSize, op)
     }
