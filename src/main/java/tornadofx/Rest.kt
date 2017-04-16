@@ -98,7 +98,9 @@ open class Rest : Controller() {
     }
 
     abstract class Engine {
-        var authInterceptor: ((Request) -> Unit)? = null
+        var requestInterceptor: ((Request) -> Unit)? = null
+        @Deprecated("Renamed to requestInterceptor", ReplaceWith("requestInterceptor"))
+        var authInterceptor: ((Request) -> Unit)? get() = requestInterceptor; set(value) { requestInterceptor = value }
         var responseInterceptor: ((Response) -> Unit)? = null
         abstract fun request(seq: Long, method: Request.Method, uri: URI, entity: Any? = null): Request
         abstract fun setBasicAuth(username: String, password: String)
@@ -173,14 +175,14 @@ open class Rest : Controller() {
 
 class HttpURLEngine(val rest: Rest) : Rest.Engine() {
     override fun setBasicAuth(username: String, password: String) {
-        authInterceptor = { request ->
+        requestInterceptor = { request ->
             val b64 = Base64.getEncoder().encodeToString("$username:$password".toByteArray(UTF_8))
             request.addHeader("Authorization", "Basic $b64")
         }
     }
 
     override fun reset() {
-        authInterceptor = null
+        requestInterceptor = null
     }
 
     override fun request(seq: Long, method: Rest.Request.Method, uri: URI, entity: Any?) =
@@ -202,7 +204,7 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     }
 
     override fun execute(): Rest.Response {
-        engine.authInterceptor?.invoke(this)
+        engine.requestInterceptor?.invoke(this)
 
         for ((key, value) in headers)
             connection.addRequestProperty(key, value)
@@ -356,7 +358,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
                 request.config = RequestConfig.custom().setProxy(proxy).build()
             }
         }
-        engine.authInterceptor?.invoke(this)
+        engine.requestInterceptor?.invoke(this)
 
         if (entity != null && request is HttpEntityEnclosingRequestBase) {
 
