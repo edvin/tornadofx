@@ -173,9 +173,9 @@ open class Rest : Controller() {
 
 class HttpURLEngine(val rest: Rest) : Rest.Engine() {
     override fun setBasicAuth(username: String, password: String) {
-        authInterceptor = { engine ->
+        authInterceptor = { request ->
             val b64 = Base64.getEncoder().encodeToString("$username:$password".toByteArray(UTF_8))
-            engine.addHeader("Authorization", "Basic $b64")
+            request.addHeader("Authorization", "Basic $b64")
         }
     }
 
