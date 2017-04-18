@@ -27,10 +27,11 @@ import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Callable
 
-inline fun <reified T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
+fun <T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
     ViewModel.register(valueProperty(), property)
     if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
 }
+
 fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) {
     ViewModel.register(valueProperty(), property)
     if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<LocalDate>)
@@ -41,7 +42,7 @@ fun ProgressIndicator.bind(property: ObservableValue<Number>, readonly: Boolean 
     if (readonly || (property !is Property<*>)) progressProperty().bind(property) else progressProperty().bindBidirectional(property as Property<Number>)
 }
 
-inline fun <reified T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
+fun <T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
     ViewModel.register(valueProperty(), property)
     if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
 }

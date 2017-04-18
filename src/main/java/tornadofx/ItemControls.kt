@@ -47,6 +47,7 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     if (property != null) {
         if (spinner.valueFactory == null) throw IllegalArgumentException("You must configure the value factory or use the Number based spinner builder which configures a default value factory along with min, max and initialValue!")
         spinner.valueFactory.valueProperty().bindBidirectional(property)
+        ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
     return spinner
 }
@@ -60,36 +61,42 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
     } else {
         spinner = Spinner(min?.toDouble() ?: 0.0, max?.toDouble() ?: 100.0, initialValue?.toDouble() ?: 0.0, amountToStepBy?.toDouble() ?: 1.0)
     }
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
+    if (property != null) {
+        spinner.valueFactory.valueProperty().bindBidirectional(property)
+        ViewModel.register(spinner.valueFactory.valueProperty(), property)
+    }
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
 fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(items)
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
+    if (property != null) {
+        spinner.valueFactory.valueProperty().bindBidirectional(property)
+        ViewModel.register(spinner.valueFactory.valueProperty(), property)
+    }
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
 fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(valueFactory)
-    if (property != null) spinner.valueFactory.valueProperty().bindBidirectional(property)
+    if (property != null) {
+        spinner.valueFactory.valueProperty().bindBidirectional(property)
+        ViewModel.register(spinner.valueFactory.valueProperty(), property)
+    }
     spinner.isEditable = editable
     return opcr(this, spinner, op)
 }
 
 fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
     if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
-    if (property != null) {
-        valueProperty().bindBidirectional(property)
-        ViewModel.register(valueProperty(), property)
-    }
+    if (property != null) bind(property)
 }, op)
 
-fun <T> EventTarget.choicebox(values: ObservableList<T>? = null, changeListener: ((ObservableValue<out T>, T?, T?) -> Unit)? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
-    if (values != null) items = values
-    if (changeListener != null) selectionModel.selectedItemProperty().addListener(changeListener)
+fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
+    if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
+    if (property != null) bind(property)
 }, op)
 
 fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
