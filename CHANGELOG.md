@@ -6,6 +6,7 @@
 - `authInterceptor` was deprecated in favor of better named `requestInterceptor`
 - Android SDK compatibilty (See https://github.com/edvin/tornadofx-android-compat)
 - JsonStructure.save(path) actually saves (https://github.com/edvin/tornadofx/pull/300)
+- Added `baseColor` CSS property
 
 ## [1.7.2] - 2017-04-14
 

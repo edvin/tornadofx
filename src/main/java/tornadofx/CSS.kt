@@ -543,6 +543,7 @@ open class PropertyHolder {
     val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties.mapValues { it.value to null }) }
 
     // Root
+    var baseColor: Color by cssprop("-fx-base")
     var focusColor: Paint by cssprop("-fx-focus-color")
     var faintFocusColor: Paint by cssprop("-fx-faint-focus-color")
 
