@@ -2,6 +2,7 @@
 
 ## [1.7.3-SNAPSHOT]
 
+- Autocomplete ComboBox listview matches width of ComboBox by default
 - `authInterceptor` was deprecated in favor of better named `requestInterceptor`
 - Android SDK compatibilty (See https://github.com/edvin/tornadofx-android-compat)
 - JsonStructure.save(path) actually saves (https://github.com/edvin/tornadofx/pull/300)

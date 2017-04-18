@@ -221,6 +221,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
             comboBox.hide()
             updateDisplayArea()
         }
+        listView.prefWidthProperty().bind(comboBox.widthProperty())
         updateCellFactory()
         updateButtonCell()
         updateValue()
