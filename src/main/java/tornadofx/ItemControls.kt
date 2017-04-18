@@ -81,7 +81,10 @@ fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Bool
 
 fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
     if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
-    if (property != null) valueProperty().bindBidirectional(property)
+    if (property != null) {
+        valueProperty().bindBidirectional(property)
+        ViewModel.register(valueProperty(), property)
+    }
 }, op)
 
 fun <T> EventTarget.choicebox(values: ObservableList<T>? = null, changeListener: ((ObservableValue<out T>, T?, T?) -> Unit)? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
