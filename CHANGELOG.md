@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.7.3-SNAPSHOT]
+## [1.7.3] - 2017-04-19
 
 ### Additions
 - ScrollPane.edgeToEdge boolean var to control the "edge-to-edge" style class (https://github.com/edvin/tornadofx/issues/302)
