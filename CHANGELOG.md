@@ -11,6 +11,7 @@
 - Android SDK compatibilty (See https://github.com/edvin/tornadofx-android-compat)
 - JsonStructure.save(path) actually saves (https://github.com/edvin/tornadofx/pull/300)
 - Added `baseColor` CSS property
+- `lazyContextmenu` to add context menus that instantiate when the menu actually opens.
 
 ## [1.7.2] - 2017-04-14
 
