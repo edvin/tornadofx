@@ -204,3 +204,17 @@ fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     }
     return this
 }
+
+/**
+ * Add a context menu to the target which will be created on demand.
+ */
+fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
+    if (this is Node) {
+        this.setOnContextMenuRequested { event ->
+            val menu = ContextMenu()
+            op?.invoke(menu)
+            menu.show(this, event.screenX, event.screenY)
+        }
+    }
+    return this
+}
