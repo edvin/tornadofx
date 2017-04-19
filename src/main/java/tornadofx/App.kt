@@ -65,6 +65,8 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     open val primaryView: KClass<out UIComponent> = primaryView ?: DeterminedByParameter::class
 
+    fun <T : Any> k(javaClass: Class<T>): KClass<T> = javaClass.kotlin
+
     init {
         Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }

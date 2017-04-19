@@ -96,6 +96,9 @@ abstract class Component : Configurable {
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
+    @JvmOverloads fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope, params)
+
+    fun <T : Any> k(javaClass: Class<T>): KClass<T> = javaClass.kotlin
 
     /**
      * Store and retrieve preferences.
@@ -619,6 +622,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
+    fun EventTarget.add(child: Node) = plusAssign(child)
 
     @JvmName("plusView")
     operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
@@ -635,10 +639,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
+    @JvmOverloads fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
+    @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
         if (modalStage == null) {
             if (root !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -836,9 +840,9 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
     onUndockListeners!!.add(listener as (UIComponent) -> Unit)
 }
 
-abstract class Fragment(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
+abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
 
-abstract class View(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
+abstract class View @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
 
 class ResourceLookup(val component: Any) {
     operator fun get(resource: String): String = component.javaClass.getResource(resource).toExternalForm()
