@@ -200,6 +200,26 @@ fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     } else if (this is Node) {
         this.setOnContextMenuRequested { event ->
             menu.show(this@contextmenu, event.screenX, event.screenY)
+            event.consume()
+        }
+    }
+    return this
+}
+
+/**
+ * Add a context menu to the target which will be created on demand.
+ */
+fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
+    var currentMenu: ContextMenu? = null
+    if (this is Node) {
+        this.setOnContextMenuRequested { event ->
+            currentMenu?.hide()
+
+            currentMenu = ContextMenu()
+            currentMenu!!.setOnCloseRequest { currentMenu = null }
+            op?.invoke(currentMenu!!)
+            currentMenu!!.show(this, event.screenX, event.screenY)
+            event.consume()
         }
     }
     return this
