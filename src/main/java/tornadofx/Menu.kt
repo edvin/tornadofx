@@ -200,6 +200,7 @@ fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     } else if (this is Node) {
         this.setOnContextMenuRequested { event ->
             menu.show(this@contextmenu, event.screenX, event.screenY)
+            event.consume()
         }
     }
     return this
@@ -214,6 +215,7 @@ fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarg
             val menu = ContextMenu()
             op?.invoke(menu)
             menu.show(this, event.screenX, event.screenY)
+            event.consume()
         }
     }
     return this
