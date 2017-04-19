@@ -2,6 +2,7 @@
 
 ## [1.7.3-SNAPSHOT]
 
+- ScrollPane.edgeToEdge boolean var to control the "edge-to-edge" style class (https://github.com/edvin/tornadofx/issues/302)
 - Fixed ViewModel validation bug for ComboBox, ChoiceBox and Spinner
 - Removed faulty choicebox builder and replaced it with one similar to the combobox builder
 - Autocomplete ComboBox listview matches width of ComboBox by default

@@ -6,10 +6,10 @@ import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.scene.Group
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
-import javafx.scene.Parent
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 
@@ -195,6 +195,10 @@ fun EventTarget.scrollpane(fitToWidth: Boolean = false, fitToHeight: Boolean = f
     pane.isFitToHeight = fitToHeight
     opcr(this, pane, op)
     return pane
+}
+
+var ScrollPane.edgeToEdge: Boolean get() = hasClass("edge-to-edge"); set(value) {
+    if (value) addClass("edge-to-edge") else removeClass("edge-to-edge")
 }
 
 fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
