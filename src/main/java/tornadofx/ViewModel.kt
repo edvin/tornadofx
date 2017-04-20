@@ -440,7 +440,7 @@ val Property<*>.viewModel: ViewModel? get() = ViewModel.getViewModelForProperty(
  */
 val ObservableValue<*>.viewModelFacade: Property<*>? get() = ViewModel.getFacadeForProperty(this)
 
-open class ItemViewModel<T>(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
+open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
     var item by itemProperty
 
     val empty = itemProperty.isNull

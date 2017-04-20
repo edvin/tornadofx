@@ -202,6 +202,11 @@ class FX {
         }
 
         @JvmStatic
+        fun registerApplication(application: Application, primaryStage: Stage) {
+            registerApplication(DefaultScope, application, primaryStage)
+        }
+
+        @JvmStatic
         fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)

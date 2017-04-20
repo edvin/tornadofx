@@ -4,6 +4,7 @@
 
 ### Additions
 
+- Improved Java interop
 - Java version of FX.find() can be called without specifying scope 
 
 ### Fixed

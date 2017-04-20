@@ -621,6 +621,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         op?.invoke(fragment)
     }
 
+    fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
     fun EventTarget.add(child: Node) = plusAssign(child)
 
