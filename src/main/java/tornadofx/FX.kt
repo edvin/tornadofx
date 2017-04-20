@@ -230,7 +230,9 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Component> find(componentType: Class<T>, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope)
+        fun <T : Component> find(componentType: Class<T>, scope: Scope): T = find(componentType.kotlin, scope)
+        @JvmStatic
+        fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
 
         fun replaceComponent(obsolete: UIComponent, scope: Scope = DefaultScope) {
             val replacement: UIComponent

@@ -177,6 +177,10 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
         completeListeners.add(resultListener)
     }
 
+    fun onComplete(resultListener: Runnable) {
+        completeListeners.add({ resultListener.run() })
+    }
+
     override fun onSave() {
         super.onSave()
         isComplete = true

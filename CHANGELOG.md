@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.7.4-SNAPSHOT]
+
+### Additions
+
+- Java version of FX.find() can be called without specifying scope 
+
+### Fixed
+
+- Java version of Component.find() defaults to current component scope instead of DefaultScope
+
 ## [1.7.3] - 2017-04-19
 
 ### Additions
