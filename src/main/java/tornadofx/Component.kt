@@ -129,7 +129,7 @@ abstract class Component : Configurable {
                         bundle.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
-                    FX.log.fine( "No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle" )
+                    FX.log.fine("No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle")
                     set(FX.messages)
                 }
             }
@@ -744,38 +744,38 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * attribute in your FXML.
      */
     fun <T : Node> fxml(location: String? = null, hasControllerAttribute: Boolean = false): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
-        val value: T
-
-        init {
-            val componentType = this@UIComponent.javaClass
-            val targetLocation = location ?: componentType.simpleName + ".fxml"
-            val fxml = componentType.getResource(targetLocation) ?:
-                    throw IllegalArgumentException("FXML not found for $componentType")
-
-            fxmlLoader = FXMLLoader(fxml).apply {
-                resources = this@UIComponent.messages
-                if (hasControllerAttribute) {
-                    setControllerFactory { this@UIComponent }
-                } else {
-                    setController(this@UIComponent)
-                }
-            }
-
-            value = fxmlLoader!!.load()
-        }
-
+        val value: T = loadFXML(location, hasControllerAttribute)
         override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
     }
 
-    inline fun <reified T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
+    @JvmOverloads
+    fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false): T {
+        val componentType = this@UIComponent.javaClass
+        val targetLocation = location ?: componentType.simpleName + ".fxml"
+        val fxml = componentType.getResource(targetLocation) ?:
+                throw IllegalArgumentException("FXML not found for $componentType")
+
+        fxmlLoader = FXMLLoader(fxml).apply {
+            resources = this@UIComponent.messages
+            if (hasControllerAttribute) {
+                setControllerFactory { this@UIComponent }
+            } else {
+                setController(this@UIComponent)
+            }
+        }
+
+        return fxmlLoader!!.load()
+    }
+
+    fun <T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
             val value = thisRef.fxmlLoader!!.namespace[key]
-            if (value is T) return value
-            if (value == null)
+            if (value == null) {
                 log.warning("Property $key of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader!!.location}")
-            else
-                log.warning("Property $key of $thisRef did not resolve to the correct type (Should be ${T::class}, was ${value.javaClass.kotlin}) Check declaration in ${thisRef.fxmlLoader!!.location}")
+            } else {
+                return value as T
+            }
 
             throw IllegalArgumentException("Property $key does not match fx:id declaration")
         }

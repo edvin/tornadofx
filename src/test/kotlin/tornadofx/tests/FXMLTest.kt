@@ -29,14 +29,14 @@ class FXMLTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = ClassCastException::class)
     fun wrongFXType() {
         object : Fragment() {
             override val root: VBox by fxml("/tornadofx/tests/FXMLTest.fxml")
             val myLabel : TextField by fxid()
 
             init {
-                myLabel.text = "Expect log warning and RuntimeException"
+                myLabel.text = "Expect ClassCastException"
             }
         }
     }
