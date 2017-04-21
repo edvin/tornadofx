@@ -1,5 +1,7 @@
 package tornadofx.tests
 
+import javafx.beans.binding.BooleanExpression
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.collections.FXCollections
 import javafx.scene.control.Label
@@ -57,5 +59,16 @@ class BindingTests {
         Assert.assertFalse(complete.value)
         mylist.add("One")
         Assert.assertTrue(complete.value)
+    }
+
+    @Test
+    fun booleanListBinding() {
+        val mylist = FXCollections.observableArrayList<BooleanExpression>()
+        val complete = booleanListBinding(mylist) { this }
+        Assert.assertFalse(complete.value)
+        mylist.add(SimpleBooleanProperty(true))
+        Assert.assertTrue(complete.value)
+        mylist.add(SimpleBooleanProperty(false))
+        Assert.assertFalse(complete.value)
     }
 }
