@@ -15,6 +15,7 @@
 ### Changes
 
 - findParentOfType accepts subclasses
+- splitpane() now has an optional orientation parameter 
 
 ## [1.7.3] - 2017-04-19
 

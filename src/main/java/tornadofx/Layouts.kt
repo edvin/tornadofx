@@ -201,8 +201,9 @@ var ScrollPane.edgeToEdge: Boolean get() = hasClass("edge-to-edge"); set(value) 
     if (value) addClass("edge-to-edge") else removeClass("edge-to-edge")
 }
 
-fun EventTarget.splitpane(vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
+fun EventTarget.splitpane(orientation: Orientation = Orientation.HORIZONTAL, vararg nodes: Node, op: (SplitPane.() -> Unit)? = null): SplitPane {
     val splitpane = SplitPane()
+    splitpane.orientation = orientation
     if (nodes.isNotEmpty())
         splitpane.items.addAll(nodes)
     opcr(this, splitpane, op)
