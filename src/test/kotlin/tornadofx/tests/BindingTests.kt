@@ -51,7 +51,7 @@ class BindingTests {
     }
 
     @Test
-    fun booleanListBinding() {
+    fun booleanBinding() {
         val mylist = FXCollections.observableArrayList<String>()
         val complete = booleanBinding(mylist) { isNotEmpty() }
         Assert.assertFalse(complete.value)
