@@ -28,7 +28,7 @@ class BindingTests {
     @Test
     fun observableListBinding() {
         val elements = FXCollections.observableArrayList("Hello", "World")
-        val binding = tornadofx.stringBinding(elements, elements) { this.joinToString(" ")}
+        val binding = stringBinding(elements, elements) { this.joinToString(" ")}
         val uielement = Label().apply { bind(binding) }
         Assert.assertEquals("Hello World", uielement.text)
         elements.setAll("Hello", "Changed")
@@ -48,5 +48,14 @@ class BindingTests {
         Assert.assertEquals("Mister Father", father.name)
         child.parent = stepFather
         Assert.assertEquals("Mr Step Father", fatherName.value)
+    }
+
+    @Test
+    fun booleanListBinding() {
+        val mylist = FXCollections.observableArrayList<String>()
+        val complete = booleanBinding(mylist) { isNotEmpty() }
+        Assert.assertFalse(complete.value)
+        mylist.add("One")
+        Assert.assertTrue(complete.value)
     }
 }
