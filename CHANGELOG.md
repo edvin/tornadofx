@@ -12,6 +12,10 @@
 - Java version of Component.find() defaults to current component scope instead of DefaultScope
 - NPE in layout debugger (https://github.com/edvin/tornadofx/issues/305)
 
+### Changes
+
+- findParentOfType accepts subclasses
+
 ## [1.7.3] - 2017-04-19
 
 ### Additions
