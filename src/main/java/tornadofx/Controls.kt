@@ -310,6 +310,9 @@ fun EventTarget.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar()
 fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
 
+fun EventTarget.imageview(image: Image, op: (ImageView.() -> Unit)? = null)
+        = opcr(this, ImageView(image), op)
+
 /**
  * Listen to changes and update the value of the property if the given mutator results in a different value
  */

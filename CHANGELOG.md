@@ -4,6 +4,7 @@
 
 ### Additions
 
+- imageview builder that takes an image in addition to the existing one that takes a url
 - fxml delegate supports setting optional root element
 - Improved Java interop
 - Java version of FX.find() can be called without specifying scope 
