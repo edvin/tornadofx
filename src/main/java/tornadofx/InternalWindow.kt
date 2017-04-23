@@ -13,6 +13,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import tornadofx.InternalWindow.Styles.Companion.crossPath
+import java.awt.Toolkit
 import java.net.URL
 
 class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
@@ -40,6 +41,9 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
             canvas {
                 overlay = this
                 graphicsContext2D.fill = overlayPaint
+                setOnMouseClicked {
+                    Toolkit.getDefaultToolkit().beep()
+                }
                 widthProperty().bind(this@InternalWindow.widthProperty())
                 heightProperty().bind(this@InternalWindow.heightProperty())
                 widthProperty().onChange { fillOverlay() }
