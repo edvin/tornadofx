@@ -1065,9 +1065,9 @@ fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
-    if (parent.javaClass.isAssignableFrom(parentType.java)) return parent as T
+    if (parentType.java.isAssignableFrom(parent.javaClass)) return parent as T
     val uicmp = parent.uiComponent<UIComponent>()
-    if (uicmp?.javaClass?.isAssignableFrom(parentType.java) ?: false) return uicmp as T
+    if (uicmp != null && parentType.java.isAssignableFrom(uicmp.javaClass)) return uicmp as T
     return parent?.findParentOfType(parentType)
 }
 
