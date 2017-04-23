@@ -10,9 +10,7 @@ import javafx.stage.Stage
 import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import tornadofx.Fragment
-import tornadofx.View
-import tornadofx.find
+import tornadofx.*
 
 class FXMLTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()

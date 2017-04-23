@@ -4,6 +4,7 @@
 
 ### Additions
 
+- fxml delegate supports setting optional root element
 - Improved Java interop
 - Java version of FX.find() can be called without specifying scope 
 
