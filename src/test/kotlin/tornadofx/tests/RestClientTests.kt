@@ -40,7 +40,6 @@ class RestClientTests {
                 }
 
                 createContext("/category") { exchange ->
-                    Thread.sleep(100)
                     exchange.responseHeaders.add("Content-Type", "application/json")
                     exchange.sendResponseHeaders(200, 0)
 
