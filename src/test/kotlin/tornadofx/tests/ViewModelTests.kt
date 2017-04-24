@@ -7,6 +7,7 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.stage.Stage
+import junit.framework.Assert
 import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
@@ -143,6 +144,22 @@ open class ViewModelTests {
         treeview.selectionModel.select(treeview.root.children.first())
         assertEquals(model.name.value, "Jay")
     }
+
+    @Test fun committed_properties() {
+        val person = Person("John", 37)
+        val model = object : PersonModel(person) {
+            override fun onCommit(commits: List<Commit>) {
+                assertEquals(3, commits.size)
+                assertEquals(1, commits.filter { it.changed }.size)
+                val theOnlyChange = commits.find { it.changed }!!
+                assertEquals(name, theOnlyChange.property)
+                assertEquals("John", theOnlyChange.oldValue)
+                assertEquals("Johnnie", theOnlyChange.newValue)
+            }
+        }
+        model.name.value = "Johnnie"
+        model.commit()
+    }
 }
 
 class PersonAutoModel(var person: Person? = null) : ViewModel() {
@@ -150,7 +167,7 @@ class PersonAutoModel(var person: Person? = null) : ViewModel() {
 }
 
 // JavaFX Property
-class PersonModel(person: Person) : ItemViewModel<Person>(person) {
+open class PersonModel(person: Person) : ItemViewModel<Person>(person) {
     val name = bind { item?.nameProperty() }
     val phone = bind { item?.phoneProperty() }
     val email = bind { item?.emailProperty() }

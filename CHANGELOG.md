@@ -4,6 +4,7 @@
 
 ### Additions
 
+- `ViewModel.onCommit(commits: List<Commit>)` callback with more information about the commit
 - imageview builder that takes an image in addition to the existing one that takes a url
 - fxml delegate supports setting optional root element
 - Improved Java interop

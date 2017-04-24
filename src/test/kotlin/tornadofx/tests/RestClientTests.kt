@@ -1,17 +1,13 @@
 package tornadofx.tests
 
 import com.sun.net.httpserver.HttpServer
-import javafx.application.Platform
 import javafx.stage.Stage
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.BeforeClass
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import tornadofx.FX
-import tornadofx.JsonBuilder
-import tornadofx.Rest
-import tornadofx.boolean
+import tornadofx.*
 import java.net.InetSocketAddress
 import javax.json.Json
 import javax.json.JsonObject
@@ -44,6 +40,7 @@ class RestClientTests {
                 }
 
                 createContext("/category") { exchange ->
+                    Thread.sleep(100)
                     exchange.responseHeaders.add("Content-Type", "application/json")
                     exchange.sendResponseHeaders(200, 0)
 

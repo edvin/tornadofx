@@ -190,6 +190,16 @@ open class ViewModel : Component(), Injectable {
 
     }
 
+    /**
+     * This function is called after a successful commit, right before the optional successFn call sent to the commit
+     * call is invoked.
+     *
+     * @param commits A list of the committed properties, including the old and new value
+     */
+    open fun onCommit(commits: List<Commit>) {
+
+    }
+
     fun commit(vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null) =
             commit(false, true, fields = *fields, successFn = successFn)
 
@@ -203,13 +213,19 @@ open class ViewModel : Component(), Injectable {
     fun commit(force: Boolean = false, focusFirstError: Boolean = true, vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null): Boolean {
         var committed = true
 
+        val commits = mutableListOf<Commit>()
         runAndWait {
             if (!validate(focusFirstError, fields = *fields) && !force) {
                 committed = false
             } else {
                 val commitThese = if (fields.isNotEmpty()) fields.toList() else propertyMap.keys
                 for (facade in commitThese) {
-                    propertyMap[facade]?.invoke()?.value = facade.value
+                    val prop: Property<*>? = propertyMap[facade]?.invoke()
+                    if (prop != null) {
+                        val event = Commit(facade, prop.value, facade.value)
+                        commits.add(event)
+                        prop.value = facade.value
+                    }
                 }
                 dirtyProperties.removeAll(commitThese)
             }
@@ -217,6 +233,7 @@ open class ViewModel : Component(), Injectable {
 
         if (committed) {
             onCommit()
+            onCommit(commits)
             successFn?.invoke()
         }
         return committed
@@ -471,4 +488,8 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
     @JvmName("bindPropertyFunction")
     inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.call(it) } }
+}
+
+class Commit(val property: ObservableValue<*>, val oldValue: Any?, val newValue: Any?) {
+    val changed: Boolean get() = oldValue != newValue
 }
