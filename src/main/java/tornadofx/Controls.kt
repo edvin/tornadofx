@@ -1,8 +1,12 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package tornadofx
 
 import javafx.beans.binding.BooleanExpression
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.event.ActionEvent
@@ -74,6 +78,7 @@ val TabPane.savable: BooleanExpression get() {
     fun updateState() {
         savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
     }
+
     val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
     updateState()
@@ -94,6 +99,7 @@ val TabPane.deletable: BooleanExpression get() {
     fun updateState() {
         deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
     }
+
     val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
     updateState()
@@ -111,7 +117,10 @@ val TabPane.deletable: BooleanExpression get() {
 val TabPane.refreshable: BooleanExpression get() {
     val refreshable = SimpleBooleanProperty(true)
 
-    fun updateState() { refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable)) }
+    fun updateState() {
+        refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
+    }
+
     val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
     updateState()
@@ -275,8 +284,27 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
     return group
 }
 
-fun Node.togglebutton(text: String = "", group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, op: (ToggleButton.() -> Unit)? = null) =
-        opcr(this, ToggleButton(text).apply {
+fun <T> ToggleGroup.bind(property: ObservableValue<T>) = with(selectedValueProperty<T>()) {
+    if (property is Property<*>) bindBidirectional(property as Property<T>)
+    else bind(property)
+}
+
+fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> =
+        properties.getOrPut("tornadofx.selectedValueProperty") {
+            val selectedValueProperty = SimpleObjectProperty<T>()
+            selectedToggleProperty().onChange {
+                selectedValueProperty.value = it?.properties?.get("tornadofx.toggleGroupValue") as T?
+            }
+            selectedValueProperty.onChange { selectedValue ->
+                selectToggle(toggles.find { it.properties["tornadofx.toggleGroupValue"] == selectedValue })
+            }
+            selectedValueProperty
+        } as ObjectProperty<T>
+
+fun Node.togglebutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, value: Any? = null, op: (ToggleButton.() -> Unit)? = null) =
+        opcr(this, ToggleButton().apply {
+            this.text = if (value != null && text == null) value.toString() else text ?: ""
+            properties["tornadofx.toggleGroupValue"] = value ?: text
             if (group != null) toggleGroup = group
             if (toggleGroup?.selectedToggle == null && selectFirst) isSelected = true
         }, op)
@@ -285,8 +313,16 @@ fun ToggleButton.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
 }
 
-fun Node.radiobutton(text: String = "", group: ToggleGroup? = getToggleGroup(), op: (RadioButton.() -> Unit)? = null)
-        = opcr(this, RadioButton(text).apply { if (group != null) toggleGroup = group }, op)
+/**
+ * Create a radiobutton inside the current or given toggle group. The optiona value parameter will be matched against
+ * the extension property `selectedValueProperty()` on Toggle Group.
+ */
+fun Node.radiobutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), value: Any? = null, op: (RadioButton.() -> Unit)? = null)
+        = opcr(this, RadioButton().apply {
+    this.text = if (value != null && text == null) value.toString() else text ?: ""
+    properties["tornadofx.toggleGroupValue"] = value ?: text
+    if (group != null) toggleGroup = group
+}, op)
 
 fun EventTarget.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
 inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, noinline op: (Label.() -> Unit)? = null) = label().apply {
