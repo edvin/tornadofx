@@ -284,23 +284,47 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
     return group
 }
 
+/**
+ * Bind the selectedValueProperty of this toggle group to the given property. Passing in a writeable value
+ * will result in a bidirectional binding, while passing in a read only value will result in a unidirectional binding.
+ *
+ * If the toggles are configured with the value parameter (@see #togglebutton and #radiogroup), the corresponding
+ * button will be selected when the value is changed. Likewise, if the selected toggle is changed,
+ * the property value will be updated if it is writeable.
+ */
 fun <T> ToggleGroup.bind(property: ObservableValue<T>) = with(selectedValueProperty<T>()) {
     if (property is Property<*>) bindBidirectional(property as Property<T>)
     else bind(property)
 }
 
+/**
+ * Generates a writable property that represents the selected value for this toggele group.
+ * If the toggles are configured with a value (@see #togglebutton and #radiogroup) the corresponding
+ * toggle will be selected when this value is changed. Likewise, if the toggle is changed by clicking
+ * it, the value for the toggle will be written to this property.
+ *
+ * To bind to this property, use the #ToggleGroup.bind() function.
+ */
 fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> =
         properties.getOrPut("tornadofx.selectedValueProperty") {
-            val selectedValueProperty = SimpleObjectProperty<T>()
-            selectedToggleProperty().onChange {
-                selectedValueProperty.value = it?.properties?.get("tornadofx.toggleGroupValue") as T?
+            SimpleObjectProperty<T>().apply {
+                selectedToggleProperty().onChange {
+                    value = it?.properties?.get("tornadofx.toggleGroupValue") as T?
+                }
+                onChange { selectedValue ->
+                    selectToggle(toggles.find { it.properties["tornadofx.toggleGroupValue"] == selectedValue })
+                }
             }
-            selectedValueProperty.onChange { selectedValue ->
-                selectToggle(toggles.find { it.properties["tornadofx.toggleGroupValue"] == selectedValue })
-            }
-            selectedValueProperty
         } as ObjectProperty<T>
 
+/**
+ * Create a togglebutton inside the current or given toggle group. The optional value parameter will be matched against
+ * the extension property `selectedValueProperty()` on Toggle Group. If the #ToggleGroup.selectedValueProperty is used,
+ * it's value will be updated to reflect the value for this radio button when it's selected.
+ *
+ * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
+ * togglebutton, it will be automatically selected.
+ */
 fun Node.togglebutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, value: Any? = null, op: (ToggleButton.() -> Unit)? = null) =
         opcr(this, ToggleButton().apply {
             this.text = if (value != null && text == null) value.toString() else text ?: ""
@@ -314,8 +338,12 @@ fun ToggleButton.whenSelected(op: () -> Unit) {
 }
 
 /**
- * Create a radiobutton inside the current or given toggle group. The optiona value parameter will be matched against
- * the extension property `selectedValueProperty()` on Toggle Group.
+ * Create a radiobutton inside the current or given toggle group. The optional value parameter will be matched against
+ * the extension property `selectedValueProperty()` on Toggle Group. If the #ToggleGroup.selectedValueProperty is used,
+ * it's value will be updated to reflect the value for this radio button when it's selected.
+ *
+ * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
+ * radiobutton, it will be automatically selected.
  */
 fun Node.radiobutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), value: Any? = null, op: (RadioButton.() -> Unit)? = null)
         = opcr(this, RadioButton().apply {
