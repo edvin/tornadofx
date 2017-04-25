@@ -19,6 +19,7 @@
 
 ### Changes
 
+- Kotlin 1.1.2
 - findParentOfType accepts subclasses
 - splitpane() now has an optional orientation parameter 
 - Clicking outside of a modal InternalWindow click now play an error sound to indicate modality (https://github.com/edvin/tornadofx/issues/308)
