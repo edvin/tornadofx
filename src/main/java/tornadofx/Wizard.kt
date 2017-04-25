@@ -12,6 +12,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
+import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderStrokeStyle
@@ -214,6 +215,8 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
         // Enter completes current page and goes to next, finishes on last
         root.addEventFilter(KeyEvent.KEY_PRESSED) {
             if (enterProgresses && it.code == KeyCode.ENTER) {
+                if (it.target is TextArea && !it.isControlDown) return@addEventFilter
+
                 if (allPagesComplete.value) {
                     currentPage.onSave()
                     onSave()

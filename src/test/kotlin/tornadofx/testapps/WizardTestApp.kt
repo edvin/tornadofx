@@ -74,7 +74,7 @@ class WizardStep2 : View("Address") {
                     prefColumnCount = 5
                     required()
                 }
-                textfield(customer.city) {
+                textarea(customer.city) {
                     required()
                 }
             }
