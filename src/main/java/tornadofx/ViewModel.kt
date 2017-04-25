@@ -442,9 +442,12 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
 /**
  * Add a validator to the given Control for the given model property.
  */
-inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
-        = property.viewModel?.addValidator(control, property, trigger, validator)
+inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, model: ViewModel? = null, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+        = (model ?: property.viewModel)?.addValidator(control, property, trigger, validator)
         ?: throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+
+inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+    = validator(control, property, trigger, null, validator)
 
 /**
  * Extract the ViewModel from a property that is bound towards a ViewModel Facade
