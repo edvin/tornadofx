@@ -12,6 +12,8 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
@@ -21,6 +23,9 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
 
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
     var currentPage: UIComponent by currentPageProperty
+
+    val enterProgressesProperty: BooleanProperty = SimpleBooleanProperty(false)
+    var enterProgresses by enterProgressesProperty
 
     val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
     val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
@@ -204,6 +209,19 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
     override fun onDock() {
         complete.onChange {
             if (it) completeListeners.forEach { it() }
+        }
+
+        // Enter completes current page and goes to next, finishes on last
+        root.addEventFilter(KeyEvent.KEY_PRESSED) {
+            if (enterProgresses && it.code == KeyCode.ENTER) {
+                if (allPagesComplete.value) {
+                    currentPage.onSave()
+                    onSave()
+                    close()
+                } else if (currentPageComplete.value && canGoNext.value) {
+                    next()
+                }
+            }
         }
     }
 }

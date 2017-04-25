@@ -2,6 +2,10 @@ package tornadofx.testapps
 
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.control.Button
+import javafx.scene.control.ButtonBar
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import tornadofx.*
 import tornadofx.tests.Customer
 import tornadofx.tests.CustomerModel
@@ -25,6 +29,7 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         numberedSteps = true
         showStepsHeader = false
         enableStepLinks = true
+        enterProgresses = true
     }
 }
 

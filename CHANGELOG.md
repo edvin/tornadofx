@@ -4,6 +4,7 @@
 
 ### Additions
 
+- `Wizard.enterProgresses = true` will go to next page when complete and finish on last page (https://github.com/edvin/tornadofx/issues/310)
 - `ViewModel.onCommit(commits: List<Commit>)` callback with more information about the commit
 - imageview builder that takes an image in addition to the existing one that takes a url
 - fxml delegate supports setting optional root element
