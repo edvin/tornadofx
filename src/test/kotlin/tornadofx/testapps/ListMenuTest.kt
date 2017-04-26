@@ -16,7 +16,7 @@ class ListMenuTest : View("ListMenu Test") {
     }
 
     override val root = borderpane {
-        setPrefSize(800.0, 600.0)
+        setPrefSize(650.0, 500.0)
         top {
             vbox(10) {
                 label(title).style { fontSize = 3.em }
