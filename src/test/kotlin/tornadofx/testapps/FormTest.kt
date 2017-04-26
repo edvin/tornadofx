@@ -1,25 +1,27 @@
 package tornadofx.testapps
 
-import javafx.geometry.Orientation.VERTICAL
-import javafx.scene.layout.Priority
+import javafx.geometry.Orientation
 import tornadofx.*
 
 class FormApp : App(FormView::class)
 
 class FormView : View("My Form") {
     override val root = form {
-        fieldset("FieldSet") {
-            field("Field 1") {
-                textarea {
-                    prefRowCount = 2
-                    mnemonicTarget()
-                }
+        fieldset(labelPosition = Orientation.VERTICAL) {
+            field("Name") {
+                textfield()
             }
-
-            field("Field 2", VERTICAL) {
-                textarea {
-                    vgrow = Priority.ALWAYS
-                }
+            field("Date Of Birth") {
+                textfield()
+            }
+            field("Height") {
+                textfield()
+            }
+            field("Weight") {
+                textfield()
+            }
+            buttonbar {
+                button("Save")
             }
         }
     }

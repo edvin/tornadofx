@@ -4,6 +4,7 @@
 
 ### Additions
 
+- `ListMenu` control and corresponding `listmenu` builders
 - `validator` function takes optional `model` parameter for use with properties not currently registered with the ViewModel (FXML support)
 - `ToggleGroup.selectedValueProperty()` is a writable property of any type you choose. Set `togglebutton(value)` or `radiobutton(value)` to configure the value represented by each toggle.
 - `Wizard.enterProgresses = true` will go to next page when complete and finish on last page (https://github.com/edvin/tornadofx/issues/310)

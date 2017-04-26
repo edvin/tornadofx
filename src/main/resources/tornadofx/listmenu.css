@@ -1,0 +1,47 @@
+.list-menu {
+    -fx-graphic-fixed-size: 2em;
+}
+
+.list-item {
+    -fx-cursor: hand;
+    -fx-padding: 0.5em 1em;
+    -fx-background-color: -fx-shadow-highlight-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-insets: 0 0 -0.5 0, 0, 0.5, 1.5;
+}
+
+.list-item .label {
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.list-item:active {
+    -fx-background-color: -fx-focus-color, -fx-inner-border, -fx-body-color, -fx-faint-focus-color, -fx-body-color;
+    -fx-background-insets: -0.2, 1, 2, -1.4, 2.6;
+}
+
+.list-item:hover {
+    -fx-color: -fx-hover-base;
+}
+
+.list-menu.blue {
+    -fx-padding: 8;
+    -fx-graphic-fixed-size: 2.5em;
+    -fx-background-color: #3da0e3;
+}
+
+.list-menu.blue .list-item {
+    -fx-padding: 20;
+    -fx-pref-width: 180;
+    -fx-background-color: #3da0e3;
+}
+
+.list-menu.blue .list-item * {
+    -fx-fill: #fff;
+}
+
+.list-menu.blue .list-item:hover {
+    -fx-background-color: #4aa7e5;
+}
+
+.list-menu.blue .list-item:active {
+    -fx-background-color: #1e88cf;
+}
