@@ -31,7 +31,7 @@ class ListMenuTest : View("ListMenu Test") {
                     checkbox("Icons Only") {
                         selectedProperty().onChange {
                             with(listmenu) {
-                                children.clear()
+                                items.clear()
                                 if (it) {
                                     iconOnlyMenuItems()
                                 } else {
