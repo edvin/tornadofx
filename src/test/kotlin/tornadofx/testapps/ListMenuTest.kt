@@ -13,6 +13,7 @@ class ListMenuTest : View("ListMenu Test") {
     val listmenu = listmenu(theme = "blue") {
         addMenuItems()
         activeItem = items.first()
+        maxHeight = Double.MAX_VALUE
     }
 
     override val root = borderpane {
