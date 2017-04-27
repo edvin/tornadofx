@@ -191,10 +191,11 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
         var w = if (text.text.isNullOrBlank()) 0.0 else text.prefWidth(height)
 
         if (skinnable.graphic != null) {
+            val graphicSize = Math.max(skinnable.graphic!!.prefWidth(-1.0), graphicFixedSize)
             if (iconPosition.isVertical)
-                w += Math.max(skinnable.graphic!!.prefWidth(-1.0), graphicFixedSize)
+                w += graphicSize
             else
-                w = Math.max(w, Math.max(skinnable.graphic!!.prefWidth(-1.0), graphicFixedSize))
+                w = Math.max(w, graphicSize)
         }
 
         return w + leftInset + rightInset
@@ -204,10 +205,11 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
         var h = if (text.text.isNullOrBlank()) 0.0 else text.prefHeight(width)
 
         if (skinnable.graphic != null) {
+            val graphicSize = Math.max(skinnable.graphic!!.prefHeight(-1.0), graphicFixedSize)
             if (iconPosition.isHorizontal)
-                h += Math.max(skinnable.graphic!!.prefHeight(-1.0), graphicFixedSize)
+                h += graphicSize
             else
-                h = Math.max(h, Math.max(skinnable.graphic!!.prefHeight(-1.0), graphicFixedSize))
+                h = Math.max(h, graphicSize)
         }
         return h + topInset + bottomInset
     }
