@@ -139,10 +139,10 @@ class ListMenuSkin(control: ListMenu) : SkinBase<ListMenu>(control) {
     }
 
     override fun computeMaxWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            computePrefWidth(height, topInset, rightInset, bottomInset, leftInset)
+            if (skinnable.maxWidth == Region.USE_COMPUTED_SIZE) computePrefWidth(height, topInset, rightInset, bottomInset, leftInset) else skinnable.maxWidth
 
     override fun computeMaxHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+            if (skinnable.maxHeight == Region.USE_COMPUTED_SIZE) computePrefHeight(width, topInset, rightInset, bottomInset, leftInset) else skinnable.maxHeight
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         var currentX = x
