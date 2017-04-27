@@ -328,6 +328,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     internal var reloadInit = false
     internal var muteDocking = false
     abstract val root: Parent
+    internal val wrapperProperty = SimpleObjectProperty<Parent>()
+    internal fun getRootWrapper(): Parent = wrapperProperty.value ?: root
+
     private var isInitialized = false
     val currentWindow: Window? get() = modalStage?.owner ?: FX.primaryStage
 
@@ -338,6 +341,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
     var isComplete: Boolean get() = complete.value; set(value) {
         (complete as? BooleanProperty)?.value = value
+    }
+
+    fun wrapper(op: () -> Parent) {
+        FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once
+        wrapperProperty.value = op()
     }
 
     fun savableWhen(savable: () -> BooleanExpression) {
@@ -645,7 +653,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
         if (modalStage == null) {
-            if (root !is Parent) {
+            if (getRootWrapper() !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
             } else {
                 modalStage = Stage(stageStyle)
@@ -656,11 +664,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                     initModality(modality)
                     if (owner != null) initOwner(owner)
 
-                    if (root.scene != null) {
-                        scene = root.scene
-                        this@UIComponent.properties["tornadofx.scene"] = root.scene
+                    if (getRootWrapper().scene != null) {
+                        scene = getRootWrapper().scene
+                        this@UIComponent.properties["tornadofx.scene"] = getRootWrapper().scene
                     } else {
-                        Scene(root).apply {
+                        Scene(getRootWrapper()).apply {
                             if (escapeClosesWindow) {
                                 addEventFilter(KeyEvent.KEY_PRESSED) {
                                     if (it.code == KeyCode.ESCAPE)

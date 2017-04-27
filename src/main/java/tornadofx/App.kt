@@ -110,7 +110,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     open fun shouldShowPrimaryStage() = true
 
-    open fun createPrimaryScene(view: UIComponent) = Scene(view.root)
+    open fun createPrimaryScene(view: UIComponent) = Scene(view.getRootWrapper())
 
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out UIComponent> {
