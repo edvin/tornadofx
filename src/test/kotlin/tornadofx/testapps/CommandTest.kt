@@ -29,8 +29,6 @@ class CommandTest : View("Command test") {
                 paddingAll = 50
 
                 hbox(10) {
-                    alignment = Pos.CENTER
-
                     label("Name:")
                     textfield(nameProperty)
 
@@ -46,7 +44,6 @@ class CommandTest : View("Command test") {
                     }
                 }
                 hbox(10) {
-                    alignment = Pos.CENTER
                     label("Enter number:")
                     textfield(numberProperty)
                     hyperlink("Calculate square root") {
@@ -56,15 +53,27 @@ class CommandTest : View("Command test") {
                     label("Square root:")
                     label(ctrl.squareRootResult)
                 }
+                vbox(10) {
+                    button("Download file") {
+                        command = ctrl.downloadCommand
+                    }
+                    progressbar(ctrl.downloadProgress) {
+                        visibleWhen { progressProperty().greaterThan(0) }
+                    }
+                }
+                children.forEach { alignment = Pos.CENTER }
             }
         }
     }
 }
 
 class CommandController : Controller() {
-    val helloCommand = Command(this::hello, ui = true, title = "Say hello")
-    val squareRootCommand = Command(this::squareRoot)
+    val helloCommand = command(this::hello, ui = true, title = "Say hello")
+    val squareRootCommand = command(this::squareRoot)
+    val downloadCommand = command(this::download, async = true)
+
     val squareRootResult = SimpleIntegerProperty()
+    val downloadProgress = SimpleDoubleProperty()
 
     private fun hello(name: String?) {
         Alert(INFORMATION, "Hello, ${name ?: "there"}").showAndWait()
@@ -72,5 +81,14 @@ class CommandController : Controller() {
 
     private fun squareRoot(value: Double) {
         squareRootResult.value = Math.sqrt(value).toInt()
+    }
+
+    private fun download(param: Any?) {
+        for (i in 1..100) {
+            downloadProgress.value = i/100.0
+            Thread.sleep(50)
+        }
+        Thread.sleep(1000)
+        downloadProgress.value = 0.0
     }
 }

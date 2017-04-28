@@ -63,6 +63,9 @@ class Command<in T>(
     }
 }
 
+fun <T> command(action: (T) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, title: String? = null) = Command<T>({ action(it) }, enabled, async, ui, title)
+fun command(action: () -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, title: String? = null) = Command<Any>({ action() }, enabled, async, ui, title)
+
 val ButtonBase.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
