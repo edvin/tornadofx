@@ -13,11 +13,10 @@ import tornadofx.Command.Companion.CommandParameterKey
 import kotlin.concurrent.thread
 
 class Command<in T>(
-        val action: (T) -> Unit,
+        val action: (T?) -> Unit,
         val enabled: BooleanExpression = SimpleBooleanProperty(true),
         val async: Boolean = false,
-        val ui: Boolean = false,
-        val title: String? = null
+        val ui: Boolean = false
 ) {
     val running: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)
     val isRunning: Boolean get() = running.value
@@ -25,14 +24,14 @@ class Command<in T>(
 
     internal val disabledProperty = enabled.not().or(running)
 
-    fun execute() = execute(null as T)
+    fun execute() = execute(null as T?)
 
-    fun execute(param: T) {
+    fun execute(param: T?) {
         if (isRunning || disabledProperty.value) return
         if (async) thread(true) { doRun(param) } else doRun(param)
     }
 
-    private fun doRun(param: T) {
+    private fun doRun(param: T?) {
         if (ui && !isFxApplicationThread()) {
             if (async) {
                 Platform.runLater { setRunningAndRun(param) }
@@ -44,7 +43,7 @@ class Command<in T>(
         }
     }
 
-    private fun setRunningAndRun(param: T) {
+    private fun setRunningAndRun(param: T?) {
         (running as BooleanProperty).value = true
         try {
             action(param)
@@ -63,8 +62,25 @@ class Command<in T>(
     }
 }
 
-fun <T> command(action: (T) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, title: String? = null) = Command<T>({ action(it) }, enabled, async, ui, title)
-fun command(action: () -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, title: String? = null) = Command<Any>({ action() }, enabled, async, ui, title)
+/**
+ * Create a command with a non null parameter.
+ * The action can either be a lambda or a function reference.
+ */
+fun <T> command(action: (T) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false) = Command<T>({ action(it!!) }, enabled, async, ui)
+
+/**
+ * Create a command with a nullable parameter.
+ * The action can either be a lambda or a function reference.
+ *
+ * The noarg parameter is useless, but a trick to help Kotlin differentiate between the no null parameter version of this function.
+ */
+fun <T> command(action: (T?) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, @Suppress("UNUSED_PARAMETER") nullable: Boolean = true) = Command<T?>({ action(it) }, enabled, async, ui)
+
+/**
+ * Create a command without parameters.
+ * The action can either be a lambda or a function reference.
+ */
+fun command(action: () -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false) = Command<Any>({ action() }, enabled, async, ui)
 
 val ButtonBase.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
@@ -72,7 +88,6 @@ val ButtonBase.commandProperty: ObjectProperty<Command<*>>
             onChange {
                 if (it == null) disableProperty().unbind()
                 else disableProperty().cleanBind(it.disabledProperty)
-                if (text.isNullOrBlank()) text = it?.title
             }
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
@@ -101,7 +116,6 @@ val MenuItem.commandProperty: ObjectProperty<Command<*>>
             onChange {
                 if (it == null) disableProperty().unbind()
                 else disableProperty().cleanBind(it.disabledProperty)
-                if (text.isNullOrBlank()) text = it?.title
             }
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }

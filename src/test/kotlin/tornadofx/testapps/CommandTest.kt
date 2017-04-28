@@ -29,10 +29,11 @@ class CommandTest : View("Command test") {
                 paddingAll = 50
 
                 hbox(10) {
+                    alignment = Pos.CENTER
                     label("Name:")
                     textfield(nameProperty)
 
-                    button {
+                    button("Say hello") {
                         command = ctrl.helloCommand
                         commandParameterProperty.bind(nameProperty)
                     }
@@ -44,6 +45,7 @@ class CommandTest : View("Command test") {
                     }
                 }
                 hbox(10) {
+                    alignment = Pos.CENTER
                     label("Enter number:")
                     textfield(numberProperty)
                     hyperlink("Calculate square root") {
@@ -54,6 +56,7 @@ class CommandTest : View("Command test") {
                     label(ctrl.squareRootResult)
                 }
                 vbox(10) {
+                    alignment = Pos.CENTER
                     button("Download file") {
                         command = ctrl.downloadCommand
                     }
@@ -61,14 +64,13 @@ class CommandTest : View("Command test") {
                         visibleWhen { progressProperty().greaterThan(0) }
                     }
                 }
-                children.forEach { alignment = Pos.CENTER }
             }
         }
     }
 }
 
 class CommandController : Controller() {
-    val helloCommand = command(this::hello, ui = true, title = "Say hello")
+    val helloCommand = command(this::hello, ui = true, nullable = true)
     val squareRootCommand = command(this::squareRoot)
     val downloadCommand = command(this::download, async = true)
 
@@ -83,7 +85,7 @@ class CommandController : Controller() {
         squareRootResult.value = Math.sqrt(value).toInt()
     }
 
-    private fun download(param: Any?) {
+    private fun download() {
         for (i in 1..100) {
             downloadProgress.value = i/100.0
             Thread.sleep(50)
