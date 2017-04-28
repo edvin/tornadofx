@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.7.4-SNAPSHOT]
+## [1.7.4] - 2017-04-28
 
 ### Additions
 

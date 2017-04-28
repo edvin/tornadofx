@@ -23,14 +23,31 @@ Lightweight JavaFX Framework for Kotlin
 
 ## Important version note
 
-TornadoFX requires Kotlin 1.1.1. Make sure you update your IDE plugins to minimum:
-
-- Kotlin Plugin: 1.1.1-release
-- TornadoFX Plugin: 1.7.2
+TornadoFX requires Kotlin 1.1.2 and jvmTarget 1.8. Make sure you update your IDE plugins (Kotlin + TornadoFX).
 
 After updating IntelliJ IDEA, make sure your Kotlin target version is 1.1 (Project Settings -> Modules -> Kotlin -> Language Version / API Version)
 
-You also need a full rebuild of your code. If you run into trouble, try to clean caches and restart IDEA (File -> Invalidate caches / Restart).
+Remember to update your build system to configure the `jvmTarget` as well.
+
+For Maven, you add the following configuration block to `kotlin-maven-plugin`:
+
+```xml
+<configuration>
+    <jvmTarget>1.8</jvmTarget>
+</configuration>
+```
+
+For Gradle, it means configuring the `kotlinOptions` of the Kotlin compilation task:
+
+```gradle
+compileKotlin {
+    kotlinOptions.jvmTarget= "1.8"
+}
+```
+
+Failing to do so will yield errors about the compiler not being able to inline certain calls.
+
+You also need a full rebuild of your code after a version upgrade. If you run into trouble, try to clean caches and restart IDEA (File -> Invalidate caches / Restart).
  
 ## Getting started
 
@@ -52,7 +69,7 @@ You also need a full rebuild of your code. If you run into trouble, try to clean
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.2
+  -DarchetypeVersion=1.7.4
 ```
 
 ### Add TornadoFX to your project
@@ -63,14 +80,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.2</version>
+    <version>1.7.4</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.2'
+compile 'no.tornado:tornadofx:1.7.4'
 ```
 
 ### Snapshots are published to Sonatype
@@ -89,28 +106,6 @@ Configure your build environment to use snapshots if you want to try out the lat
 ```
 
 Snapshots are published every day at GMT 16:00 if there has been any changes.
-
-## Important version note
-
-TornadoFX is now built against Kotlin 1.1.1 and compiled with `jvmTarget 1.8`, which means that your code must do the same. Update your build system to configure the `jvmTarget` accordingly.
-
-For Maven, you add the following configuration block to `kotlin-maven-plugin`:
-
-```xml
-<configuration>
-    <jvmTarget>1.8</jvmTarget>
-</configuration>
-```
-
-For Gradle, it means configuring the `kotlinOptions` of the Kotlin compilation task:
-
-```gradle
-compileKotlin {
-    kotlinOptions.jvmTarget= "1.8"
-}
-```
-
-Failing to do so will yield errors about the compiler not being able to inline certain calls.
 
 ### What does it look like? (Code snippets)
 
