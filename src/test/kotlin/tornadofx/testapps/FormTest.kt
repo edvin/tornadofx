@@ -11,8 +11,10 @@ class FormView : View("My Form") {
             field("Name") {
                 textfield()
             }
-            field("Date Of Birth") {
-                textfield()
+            field("Date Of _Birth") {
+                textfield {
+                    mnemonicTarget()
+                }
             }
             field("Height") {
                 textfield()
