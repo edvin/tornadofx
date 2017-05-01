@@ -10,11 +10,14 @@ class ContainerView : View("ContainerView") {
 
     override val root = borderpane {
         top {
-            button("Switch view").action {
-                if (center.lookup("#view1") != null)
-                    subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
-                else
-                    subView2.replaceWith(subView1, ViewTransition.Slide(0.2.seconds, ViewTransition.Direction.RIGHT))
+            hbox(10) {
+                button("Switch view").action {
+                    if (center.lookup("#view1") != null)
+                        subView1.replaceWith(subView2, ViewTransition.Slide(0.2.seconds))
+                    else
+                        subView2.replaceWith(subView1, ViewTransition.Slide(0.2.seconds, ViewTransition.Direction.RIGHT))
+                }
+                button("Fire event").action { fire(MySwitchViewEvent) }
             }
         }
         center {
@@ -23,10 +26,15 @@ class ContainerView : View("ContainerView") {
     }
 }
 
-class SubView1 : View("SubView2") {
+class SubView1 : View("SubView1") {
     override val root = hbox {
         id = "view1"
         label("I'm subview 1")
+    }
+    init {
+        subscribe<MySwitchViewEvent> {
+            println("SubView1 received event")
+        }
     }
 }
 
@@ -34,4 +42,11 @@ class SubView2 : View("SubView2") {
     override val root = hbox {
         label("I'm subview 2")
     }
+    init {
+        subscribe<MySwitchViewEvent> {
+            println("SubView2 received event")
+        }
+    }
 }
+
+object MySwitchViewEvent : FXEvent()
