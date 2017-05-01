@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.7.5-SNAPSHOT]
+
+### Additions
+
+- removeWhen/visibleWhen/enableWhen/disableWhen etc functions now also take an observable instead of a function that returns an observable.
+
 ## [1.7.4] - 2017-04-28
 
 ### Additions
