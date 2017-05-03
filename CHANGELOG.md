@@ -9,6 +9,7 @@
 ### Fixed
 
 - Support view reloading in OSGi environment
+- Live Views did not reload changed classes correctly
 
 ### Changes
 

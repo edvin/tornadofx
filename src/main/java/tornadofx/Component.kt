@@ -325,7 +325,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     var fxmlLoader: FXMLLoader? = null
     var modalStage: Stage? = null
-    internal var reloadInit = false
     internal var muteDocking = false
     abstract val root: Parent
     internal val wrapperProperty = SimpleObjectProperty<Parent>()

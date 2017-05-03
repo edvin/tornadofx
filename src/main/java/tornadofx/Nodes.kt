@@ -147,11 +147,10 @@ fun Scene.reloadStylesheets() {
     stylesheets.addAll(styles)
 }
 
-internal fun Scene.reloadViews(scope: Scope = DefaultScope) {
+internal fun Scene.reloadViews() {
     if (properties["tornadofx.layoutdebugger"] == null) {
         findUIComponents().forEach {
-            if (it.reloadInit) FX.replaceComponent(it, scope)
-            it.reloadInit = true
+            FX.replaceComponent(it)
         }
     }
 }

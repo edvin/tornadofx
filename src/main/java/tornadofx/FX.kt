@@ -239,12 +239,14 @@ class FX {
         @JvmStatic
         fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
 
-        fun replaceComponent(obsolete: UIComponent, scope: Scope = DefaultScope) {
+        fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
 
             if (obsolete is View) {
-                getComponents(scope).remove(obsolete.javaClass.kotlin)
-                replacement = find(obsolete.javaClass.kotlin, scope)
+                getComponents(obsolete.scope).remove(obsolete.javaClass.kotlin)
+            }
+            if (obsolete is UIComponent) {
+                replacement = find(obsolete.javaClass.kotlin, obsolete.scope)
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
                 if (noArgsConstructor) {
@@ -254,8 +256,6 @@ class FX {
                     return
                 }
             }
-
-            replacement.reloadInit = true
 
             if (obsolete.root.parent is Pane) {
                 (obsolete.root.parent as Pane).children.apply {
