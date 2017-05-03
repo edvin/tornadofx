@@ -425,7 +425,9 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val visited by csspseudoclass()
 
         init {
-            detectAndInstallUrlHandler()
+            if (!FX.osgiAvailable) {
+                detectAndInstallUrlHandler()
+            }
         }
 
         fun importServiceLoadedStylesheets() {
@@ -439,6 +441,9 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
          *
          * Under normal circumstances, the CSS handler that comes with TornadoFX should be picked
          * up by the JVM automatically.
+         *
+         * If an OSGi environment is detected, the TornadoFX OSGi Activator will install the OSGi
+         * compatible URL handler instead.
          */
         private fun detectAndInstallUrlHandler() {
             try {

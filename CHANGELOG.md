@@ -6,6 +6,15 @@
 
 - removeWhen/visibleWhen/enableWhen/disableWhen etc functions now also take an observable instead of a function that returns an observable.
 
+### Fixed
+
+- Support view reloading in OSGi environment
+
+### Changes
+
+- CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
+
+
 ## [1.7.4] - 2017-04-28
 
 ### Additions

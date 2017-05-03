@@ -2,9 +2,7 @@ package tornadofx.osgi.impl
 
 import org.osgi.service.url.URLStreamHandlerService
 import org.osgi.service.url.URLStreamHandlerSetter
-import tornadofx.FX
-import tornadofx.Stylesheet
-import tornadofx.osgi.impl.fxBundleContext
+import tornadofx.*
 import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
@@ -23,7 +21,7 @@ internal class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandler
 
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
-            val owningBundle = fxBundleContext.getBundle(url.query.toLong())!!
+            val owningBundle = fxBundleContext.getBundle(url.query.substringBefore("?").toLong())!!
             val stylesheet = owningBundle.loadClass(url.host).newInstance() as Stylesheet
             val rendered = stylesheet.render()
             if (FX.dumpStylesheets) println(rendered)
