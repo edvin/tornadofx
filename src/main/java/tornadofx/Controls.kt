@@ -352,14 +352,20 @@ fun Node.radiobutton(text: String? = null, group: ToggleGroup? = getToggleGroup(
     if (group != null) toggleGroup = group
 }, op)
 
-fun EventTarget.label(text: String = "", op: (Label.() -> Unit)? = null) = opcr(this, Label(text), op)
-inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, noinline op: (Label.() -> Unit)? = null) = label().apply {
+fun EventTarget.label(text: String = "", graphic: Node? = null, op: (Label.() -> Unit)? = null): Label {
+    val label = Label(text)
+    if (graphic != null) label.graphic = graphic
+    return opcr(this, label, op)
+}
+
+inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphicProperty: ObjectProperty<Node>? = null, noinline op: (Label.() -> Unit)? = null) = label().apply {
     if (T::class == String::class) {
         @Suppress("UNCHECKED_CAST")
         textProperty().bind(observable as ObservableValue<String>)
     } else {
         textProperty().bind(observable.stringBinding { it?.toString() })
     }
+    if (graphic != null) graphicProperty().bind(graphicProperty)
     op?.invoke(this)
 }
 
