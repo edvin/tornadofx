@@ -191,7 +191,7 @@ private fun Parent.clearViews() {
 
 fun Stage.reloadStylesheetsOnFocus() {
     if (properties["tornadofx.reloadStylesheetsListener"] == null) {
-        focusedProperty().addListener { obs, old, focused ->
+        focusedProperty().onChange { focused ->
             if (focused && FX.initialized.value) scene?.reloadStylesheets()
         }
         properties["tornadofx.reloadStylesheetsListener"] = true
@@ -209,7 +209,7 @@ fun Stage.hookGlobalShortcuts() {
 
 fun Stage.reloadViewsOnFocus() {
     if (properties["tornadofx.reloadViewsListener"] == null) {
-        focusedProperty().addListener { obs, old, focused ->
+        focusedProperty().onChange { focused ->
             if (focused && FX.initialized.value) scene?.reloadViews()
         }
         properties["tornadofx.reloadViewsListener"] = true

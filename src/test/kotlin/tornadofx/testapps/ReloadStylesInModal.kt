@@ -3,10 +3,6 @@ package tornadofx.testapps
 import tornadofx.*
 
 class ReloadStylesInModal : App(MainView::class, Styles::class) {
-    override fun init() {
-        reloadStylesheetsOnFocus()
-    }
-
     class MainView : View() {
         override val root = hbox {
             button("Open").action {
