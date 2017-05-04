@@ -962,7 +962,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
         }
 
         private fun isPolicyInstalled(table: TableView<*>): Boolean {
-            return table.properties["tornadofx.smartResizeInstalled"] == true
+            return table.properties["tornadofx.smartResize"] is SmartResize
         }
 
         private fun install(table: TableView<*>) {
@@ -979,6 +979,10 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
             table.properties.remove("tornadofx.smartResizeInstalled")
         }
     }
+}
+
+fun TableView<*>.smartResize() {
+    columnResizePolicy = SmartResize.POLICY
 }
 
 /**

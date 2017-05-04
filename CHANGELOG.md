@@ -7,6 +7,7 @@
 - removeWhen/visibleWhen/enableWhen/disableWhen etc functions now also take an observable instead of a function that returns an observable.
 - The `label` builder is now capable of taking a graphic node `label("some text", graphic)`
 - ComboBoxBase.required() validator
+- SmartResize.POLICY can now be installed by calling `smartResize()` on any `TableView`
 
 ### Fixed
 
