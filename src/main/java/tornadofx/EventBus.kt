@@ -30,14 +30,20 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
 
         other as FXEventRegistration
 
+        if (eventType != other.eventType) return false
+        if (owner != other.owner) return false
         if (action != other.action) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return action.hashCode()
+        var result = eventType.hashCode()
+        result = 31 * result + (owner?.hashCode() ?: 0)
+        result = 31 * result + action.hashCode()
+        return result
     }
+
 }
 
 class EventBus {

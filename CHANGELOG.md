@@ -15,6 +15,7 @@
 
 - Support view reloading in OSGi environment
 - Live Views did not reload changed classes correctly
+- Fixed equals/hashCode in FXEventRegistration, could cause events to not fire on similar components
 
 ### Changes
 

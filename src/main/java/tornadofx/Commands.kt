@@ -11,6 +11,7 @@ import javafx.scene.control.MenuItem
 import tornadofx.Command.Companion.CommandKey
 import tornadofx.Command.Companion.CommandParameterKey
 import kotlin.concurrent.thread
+import kotlin.reflect.KProperty1
 
 class Command<in T>(
         val action: (T?) -> Unit,
@@ -62,23 +63,21 @@ class Command<in T>(
     }
 }
 
+
 /**
- * Create a command with a non null parameter.
- * The action can either be a lambda or a function reference.
+ * Create a command with a non null parameter where the is either a lambda or a function reference.
  */
 fun <T> command(action: (T) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false) = Command<T>({ action(it!!) }, enabled, async, ui)
 
 /**
- * Create a command with a nullable parameter.
- * The action can either be a lambda or a function reference.
+ * Create a command with a nullable parameter where the is either a lambda or a function reference.
  *
  * The noarg parameter is useless, but a trick to help Kotlin differentiate between the no null parameter version of this function.
  */
 fun <T> command(action: (T?) -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false, @Suppress("UNUSED_PARAMETER") nullable: Boolean = true) = Command<T?>({ action(it) }, enabled, async, ui)
 
 /**
- * Create a command without parameters.
- * The action can either be a lambda or a function reference.
+ * Create a parameterless command where the is either a lambda or a function reference.
  */
 fun command(action: () -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false) = Command<Any>({ action() }, enabled, async, ui)
 

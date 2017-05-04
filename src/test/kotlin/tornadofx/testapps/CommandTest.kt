@@ -87,7 +87,7 @@ class CommandController : Controller() {
 
     private fun download() {
         for (i in 1..100) {
-            downloadProgress.value = i/100.0
+            downloadProgress.value = i / 100.0
             Thread.sleep(50)
         }
         Thread.sleep(1000)
