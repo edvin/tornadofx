@@ -6,6 +6,7 @@
 
 - removeWhen/visibleWhen/enableWhen/disableWhen etc functions now also take an observable instead of a function that returns an observable.
 - The `label` builder is now capable of taking a graphic node `label("some text", graphic)`
+- ComboBoxBase.required() validator
 
 ### Fixed
 
@@ -16,7 +17,7 @@
 
 - CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
 - All shape builders accepts `Number` instead of `Double` so you can write `circle(10, 10, 5)` instead of `circle(10.0, 10.0, 5.0)`
-
+- ComboBox.validator moved to ComboBoxBase.validator to support ColorPicker and DatePicker as well
 
 ## [1.7.4] - 2017-04-28
 

@@ -385,10 +385,13 @@ inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationT
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
+inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+        = validator(trigger) { if (it == null) error(message) else null }
+
 /**
  * Add a validator to a ComboBox that is already bound to a model property.
  */
-inline fun <reified T> ComboBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+inline fun <reified T> ComboBoxBase<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
 /**
