@@ -48,15 +48,16 @@ fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu 
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
+@Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
 fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
-    return this.menuitem(name, KeyCombination.valueOf(keyCombination), graphic, onAction)
+    return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
 }
 
 fun ContextMenu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name, graphic)
     keyCombination?.apply { checkMenuItem.accelerator = this }
     graphic?.apply { checkMenuItem.graphic = graphic }
-    op?.let { it.invoke(checkMenuItem) }
+    op?.invoke(checkMenuItem)
     this += checkMenuItem
     return checkMenuItem
 }
@@ -65,6 +66,7 @@ fun ContextMenu.checkmenuitem(name: String, keyCombination: KeyCombination? = nu
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
+@Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, keyCombination, graphic).action(onAction)"))
 fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name, graphic)
     keyCombination?.apply { menuItem.accelerator = this }
@@ -123,14 +125,16 @@ fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
+@Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
 fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
-    return this.menuitem(name, KeyCombination.valueOf(keyCombination), graphic, onAction)
+    return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
 }
 
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
+@Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, keyCombination, graphic).action(onAction)"))
 fun Menu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name, graphic);
     keyCombination?.apply { menuItem.accelerator = this }

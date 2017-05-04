@@ -16,7 +16,7 @@
 
 - CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
 - All shape builders accepts `Number` instead of `Double` so you can write `circle(10, 10, 5)` instead of `circle(10.0, 10.0, 5.0)`
-
+- Deprecated `menuitem` builders in favor of `item` builders, which work the same way as other builders with respect to action (IDEA provides quick fix)
 
 ## [1.7.4] - 2017-04-28
 
