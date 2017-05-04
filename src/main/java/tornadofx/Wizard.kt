@@ -19,7 +19,7 @@ import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
 
-abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: String? = null) : View(title), InstanceScoped {
+abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: String? = null) : View(title) {
     val pages: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
 
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
