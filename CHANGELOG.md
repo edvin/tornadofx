@@ -9,6 +9,7 @@
 - ComboBoxBase.required() validator
 - SmartResize.POLICY can now be installed by calling `smartResize()` on any `TableView`
 - SmartResize will automatically resize if the itemsProperty of the TableView changes value
+- Workspace.showHeadingLabelProperty controls whether the heading is shown in the Workspace toolbar or not
 
 ### Fixed
 

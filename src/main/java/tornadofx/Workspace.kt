@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -54,6 +55,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     val headingContainer = HeadingContainer()
     val tabContainer = TabPane().addClass("editor-container")
     val stackContainer = StackPane().addClass("editor-container")
+
+    val showHeadingLabelProperty = SimpleBooleanProperty(true)
+    var showHeadingLabel by showHeadingLabelProperty
 
     val dockedComponentProperty: ObjectProperty<UIComponent> = SimpleObjectProperty()
     val dockedComponent: UIComponent? get() = dockedComponentProperty.value
@@ -330,6 +334,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty) {
             graphicProperty().bind(child.iconProperty)
+            removeWhen(showHeadingLabelProperty.not())
         }
 
         clearDynamicComponents()
