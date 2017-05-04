@@ -8,6 +8,7 @@
 - The `label` builder is now capable of taking a graphic node `label("some text", graphic)`
 - ComboBoxBase.required() validator
 - SmartResize.POLICY can now be installed by calling `smartResize()` on any `TableView`
+- SmartResize will automatically resize if the itemsProperty of the TableView changes value
 
 ### Fixed
 
