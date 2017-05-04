@@ -385,10 +385,13 @@ inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationT
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
+inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+        = validator(trigger) { if (it == null) error(message) else null }
+
 /**
  * Add a validator to a ComboBox that is already bound to a model property.
  */
-inline fun <reified T> ComboBox<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
+inline fun <reified T> ComboBoxBase<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueProperty(), trigger, validator)
 
 /**
@@ -444,7 +447,7 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
  */
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, model: ViewModel? = null, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = (model ?: property.viewModel)?.addValidator(control, property, trigger, validator)
-        ?: throw IllegalArgumentException("The addValidator extension on TextInputControl can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or update the binding.")
+        ?: throw IllegalArgumentException("The addValidator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or make the property's bean field point to a ViewModel.")
 
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
     = validator(control, property, trigger, null, validator)

@@ -936,6 +936,11 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
             if (newValue == POLICY) install(table) else uninstall(table)
         }
 
+        private val itemsChangeListener = ChangeListener<ObservableList<*>> { observable, _, _ ->
+            val table = (observable as ObjectProperty<*>).bean as TableView<*>
+            POLICY.requestResize(table)
+        }
+
         private val columnsChangeListener = ListChangeListener<TableColumn<*, *>> { s ->
             while (s.next()) {
                 if (s.wasAdded()) s.addedSubList.forEach {
@@ -962,12 +967,13 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
         }
 
         private fun isPolicyInstalled(table: TableView<*>): Boolean {
-            return table.properties["tornadofx.smartResizeInstalled"] == true
+            return table.properties["tornadofx.smartResize"] is SmartResize
         }
 
         private fun install(table: TableView<*>) {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
+            table.itemsProperty().addListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
             table.properties["tornadofx.smartResizeInstalled"] = true
         }
@@ -975,10 +981,15 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
         private fun uninstall(table: TableView<*>) {
             table.columnResizePolicyProperty().removeListener(policyChangeListener)
             table.columns.removeListener(columnsChangeListener)
+            table.itemsProperty().removeListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
             table.properties.remove("tornadofx.smartResizeInstalled")
         }
     }
+}
+
+fun TableView<*>.smartResize() {
+    columnResizePolicy = SmartResize.POLICY
 }
 
 /**
