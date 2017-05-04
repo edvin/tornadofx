@@ -21,6 +21,7 @@
 - All shape builders accepts `Number` instead of `Double` so you can write `circle(10, 10, 5)` instead of `circle(10.0, 10.0, 5.0)`
 - ComboBox.validator moved to ComboBoxBase.validator to support ColorPicker and DatePicker as well
 - Removed InstanceScoped and removed it from Wizard. It was not needed.
+- Deprecated `menuitem` builders in favor of `item` builders, which work the same way as other builders with respect to action (IDEA provides quick fix)
 
 ## [1.7.4] - 2017-04-28
 
