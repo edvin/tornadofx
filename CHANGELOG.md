@@ -16,6 +16,7 @@
 - Support view reloading in OSGi environment
 - Live Views did not reload changed classes correctly
 - Fixed equals/hashCode in FXEventRegistration, could cause events to not fire on similar components
+- lazyPopulate child factory was called on UI thread (https://github.com/edvin/tornadofx/issues/318)
 
 ### Changes
 
