@@ -181,7 +181,7 @@ class LazyTreeItem<T : Any>(
 ) : TreeItem<T>(value) {
     var leafResult: Boolean? = null
     var childFactoryInvoked = false
-    var childFactoryResult: List<TreeItem<T>>? = null
+    var childFactoryResult: List<T>? = null
 
     override fun isLeaf(): Boolean {
         if (leafResult == null)
@@ -194,24 +194,51 @@ class LazyTreeItem<T : Any>(
             task {
                 invokeChildFactorySynchronously()
             } success {
-                if (childFactoryResult != null)
-                    super.getChildren().setAll(childFactoryResult)
+                if (childFactoryResult != null) {
+                    super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
+                    listenForChanges()
+                }
             }
         }
         return super.getChildren()
     }
 
+    private fun listenForChanges() {
+        println("ChildFactoryResult is ${childFactoryResult?.hashCode()} ${childFactoryResult?.javaClass}")
+        (childFactoryResult as? ObservableList<T>)?.addListener(ListChangeListener { change ->
+            println("CHANGE!!!!")
+            while (change.next()) {
+                if (change.wasPermutated()) {
+                    children.subList(change.from, change.to).clear()
+                    val permutated = change.list.subList(change.from, change.to).map { newLazyTreeItem(it) }
+                    children.addAll(change.from, permutated)
+                } else {
+                    if (change.wasRemoved()) {
+                        val removed = change.removed.flatMap { removed -> children.filter { it.value == removed } }
+                        children.removeAll(removed)
+                    }
+                    if (change.wasAdded()) {
+                        val added = change.addedSubList.map { newLazyTreeItem(it) }
+                        children.addAll(change.from, added)
+                    }
+                }
+            }
+        })
+    }
+
     fun childFactoryReturnedNull() = invokeChildFactorySynchronously() == null
 
-    private fun invokeChildFactorySynchronously(): List<TreeItem<T>>? {
+    private fun invokeChildFactorySynchronously(): List<T>? {
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
-            childFactoryResult = childFactory(this)?.map { LazyTreeItem(it, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) } }
+            childFactoryResult = childFactory(this)
             if (childFactoryResult != null)
-                super.getChildren().setAll(childFactoryResult)
+                super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
         }
         return childFactoryResult
     }
+
+    private fun newLazyTreeItem(item: T) = LazyTreeItem(item, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) }
 }
 
 fun <T> TreeItem<T>.treeitem(value: T? = null, op: TreeItem<T>.() -> Unit = {}): TreeItem<T> {

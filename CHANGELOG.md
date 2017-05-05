@@ -25,6 +25,7 @@
 - ComboBox.validator moved to ComboBoxBase.validator to support ColorPicker and DatePicker as well
 - Removed InstanceScoped and removed it from Wizard. It was not needed.
 - Deprecated `menuitem` builders in favor of `item` builders, which work the same way as other builders with respect to action (IDEA provides quick fix)
+- TreeView.lazyPopulate() is now data driven. If the returned list is observable, changes will be reflected in the tree (https://github.com/edvin/tornadofx/issues/317)
 
 ## [1.7.4] - 2017-04-28
 
