@@ -45,23 +45,23 @@ class OSGIConsole : View() {
                 }
 
                 contextmenu {
-                    menuitem("Stop") {
+                    item("Stop").action {
                         selectedItem?.stop()
                     }
-                    menuitem("Start") {
+                    item("Start").action {
                         selectedItem?.start()
                     }
-                    menuitem("Uninstall") {
+                    item("Uninstall").action {
                         selectedItem?.uninstall()
                     }
-                    menuitem("Update") {
+                    item("Update").action {
                         selectedItem?.update()
                     }
-                    menuitem("Update from...") {
+                    item("Update from...").action {
                         val result = chooseFile("Select file to replace ${selectedItem!!.symbolicName}", arrayOf(FileChooser.ExtensionFilter("OSGi Bundle Jar", "jar")))
                         if (result.isNotEmpty()) selectedItem?.update(Files.newInputStream(result.first().toPath()))
                     }
-                    menuitem("Set start level...") {
+                    item("Set start level...").action {
                         TextInputDialog("").showAndWait().ifPresent {
                             selectedItem!!.bundleContext.bundle.adapt(BundleStartLevel::class.java).startLevel = it.toInt()
                         }

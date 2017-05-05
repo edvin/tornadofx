@@ -42,7 +42,7 @@ class ExpandableTableTest : View("Smart Resize Demo") {
         }
         column("Type", Room::type).weigthedWidth(2.0)
 
-        columnResizePolicy = SmartResize.POLICY
+        smartResize()
 
         rowExpander {
             tableview(it.occupancy) {
