@@ -8,10 +8,10 @@ import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.scene.control.ButtonBase
 import javafx.scene.control.MenuItem
+import javafx.scene.control.TextField
 import tornadofx.Command.Companion.CommandKey
 import tornadofx.Command.Companion.CommandParameterKey
 import kotlin.concurrent.thread
-import kotlin.reflect.KProperty1
 
 class Command<in T>(
         val action: (T?) -> Unit,
@@ -132,6 +132,34 @@ val MenuItem.commandParameterProperty: ObjectProperty<Any?>
     } as ObjectProperty<Any?>
 
 var MenuItem.commandParameter: Any?
+    get() = commandParameterProperty.value
+    set(value) {
+        commandParameterProperty.value = value
+    }
+
+val TextField.commandProperty: ObjectProperty<Command<*>>
+    get() = properties.getOrPut(CommandKey) {
+        SimpleObjectProperty<Command<*>>().apply {
+            onChange {
+                if (it == null) disableProperty().unbind()
+                else disableProperty().cleanBind(it.disabledProperty)
+            }
+            this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
+        }
+    } as ObjectProperty<Command<*>>
+
+var TextField.command: Command<*>
+    get() = commandProperty.value
+    set(value) {
+        commandProperty.value = value as Command<Any?>
+    }
+
+val TextField.commandParameterProperty: ObjectProperty<Any?>
+    get() = properties.getOrPut(CommandParameterKey) {
+        SimpleObjectProperty<Any?>()
+    } as ObjectProperty<Any?>
+
+var TextField.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
         commandParameterProperty.value = value

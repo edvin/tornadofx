@@ -4,6 +4,7 @@
 
 ### Additions
 
+- TextField now supports Commanding
 - TreeTableSmartResize.POLICY - activate with smartResize() (https://github.com/edvin/tornadofx/issues/316)
 - removeWhen/visibleWhen/enableWhen/disableWhen etc functions now also take an observable instead of a function that returns an observable.
 - The `label` builder is now capable of taking a graphic node `label("some text", graphic)`
