@@ -504,6 +504,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         is DataGrid<*> -> {
         }
+        is Field -> {
+            inputContainer.add(node)
+        }
         else -> getChildList()?.apply {
             if (!contains(node)) {
                 if (index != null && index < size)

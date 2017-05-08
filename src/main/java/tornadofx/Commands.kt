@@ -82,7 +82,7 @@ fun <T> command(action: (T?) -> Unit, enabled: BooleanExpression = SimpleBoolean
  */
 fun command(action: () -> Unit, enabled: BooleanExpression = SimpleBooleanProperty(true), async: Boolean = false, ui: Boolean = false) = Command<Any>({ action() }, enabled, async, ui)
 
-val ButtonBase.commandProperty: ObjectProperty<Command<*>>
+var ButtonBase.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -92,6 +92,7 @@ val ButtonBase.commandProperty: ObjectProperty<Command<*>>
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
     } as ObjectProperty<Command<*>>
+    set(value) { properties.put(CommandKey, value) }
 
 var ButtonBase.command: Command<*>
     get() = commandProperty.value
@@ -99,10 +100,11 @@ var ButtonBase.command: Command<*>
         commandProperty.value = value as Command<Any?>
     }
 
-val ButtonBase.commandParameterProperty: ObjectProperty<Any?>
+var ButtonBase.commandParameterProperty: ObjectProperty<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
     } as ObjectProperty<Any?>
+    set(value) { properties.put(CommandParameterKey, value) }
 
 var ButtonBase.commandParameter: Any?
     get() = commandParameterProperty.value
@@ -110,7 +112,7 @@ var ButtonBase.commandParameter: Any?
         commandParameterProperty.value = value
     }
 
-val MenuItem.commandProperty: ObjectProperty<Command<*>>
+var MenuItem.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -120,6 +122,7 @@ val MenuItem.commandProperty: ObjectProperty<Command<*>>
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
     } as ObjectProperty<Command<*>>
+    set(value) { properties.put(CommandKey, value) }
 
 var MenuItem.command: Command<*>
     get() = commandProperty.value
@@ -127,10 +130,11 @@ var MenuItem.command: Command<*>
         commandProperty.value = value as Command<Any?>
     }
 
-val MenuItem.commandParameterProperty: ObjectProperty<Any?>
+var MenuItem.commandParameterProperty: ObjectProperty<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
     } as ObjectProperty<Any?>
+    set(value) { properties.put(CommandParameterKey, value) }
 
 var MenuItem.commandParameter: Any?
     get() = commandParameterProperty.value
@@ -138,7 +142,7 @@ var MenuItem.commandParameter: Any?
         commandParameterProperty.value = value
     }
 
-val TextField.commandProperty: ObjectProperty<Command<*>>
+var TextField.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -148,6 +152,7 @@ val TextField.commandProperty: ObjectProperty<Command<*>>
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
     } as ObjectProperty<Command<*>>
+    set(value) { properties.put(CommandKey, value) }
 
 var TextField.command: Command<*>
     get() = commandProperty.value
@@ -155,10 +160,11 @@ var TextField.command: Command<*>
         commandProperty.value = value as Command<Any?>
     }
 
-val TextField.commandParameterProperty: ObjectProperty<Any?>
+var TextField.commandParameterProperty: ObjectProperty<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
     } as ObjectProperty<Any?>
+    set(value) { properties.put(CommandParameterKey, value) }
 
 var TextField.commandParameter: Any?
     get() = commandParameterProperty.value
@@ -167,7 +173,7 @@ var TextField.commandParameter: Any?
     }
 
 
-val ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
+var ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -177,6 +183,7 @@ val ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
     } as ObjectProperty<Command<*>>
+    set(value) { properties.put(CommandKey, value) }
 
 var ChoiceBox<*>.command: Command<*>
     get() = commandProperty.value
@@ -184,10 +191,11 @@ var ChoiceBox<*>.command: Command<*>
         commandProperty.value = value as Command<Any?>
     }
 
-val ChoiceBox<*>.commandParameterProperty: ObjectProperty<Any?>
+var ChoiceBox<*>.commandParameterProperty: ObjectProperty<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
     } as ObjectProperty<Any?>
+    set(value) { properties.put(CommandParameterKey, value) }
 
 var ChoiceBox<*>.commandParameter: Any?
     get() = commandParameterProperty.value

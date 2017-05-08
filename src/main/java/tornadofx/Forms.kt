@@ -50,10 +50,10 @@ fun EventTarget.buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean
  *
  * @see buttonbar
  */
-fun EventTarget.field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Pane.() -> Unit)? = null): Field {
+fun EventTarget.field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Field.() -> Unit)? = null): Field {
     val field = Field(text ?: "", orientation, forceLabelIndent)
     opcr(this, field, null)
-    op?.invoke(field.inputContainer)
+    op?.invoke(field)
     return field
 }
 

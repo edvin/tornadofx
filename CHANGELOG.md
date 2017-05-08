@@ -23,12 +23,14 @@
 
 ### Changes
 
+- `commandProperty` and `commandParameterProperty` are now writable so you can choose between bind or assign
 - CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
 - All shape builders accepts `Number` instead of `Double` so you can write `circle(10, 10, 5)` instead of `circle(10.0, 10.0, 5.0)`
 - ComboBox.validator moved to ComboBoxBase.validator to support ColorPicker and DatePicker as well
 - Removed InstanceScoped and removed it from Wizard. It was not needed.
 - Deprecated `menuitem` builders in favor of `item` builders, which work the same way as other builders with respect to action (IDEA provides quick fix)
 - TreeView.lazyPopulate() is now data driven. If the returned list is observable, changes will be reflected in the tree (https://github.com/edvin/tornadofx/issues/317)
+- field builder now operates on the field itself instead of the inputContainer. You can now hide() the field directly in the function reference.
 
 ## [1.7.4] - 2017-04-28
 
