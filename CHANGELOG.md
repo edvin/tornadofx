@@ -4,6 +4,7 @@
 
 ### Additions
 
+- Command bindings accepts optional parameter using invoke: `button { command = someCommand(someParam) }`
 - ChoiceBox now supports Commanding
 - TextField now supports Commanding
 - TreeTableSmartResize.POLICY - activate with smartResize() (https://github.com/edvin/tornadofx/issues/316)

@@ -34,8 +34,7 @@ class CommandTest : View("Command test") {
                     textfield(nameProperty)
 
                     button("Say hello") {
-                        command = ctrl.helloCommand
-                        commandParameterProperty.bind(nameProperty)
+                        command = ctrl.helloCommand(nameProperty)
                     }
 
                     button("Call action off of UI thread").action {
@@ -49,8 +48,7 @@ class CommandTest : View("Command test") {
                     label("Enter number:")
                     textfield(numberProperty)
                     hyperlink("Calculate square root") {
-                        command = ctrl.squareRootCommand
-                        commandParameterProperty.bind(numberProperty)
+                        command = ctrl.squareRootCommand(numberProperty)
                     }
                     label("Square root:")
                     label(ctrl.squareRootResult)

@@ -14,7 +14,7 @@ import tornadofx.Command.Companion.CommandKey
 import tornadofx.Command.Companion.CommandParameterKey
 import kotlin.concurrent.thread
 
-class Command<in T>(
+open class Command<in T>(
         val action: (T?) -> Unit,
         val enabled: BooleanExpression = SimpleBooleanProperty(true),
         val async: Boolean = false,
@@ -97,22 +97,31 @@ var ButtonBase.commandProperty: ObjectProperty<Command<*>>
 var ButtonBase.command: Command<*>
     get() = commandProperty.value
     set(value) {
-        commandProperty.value = value as Command<Any?>
+        if (value is CommandWithParameter) {
+            commandProperty.value = value.command
+            commandParameter = value.parameter
+        } else {
+            commandProperty.value = value as Command<Any?>
+        }
     }
 
-var ButtonBase.commandParameterProperty: ObjectProperty<Any?>
+var ButtonBase.commandParameterProperty: Property<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
-    } as ObjectProperty<Any?>
+    } as Property<Any?>
     set(value) { properties.put(CommandParameterKey, value) }
 
 var ButtonBase.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
-        commandParameterProperty.value = value
+        if (value is Property<*>) {
+            commandParameterProperty = value as Property<Any?>
+        } else {
+            commandParameterProperty.value = value
+        }
     }
 
-var MenuItem.commandProperty: ObjectProperty<Command<*>>
+var MenuItem.commandProperty: Property<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -121,28 +130,37 @@ var MenuItem.commandProperty: ObjectProperty<Command<*>>
             }
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
-    } as ObjectProperty<Command<*>>
+    } as Property<Command<*>>
     set(value) { properties.put(CommandKey, value) }
 
 var MenuItem.command: Command<*>
     get() = commandProperty.value
     set(value) {
-        commandProperty.value = value as Command<Any?>
+        if (value is CommandWithParameter) {
+            commandProperty.value = value.command
+            commandParameter = value.parameter
+        } else {
+            commandProperty.value = value as Command<Any?>
+        }
     }
 
-var MenuItem.commandParameterProperty: ObjectProperty<Any?>
+var MenuItem.commandParameterProperty: Property<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
-    } as ObjectProperty<Any?>
+    } as Property<Any?>
     set(value) { properties.put(CommandParameterKey, value) }
 
 var MenuItem.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
-        commandParameterProperty.value = value
+        if (value is Property<*>) {
+            commandParameterProperty = value as Property<Any?>
+        } else {
+            commandParameterProperty.value = value
+        }
     }
 
-var TextField.commandProperty: ObjectProperty<Command<*>>
+var TextField.commandProperty: Property<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -151,29 +169,38 @@ var TextField.commandProperty: ObjectProperty<Command<*>>
             }
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
-    } as ObjectProperty<Command<*>>
+    } as Property<Command<*>>
     set(value) { properties.put(CommandKey, value) }
 
 var TextField.command: Command<*>
     get() = commandProperty.value
     set(value) {
-        commandProperty.value = value as Command<Any?>
+        if (value is CommandWithParameter) {
+            commandProperty.value = value.command
+            commandParameter = value.parameter
+        } else {
+            commandProperty.value = value as Command<Any?>
+        }
     }
 
-var TextField.commandParameterProperty: ObjectProperty<Any?>
+var TextField.commandParameterProperty: Property<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
-    } as ObjectProperty<Any?>
+    } as Property<Any?>
     set(value) { properties.put(CommandParameterKey, value) }
 
 var TextField.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
-        commandParameterProperty.value = value
+        if (value is Property<*>) {
+            commandParameterProperty = value as Property<Any?>
+        } else {
+            commandParameterProperty.value = value
+        }
     }
 
 
-var ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
+var ChoiceBox<*>.commandProperty: Property<Command<*>>
     get() = properties.getOrPut(CommandKey) {
         SimpleObjectProperty<Command<*>>().apply {
             onChange {
@@ -182,23 +209,36 @@ var ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
             }
             this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
         }
-    } as ObjectProperty<Command<*>>
+    } as Property<Command<*>>
     set(value) { properties.put(CommandKey, value) }
 
 var ChoiceBox<*>.command: Command<*>
     get() = commandProperty.value
     set(value) {
-        commandProperty.value = value as Command<Any?>
+        if (value is CommandWithParameter) {
+            commandProperty.value = value.command
+            commandParameter = value.parameter
+        } else {
+            commandProperty.value = value as Command<Any?>
+        }
     }
 
-var ChoiceBox<*>.commandParameterProperty: ObjectProperty<Any?>
+var ChoiceBox<*>.commandParameterProperty: Property<Any?>
     get() = properties.getOrPut(CommandParameterKey) {
         SimpleObjectProperty<Any?>()
-    } as ObjectProperty<Any?>
+    } as Property<Any?>
     set(value) { properties.put(CommandParameterKey, value) }
 
 var ChoiceBox<*>.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
-        commandParameterProperty.value = value
+        if (value is Property<*>) {
+            commandParameterProperty = value as Property<Any?>
+        } else {
+            commandParameterProperty.value = value
+        }
     }
+
+class CommandWithParameter(val command: Command<*>, val parameter: Any?) : Command<Any?>({})
+
+operator fun Command<*>.invoke(parameter: Any?) = CommandWithParameter(this, parameter)
