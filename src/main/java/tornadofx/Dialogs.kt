@@ -28,16 +28,28 @@ fun confirm(header: String, content: String = "", confirmButton: ButtonType = Bu
  */
 fun alert(type: Alert.AlertType,
           header: String,
-          content: String,
+          content: String? = null,
           vararg buttons: ButtonType,
           actionFn: (Alert.(ButtonType) -> Unit)? = null): Alert {
 
-    val alert = Alert(type, content, *buttons)
+    val alert = Alert(type, content ?: "", *buttons)
     alert.headerText = header
     val buttonClicked = alert.showAndWait()
     buttonClicked.ifPresent { actionFn?.invoke(alert, buttonClicked.get()) }
     return alert
 }
+
+fun warning(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
+        alert(Alert.AlertType.WARNING, header, content, *buttons, actionFn = actionFn)
+
+fun error(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
+        alert(Alert.AlertType.ERROR, header, content, *buttons, actionFn = actionFn)
+
+fun information(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
+        alert(Alert.AlertType.INFORMATION, header, content, *buttons, actionFn = actionFn)
+
+fun confirmation(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
+        alert(Alert.AlertType.CONFIRMATION, header, content, *buttons, actionFn = actionFn)
 
 enum class FileChooserMode { None, Single, Multi, Save }
 

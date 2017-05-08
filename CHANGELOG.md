@@ -4,6 +4,7 @@
 
 ### Additions
 
+- warning(), error(), confirmation() and information() shortcuts to alert()
 - Command bindings accepts optional parameter using invoke: `button { command = someCommand(someParam) }` or `button { command = someCommand with someParam }`
 - ChoiceBox now supports Commanding
 - TextField now supports Commanding
@@ -24,6 +25,7 @@
 
 ### Changes
 
+- alert content parameter is now optional
 - `commandProperty` and `commandParameterProperty` are now writable so you can choose between bind or assign
 - CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
 - All shape builders accepts `Number` instead of `Double` so you can write `circle(10, 10, 5)` instead of `circle(10.0, 10.0, 5.0)`
