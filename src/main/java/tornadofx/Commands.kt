@@ -242,3 +242,5 @@ var ChoiceBox<*>.commandParameter: Any?
 class CommandWithParameter(val command: Command<*>, val parameter: Any?) : Command<Any?>({})
 
 operator fun Command<*>.invoke(parameter: Any?) = CommandWithParameter(this, parameter)
+
+infix fun Command<*>.with(parameter: Any?) = invoke(parameter)
