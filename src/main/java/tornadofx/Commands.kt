@@ -7,6 +7,7 @@ import javafx.application.Platform.isFxApplicationThread
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.scene.control.ButtonBase
+import javafx.scene.control.ChoiceBox
 import javafx.scene.control.MenuItem
 import javafx.scene.control.TextField
 import tornadofx.Command.Companion.CommandKey
@@ -160,6 +161,35 @@ val TextField.commandParameterProperty: ObjectProperty<Any?>
     } as ObjectProperty<Any?>
 
 var TextField.commandParameter: Any?
+    get() = commandParameterProperty.value
+    set(value) {
+        commandParameterProperty.value = value
+    }
+
+
+val ChoiceBox<*>.commandProperty: ObjectProperty<Command<*>>
+    get() = properties.getOrPut(CommandKey) {
+        SimpleObjectProperty<Command<*>>().apply {
+            onChange {
+                if (it == null) disableProperty().unbind()
+                else disableProperty().cleanBind(it.disabledProperty)
+            }
+            this@commandProperty.action { (value as? Command<Any?>)?.execute(commandParameter) }
+        }
+    } as ObjectProperty<Command<*>>
+
+var ChoiceBox<*>.command: Command<*>
+    get() = commandProperty.value
+    set(value) {
+        commandProperty.value = value as Command<Any?>
+    }
+
+val ChoiceBox<*>.commandParameterProperty: ObjectProperty<Any?>
+    get() = properties.getOrPut(CommandParameterKey) {
+        SimpleObjectProperty<Any?>()
+    } as ObjectProperty<Any?>
+
+var ChoiceBox<*>.commandParameter: Any?
     get() = commandParameterProperty.value
     set(value) {
         commandParameterProperty.value = value
