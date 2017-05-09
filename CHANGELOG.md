@@ -2,6 +2,11 @@
 
 ## [1.7.5-SNAPSHOT]
 
+**Important notice**: The `field` builder used to operate on the `inputContainer` inside the `Field`. This has been changed so that it now operates on the
+field itself. If you did something like `parent.isVisible = false` to hide the field, you must now change your code to `isVisible = false`. This new
+behavior is more as one would expect and hopefully the change won't cause any trouble to anyone.
+
+
 ### Additions
 
 - warning(), error(), confirmation() and information() shortcuts to alert()
