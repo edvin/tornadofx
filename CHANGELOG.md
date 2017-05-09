@@ -15,6 +15,7 @@
 - SmartResize.POLICY can now be installed by calling `smartResize()` on any `TableView`
 - SmartResize will automatically resize if the itemsProperty of the TableView changes value
 - Workspace.showHeadingLabelProperty controls whether the heading is shown in the Workspace toolbar or not
+- TableView/TreeTableView requestResize() will reapply SmartResize policy, useful after content change
 
 ### Fixed
 
@@ -22,6 +23,7 @@
 - Live Views did not reload changed classes correctly
 - Fixed equals/hashCode in FXEventRegistration, could cause events to not fire on similar components
 - lazyPopulate child factory was called on UI thread (https://github.com/edvin/tornadofx/issues/318)
+- SmartResize.requestResize() some times resulted in misaligned column headers
 
 ### Changes
 

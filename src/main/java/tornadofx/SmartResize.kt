@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -211,7 +212,9 @@ class SmartResize private constructor() : TableViewResizeCallback {
         }
 
     fun requestResize(table: TableView<*>) {
-        call(TableView.ResizeFeatures(table, null, 0.0))
+        Platform.runLater {
+            call(TableView.ResizeFeatures(table, null, 0.0))
+        }
     }
 
     companion object {
@@ -462,7 +465,9 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
         }
 
     fun requestResize(table: TreeTableView<*>) {
-        call(TreeTableView.ResizeFeatures(table, null, 0.0))
+        Platform.runLater {
+            call(TreeTableView.ResizeFeatures(table, null, 0.0))
+        }
     }
 
     companion object {
@@ -529,8 +534,16 @@ fun TableView<*>.smartResize() {
     columnResizePolicy = SmartResize.POLICY
 }
 
+fun TableView<*>.requestResize() {
+    SmartResize.POLICY.requestResize(this)
+}
+
 fun TreeTableView<*>.smartResize() {
     columnResizePolicy = TreeTableSmartResize.POLICY
+}
+
+fun TreeTableView<*>.requestResize() {
+    TreeTableSmartResize.POLICY.requestResize(this)
 }
 
 /**
