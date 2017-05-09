@@ -261,7 +261,7 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
             }
 
             with(request.connection) {
-                if (doInput) inputStream.close()
+                if (doInput) content().close()
             }
         } catch (ignored: Throwable) {
             ignored.printStackTrace()
@@ -274,17 +274,16 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
 
     override fun text() = bytes().toString(UTF_8)
 
-    override fun content() = request.connection.inputStream
+    override fun content() = request.connection.errorStream ?: request.connection.inputStream
 
     override fun bytes(): ByteArray {
         if (bytesRead != null) return bytesRead!!
 
         try {
-            val connection = request.connection
-            val unwrapped = when (connection.contentEncoding) {
-                "gzip" -> GZIPInputStream(connection.inputStream)
-                "deflate" -> DeflaterInputStream(connection.inputStream)
-                else -> connection.inputStream
+            val unwrapped = when (request.connection.contentEncoding) {
+                "gzip" -> GZIPInputStream(content())
+                "deflate" -> DeflaterInputStream(content())
+                else -> content()
             }
             bytesRead = unwrapped.readBytes()
         } catch (error: Exception) {

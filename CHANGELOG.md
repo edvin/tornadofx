@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- HTTPUrlConnection based Rest Client Engine will read data from response even when not successful
 - Support view reloading in OSGi environment
 - Live Views did not reload changed classes correctly
 - Fixed equals/hashCode in FXEventRegistration, could cause events to not fire on similar components
