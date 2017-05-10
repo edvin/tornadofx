@@ -7,7 +7,6 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.stage.Stage
-import junit.framework.Assert
 import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
@@ -167,8 +166,9 @@ class PersonAutoModel(var person: Person? = null) : ViewModel() {
 }
 
 // JavaFX Property
-open class PersonModel(person: Person) : ItemViewModel<Person>(person) {
+open class PersonModel(person: Person? = null) : ItemViewModel<Person>(person) {
     val name = bind { item?.nameProperty() }
+    val age = bind { item?.ageProperty() }
     val phone = bind { item?.phoneProperty() }
     val email = bind { item?.emailProperty() }
 }

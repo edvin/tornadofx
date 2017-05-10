@@ -55,6 +55,11 @@ open class Rest : Controller() {
 
     fun put(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(PUT, path, data, processor)
     fun put(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = put(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun put(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(PUT, path, data, processor)
+
+    fun patch(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(PATCH, path, data, processor)
+    fun patch(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = patch(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun patch(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(PATCH, path, data, processor)
 
     fun post(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
     fun post(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = post(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
@@ -108,7 +113,7 @@ open class Rest : Controller() {
     }
 
     interface Request {
-        enum class Method { GET, PUT, POST, DELETE }
+        enum class Method { GET, PUT, POST, DELETE, PATCH }
 
         val seq: Long
         val method: Method
@@ -341,6 +346,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
             PUT -> request = HttpPut(uri)
             POST -> request = HttpPost(uri)
             DELETE -> request = HttpDelete(uri)
+            PATCH -> request = HttpPatch(uri)
         }
         addHeader("Accept-Encoding", "gzip, deflate")
         addHeader("Content-Type", "application/json")
