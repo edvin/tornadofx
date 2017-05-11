@@ -44,6 +44,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - Deprecated `menuitem` builders in favor of `item` builders, which work the same way as other builders with respect to action (IDEA provides quick fix)
 - TreeView.lazyPopulate() is now data driven. If the returned list is observable, changes will be reflected in the tree (https://github.com/edvin/tornadofx/issues/317)
 - field builder now operates on the field itself instead of the inputContainer. You can now hide() the field directly in the function reference.
+- TableColumn.useProgressBar() supports Number subtypes instead of only Double
 
 ## [1.7.4] - 2017-04-28
 

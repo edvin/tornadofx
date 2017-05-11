@@ -392,14 +392,20 @@ fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit
     return this
 }
 
-fun <S> TableColumn<S, Double?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Double?>) -> Unit)? = null): TableColumn<S, Double?> {
-    cellFactory = ProgressBarTableCell.forTableColumn()
-    setOnEditCommit {
-        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<Double?>
-        property.value = it.newValue
-        afterCommit?.invoke(it)
+fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
+    val progressBar = ProgressBar().apply {
+        useMaxWidth = true
     }
-    return this
+    cellFormat {
+        addClass(Stylesheet.progressBarTableCell)
+        progressBar.progressProperty().cleanBind(itemProperty().doubleBinding { (it as? Number)?.toDouble() ?: 0.0 })
+        graphic = progressBar
+    }
+    (this as TableColumn<S, Number?>).setOnEditCommit {
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<Number?>
+        property.value = (it.newValue as? Number)?.toDouble()
+        afterCommit?.invoke(it as TableColumn.CellEditEvent<S, Number?>)
+    }
 }
 
 fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean?> {
