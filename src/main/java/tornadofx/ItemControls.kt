@@ -395,11 +395,11 @@ fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit
 fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
     cellFormat {
         addClass(Stylesheet.progressBarTableCell)
-        val progressBar = ProgressBar().apply {
-            useMaxWidth = true
+        graphicProperty().assignIfNull {
+            progressbar(itemProperty().doubleBinding { (it as? Number)?.toDouble() ?: 0.0 }) {
+                useMaxWidth = true
+            }
         }
-        progressBar.progressProperty().cleanBind(itemProperty().doubleBinding { (it as? Number)?.toDouble() ?: 0.0 })
-        graphic = progressBar
     }
     (this as TableColumn<S, Number?>).setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<Number?>
