@@ -149,6 +149,10 @@ fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
     return tab
 }
 
+fun Tab.whenSelected(op: () -> Unit) {
+    selectedProperty().onChange { if (it) op() }
+}
+
 @Deprecated("No need to use the content{} wrapper anymore, just use a builder directly inside the Tab", ReplaceWith("no content{} wrapper"), DeprecationLevel.WARNING)
 fun Tab.content(op: Pane.() -> Unit): Node {
     val fake = VBox()

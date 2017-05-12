@@ -60,6 +60,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - fxml delegate supports setting optional root element
 - Improved Java interop
 - Java version of FX.find() can be called without specifying scope 
+- `Tab.whenSelected` callback when the tab is selected
 
 ### Fixed
 
