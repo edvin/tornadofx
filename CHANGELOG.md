@@ -9,6 +9,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Additions
 
+- Node.cache will create and cache a node inside another node. Useful for Cell implementations to reduce memory footprint. `graphic = cache { createNode() }`
 - Rest client supports PATCH (https://github.com/edvin/tornadofx/issues/320)
 - warning(), error(), confirmation() and information() shortcuts to alert()
 - Command bindings accepts optional parameter using invoke: `button { command = someCommand(someParam) }` or `button { command = someCommand with someParam }`

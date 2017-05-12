@@ -395,7 +395,7 @@ fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit
 fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
     cellFormat {
         addClass(Stylesheet.progressBarTableCell)
-        graphicProperty().assignIfNull {
+        graphic = cache {
             progressbar(itemProperty().doubleBinding { (it as? Number)?.toDouble() ?: 0.0 }) {
                 useMaxWidth = true
             }

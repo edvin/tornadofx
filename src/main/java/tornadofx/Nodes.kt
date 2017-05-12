@@ -402,7 +402,7 @@ fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
 @Suppress("UNCHECKED_CAST")
 fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) {
     properties["tornadofx.cellCacheCapable"] = true
-    cellFactory = Callback { column: TableColumn<S, T> ->
+    cellFactory = Callback { _: TableColumn<S, T> ->
         object : TableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
@@ -1229,3 +1229,31 @@ fun Node.longpress(threshold: Duration = 700.millis, consume: Boolean = false, a
         this.longAction = action
     }
 }
+
+/**
+ * Create, cache and return a Node and store it within the owning node. Typical usage:
+ *
+ *
+ * ```
+ * listview(people) {
+ *     cellFormat {
+ *         graphic = cache {
+ *             hbox {
+ *                 label("Some large Node graph here")
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * Used within a Cell, the cache statement makes sure that the node is only created once per cell during the cell's life time.
+ * This greatly reduces memory and performance overhead and should be used in every situation where
+ * a node graph is created and assigned to the graphic property of a cell.
+ *
+ * Note that if you call this function without a a unique key parameter, you will only ever create a single
+ * cached node for this parent. The use case for this function is mostly to cache the graphic node of a cell,
+ * so for these use cases you don't need to supply a cache key.
+ */
+fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
+    op(this)
+} as T
