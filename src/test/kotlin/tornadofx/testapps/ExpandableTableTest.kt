@@ -1,7 +1,6 @@
 package tornadofx.testapps
 
 import javafx.collections.ObservableList
-import javafx.geometry.Insets
 import javafx.scene.layout.Background.EMPTY
 import tornadofx.*
 import java.time.LocalDate
@@ -31,10 +30,10 @@ class ExpandableTableTest : View("Smart Resize Demo") {
         column("Bed", Room::bed).apply {
             weigthedWidth(2.0)
             cellFormat {
-                graphicProperty().assignIfNull {
+                graphic = cache {
                     textfield(itemProperty()) {
                         isEditable = false
-                        padding = Insets(0.0)
+                        paddingAll = 0
                         background = EMPTY
                     }
                 }

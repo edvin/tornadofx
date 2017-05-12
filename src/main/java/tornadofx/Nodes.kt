@@ -1253,6 +1253,8 @@ fun Node.longpress(threshold: Duration = 700.millis, consume: Boolean = false, a
  * Note that if you call this function without a a unique key parameter, you will only ever create a single
  * cached node for this parent. The use case for this function is mostly to cache the graphic node of a cell,
  * so for these use cases you don't need to supply a cache key.
+ *
+ * Remember that you can still update whatever you assign to graphic below it on each `cellFormat` update item callback.
  */
 fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
     op(this)
