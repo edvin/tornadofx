@@ -335,6 +335,7 @@ interface JsonModelAuto : JsonModel {
                     is Double -> add(it.name, pr)
                     is Float -> add(it.name, pr.toDouble())
                     is Boolean -> add(it.name, pr)
+                    is String -> add(it.name, pr)
                     is ObservableList<*> -> {
                         val Array = pr as ObservableList<JsonModel>
                         val jsonArray = Json.createArrayBuilder()

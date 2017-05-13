@@ -27,6 +27,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Fixed
 
+- AutoJsonModel supports String types
 - HTTPUrlConnection based Rest Client Engine will read data from response even when not successful
 - Support view reloading in OSGi environment
 - Live Views did not reload changed classes correctly
