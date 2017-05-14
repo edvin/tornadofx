@@ -24,6 +24,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - Workspace.showHeadingLabelProperty controls whether the heading is shown in the Workspace toolbar or not
 - TableView/TreeTableView requestResize() will reapply SmartResize policy, useful after content change
 - Column.makeEditable() works for all number subclasses
+- Workspace `navigateForward` and `navigateBack` explicit functions
 
 ### Fixed
 

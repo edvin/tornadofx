@@ -152,8 +152,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         graphic = label { addClass("icon", "back") }
                         action {
                             if (dockedComponent?.onNavigateBack() ?: true) {
-                                viewPos.set(viewPos.get() - 1)
-                                dock(viewStack[viewPos.get()], false)
+                                navigateBack()
                             }
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value < 1 })
@@ -164,8 +163,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         graphic = label { addClass("icon", "forward") }
                         action {
                             if (dockedComponent?.onNavigateForward() ?: true) {
-                                viewPos.set(viewPos.get() + 1)
-                                dock(viewStack[viewPos.get()], false)
+                                navigateForward()
                             }
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value == viewStack.size - 1 })
@@ -204,6 +202,24 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 }
             }
         }
+    }
+
+    private fun navigateForward(): Boolean {
+        if (forwardButton.isDisabled.not()) {
+            viewPos.set(viewPos.get() + 1)
+            dock(viewStack[viewPos.get()], false)
+            return true
+        }
+        return false
+    }
+
+    private fun navigateBack(): Boolean {
+        if (backButton.isDisabled.not()) {
+            viewPos.set(viewPos.get() - 1)
+            dock(viewStack[viewPos.get()], false)
+            return true
+        }
+        return false
     }
 
     init {
