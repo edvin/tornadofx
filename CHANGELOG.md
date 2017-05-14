@@ -34,6 +34,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - Fixed equals/hashCode in FXEventRegistration, could cause events to not fire on similar components
 - lazyPopulate child factory was called on UI thread (https://github.com/edvin/tornadofx/issues/318)
 - SmartResize.requestResize() some times resulted in misaligned column headers
+- JsonModelAuto supports more types and doesn't produce duplicates (before: name and nameProperty - now: just name)
 
 ### Changes
 

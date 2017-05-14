@@ -2,7 +2,6 @@ package tornadofx
 
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
-import javafx.collections.ObservableList
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.StringWriter
@@ -20,9 +19,12 @@ import java.util.*
 import javax.json.*
 import javax.json.JsonValue.ValueType.NULL
 import javax.json.stream.JsonGenerator
+import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
-import kotlin.reflect.memberProperties
+import kotlin.reflect.jvm.javaType
 
 interface JsonModel {
     /**
@@ -112,8 +114,11 @@ fun JsonObject.string(key: String) = if (isNotNullOrNULL(key)) getString(key) el
 fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getDouble(key) else null
 fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
 
+fun JsonObject.float(key: String) = if (isNotNullOrNULL(key)) getFloat(key) else null
+fun JsonObject.getFloat(key: String): Float = getJsonNumber(key).doubleValue().toFloat()
+
 fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
-fun JsonObject.getBigDecimal(key: String) : BigDecimal = getJsonNumber(key).bigDecimalValue()
+fun JsonObject.getBigDecimal(key: String): BigDecimal = getJsonNumber(key).bigDecimalValue()
 
 fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getLong(key) else null
 fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
@@ -122,9 +127,9 @@ fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolea
 fun JsonObject.boolean(key: String) = bool(key) // Alias
 
 fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
-fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
+fun JsonObject.getDate(key: String): LocalDate = LocalDate.parse(getString(key))
 
-fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue()/(if (millis) 1000 else 1), 0, ZoneOffset.UTC)
+fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
 fun JsonObject.getDateTime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(key).datetime(millis)
 fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
 
@@ -134,7 +139,7 @@ fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
 fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
 
 fun JsonObject.jsonObject(key: String) = if (isNotNullOrNULL(key)) getJsonObject(key) else null
-inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
+inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) } else null
 
 fun JsonObject.jsonArray(key: String) = if (isNotNullOrNULL(key)) getJsonArray(key) else null
 
@@ -189,6 +194,13 @@ class JsonBuilder {
     fun add(key: String, value: Long?): JsonBuilder {
         if (value != null)
             delegate.add(key, value)
+
+        return this
+    }
+
+    fun add(key: String, value: Float?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.toDouble())
 
         return this
     }
@@ -284,29 +296,56 @@ private fun <T> KProperty<T>.generic(): Class<*> =
  */
 @Suppress("UNCHECKED_CAST")
 interface JsonModelAuto : JsonModel {
+    val jsonProperties: Collection<KProperty1<JsonModelAuto, *>> get() {
+        val props = javaClass.kotlin.memberProperties
+        val propNames = props.map { it.name }
+        return props.filterNot { it.name.endsWith("Property") && propNames.contains(it.name.substringBefore("Property")) }.filterNot { it.name == "jsonProperties" }
+    }
+
     override fun updateModel(json: JsonObject) {
-        val props = this.javaClass.kotlin.memberProperties
-        props.forEach {
+        jsonProperties.forEach {
             val pr = it.get(this)
             when (pr) {
                 is BooleanProperty -> pr.value = json.bool(it.name)
-                is ObjectProperty<*> -> {
-                    when (it.generic()) {
-                        LocalDate::class.java -> (pr as ObjectProperty<LocalDate>).value = json.date(it.name)
-                    }
-                }
                 is LongProperty -> pr.value = json.long(it.name)
                 is IntegerProperty -> pr.value = json.int(it.name)
                 is DoubleProperty -> pr.value = json.double(it.name)
                 is FloatProperty -> pr.value = json.double(it.name)?.toFloat()
                 is StringProperty -> pr.value = json.string(it.name)
-                is ObservableList<*> -> {
-                    val Array = pr as ObservableList<Any>
-
-                    val arrayObject = json.getJsonArray(it.name)
-                    arrayObject?.forEach { jsonObj ->
-                        val New: JsonModelAuto = it.generic().newInstance() as JsonModelAuto
-                        Array.add(New.apply { updateModel(jsonObj as JsonObject) })
+                is ObjectProperty<*> -> {
+                    when (it.generic()) {
+                        Boolean::class.java -> (pr as ObjectProperty<Boolean>).value = json.bool(it.name)
+                        Long::class.java -> (pr as ObjectProperty<Long>).value = json.long(it.name)
+                        Integer::class.java -> (pr as ObjectProperty<Int>).value = json.int(it.name)
+                        Double::class.java -> (pr as ObjectProperty<Double>).value = json.double(it.name)
+                        Float::class.java -> (pr as ObjectProperty<Float>).value = json.float(it.name)
+                        String::class.java -> (pr as ObjectProperty<String>).value = json.string(it.name)
+                        LocalDate::class.java -> (pr as ObjectProperty<LocalDate>).value = json.date(it.name)
+                        LocalDateTime::class.java -> (pr as ObjectProperty<LocalDateTime>).value = json.datetime(it.name)
+                    }
+                }
+                is MutableList<*> -> {
+                    val list = pr as MutableList<Any>
+                    list.clear()
+                    json.getJsonArray(it.name)?.forEach { jsonObj ->
+                        val entry = it.generic().newInstance()
+                        if (entry is JsonModel) {
+                            list.add(entry.apply { updateModel(jsonObj as JsonObject) })
+                        }
+                    }
+                }
+                else -> {
+                    if (it is KMutableProperty1<*, *>) {
+                        when (it.returnType.javaType) {
+                            Boolean::class.java -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
+                            Long::class.java -> (it as KMutableProperty1<Any?, Long?>).set(this, json.long(it.name))
+                            Integer::class.java -> (it as KMutableProperty1<Any?, Int?>).set(this, json.int(it.name))
+                            Double::class.java -> (it as KMutableProperty1<Any?, Double?>).set(this, json.double(it.name))
+                            Float::class.java -> (it as KMutableProperty1<Any?, Float?>).set(this, json.float(it.name))
+                            String::class.java -> (it as KMutableProperty1<Any?, String?>).set(this, json.string(it.name))
+                            LocalDate::class.java -> (it as KMutableProperty1<Any?, LocalDate?>).set(this, json.date(it.name))
+                            LocalDateTime::class.java -> (it as KMutableProperty1<Any?, LocalDateTime?>).set(this, json.datetime(it.name))
+                        }
                     }
                 }
             }
@@ -315,8 +354,7 @@ interface JsonModelAuto : JsonModel {
 
     override fun toJSON(json: JsonBuilder) {
         with(json) {
-            val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
-            props.forEach {
+            jsonProperties.forEach {
                 val pr = it.get(this@JsonModelAuto)
                 when (pr) {
                     is BooleanProperty -> add(it.name, pr.value)
@@ -327,19 +365,28 @@ interface JsonModelAuto : JsonModel {
                     is StringProperty -> add(it.name, pr.value)
                     is ObjectProperty<*> -> {
                         when (it.generic()) {
+                            Boolean::class.java -> add(it.name, (pr as ObjectProperty<Boolean>).value)
+                            Long::class.java -> add(it.name, (pr as ObjectProperty<Long>).value)
+                            Integer::class.java -> add(it.name, (pr as ObjectProperty<Int>).value)
+                            Double::class.java -> add(it.name, (pr as ObjectProperty<Double>).value)
+                            Float::class.java -> add(it.name, (pr as ObjectProperty<Float>).value)
+                            String::class.java -> add(it.name, (pr as ObjectProperty<String>).value)
                             LocalDate::class.java -> add(it.name, (pr as ObjectProperty<LocalDate>).value)
+                            LocalDateTime::class.java -> add(it.name, (pr as ObjectProperty<LocalDateTime>).value)
                         }
                     }
-                    is Int -> add(it.name, pr)
+                    is Boolean -> add(it.name, pr)
                     is Long -> add(it.name, pr)
+                    is Int -> add(it.name, pr)
                     is Double -> add(it.name, pr)
                     is Float -> add(it.name, pr.toDouble())
-                    is Boolean -> add(it.name, pr)
                     is String -> add(it.name, pr)
-                    is ObservableList<*> -> {
-                        val Array = pr as ObservableList<JsonModel>
+                    is LocalDate -> add(it.name, pr)
+                    is LocalDateTime -> add(it.name, pr)
+                    is MutableList<*> -> {
+                        val list = pr as? List<JsonModel>
                         val jsonArray = Json.createArrayBuilder()
-                        Array.forEach { jsonArray.add(it.toJSON()) }
+                        list?.forEach { jsonArray.add(it.toJSON()) }
                         add(it.name, jsonArray.build())
                     }
                 }
@@ -368,7 +415,7 @@ fun InputStream.toJSONArray(): JsonArray = Json.createReader(this).use { it.read
 fun InputStream.toJSON(): JsonObject = Json.createReader(this).use { it.readObject() }
 
 fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true) =
-    if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
+        if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
 
 fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true) = this?.toJSON()?.contains(text, ignoreCase) ?: false
 
