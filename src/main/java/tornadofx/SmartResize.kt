@@ -157,7 +157,6 @@ class SmartResize private constructor() : TableViewResizeCallback {
                         if (reduceableCandidate != null && remainingWidth < 0.0) {
                             val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
                             val toWidth = reduceableCandidate.width - reduceBy
-                            reduceableCandidate.resizeType.delta -= reduceBy
                             reduceableCandidate.prefWidth = toWidth
                             remainingWidth += reduceBy
                         }
@@ -410,7 +409,6 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                         if (reduceableCandidate != null && remainingWidth < 0.0) {
                             val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
                             val toWidth = reduceableCandidate.width - reduceBy
-                            reduceableCandidate.resizeType.delta -= reduceBy
                             reduceableCandidate.prefWidth = toWidth
                             remainingWidth += reduceBy
                         }
