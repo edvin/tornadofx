@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.ObjectProperty
@@ -86,7 +85,7 @@ fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
     return tab
 }
 
-fun Tab.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind(obs)
+fun Tab.disableWhen(predicate: ObservableValue<Boolean>) = disableProperty().cleanBind(predicate)
 fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
