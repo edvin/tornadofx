@@ -9,6 +9,9 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Additions
 
+- Tab.enableWhen/disableWhen
+- TabPane.tab builder takes optional value parameter. If no text parameter is supplied, value.toString() is used
+- Tab.valueProperty and Tab.value can be used to identify a Tab more easily
 - Node.cache will create and cache a node inside another node. Useful for Cell implementations to reduce memory footprint. `graphic = cache { createNode() }`
 - Rest client supports PATCH (https://github.com/edvin/tornadofx/issues/320)
 - warning(), error(), confirmation() and information() shortcuts to alert()

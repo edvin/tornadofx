@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
@@ -52,6 +53,18 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
+var Tab.valueProperty: Property<Any?>
+    get() = properties.getOrPut("tornadofx.value") {
+        SimpleObjectProperty<Any?>()
+    } as SimpleObjectProperty<Any?>
+    set(value) {
+        properties["tornadofx.value"] = value
+    }
+
+var Tab.value: Any?
+    get() = valueProperty.value
+    set(value) { valueProperty.value = value }
+
 @Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
 fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
     val tab = Tab()
@@ -70,6 +83,12 @@ fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
     val tab = tabs.last()
     op?.invoke(tab)
     return tab
+}
+
+fun Tab.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind(obs)
+fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
+    val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
+    disableProperty().cleanBind(binding)
 }
 
 val TabPane.savable: BooleanExpression get() {
@@ -142,8 +161,9 @@ fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
 fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
 fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true
 
-fun TabPane.tab(text: String, op: (Tab.() -> Unit)? = null): Tab {
-    val tab = Tab(text)
+fun TabPane.tab(text: String? = null, value: Any? = null, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab(text ?: value?.toString())
+    tab.value = value
     tabs.add(tab)
     op?.invoke(tab)
     return tab

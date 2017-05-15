@@ -1133,26 +1133,28 @@ val Region.paddingAllProperty: DoubleProperty get() {
     } as DoubleProperty
 }
 
-fun Node.managedWhen(expr: () -> ObservableValue<Boolean>) = managedProperty().cleanBind(expr())
-fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleProperty().cleanBind(expr())
-fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) {
-    val obs = expr()
-    val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
+fun Node.managedWhen(expr: () -> ObservableValue<Boolean>) = managedWhen(expr())
+fun Node.managedWhen(predicate: ObservableValue<Boolean>) = managedProperty().cleanBind(predicate)
+fun Node.visibleWhen(predicate: ObservableValue<Boolean>) = visibleProperty().cleanBind(predicate)
+fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleWhen(expr())
+fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) = hiddenWhen(expr())
+fun Node.hiddenWhen(predicate: ObservableValue<Boolean>) {
+    val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     visibleProperty().cleanBind(binding)
 }
 
 fun Node.disableWhen(expr: () -> ObservableValue<Boolean>) = disableWhen(expr())
 fun Node.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind(obs)
 fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) = enableWhen(expr())
-fun Node.enableWhen(obs: ObservableValue<Boolean>) {
-    val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
+fun Node.enableWhen(predicate: ObservableValue<Boolean>) {
+    val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
 }
 
 fun MenuItem.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleWhen(expr())
-fun MenuItem.visibleWhen(obs: ObservableValue<Boolean>) = visibleProperty().cleanBind(obs)
+fun MenuItem.visibleWhen(predicate: ObservableValue<Boolean>) = visibleProperty().cleanBind(predicate)
 fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableWhen(expr())
-fun MenuItem.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind(obs)
+fun MenuItem.disableWhen(predicate: ObservableValue<Boolean>) = disableProperty().cleanBind(predicate)
 fun MenuItem.enableWhen(expr: () -> ObservableValue<Boolean>) = enableWhen(expr())
 fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
     val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
@@ -1160,8 +1162,8 @@ fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
 }
 
 fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) = removeWhen(expr())
-fun Node.removeWhen(prop: ObservableValue<Boolean>) {
-    val remove = booleanBinding(prop) { prop.value.not() }
+fun Node.removeWhen(predicate: ObservableValue<Boolean>) {
+    val remove = booleanBinding(predicate) { predicate.value.not() }
     visibleProperty().cleanBind(remove)
     managedProperty().cleanBind(remove)
 }
