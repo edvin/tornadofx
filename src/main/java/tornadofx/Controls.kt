@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import javafx.application.Platform
 import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.ObjectProperty
@@ -89,6 +90,14 @@ fun Tab.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind
 fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
+}
+fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
+    fun updateState() {
+        if (predicate.value.not()) tabPane.tabs.remove(this)
+        else if (!tabPane.tabs.contains(this)) tabPane.tabs.add(this)
+    }
+    updateState()
+    predicate.onChange { updateState() }
 }
 
 val TabPane.savable: BooleanExpression get() {
