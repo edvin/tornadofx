@@ -2,11 +2,13 @@ package tornadofx
 
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
+import tornadofx.FX.Companion.log
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.StringWriter
 import java.lang.reflect.ParameterizedType
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.OpenOption
@@ -107,41 +109,41 @@ object JsonConfig {
  * are added here
  */
 
-fun JsonObject.isNotNullOrNULL(key: String) = containsKey(key) && get(key)?.valueType != NULL
+fun JsonObject.isNotNullOrNULL(key: String): Boolean = containsKey(key) && get(key)?.valueType != NULL
 
-fun JsonObject.string(key: String) = if (isNotNullOrNULL(key)) getString(key) else null
+fun JsonObject.string(key: String): String? = if (isNotNullOrNULL(key)) getString(key) else null
 
-fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getDouble(key) else null
+fun JsonObject.double(key: String): Double? = if (isNotNullOrNULL(key)) getDouble(key) else null
 fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
 
-fun JsonObject.float(key: String) = if (isNotNullOrNULL(key)) getFloat(key) else null
+fun JsonObject.float(key: String): Float? = if (isNotNullOrNULL(key)) getFloat(key) else null
 fun JsonObject.getFloat(key: String): Float = getJsonNumber(key).doubleValue().toFloat()
 
-fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
+fun JsonObject.bigdecimal(key: String): BigDecimal? = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
 fun JsonObject.getBigDecimal(key: String): BigDecimal = getJsonNumber(key).bigDecimalValue()
 
-fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getLong(key) else null
+fun JsonObject.long(key: String): Long? = if (isNotNullOrNULL(key)) getLong(key) else null
 fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
 
 fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolean(key) else null
 fun JsonObject.boolean(key: String) = bool(key) // Alias
 
-fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
+fun JsonObject.date(key: String): LocalDate? = if (isNotNullOrNULL(key)) getDate(key) else null
 fun JsonObject.getDate(key: String): LocalDate = LocalDate.parse(getString(key))
 
-fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
+fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
 fun JsonObject.getDateTime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(key).datetime(millis)
-fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
+fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime? = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
 
-fun JsonObject.uuid(key: String) = if (isNotNullOrNULL(key)) getUUID(key) else null
+fun JsonObject.uuid(key: String): UUID? = if (isNotNullOrNULL(key)) getUUID(key) else null
 fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
 
-fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
+fun JsonObject.int(key: String): Int? = if (isNotNullOrNULL(key)) getInt(key) else null
 
-fun JsonObject.jsonObject(key: String) = if (isNotNullOrNULL(key)) getJsonObject(key) else null
+fun JsonObject.jsonObject(key: String): JsonObject? = if (isNotNullOrNULL(key)) getJsonObject(key) else null
 inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) } else null
 
-fun JsonObject.jsonArray(key: String) = if (isNotNullOrNULL(key)) getJsonArray(key) else null
+fun JsonObject.jsonArray(key: String): JsonArray? = if (isNotNullOrNULL(key)) getJsonArray(key) else null
 
 class JsonBuilder {
     private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
@@ -149,12 +151,9 @@ class JsonBuilder {
     fun <S, T : ObservableValue<S>> add(key: String, observable: T) {
         observable.value?.apply {
             when (this) {
-                is Int -> add(key, this)
-                is Double -> add(key, this)
+                is Number -> add(key, this)
                 is Boolean -> add(key, this)
                 is UUID -> add(key, this)
-                is Long -> add(key, this)
-                is BigDecimal -> add(key, this)
                 is LocalDate -> add(key, this)
                 is LocalDateTime -> add(key, this)
                 is String -> add(key, this)
@@ -163,16 +162,15 @@ class JsonBuilder {
         }
     }
 
-    fun add(key: String, value: Double?): JsonBuilder {
-        if (value != null)
-            delegate.add(key, value)
-
-        return this
-    }
-
-    fun add(key: String, value: Int?): JsonBuilder {
-        if (value != null)
-            delegate.add(key, value)
+    fun add(key: String, value: Number?): JsonBuilder {
+        when (value) {
+            is Int -> delegate.add(key, value)
+            is BigDecimal -> delegate.add(key, value)
+            is BigInteger -> delegate.add(key, value)
+            is Float -> delegate.add(key, value.toDouble())
+            is Double -> delegate.add(key, value)
+            is Long -> delegate.add(key, value)
+        }
 
         return this
     }
@@ -187,27 +185,6 @@ class JsonBuilder {
     fun add(key: String, value: UUID?): JsonBuilder {
         if (value != null)
             delegate.add(key, value.toString())
-
-        return this
-    }
-
-    fun add(key: String, value: Long?): JsonBuilder {
-        if (value != null)
-            delegate.add(key, value)
-
-        return this
-    }
-
-    fun add(key: String, value: Float?): JsonBuilder {
-        if (value != null)
-            delegate.add(key, value.toDouble())
-
-        return this
-    }
-
-    fun add(key: String, value: BigDecimal?): JsonBuilder {
-        if (value != null)
-            delegate.add(key, value)
 
         return this
     }
@@ -337,7 +314,8 @@ interface JsonModelAuto : JsonModel {
                 else -> {
                     if (it is KMutableProperty1<*, *>) {
                         when (it.returnType.javaType) {
-                            Boolean::class.java -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
+                            Boolean::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
+                            Boolean::class.javaObjectType -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
                             Long::class.java -> (it as KMutableProperty1<Any?, Long?>).set(this, json.long(it.name))
                             Integer::class.java -> (it as KMutableProperty1<Any?, Int?>).set(this, json.int(it.name))
                             Double::class.java -> (it as KMutableProperty1<Any?, Double?>).set(this, json.double(it.name))
@@ -345,6 +323,9 @@ interface JsonModelAuto : JsonModel {
                             String::class.java -> (it as KMutableProperty1<Any?, String?>).set(this, json.string(it.name))
                             LocalDate::class.java -> (it as KMutableProperty1<Any?, LocalDate?>).set(this, json.date(it.name))
                             LocalDateTime::class.java -> (it as KMutableProperty1<Any?, LocalDateTime?>).set(this, json.datetime(it.name))
+                            else -> {
+                                log.warning("AutoModel doesn't know how to handle ${it.returnType}/${it.returnType.javaType}")
+                            }
                         }
                     }
                 }
