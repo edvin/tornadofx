@@ -143,20 +143,17 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
 fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Property<N> {
     fun extractNested(): ObservableValue<N>? = if (value != null) nested(value) else null
 
-    val dis = this
     var currentNested: ObservableValue<N>? = extractNested()
 
     return object : SimpleObjectProperty<N>() {
-        val changeListener = ChangeListener<N> { observableValue, oldValue, newValue ->
-            currentNested = extractNested()
+        val changeListener = ChangeListener<Any?> { _, _, _ ->
+            invalidated()
             fireValueChangedEvent()
         }
 
         init {
-            dis.onChange {
-                fireValueChangedEvent()
-                invalidated()
-            }
+            currentNested?.addListener(changeListener)
+            this@select.addListener(changeListener)
         }
 
         override fun invalidated() {
