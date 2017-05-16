@@ -41,6 +41,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - SmartResize.requestResize() some times resulted in misaligned column headers
 - JsonModelAuto supports more types and doesn't produce duplicates (before: name and nameProperty - now: just name)
 - SmartResize flickers (https://github.com/edvin/tornadofx/issues/321)
+- Workspace navigation (viewPos index) stays intact even when views are manually removed from the `viewStack`
 
 ### Changes
 

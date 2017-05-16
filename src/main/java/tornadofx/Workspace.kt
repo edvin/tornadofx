@@ -47,7 +47,6 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     var navigationMode by navigationModeProperty
 
     val viewStack = FXCollections.observableArrayList<UIComponent>()
-    private val viewPos = SimpleIntegerProperty(-1)
 
     val maxViewStackDepthProperty = SimpleIntegerProperty(DefaultViewStackDepth)
     var maxViewStackDepth by maxViewStackDepthProperty
@@ -61,6 +60,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     val dockedComponentProperty: ObjectProperty<UIComponent> = SimpleObjectProperty()
     val dockedComponent: UIComponent? get() = dockedComponentProperty.value
+
+    private val viewPos = integerBinding(viewStack, dockedComponentProperty) { viewStack.indexOf(dockedComponent) }
 
     val leftDrawer: Drawer get() {
         if (root.left is Drawer) return root.left as Drawer
@@ -206,8 +207,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private fun navigateForward(): Boolean {
         if (forwardButton.isDisabled.not()) {
-            viewPos.set(viewPos.get() + 1)
-            dock(viewStack[viewPos.get()], false)
+            dock(viewStack[viewPos.get() + 1], false)
             return true
         }
         return false
@@ -215,8 +215,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private fun navigateBack(): Boolean {
         if (backButton.isDisabled.not()) {
-            viewPos.set(viewPos.get() - 1)
-            dock(viewStack[viewPos.get()], false)
+            dock(viewStack[viewPos.get() - 1], false)
             return true
         }
         return false
@@ -321,18 +320,20 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find(T::class, scope, params))
 
     fun dock(child: UIComponent, updateViewStack: Boolean = true) {
+        val doUpdate = root.center == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)
+
+        if (doUpdate) {
+            // Add to end of stack - must happen before setAsCurrentlyDocked so viewPos is updated correctly
+            viewStack.add(child)
+        }
+
         setAsCurrentlyDocked(child)
 
-        if (root.center == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)) {
+        if (doUpdate) {
             // Remove everything after viewpos
             while (viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
                 viewStack.removeAt(viewPos.get() + 1)
 
-            // Add to end of stack
-            viewStack.add(child)
-
-            // Update index
-            viewPos.set(viewStack.indexOf(child))
 
             // Ensure max stack size
             while (viewStack.size >= maxViewStackDepth) {
