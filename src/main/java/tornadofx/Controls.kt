@@ -106,7 +106,7 @@ val TabPane.savable: BooleanExpression get() {
         savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
     }
 
-    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+    val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
 
     updateState()
 

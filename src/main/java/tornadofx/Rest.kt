@@ -22,6 +22,7 @@ import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
 import java.net.*
+import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -461,4 +462,18 @@ class RestProgressBar : Fragment() {
         })
     }
 
+}
+
+val String.urlEncoded: String get() = URLEncoder.encode(this, StandardCharsets.UTF_8.name())
+
+val Map<*, *>.queryString: String get() {
+    val q = StringBuilder()
+    forEach { k, v ->
+        if (k != null) {
+            q.append(if (q.isEmpty()) "?" else "&")
+            q.append(k.toString().urlEncoded)
+            if (v != null) q.append("=${v.toString().urlEncoded}")
+        }
+    }
+    return q.toString()
 }

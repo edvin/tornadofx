@@ -89,4 +89,10 @@ class RestClientTests {
             Assert.assertEquals(0, Rest.ongoingRequests.size)
         }
     }
+
+    @Test
+    fun encodeQueryString() {
+        val params = mapOf("name" to "Edvin Syse", "street" to "Møllegaten 12")
+        Assert.assertEquals("?name=Edvin+Syse&street=M%C3%B8llegaten+12", params.queryString)
+    }
 }

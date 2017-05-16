@@ -9,6 +9,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Additions
 
+- Map.queryString creates an URL encoded query string from a Map. Useful for REST calls.
 - Tab.enableWhen/disableWhen/visibleWhen
 - TabPane.tab builder takes optional value parameter. If no text parameter is supplied, value.toString() is used
 - Tab.valueProperty and Tab.value can be used to identify a Tab more easily
