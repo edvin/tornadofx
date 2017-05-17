@@ -2,14 +2,12 @@ package tornadofx
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.css.Styleable
 import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
-import javafx.scene.control.ContentDisplay
-import javafx.scene.control.OverrunStyle
-import javafx.scene.control.ScrollPane
-import javafx.scene.control.TableColumnBase
+import javafx.scene.control.*
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
@@ -1027,13 +1025,20 @@ class InlineCss : PropertyHolder(), Rendered {
 }
 
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
-fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
+
+fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
+    fun setter(value: String) = when (this) {
+        is Node -> style = value
+        is MenuItem -> style = value
+        else -> throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    }
+
     if (append && style.isNotBlank())
-        style += block.render()
+        setter(style + block.render())
     else
-        style = block.render().trim()
+        setter(block.render().trim())
 }
 
 fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {

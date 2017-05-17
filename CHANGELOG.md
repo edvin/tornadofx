@@ -29,6 +29,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - TableView/TreeTableView requestResize() will reapply SmartResize policy, useful after content change
 - Column.makeEditable() works for all number subclasses
 - Workspace `navigateForward` and `navigateBack` explicit functions
+- Style builder for MenuItem (https://github.com/edvin/tornadofx/issues/327)
 
 ### Fixed
 
