@@ -44,6 +44,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - SmartResize flickers (https://github.com/edvin/tornadofx/issues/321)
 - Workspace navigation (viewPos index) stays intact even when views are manually removed from the `viewStack`
 - ObservableValue.select() notice changes to outer property (https://github.com/edvin/tornadofx/issues/326)
+- Ignore duplicate onUndock call when both parent and scene are set to null
 
 ### Changes
 

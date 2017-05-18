@@ -422,15 +422,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun init() {
         if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
-        root.parentProperty().addListener({ observable, oldParent, newParent ->
+        root.parentProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null) return@addListener
-            if (newParent == null && oldParent != null) callOnUndock()
-            if (newParent != null && newParent != oldParent) callOnDock()
+            if (newParent == null && oldParent != null && isDocked) callOnUndock()
+            if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
         })
-        root.sceneProperty().addListener({ observable, oldParent, newParent ->
+        root.sceneProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null || root.parent != null) return@addListener
-            if (newParent == null && oldParent != null) callOnUndock()
-            if (newParent != null && newParent != oldParent) callOnDock()
+            if (newParent == null && oldParent != null && isDocked) callOnUndock()
+            if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
         })
         isInitialized = true
     }
