@@ -714,7 +714,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         if (FX.reloadViewsOnFocus) reloadViewsOnFocus()
     }
 
-    @Deprecated("Use close() instead", replaceWith = ReplaceWith("close"))
+    @Deprecated("Use close() instead", replaceWith = ReplaceWith("close()"))
     fun closeModal() = close()
 
     fun close() {
