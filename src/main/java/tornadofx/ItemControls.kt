@@ -202,9 +202,7 @@ class LazyTreeItem<T : Any>(
     }
 
     private fun listenForChanges() {
-        println("ChildFactoryResult is ${childFactoryResult?.hashCode()} ${childFactoryResult?.javaClass}")
         (childFactoryResult as? ObservableList<T>)?.addListener(ListChangeListener { change ->
-            println("CHANGE!!!!")
             while (change.next()) {
                 if (change.wasPermutated()) {
                     children.subList(change.from, change.to).clear()
