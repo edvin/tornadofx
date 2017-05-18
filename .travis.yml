@@ -28,3 +28,6 @@ install: true
 script:
   - mvn test
 
+cache:
+  directories:
+  - $HOME/.m2
