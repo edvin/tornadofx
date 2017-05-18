@@ -102,7 +102,6 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         var defaultComplete = true
 
         init {
-            FX.log.warning("The Workspace feature is experimental and subject to change even in minor releases!")
             importStylesheet("/tornadofx/workspace.css")
         }
     }

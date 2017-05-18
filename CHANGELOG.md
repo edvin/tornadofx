@@ -48,6 +48,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Changes
 
+- Removed Workspace experimental warning
 - alert content parameter is now optional
 - `commandProperty` and `commandParameterProperty` are now writable so you can choose between bind or assign
 - CSS warning should not be issued in OSGi environment, since bundle activator installs CSS URL Handler
