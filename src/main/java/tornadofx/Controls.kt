@@ -10,6 +10,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableMap
 import javafx.event.ActionEvent
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
@@ -53,7 +54,14 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
-var Tab.valueProperty: Property<Any?>
+internal val EventTarget.properties: ObservableMap<Any, Any> get() = when(this) {
+    is Node -> properties
+    is Tab -> properties
+    is MenuItem -> properties
+    else -> throw IllegalArgumentException("Don't know how to extract properties object from $this")
+}
+
+var EventTarget.tagProperty: Property<Any?>
     get() = properties.getOrPut("tornadofx.value") {
         SimpleObjectProperty<Any?>()
     } as SimpleObjectProperty<Any?>
@@ -61,9 +69,9 @@ var Tab.valueProperty: Property<Any?>
         properties["tornadofx.value"] = value
     }
 
-var Tab.value: Any?
-    get() = valueProperty.value
-    set(value) { valueProperty.value = value }
+var EventTarget.tag: Any?
+    get() = tagProperty.value
+    set(value) { tagProperty.value = value }
 
 @Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
 fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
@@ -169,9 +177,9 @@ fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
 fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
 fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true
 
-fun TabPane.tab(text: String? = null, value: Any? = null, op: (Tab.() -> Unit)? = null): Tab {
-    val tab = Tab(text ?: value?.toString())
-    tab.value = value
+fun TabPane.tab(text: String? = null, tag: Any? = null, op: (Tab.() -> Unit)? = null): Tab {
+    val tab = Tab(text ?: tag?.toString())
+    tab.tag = tag
     tabs.add(tab)
     op?.invoke(tab)
     return tab

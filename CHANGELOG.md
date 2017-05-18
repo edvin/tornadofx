@@ -9,10 +9,11 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 
 ### Additions
 
+- ListMenu.item builder gets tag parameter (can be used to identify the item)
+- EventTarget.tag and tagProperty, useful for identifying Tabs, ListMenuItem and other components used in "selected" situations.
 - Map.queryString creates an URL encoded query string from a Map. Useful for REST calls.
 - Tab.enableWhen/disableWhen/visibleWhen
-- TabPane.tab builder takes optional value parameter. If no text parameter is supplied, value.toString() is used
-- Tab.valueProperty and Tab.value can be used to identify a Tab more easily
+- TabPane.tab builder takes optional tag parameter. If no text parameter is supplied, tag.toString() is used
 - Node.cache will create and cache a node inside another node. Useful for Cell implementations to reduce memory footprint. `graphic = cache { createNode() }`
 - Rest client supports PATCH (https://github.com/edvin/tornadofx/issues/320)
 - warning(), error(), confirmation() and information() shortcuts to alert()

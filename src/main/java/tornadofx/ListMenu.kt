@@ -3,10 +3,7 @@
 package tornadofx
 
 import javafx.beans.DefaultProperty
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
+import javafx.beans.property.*
 import javafx.collections.ObservableList
 import javafx.css.*
 import javafx.event.EventTarget
@@ -26,7 +23,9 @@ import javafx.scene.text.Text
 class ListMenu : Control() {
     private val graphicFixedSizeInternal = FACTORY.createStyleableNumberProperty(this, "graphicFixedSize", "-fx-graphic-fixed-size", { it.graphicFixedSizeProperty })
     val graphicFixedSizeProperty: StyleableProperty<Number> get() = graphicFixedSizeInternal
-    var graphicFixedSized: Number get() = graphicFixedSizeInternal.value; set(value) { graphicFixedSizeInternal.value = value }
+    var graphicFixedSized: Number get() = graphicFixedSizeInternal.value; set(value) {
+        graphicFixedSizeInternal.value = value
+    }
 
     val themeProperty = SimpleStringProperty()
     var theme by themeProperty
@@ -38,7 +37,9 @@ class ListMenu : Control() {
                 return
 
             previouslyActive?.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, false)
+            previouslyActive?.internalActiveProperty?.value = false
             item.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, true)
+            item.internalActiveProperty.value = true
             super.set(item)
         }
     }
@@ -73,9 +74,18 @@ class ListMenu : Control() {
     }
 
     override fun getControlCssMetaData(): List<CssMetaData<out Styleable, *>> = FACTORY.cssMetaData
+
     override fun createDefaultSkin() = ListMenuSkin(this)
+
     val items: ObservableList<ListMenuItem> get() = children as ObservableList<ListMenuItem>
+
     override fun getUserAgentStylesheet(): String = ListMenu::class.java.getResource("listmenu.css").toExternalForm()
+
+    fun item(text: String? = null, graphic: Node? = null, tag: Any? = null, op :(ListMenuItem.() -> Unit)? = null): ListMenuItem {
+        val item = ListMenuItem(text ?: tag?.toString(), graphic)
+        item.tag = tag
+        return opcr(this, item, op)
+    }
 
     companion object {
         private val ACTIVE_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("active")
@@ -90,6 +100,10 @@ class ListMenuItem(text: String? = null, graphic: Node? = null) : Control() {
     val textProperty: StringProperty = SimpleStringProperty(text)
     var text: String? by textProperty
 
+    internal val internalActiveProperty = ReadOnlyBooleanWrapper()
+    val activeProperty: ReadOnlyBooleanProperty = internalActiveProperty.readOnlyProperty
+    val active by activeProperty
+
     init {
         styleClass.add("list-item")
         isFocusTraversable = true
@@ -102,6 +116,10 @@ class ListMenuItem(text: String? = null, graphic: Node? = null) : Control() {
     fun needsLayout() {
         isNeedsLayout = true
         requestLayout()
+    }
+
+    fun whenSelected(op: () -> Unit) {
+        activeProperty.onChange { if (it) op() }
     }
 
     internal val menu: ListMenu
@@ -174,7 +192,7 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
         text.textProperty().bind(control.textProperty)
         children.add(text)
 
-        if (skinnable.graphic != null) registerGraphic(skinnable.graphic!! )
+        if (skinnable.graphic != null) registerGraphic(skinnable.graphic!!)
 
         skinnable.graphicProperty.addListener { _, old, new ->
             if (old != null) children.remove(old)
@@ -300,13 +318,12 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
     private val graphicFixedSize: Double get() = skinnable.menu.graphicFixedSizeProperty.value.toDouble()
 }
 
-fun EventTarget.listmenu(orientation: Orientation = VERTICAL, iconPosition: Side = Side.LEFT, theme: String? = null, op: (ListMenu.() -> Unit)? = null): ListMenu {
-    val listmenu = ListMenu()
-    listmenu.orientation = orientation
-    listmenu.iconPosition = iconPosition
-    listmenu.theme = theme
+fun EventTarget.listmenu(orientation: Orientation = VERTICAL, iconPosition: Side = Side.LEFT, theme: String? = null, tag: Any? = null, op: (ListMenu.() -> Unit)? = null): ListMenu {
+    val listmenu = ListMenu().apply {
+        this.orientation = orientation
+        this.iconPosition = iconPosition
+        this.theme = theme
+        this.tag = tag
+    }
     return opcr(this, listmenu, op)
 }
-
-fun ListMenu.item(text: String? = null, graphic: Node? = null, op: (ListMenuItem.() -> Unit)? = null) =
-        opcr(this, ListMenuItem(text, graphic), op)
