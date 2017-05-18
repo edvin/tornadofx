@@ -54,7 +54,7 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
-internal val EventTarget.properties: ObservableMap<Any, Any> get() = when(this) {
+internal val EventTarget.properties: ObservableMap<Any, Any> get() = when (this) {
     is Node -> properties
     is Tab -> properties
     is MenuItem -> properties
@@ -71,7 +71,9 @@ var EventTarget.tagProperty: Property<Any?>
 
 var EventTarget.tag: Any?
     get() = tagProperty.value
-    set(value) { tagProperty.value = value }
+    set(value) {
+        tagProperty.value = value
+    }
 
 @Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
 fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() -> Unit)? = null): Tab {
@@ -98,6 +100,7 @@ fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
 }
+
 fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     fun updateState() {
         if (predicate.value.not()) tabPane.tabs.remove(this)
@@ -419,6 +422,12 @@ fun EventTarget.menubar(op: (MenuBar.() -> Unit)? = null) = opcr(this, MenuBar()
 
 fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
+
+fun EventTarget.imageview(url: ObservableValue<String>, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
+        = opcr(this, ImageView().apply { imageProperty().bind(objectBinding(url) { Image(value, lazyload) }) }, op)
+
+fun EventTarget.imageview(image: ObservableValue<Image>, op: (ImageView.() -> Unit)? = null)
+        = opcr(this, ImageView().apply { imageProperty().bind(image) }, op)
 
 fun EventTarget.imageview(image: Image, op: (ImageView.() -> Unit)? = null)
         = opcr(this, ImageView(image), op)

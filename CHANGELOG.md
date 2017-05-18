@@ -31,6 +31,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - Column.makeEditable() works for all number subclasses
 - Workspace `navigateForward` and `navigateBack` explicit functions
 - Style builder for MenuItem (https://github.com/edvin/tornadofx/issues/327)
+- imageview builder overloads that accepts observable urls or images
 
 ### Fixed
 
