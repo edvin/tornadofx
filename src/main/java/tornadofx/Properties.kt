@@ -286,6 +286,9 @@ fun <T, R> ObservableValue<T>.objectBinding(vararg dependencies: Observable, op:
 fun <T : Any, R> objectBinding(receiver: T, vararg dependencies: Observable, op: T.() -> R?): ObjectBinding<R?>
         = Bindings.createObjectBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
 
+fun <T : Any, R> nonNullObjectBinding(receiver: T, vararg dependencies: Observable, op: T.() -> R): ObjectBinding<R>
+        = Bindings.createObjectBinding(Callable { receiver.op() }, *createObservableArray(receiver, *dependencies))
+
 private fun <T> createObservableArray(receiver: T, vararg dependencies: Observable): Array<out Observable> =
         if (receiver is Observable) arrayOf(receiver, *dependencies) else dependencies
 
