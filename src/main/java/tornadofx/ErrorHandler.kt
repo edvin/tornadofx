@@ -17,7 +17,9 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
 
     class ErrorEvent(val thread: Thread, val error: Throwable) {
         internal var consumed = false
-        fun consume() { consumed = true }
+        fun consume() {
+            consumed = true
+        }
     }
 
     companion object {
@@ -46,7 +48,7 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
                 Alert(ERROR).apply {
                     title = error.message ?: "An error occured"
                     isResizable = true
-                    headerText = "Error in " + error.stackTrace[0].toString()
+                    headerText = if (error.stackTrace?.isEmpty() ?: true) "Error" else "Error in " + error.stackTrace[0].toString()
                     dialogPane.content = VBox(cause, textarea)
                     showAndWait()
                 }

@@ -6,6 +6,8 @@
 
 ### Fixed
 
+- DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
+
 ### Changes
 
 ## [1.7.5] - 2017-05-19
