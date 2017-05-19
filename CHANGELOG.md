@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.7.6-SNAPSHOT]
+
+### Additions
+
+### Fixed
+
+### Changes
+
 ## [1.7.5] - 2017-05-19
 
 **Important notice**: The `field` builder used to operate on the `inputContainer` inside the `Field`. This has been changed so that it now operates on the
