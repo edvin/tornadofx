@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.7.5-SNAPSHOT]
+## [1.7.5] - 2017-05-19
 
 **Important notice**: The `field` builder used to operate on the `inputContainer` inside the `Field`. This has been changed so that it now operates on the
 field itself. If you did something like `parent.isVisible = false` to hide the field, you must now change your code to `isVisible = false`. This new
