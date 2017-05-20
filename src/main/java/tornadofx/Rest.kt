@@ -24,6 +24,7 @@ import java.io.StringReader
 import java.net.*
 import java.nio.charset.StandardCharsets
 import java.nio.charset.StandardCharsets.UTF_8
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.zip.DeflaterInputStream
@@ -49,6 +50,7 @@ open class Rest : Controller() {
     var proxy: Proxy? = null
 
     fun setBasicAuth(username: String, password: String) = engine.setBasicAuth(username, password)
+    fun setDigestAuth(username: String, password: String) = engine.setDigestAuth(username, password)
     fun reset() = engine.reset()
 
     fun get(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(GET, path, data, processor)
@@ -106,10 +108,13 @@ open class Rest : Controller() {
     abstract class Engine {
         var requestInterceptor: ((Request) -> Unit)? = null
         @Deprecated("Renamed to requestInterceptor", ReplaceWith("requestInterceptor"))
-        var authInterceptor: ((Request) -> Unit)? get() = requestInterceptor; set(value) { requestInterceptor = value }
-        var responseInterceptor: ((Response) -> Unit)? = null
+        var authInterceptor: ((Request) -> Unit)? get() = requestInterceptor; set(value) {
+            requestInterceptor = value
+        }
+        var responseInterceptor: ((Response) -> Response)? = null
         abstract fun request(seq: Long, method: Request.Method, uri: URI, entity: Any? = null): Request
         abstract fun setBasicAuth(username: String, password: String)
+        abstract fun setDigestAuth(username: String, password: String)
         abstract fun reset()
     }
 
@@ -121,7 +126,9 @@ open class Rest : Controller() {
         val uri: URI
         val entity: Any?
         fun addHeader(name: String, value: String)
+        fun getHeader(name: String): String?
         fun execute(): Response
+        fun reset()
     }
 
     interface Response : Closeable {
@@ -130,6 +137,8 @@ open class Rest : Controller() {
         val reason: String
         fun text(): String?
         fun consume(): Response
+        val headers: Map<String, List<String>>
+        fun header(name: String): String? = headers.get(name)?.first()
         fun list(): JsonArray {
             try {
                 val content = text()
@@ -193,13 +202,71 @@ class HttpURLEngine(val rest: Rest) : Rest.Engine() {
 
     override fun request(seq: Long, method: Rest.Request.Method, uri: URI, entity: Any?) =
             HttpURLRequest(this, seq, method, uri, entity)
+
+    override fun setDigestAuth(username: String, password: String) {
+        responseInterceptor = { response ->
+            if (response.statusCode == 401) handleDigestAuthentication(this, response, username, password) else response
+        }
+    }
+
 }
 
+internal fun handleDigestAuthentication(engine: Rest.Engine, response: Rest.Response, username: String, password: String): Rest.Response {
+    val p = response.digestParams
+    val request = response.request
+    if (request.getHeader("Authorization") != null) return response
+    if (p != null) {
+        val algorithm = p["algorithm"] ?: "MD5"
+        val digest = MessageDigest.getInstance(algorithm)
+        val path = request.uri.path
+        val realm = p["realm"]!!
+        val nonce = p["nonce"]!!
+        val opaque = p["opaque"] ?: "00000000000000000000000000000000"
+        val ha1 = digest.concat(username, realm, password)
+        val ha2 = digest.concat(request.method.name, path)
+        val encoded = digest.concat(ha1, nonce, ha2)
+        val header = """Digest username="$username", realm="$realm", nonce="$nonce", uri="$path", response="$encoded", algorithm=$algorithm, opaque="$opaque""""
+        request.reset()
+        request.addHeader("Authorization", header)
+        println(header)
+        return request.execute()
+    }
+    return response
+}
+
+internal fun MessageDigest.concat(vararg values: String): String {
+    reset()
+    update(values.joinToString(":").toByteArray(StandardCharsets.ISO_8859_1))
+    return digest().hex
+}
+
+val Rest.Response.digestParams: Map<String, String>? get() {
+    fun String.clean() = trim('\t', ' ', '"')
+    return headers["WWW-Authenticate"]
+            ?.filter { it.startsWith("Digest ") }
+            ?.first()
+            ?.substringAfter("Digest ")
+            ?.split(",")
+            ?.map {
+                val (name, value) = it.split("=", limit = 2)
+                name.clean() to value.clean()
+            }
+            ?.toMap()
+}
+
+private val HexChars = "0123456789abcdef".toCharArray()
+
+val ByteArray.hex get() = map(Byte::toInt).map { "${HexChars[(it and 0xF0).ushr(4)]}${HexChars[it and 0x0F]}" }.joinToString("")
+
 class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override val method: Rest.Request.Method, override val uri: URI, override val entity: Any?) : Rest.Request {
-    val connection: HttpURLConnection
+    lateinit var connection: HttpURLConnection
     val headers = mutableMapOf<String, String>()
 
     init {
+        reset()
+    }
+
+    override fun reset() {
         val url = uri.toURL()
         connection = (if (engine.rest.proxy != null) url.openConnection(engine.rest.proxy) else url.openConnection()) as HttpURLConnection
         headers += "Accept-Encoding" to "gzip, deflate"
@@ -249,6 +316,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     override fun addHeader(name: String, value: String) {
         headers[name] = value
     }
+
+    override fun getHeader(name: String) = headers[name]
 }
 
 class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
@@ -300,6 +369,8 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
         }
         return bytesRead!!
     }
+
+    override val headers get() = request.connection.headerFields
 }
 
 class HttpClientEngine(val rest: Rest) : Rest.Engine() {
@@ -332,6 +403,12 @@ class HttpClientEngine(val rest: Rest) : Rest.Engine() {
         client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build()
     }
 
+    override fun setDigestAuth(username: String, password: String) {
+        responseInterceptor = { response ->
+            if (response.statusCode == 401) handleDigestAuthentication(this, response, username, password) else response
+        }
+    }
+
     override fun reset() {
         client = HttpClientBuilder.create().build()
         context = HttpClientContext.create()
@@ -339,9 +416,13 @@ class HttpClientEngine(val rest: Rest) : Rest.Engine() {
 }
 
 class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpClient, override val seq: Long, override val method: Rest.Request.Method, override val uri: URI, override val entity: Any?) : Rest.Request {
-    val request: HttpRequestBase
+    lateinit var request: HttpRequestBase
 
     init {
+        reset()
+    }
+
+    override fun reset() {
         when (method) {
             GET -> request = HttpGet(uri)
             PUT -> request = HttpPut(uri)
@@ -360,7 +441,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
             val sa = hp.address() as? InetSocketAddress
             if (sa != null) {
                 val scheme = if (engine.rest.baseURI?.startsWith("https") ?: false) "https" else "http"
-                val proxy = HttpHost(sa.address, sa.port,  scheme)
+                val proxy = HttpHost(sa.address, sa.port, scheme)
                 request.config = RequestConfig.custom().setProxy(proxy).build()
             }
         }
@@ -368,10 +449,12 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
 
         if (entity != null && request is HttpEntityEnclosingRequestBase) {
 
+            val r = request as HttpEntityEnclosingRequestBase
+
             when (entity) {
-                is JsonModel -> request.entity = StringEntity(entity.toJSON().toString(), UTF_8)
-                is JsonValue -> request.entity = StringEntity(entity.toString(), UTF_8)
-                is InputStream -> request.entity = InputStreamEntity(entity)
+                is JsonModel -> r.entity = StringEntity(entity.toJSON().toString(), UTF_8)
+                is JsonValue -> r.entity = StringEntity(entity.toString(), UTF_8)
+                is InputStream -> r.entity = InputStreamEntity(entity)
                 else -> throw IllegalArgumentException("Don't know how to handle entity of type ${entity.javaClass}")
             }
         }
@@ -384,6 +467,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
     }
 
     override fun addHeader(name: String, value: String) = request.addHeader(name, value)
+    override fun getHeader(name: String) = request.getFirstHeader("name")?.value
 }
 
 class HttpClientResponse(override val request: HttpClientRequest, val response: CloseableHttpResponse) : Rest.Response {
@@ -422,6 +506,8 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
             consume()
         }
     }
+
+    override val headers get() = response.allHeaders.map { it.name to listOf(it.value) }.toMap()
 }
 
 inline fun <reified T : JsonModel> JsonObject.toModel(): T {
@@ -461,7 +547,6 @@ class RestProgressBar : Fragment() {
             }
         })
     }
-
 }
 
 val String.urlEncoded: String get() = URLEncoder.encode(this, StandardCharsets.UTF_8.name())

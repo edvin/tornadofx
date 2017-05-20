@@ -4,12 +4,16 @@
 
 ### Additions
 
+- Rest client supports digest authentication
+
 ### Fixed
 
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
 - Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
 
 ### Changes
+
+- Rest.responseInterceptor must return a Response object (Upgrade path, simply return the parameter passed in)
 
 ## [1.7.5] - 2017-05-19
 
