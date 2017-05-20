@@ -13,6 +13,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 import kotlin.reflect.jvm.javaMethod
 
+fun <T> ViewModel.property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(this, "ViewModelProperty", value))
 fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value))
 fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
 

@@ -7,6 +7,7 @@
 ### Fixed
 
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
+- Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
 
 ### Changes
 

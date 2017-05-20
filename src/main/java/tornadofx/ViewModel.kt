@@ -456,7 +456,7 @@ inline fun <reified T> validator(control: Control, property: Property<T>, trigge
  * Extract the ViewModel from a property that is bound towards a ViewModel Facade
  */
 @Suppress("UNCHECKED_CAST")
-val Property<*>.viewModel: ViewModel? get() = ViewModel.getViewModelForProperty(this)
+val Property<*>.viewModel: ViewModel? get() = (bean as? ViewModel) ?: ViewModel.getViewModelForProperty(this)
 
 /**
  * Extract the ViewModel Facade from a property that is bound towards it
