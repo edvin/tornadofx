@@ -228,7 +228,6 @@ internal fun handleDigestAuthentication(engine: Rest.Engine, response: Rest.Resp
         val header = """Digest username="$username", realm="$realm", nonce="$nonce", uri="$path", response="$encoded", algorithm=$algorithm, opaque="$opaque""""
         request.reset()
         request.addHeader("Authorization", header)
-        println(header)
         return request.execute()
     }
     return response
