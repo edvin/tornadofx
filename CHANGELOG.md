@@ -3,6 +3,7 @@
 ## [1.7.6-SNAPSHOT]
 
 ### Additions
+- `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 
 - Rest client supports digest authentication
 

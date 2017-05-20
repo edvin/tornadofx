@@ -420,6 +420,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             dock(uiComponent)
         }
     }
+
+    /**
+     * Will automatically dock the given [UIComponent] if the [ListMenuItem] is selected.
+     */
+    inline fun <reified T : UIComponent> ListMenuItem.dockOnSelect() { whenSelected { dock<T>() } }
 }
 
 open class WorkspaceApp(val initiallyDockedView: KClass<out UIComponent>, vararg stylesheet: KClass<out Stylesheet>) : App(Workspace::class, *stylesheet) {
