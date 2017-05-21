@@ -569,9 +569,9 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
     private fun generateCnonce(digest: MessageDigest) = digest.concat(System.nanoTime().toString())
 
     override fun interceptResponse(response: Rest.Response): Rest.Response {
+        extractNextNonce(response)
         if (response.statusCode != 401) return response
         val p = response.digestParams
-        val request = response.request
         if (p != null && p["stale"]?.toBoolean() ?: true) {
             algorithm = p["algorithm"] ?: "MD5"
             digest = MessageDigest.getInstance(algorithm.substringBefore("-"))
@@ -581,11 +581,28 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             nonceCounter.set(0)
             // Prefer auth-int to auth, default to blank
             qop = (p["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first() ?: ""
+
+            val request = response.request
             request.reset()
             request.addHeader("Authorization", generateAuthHeader(request, response))
             return request.execute()
         }
         return response
+    }
+
+    private fun extractNextNonce(response: Rest.Response) {
+        val authInfo = response.header("Authentication-Info")
+        if (authInfo != null) {
+            val params = authInfo.split(",").map {
+                val (name, value) = it.split("=", limit = 2)
+                name to value
+            }.toMap()
+            val nextNonce = params["nextnonce"]
+            if (nextNonce != null) {
+                nonceCounter.set(0)
+                nonce = nextNonce
+            }
+        }
     }
 
     private fun generateAuthHeader(request: Rest.Request, response: Rest.Response?): String {
