@@ -579,8 +579,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             nonce = p["nonce"]!!
             opaque = p["opaque"] ?: ""
             nonceCounter.set(0)
-            // Prefer auth-int to auth, default to blank
-            qop = (p["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first() ?: ""
+            qop = (p["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first()
 
             val request = response.request
             request.reset()
@@ -622,7 +621,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             "auth", "auth-int" -> digest.concat(ha1, nonce, nonceCounter.incrementAndGet().toString(), cnonce, qop, ha2)
             else -> digest.concat(ha1, nonce, ha2)
         }
-        val authParams = mutableMapOf(
+        val authParams = mapOf(
                 "username" to username,
                 "realm" to realm,
                 "nonce" to nonce,
