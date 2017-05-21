@@ -570,20 +570,23 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
 
     override fun interceptResponse(response: Rest.Response): Rest.Response {
         extractNextNonce(response)
-        if (response.statusCode != 401) return response
-        val p = response.digestParams
-        if (p != null && p["stale"]?.toBoolean() ?: true) {
-            algorithm = p["algorithm"] ?: "MD5"
+        if (response.statusCode != 401 || response.request.getHeader("Authorization-Retried") != null) return response
+        val params = response.digestParams
+        if (params != null && params["stale"]?.toBoolean() ?: true) {
+            println("PARAMS: " + params)
+            algorithm = params["algorithm"] ?: "MD5"
             digest = MessageDigest.getInstance(algorithm.substringBefore("-"))
-            realm = p["realm"]!!
-            nonce = p["nonce"]!!
-            opaque = p["opaque"] ?: ""
+            realm = params["realm"]!!
+            nonce = params["nonce"]!!
+            opaque = params["opaque"] ?: ""
             nonceCounter.set(0)
-            qop = (p["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first()
+            qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first()
 
             val request = response.request
             request.reset()
             request.addHeader("Authorization", generateAuthHeader(request, response))
+            println("HEADER: " + request.getHeader("Authorization"))
+            request.addHeader("Authorization-Retried", "true")
             return request.execute()
         }
         return response
@@ -628,6 +631,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
                 "uri" to path,
                 "response" to encoded,
                 "opaque" to opaque,
+                "algorithm" to algorithm,
                 "nc" to nc
         )
 
