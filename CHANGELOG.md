@@ -6,6 +6,7 @@
 - `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 
 - Rest client supports digest authentication
+- Inline commands can be defined with `command { }` builder pattern
 
 ### Fixed
 
