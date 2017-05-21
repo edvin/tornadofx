@@ -48,9 +48,16 @@ open class Rest : Controller() {
     var engine = engineProvider(this)
     var baseURI: String? = null
     var proxy: Proxy? = null
+    var authContext: AuthContext? = null
 
-    fun setBasicAuth(username: String, password: String) = engine.setBasicAuth(username, password)
-    fun setDigestAuth(username: String, password: String) = engine.setDigestAuth(username, password)
+    fun setBasicAuth(username: String, password: String) {
+        engine.setBasicAuth(username, password)
+    }
+
+    fun setDigestAuth(username: String, password: String) {
+        engine.setDigestAuth(username, password)
+    }
+
     fun reset() = engine.reset()
 
     fun get(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(GET, path, data, processor)
@@ -111,11 +118,11 @@ open class Rest : Controller() {
         var authInterceptor: ((Request) -> Unit)? get() = requestInterceptor; set(value) {
             requestInterceptor = value
         }
-        var responseInterceptor: ((Response) -> Response)? = null
+        var responseInterceptor: ((Response) -> Unit)? = null
         abstract fun request(seq: Long, method: Request.Method, uri: URI, entity: Any? = null): Request
+        abstract fun reset()
         abstract fun setBasicAuth(username: String, password: String)
         abstract fun setDigestAuth(username: String, password: String)
-        abstract fun reset()
     }
 
     interface Request {
@@ -189,13 +196,6 @@ open class Rest : Controller() {
 }
 
 class HttpURLEngine(val rest: Rest) : Rest.Engine() {
-    override fun setBasicAuth(username: String, password: String) {
-        requestInterceptor = { request ->
-            val b64 = Base64.getEncoder().encodeToString("$username:$password".toByteArray(UTF_8))
-            request.addHeader("Authorization", "Basic $b64")
-        }
-    }
-
     override fun reset() {
         requestInterceptor = null
     }
@@ -203,34 +203,13 @@ class HttpURLEngine(val rest: Rest) : Rest.Engine() {
     override fun request(seq: Long, method: Rest.Request.Method, uri: URI, entity: Any?) =
             HttpURLRequest(this, seq, method, uri, entity)
 
+    override fun setBasicAuth(username: String, password: String) {
+        rest.authContext = HttpURLBasicAuthContext(username, password)
+    }
+
     override fun setDigestAuth(username: String, password: String) {
-        responseInterceptor = { response ->
-            if (response.statusCode == 401) handleDigestAuthentication(this, response, username, password) else response
-        }
+        rest.authContext = DigestAuthContext(username, password)
     }
-
-}
-
-internal fun handleDigestAuthentication(engine: Rest.Engine, response: Rest.Response, username: String, password: String): Rest.Response {
-    val p = response.digestParams
-    val request = response.request
-    if (request.getHeader("Authorization") != null) return response
-    if (p != null) {
-        val algorithm = p["algorithm"] ?: "MD5"
-        val digest = MessageDigest.getInstance(algorithm)
-        val path = request.uri.path
-        val realm = p["realm"]!!
-        val nonce = p["nonce"]!!
-        val opaque = p["opaque"] ?: "00000000000000000000000000000000"
-        val ha1 = digest.concat(username, realm, password)
-        val ha2 = digest.concat(request.method.name, path)
-        val encoded = digest.concat(ha1, nonce, ha2)
-        val header = """Digest username="$username", realm="$realm", nonce="$nonce", uri="$path", response="$encoded", algorithm=$algorithm, opaque="$opaque""""
-        request.reset()
-        request.addHeader("Authorization", header)
-        return request.execute()
-    }
-    return response
 }
 
 internal fun MessageDigest.concat(vararg values: String): String {
@@ -276,6 +255,7 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     }
 
     override fun execute(): Rest.Response {
+        engine.rest.authContext?.interceptRequest(this)
         engine.requestInterceptor?.invoke(this)
 
         for ((key, value) in headers)
@@ -307,9 +287,11 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
         val response = HttpURLResponse(this)
         if (connection.doOutput) response.bytes()
 
-        engine.responseInterceptor?.invoke(response)
+        val modifiedResponse = engine.rest.authContext?.interceptResponse(response) ?: response
 
-        return response
+        engine.responseInterceptor?.invoke(modifiedResponse)
+
+        return modifiedResponse
     }
 
     override fun addHeader(name: String, value: String) {
@@ -403,9 +385,7 @@ class HttpClientEngine(val rest: Rest) : Rest.Engine() {
     }
 
     override fun setDigestAuth(username: String, password: String) {
-        responseInterceptor = { response ->
-            if (response.statusCode == 401) handleDigestAuthentication(this, response, username, password) else response
-        }
+        rest.authContext = DigestAuthContext(username, password)
     }
 
     override fun reset() {
@@ -560,4 +540,95 @@ val Map<*, *>.queryString: String get() {
         }
     }
     return q.toString()
+}
+
+interface AuthContext {
+    fun interceptRequest(request: Rest.Request)
+    fun interceptResponse(response: Rest.Response): Rest.Response
+}
+
+class DigestAuthContext(val username: String, val password: String) : AuthContext {
+    val nonceCounter = AtomicLong(0)
+    var nonce: String = ""
+    var realm: String = ""
+    var qop: String = ""
+    var opaque: String = ""
+    var algorithm: String = ""
+    var digest = MessageDigest.getInstance("MD5")
+
+    companion object {
+        val QuotedStringParameters = listOf("username", "realm", "nonce", "uri", "response", "cnonce", "opaque")
+    }
+
+    override fun interceptRequest(request: Rest.Request) {
+        if (nonce.isNotBlank() && request.getHeader("Authorization") == null) {
+            request.addHeader("Authorization", generateAuthHeader(request, null))
+        }
+    }
+
+    private fun generateCnonce(digest: MessageDigest) = digest.concat(System.nanoTime().toString())
+
+    override fun interceptResponse(response: Rest.Response): Rest.Response {
+        if (response.statusCode != 401) return response
+        val p = response.digestParams
+        val request = response.request
+        if (p != null && p["stale"]?.toBoolean() ?: true) {
+            algorithm = p["algorithm"] ?: "MD5"
+            digest = MessageDigest.getInstance(algorithm.substringBefore("-"))
+            realm = p["realm"]!!
+            nonce = p["nonce"]!!
+            opaque = p["opaque"] ?: ""
+            nonceCounter.set(0)
+            // Prefer auth-int to auth, default to blank
+            qop = (p["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first() ?: ""
+            request.reset()
+            request.addHeader("Authorization", generateAuthHeader(request, response))
+            return request.execute()
+        }
+        return response
+    }
+
+    private fun generateAuthHeader(request: Rest.Request, response: Rest.Response?): String {
+        val cnonce = generateCnonce(digest)
+        val path = request.uri.path
+        val nc = Integer.toHexString(nonceCounter.incrementAndGet().toInt()).padStart(8, '0')
+
+        val ha1 = when (algorithm) {
+            "MD5-sess" -> digest.concat(digest.concat(username, realm, password), nonce, cnonce)
+            else -> digest.concat(username, realm, password)
+        }
+        val ha2 = when (qop) {
+            "auth-int" -> digest.concat(request.method.name, path, digest.concat(response?.text() ?: ""))
+            else -> digest.concat(request.method.name, path)
+        }
+        val encoded = when (qop) {
+            "auth", "auth-int" -> digest.concat(ha1, nonce, nonceCounter.incrementAndGet().toString(), cnonce, qop, ha2)
+            else -> digest.concat(ha1, nonce, ha2)
+        }
+        val authParams = mutableMapOf(
+                "username" to username,
+                "realm" to realm,
+                "nonce" to nonce,
+                "uri" to path,
+                "response" to encoded,
+                "opaque" to opaque,
+                "nc" to nc
+        )
+
+        return "Digest " + authParams.map {
+            val q = if (QuotedStringParameters.contains(it.key)) "\"" else ""
+            "${it.key}=$q${it.value}$q"
+        }.joinToString()
+    }
+}
+
+class HttpURLBasicAuthContext(val username: String, val password: String) : AuthContext {
+    override fun interceptRequest(request: Rest.Request) {
+        val b64 = Base64.getEncoder().encodeToString("$username:$password".toByteArray(UTF_8))
+        request.addHeader("Authorization", "Basic $b64")
+    }
+
+    override fun interceptResponse(response: Rest.Response): Rest.Response {
+        return response
+    }
 }

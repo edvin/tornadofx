@@ -3,8 +3,8 @@
 ## [1.7.6-SNAPSHOT]
 
 ### Additions
-- `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 
+- `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 - Rest client supports digest authentication
 - Inline commands can be defined with `command { }` builder pattern
 
@@ -14,8 +14,6 @@
 - Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
 
 ### Changes
-
-- Rest.responseInterceptor must return a Response object (Upgrade path, simply return the parameter passed in)
 
 ## [1.7.5] - 2017-05-19
 
