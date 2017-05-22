@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.logging.Level
 import java.util.zip.DeflaterInputStream
 import java.util.zip.GZIPInputStream
 import javax.json.Json
@@ -573,7 +574,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
         if (response.statusCode != 401 || response.request.getHeader("Authorization-Retried") != null) return response
         val params = response.digestParams
         if (params != null && params["stale"]?.toBoolean() ?: true) {
-            println("PARAMS: " + params)
+            FX.log.fine { "Digest Challenge: $params" }
             algorithm = params["algorithm"] ?: "MD5"
             digest = MessageDigest.getInstance(algorithm.substringBefore("-"))
             realm = params["realm"]!!
@@ -585,7 +586,6 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             val request = response.request
             request.reset()
             request.addHeader("Authorization", generateAuthHeader(request, response))
-            println("HEADER: " + request.getHeader("Authorization"))
             request.addHeader("Authorization-Retried", "true")
             return request.execute()
         }
@@ -635,10 +635,14 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
                 "nc" to nc
         )
 
-        return "Digest " + authParams.map {
+        val header = "Digest " + authParams.map {
             val q = if (QuotedStringParameters.contains(it.key)) "\"" else ""
             "${it.key}=$q${it.value}$q"
         }.joinToString()
+
+        FX.log.fine { "Digest Response: $header" }
+
+        return header
     }
 }
 
