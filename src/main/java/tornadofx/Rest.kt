@@ -27,13 +27,13 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
-import java.util.logging.Level
 import java.util.zip.DeflaterInputStream
 import java.util.zip.GZIPInputStream
 import javax.json.Json
 import javax.json.JsonArray
 import javax.json.JsonObject
 import javax.json.JsonValue
+import kotlin.collections.HashMap
 
 open class Rest : Controller() {
     companion object {
@@ -133,6 +133,7 @@ open class Rest : Controller() {
         val method: Method
         val uri: URI
         val entity: Any?
+        var properties: MutableMap<Any, Any>
         fun addHeader(name: String, value: String)
         fun getHeader(name: String): String?
         fun execute(): Response
@@ -300,6 +301,8 @@ class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override
     }
 
     override fun getHeader(name: String) = headers[name]
+
+    override var properties: MutableMap<Any, Any> = HashMap()
 }
 
 class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
@@ -448,6 +451,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
 
     override fun addHeader(name: String, value: String) = request.addHeader(name, value)
     override fun getHeader(name: String) = request.getFirstHeader("name")?.value
+    override var properties: MutableMap<Any, Any> = HashMap()
 }
 
 class HttpClientResponse(override val request: HttpClientRequest, val response: CloseableHttpResponse) : Rest.Response {
@@ -571,12 +575,12 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
 
     override fun interceptResponse(response: Rest.Response): Rest.Response {
         extractNextNonce(response)
-        if (response.statusCode != 401 || response.request.getHeader("Authorization-Retried") != null) return response
+        if (response.statusCode != 401 || response.request.properties["Authorization-Retried"] != null) return response
         val params = response.digestParams
         if (params != null && params["stale"]?.toBoolean() ?: true) {
             FX.log.fine { "Digest Challenge: $params" }
             algorithm = params["algorithm"] ?: "MD5"
-            digest = MessageDigest.getInstance(algorithm.substringBefore("-"))
+            digest = MessageDigest.getInstance(algorithm.removeSuffix("-sess"))
             realm = params["realm"]!!
             nonce = params["nonce"]!!
             opaque = params["opaque"] ?: ""
@@ -586,7 +590,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             val request = response.request
             request.reset()
             request.addHeader("Authorization", generateAuthHeader(request, response))
-            request.addHeader("Authorization-Retried", "true")
+            request.properties["Authorization-Retried"] = true
             return request.execute()
         }
         return response
