@@ -17,6 +17,8 @@
 
 ### Changes
 
+- `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
+
 ## [1.7.5] - 2017-05-19
 
 **Important notice**: The `field` builder used to operate on the `inputContainer` inside the `Field`. This has been changed so that it now operates on the

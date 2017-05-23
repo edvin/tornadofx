@@ -49,7 +49,7 @@ fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu 
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
-fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
+fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: (() -> Unit)? = null): MenuItem {
     return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
 }
 
@@ -126,7 +126,7 @@ fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
-fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: ((ActionEvent) -> Unit)? = null): MenuItem {
+fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: (() -> Unit)? = null): MenuItem {
     return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
 }
 
