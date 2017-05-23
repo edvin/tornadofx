@@ -4,6 +4,7 @@
 
 ### Additions
 
+- `hbox` and `vbox` builders now have optional `alignment` parameter
 - `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 - Rest client supports digest authentication
 - Inline commands can be defined with `command { }` builder pattern
@@ -17,6 +18,7 @@
 
 ### Changes
 
+- Deprecated `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
 - `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
 
 ## [1.7.5] - 2017-05-19

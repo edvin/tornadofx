@@ -4,6 +4,7 @@ import javafx.beans.property.ObjectProperty
 import javafx.event.EventTarget
 import javafx.geometry.Insets
 import javafx.geometry.Orientation
+import javafx.geometry.Pos
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
@@ -91,6 +92,8 @@ fun ToolBar.children(op: ToolBar.() -> Unit): ToolBar {
     return this
 }
 
+
+@Deprecated("Use the hbox builder without the children parameter")
 fun EventTarget.hbox(spacing: Number? = null, children: Iterable<Node>? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
     if (children != null)
@@ -99,10 +102,25 @@ fun EventTarget.hbox(spacing: Number? = null, children: Iterable<Node>? = null, 
     return opcr(this, hbox, op)
 }
 
+fun EventTarget.hbox(spacing: Number? = null, alignment: Pos? = null, op: (HBox.() -> Unit)? = null): HBox {
+    val hbox = HBox()
+    if (alignment != null) hbox.alignment = alignment
+    if (spacing != null) hbox.spacing = spacing.toDouble()
+    return opcr(this, hbox, op)
+}
+
+@Deprecated("Use the vbox builder without the children parameter")
 fun EventTarget.vbox(spacing: Number? = null, children: Iterable<Node>? = null, op: (VBox.() -> Unit)? = null): VBox {
     val vbox = VBox()
     if (children != null)
         vbox.children.addAll(children)
+    if (spacing != null) vbox.spacing = spacing.toDouble()
+    return opcr(this, vbox, op)
+}
+
+fun EventTarget.vbox(spacing: Number? = null, alignment: Pos? = null, op: (VBox.() -> Unit)? = null): VBox {
+    val vbox = VBox()
+    if (alignment != null) vbox.alignment = alignment
     if (spacing != null) vbox.spacing = spacing.toDouble()
     return opcr(this, vbox, op)
 }
