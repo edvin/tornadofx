@@ -18,7 +18,7 @@
 
 ### Changes
 
-- Deprecated `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
+- Removed `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
 - `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
 
 ## [1.7.5] - 2017-05-19
