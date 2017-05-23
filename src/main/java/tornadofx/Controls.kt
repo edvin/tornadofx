@@ -412,8 +412,8 @@ inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphic
     op?.invoke(this)
 }
 
-fun EventTarget.hyperlink(text: String = "", op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text), op)
-fun EventTarget.hyperlink(observable: ObservableValue<String>, op: (Hyperlink.() -> Unit)? = null) = hyperlink().apply {
+fun EventTarget.hyperlink(text: String = "", graphic: Node? = null, op: (Hyperlink.() -> Unit)? = null) = opcr(this, Hyperlink(text, graphic), op)
+fun EventTarget.hyperlink(observable: ObservableValue<String>, graphic: Node? = null, op: (Hyperlink.() -> Unit)? = null) = hyperlink(graphic = graphic).apply {
     bind(observable)
     op?.invoke(this)
 }

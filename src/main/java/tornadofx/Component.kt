@@ -733,11 +733,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         get() = titleProperty.get() ?: ""
         set(value) = titleProperty.set(value)
 
-    open val headingProperty: StringProperty = SimpleStringProperty(viewTitle)
+    open val headingProperty: StringProperty = SimpleStringProperty().apply {
+        bind(titleProperty)
+    }
 
     var heading: String
         get() = headingProperty.get() ?: ""
-        set(value) = headingProperty.set(value)
+        set(value) {
+            if (headingProperty.isBound) headingProperty.unbind()
+            headingProperty.set(value)
+        }
 
     /**
      * Load an FXML file from the specified location, or from a file with the same package and name as this UIComponent

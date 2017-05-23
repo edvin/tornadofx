@@ -7,9 +7,11 @@
 - `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 - Rest client supports digest authentication
 - Inline commands can be defined with `command { }` builder pattern
+- hyperlink builder has optional graphic parameter
 
 ### Fixed
 
+- UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
 - Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
 
