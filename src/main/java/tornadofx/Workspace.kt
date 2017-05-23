@@ -8,6 +8,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.TabPane
 import javafx.scene.control.ToolBar
@@ -54,6 +55,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     val headingContainer = HeadingContainer()
     val tabContainer = TabPane().addClass("editor-container")
     val stackContainer = StackPane().addClass("editor-container")
+
+    val contentContainerProperty = SimpleObjectProperty<Parent>(stackContainer)
+    var contentContainer by contentContainerProperty
 
     val showHeadingLabelProperty = SimpleBooleanProperty(true)
     var showHeadingLabel by showHeadingLabelProperty
@@ -254,7 +258,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         dockedComponentProperty.onChange { child ->
             if (child != null) {
                 inDynamicComponentMode {
-                    if (root.center == stackContainer) {
+                    if (contentContainer == stackContainer) {
                         tabContainer.tabs.clear()
 
                         stackContainer.clear()
@@ -280,8 +284,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private fun navigationModeChanged(oldMode: NavigationMode?, newMode: NavigationMode?) {
         if (oldMode == null || oldMode != newMode) {
-            root.center = if (navigationMode == Stack) stackContainer else tabContainer
-            if (root.center == stackContainer && tabContainer.tabs.isNotEmpty()) {
+            contentContainer = if (navigationMode == Stack) stackContainer else tabContainer
+            root.center = contentContainer
+            if (contentContainer == stackContainer && tabContainer.tabs.isNotEmpty()) {
                 tabContainer.tabs.clear()
             }
             val wasdocked = dockedComponent
@@ -319,7 +324,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find(T::class, scope, params))
 
     fun dock(child: UIComponent, updateViewStack: Boolean = true) {
-        val doUpdate = root.center == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)
+        val doUpdate = contentContainer == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)
 
         if (doUpdate) {
             // Add to end of stack - must happen before setAsCurrentlyDocked so viewPos is updated correctly
