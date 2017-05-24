@@ -30,16 +30,16 @@ class ListMenu : Control() {
     val themeProperty = SimpleStringProperty()
     var theme by themeProperty
 
-    val activeItemProperty: ObjectProperty<ListMenuItem> = object : SimpleObjectProperty<ListMenuItem>(this, "active") {
-        override fun set(item: ListMenuItem) {
+    val activeItemProperty: ObjectProperty<ListMenuItem?> = object : SimpleObjectProperty<ListMenuItem?>(this, "active") {
+        override fun set(item: ListMenuItem?) {
             val previouslyActive = get()
             if (item === previouslyActive)
                 return
 
             previouslyActive?.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, false)
             previouslyActive?.internalActiveProperty?.value = false
-            item.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, true)
-            item.internalActiveProperty.value = true
+            item?.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, true)
+            item?.internalActiveProperty?.value = true
             super.set(item)
         }
     }

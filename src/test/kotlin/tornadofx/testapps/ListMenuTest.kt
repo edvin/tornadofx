@@ -42,7 +42,7 @@ class ListMenuTest : View("ListMenu Test") {
                         }
                     }
                 }
-                label(stringBinding(listmenu.activeItemProperty) { "Currently selected: ${value.text}" }) {
+                label(stringBinding(listmenu.activeItemProperty) { "Currently selected: ${value?.text}" }) {
                     style { textFill = Color.RED }
                 }
                 style {
