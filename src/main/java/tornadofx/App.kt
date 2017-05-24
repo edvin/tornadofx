@@ -83,12 +83,15 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
             if (view is Workspace) FX.defaultWorkspace = primaryViewType as KClass<Workspace>
 
             stage.apply {
+                view.muteDocking = true
                 scene = createPrimaryScene(view)
                 view.properties["tornadofx.scene"] = scene
                 FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
                 hookGlobalShortcuts()
                 onBeforeShow(view)
+                view.muteDocking = false
+                view.callOnDock()
                 if (shouldShowPrimaryStage()) show()
             }
             FX.initialized.value = true

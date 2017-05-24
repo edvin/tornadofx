@@ -330,7 +330,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     internal fun getRootWrapper(): Parent = wrapperProperty.value ?: root
 
     private var isInitialized = false
-    val currentWindow: Window? get() = root.scene.window ?: FX.primaryStage
+    val currentWindow: Window? get() = modalStage ?: root.scene?.window ?: FX.primaryStage
 
     open val refreshable: BooleanExpression get() = properties.getOrPut("tornadofx.refreshable") { SimpleBooleanProperty(Workspace.defaultRefreshable) } as BooleanExpression
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
