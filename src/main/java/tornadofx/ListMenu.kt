@@ -180,7 +180,7 @@ class ListMenuSkin(control: ListMenu) : SkinBase<ListMenu>(control) {
 }
 
 class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) {
-    val text = Text()
+    val text = Text().addClass("text")
 
     private fun registerGraphic(node: Node) {
         children.add(node)
