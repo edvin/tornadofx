@@ -20,6 +20,7 @@ import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Callable
 import kotlin.reflect.KFunction
+import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
 open class ViewModel : Component(), Injectable {
@@ -463,6 +464,7 @@ val Property<*>.viewModel: ViewModel? get() = (bean as? ViewModel) ?: ViewModel.
  */
 val ObservableValue<*>.viewModelFacade: Property<*>? get() = ViewModel.getFacadeForProperty(this)
 
+@Suppress("UNCHECKED_CAST")
 open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
     var item by itemProperty
 
@@ -483,9 +485,17 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
     inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it).toProperty() } }
 
+    @JvmName("bindMutableField")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.observable(property) }
+
     @JvmName("bindProperty")
     inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
+
+    @JvmName("bindMutableProperty")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.observable(property) } as ReturnType
 
     @JvmName("bindGetter")
     inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
