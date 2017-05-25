@@ -282,9 +282,6 @@ class ExpandedDrawerContentArea : VBox() {
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }
-                     //   if (it is VBox) {
-                       //     it.alignment = Pos.TOP_CENTER
-                        //}
                     }
                 }
             }
@@ -299,7 +296,8 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
         if (icon != null) graphicProperty().bind(icon)
     }
 
-    val expanded: Boolean get() = button.isSelected
+    val expandedProperty = button.selectedProperty()
+    var expanded by expandedProperty
 
     init {
         addClass(DrawerStyles.drawerItem)

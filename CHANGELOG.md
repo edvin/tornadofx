@@ -10,6 +10,7 @@
 - Inline commands can be defined with `command { }` builder pattern
 - hyperlink builder has optional graphic parameter
 - UIComponent has `currentStage`, `setWindowMinSize(width, height)` and `setWindowMaxSize(width, height)`
+- DrawerItem has `expandedProperty` and `expanded` var (https://github.com/edvin/tornadofx/issues/332)
 
 ### Fixed
 
