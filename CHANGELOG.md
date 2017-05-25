@@ -7,7 +7,7 @@
 - Rest.Response.Status enum with all official http status codes. (https://github.com/edvin/tornadofx/issues/330)
 - `hbox` and `vbox` builders now have optional `alignment` parameter
 - `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
-- Rest client supports digest authentication
+- Rest client supports Digest Authentication
 - Inline commands can be defined with `command { }` builder pattern
 - hyperlink builder has optional graphic parameter
 - UIComponent has `currentStage`, `setWindowMinSize(width, height)` and `setWindowMaxSize(width, height)`
@@ -21,7 +21,7 @@
 
 ### Changes
 
-- UIComponent.currentWindow is fetched from `root.scene.stage`
+- UIComponent.currentWindow is fetched from `root.scene.stage`, falls back to `modalStage` or `primaryStage`
 - ListMenu.activeItem accepts null to signal that no menu item is active
 - Removed `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
 - `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
