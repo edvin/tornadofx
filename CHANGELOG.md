@@ -4,6 +4,7 @@
 
 ### Additions
 
+- Rest.Response.Status enum with all official http status codes. (https://github.com/edvin/tornadofx/issues/330)
 - `hbox` and `vbox` builders now have optional `alignment` parameter
 - `Workspace.dockOnSelect` Will automatically dock the given `UIComponent` if the `ListMenuItem` is selected.
 - Rest client supports digest authentication
