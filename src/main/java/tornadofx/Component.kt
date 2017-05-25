@@ -435,6 +435,22 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         isInitialized = true
     }
 
+    val currentStage: Stage? get() {
+        val stage = (currentWindow as? Stage)
+        if (stage == null) FX.log.warning { "CurrentStage not available for $this" }
+        return stage
+    }
+
+    fun setWindowMinSize(width: Number, height: Number) = currentStage?.apply {
+        minWidth = width.toDouble()
+        minHeight = height.toDouble()
+    }
+
+    fun setWindowMaxSize(width: Number, height: Number) = currentStage?.apply {
+        maxWidth = width.toDouble()
+        maxHeight = height.toDouble()
+    }
+
     private val acceleratorListener: EventHandler<KeyEvent> by lazy {
         EventHandler<KeyEvent> { event ->
             accelerators.keys.asSequence().find { it.match(event) }?.apply {

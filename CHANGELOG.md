@@ -9,6 +9,7 @@
 - Rest client supports digest authentication
 - Inline commands can be defined with `command { }` builder pattern
 - hyperlink builder has optional graphic parameter
+- UIComponent has `currentStage`, `setWindowMinSize(width, height)` and `setWindowMaxSize(width, height)`
 
 ### Fixed
 
