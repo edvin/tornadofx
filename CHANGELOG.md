@@ -4,6 +4,7 @@
 
 ### Additions
 
+- runLater with optional delay: `runLater { }` and `runLater(10.seconds) { .. }`
 - ViewModel.bind can create observable properties from mutable vars: `val name = bind(MyObject::name)`
 - Rest.Response.Status enum with all official http status codes. (https://github.com/edvin/tornadofx/issues/330)
 - `hbox` and `vbox` builders now have optional `alignment` parameter

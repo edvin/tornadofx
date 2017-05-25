@@ -24,6 +24,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
+import javafx.util.Duration
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -32,6 +33,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.concurrent.schedule
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -162,7 +164,7 @@ class FX {
             try {
                 messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl.INSTANCE)
             } catch (ex: Exception) {
-                log.fine( "No global Messages found in locale $locale, using empty bundle" )
+                log.fine("No global Messages found in locale $locale, using empty bundle")
                 messages = EmptyResourceBundle.INSTANCE
             }
         }
@@ -236,6 +238,7 @@ class FX {
 
         @JvmStatic
         fun <T : Component> find(componentType: Class<T>, scope: Scope): T = find(componentType.kotlin, scope)
+
         @JvmStatic
         fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
 
@@ -563,4 +566,26 @@ private fun Parent.getChildrenReflectively(): MutableList<Node>? {
         return getter.invoke(this) as MutableList<Node>
     }
     return null
+}
+
+
+/**
+ * Run the specified Runnable on the JavaFX Application Thread at some
+ * unspecified time in the future.
+ */
+fun runLater(op: () -> Unit) = Platform.runLater(op)
+
+/**
+ * Run the specified Runnable on the JavaFX Application Thread after a
+ * specified delay.
+ *
+ * runLater(10.seconds) {
+ *     // Do something on the application thread
+ * }
+ *
+ * This function returns a TimerTask. You can cancel the task before the time
+ * is up to abort the execution.
+ */
+fun runLater(delay: Duration, op: () -> Unit) = Timer().schedule(delay.toMillis().toLong()) {
+    Platform.runLater { op() }
 }
