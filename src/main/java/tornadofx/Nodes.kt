@@ -1008,6 +1008,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
             removeFromParent()
             replacement.removeFromParent()
             scene.root = replacement
+            if (sizeToScene) scene.window.sizeToScene()
         }
         return true
     } else if (parent is Pane) {
