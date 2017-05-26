@@ -4,6 +4,7 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.beans.property.ReadOnlyBooleanWrapper
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -586,6 +587,22 @@ fun runLater(op: () -> Unit) = Platform.runLater(op)
  * This function returns a TimerTask. You can cancel the task before the time
  * is up to abort the execution.
  */
-fun runLater(delay: Duration, op: () -> Unit) = Timer().schedule(delay.toMillis().toLong()) {
-    Platform.runLater { op() }
+fun runLater(delay: Duration, op: () -> Unit) {
+    val timer = Timer()
+        timer.schedule(FXTimerTask(op, timer), delay.toMillis().toLong())
+}
+
+class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
+    private val internalRunning = ReadOnlyBooleanWrapper(false)
+    val runningProperty = internalRunning.readOnlyProperty
+    val running by runningProperty
+
+    override fun run() {
+        internalRunning.value = true
+        try {
+            op()
+        } finally {
+            internalRunning.value = false
+        }
+    }
 }
