@@ -216,7 +216,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         return false
     }
 
-    private fun navigateBack(): Boolean {
+    fun navigateBack(): Boolean {
         if (backButton.isDisabled.not()) {
             dock(viewStack[viewPos.get() - 1], false)
             return true
