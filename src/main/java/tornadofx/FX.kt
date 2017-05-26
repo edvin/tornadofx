@@ -602,7 +602,7 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
     override fun run() {
         internalRunning.value = true
         try {
-            op()
+            Platform.runLater(op)
         } finally {
             internalRunning.value = false
         }
