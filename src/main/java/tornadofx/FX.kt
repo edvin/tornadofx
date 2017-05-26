@@ -34,7 +34,6 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.concurrent.schedule
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -588,7 +587,7 @@ fun runLater(op: () -> Unit) = Platform.runLater(op)
  * You can cancel the task before the time is up to abort the execution.
  */
 fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
-    val timer = Timer()
+    val timer = Timer(true)
     val task = FXTimerTask(op, timer)
     timer.schedule(task, delay.toMillis().toLong())
     return task
