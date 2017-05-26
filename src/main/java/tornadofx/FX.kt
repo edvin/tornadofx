@@ -587,9 +587,11 @@ fun runLater(op: () -> Unit) = Platform.runLater(op)
  * This function returns a TimerTask. You can cancel the task before the time
  * is up to abort the execution.
  */
-fun runLater(delay: Duration, op: () -> Unit) {
+fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
     val timer = Timer()
-        timer.schedule(FXTimerTask(op, timer), delay.toMillis().toLong())
+    val task = FXTimerTask(op, timer)
+    timer.schedule(task, delay.toMillis().toLong())
+    return task
 }
 
 class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
