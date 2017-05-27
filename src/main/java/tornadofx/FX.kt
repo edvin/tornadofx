@@ -2,12 +2,12 @@
 
 package tornadofx
 
+import com.sun.javafx.tk.Toolkit
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.property.ReadOnlyBooleanWrapper
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -40,12 +40,12 @@ import kotlin.reflect.KProperty
 open class Scope() {
     internal var workspaceInstance: Workspace? = null
 
-    constructor(workspace: Workspace, vararg setInScope: Injectable) : this() {
+    constructor(workspace: Workspace, vararg setInScope: ScopedInstance) : this() {
         set(*setInScope)
         workspaceInstance = workspace
     }
 
-    constructor(vararg setInScope: Injectable) : this() {
+    constructor(vararg setInScope: ScopedInstance) : this() {
         set(*setInScope)
     }
 
@@ -125,7 +125,7 @@ class FX {
 
         val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
 
-        internal val components = HashMap<Scope, HashMap<KClass<out Injectable>, Injectable>>()
+        internal val components = HashMap<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
         fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
 
         val lock = Any()
@@ -342,9 +342,9 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
-fun <T : Injectable> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
+fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
-fun <T : Injectable> Scope.set(vararg value: T): Scope {
+fun <T : ScopedInstance> Scope.set(vararg value: T): Scope {
     FX.getComponents(this).apply {
         for (v in value) put(v.javaClass.kotlin, v)
     }
@@ -367,9 +367,9 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         stringKeyedMap[stringKey] = params[it.key]
     }
     inheritParamHolder.set(stringKeyedMap)
-    if (Injectable::class.java.isAssignableFrom(type.java)) {
+    if (ScopedInstance::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(useScope)
-        if (!components.containsKey(type as KClass<out Injectable>)) {
+        if (!components.containsKey(type as KClass<out ScopedInstance>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
@@ -595,15 +595,48 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
 
 class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
     private val internalRunning = ReadOnlyBooleanWrapper(false)
-    val runningProperty = internalRunning.readOnlyProperty
-    val running by runningProperty
+    val runningProperty: ReadOnlyBooleanProperty get() = internalRunning.readOnlyProperty
+    val running: Boolean get() = runningProperty.value
+
+    private val internalCompleted = ReadOnlyBooleanWrapper(false)
+    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
+    val completed: Boolean get() = completedProperty.value
 
     override fun run() {
         internalRunning.value = true
-        try {
-            Platform.runLater(op)
-        } finally {
-            internalRunning.value = false
+        Platform.runLater {
+            try {
+                op()
+            } finally {
+                internalRunning.value = false
+                internalCompleted.value = true
+            }
         }
     }
+}
+
+/**
+ * Wait on the UI thread until a certain value is available on this observable.
+ *
+ * This method does not block the UI thread even though it halts further execution until the condition is met.
+ */
+fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
+    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
+        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
+    }
+
+    val changeListener = object : ChangeListener<T> {
+        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
+            if (condition(value)) {
+                runLater {
+                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
+                    removeListener(this)
+                }
+            }
+        }
+    }
+
+    changeListener.changed(this, value, value)
+    addListener(changeListener)
+    Toolkit.getToolkit().enterNestedEventLoop(this)
 }

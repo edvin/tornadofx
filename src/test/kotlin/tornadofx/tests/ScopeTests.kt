@@ -27,7 +27,7 @@ class ScopeTests {
         val vm: VM by inject()
     }
 
-    class VM : ViewModel(), Injectable
+    class VM : ViewModel(), ScopedInstance
 
     @Test
     fun instanceCheck() {

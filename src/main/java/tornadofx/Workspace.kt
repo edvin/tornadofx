@@ -225,7 +225,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     init {
-        navigationModeProperty.addListener { observableValue, ov, nv -> navigationModeChanged(ov, nv) }
+        navigationModeProperty.addListener { _, ov, nv -> navigationModeChanged(ov, nv) }
         tabContainer.tabs.onChange { change ->
             while (change.next()) {
                 if (change.wasRemoved()) {
@@ -379,7 +379,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     /**
      * Create a new scope and associate it with this Workspace and optionally add one
-     * or more Injectable instances into the scope. The op block operates on the workspace and is passed the new scope. The following example
+     * or more ScopedInstance instances into the scope. The op block operates on the workspace and is passed the new scope. The following example
      * creates a new scope, injects a Customer Model into it and docks the CustomerEditor
      * into the Workspace:
      *
@@ -389,7 +389,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * }
      * </pre>
      */
-    fun withNewScope(vararg setInScope: Injectable, op: Workspace.(Scope) -> Unit) {
+    fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit) {
         val newScope = Scope()
         newScope.workspaceInstance = this
         newScope.set(*setInScope)
@@ -400,7 +400,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
      */
-    inline fun <reified T : UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: Injectable) {
+    inline fun <reified T : UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: ScopedInstance) {
         withNewScope(*setInScope) { newScope ->
             dock<T>(newScope, params)
         }
@@ -410,7 +410,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope, optionally injecting the given Injectables into the new scope.
      */
-    inline fun <reified T : UIComponent> dockInNewScope(vararg setInScope: Injectable) {
+    inline fun <reified T : UIComponent> dockInNewScope(vararg setInScope: ScopedInstance) {
         withNewScope(*setInScope) { newScope ->
             dock<T>(newScope)
         }
@@ -420,7 +420,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope and optionally injecting the given Injectables into the new scope.
      */
-    fun <T : UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: Injectable) {
+    fun <T : UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: ScopedInstance) {
         withNewScope(*setInScope) {
             dock(uiComponent)
         }

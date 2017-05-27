@@ -5,6 +5,7 @@
 ### Additions
 
 - runLater with optional delay: `runLater { }` and `runLater(10.seconds) { .. }`
+- ObservableValue.awaitUntil waits on the UI thread without blocking until a given value is set before resuming execution
 - ViewModel.bind can create observable properties from mutable vars: `val name = bind(MyObject::name)`
 - Rest.Response.Status enum with all official http status codes. (https://github.com/edvin/tornadofx/issues/330)
 - `hbox` and `vbox` builders now have optional `alignment` parameter
@@ -28,6 +29,7 @@
 - ListMenu.activeItem accepts null to signal that no menu item is active
 - Removed `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
 - `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
+- `Injectable` was a misnomer and has been deprectated in favor of `ScopedInstance`
 
 ## [1.7.5] - 2017-05-19
 

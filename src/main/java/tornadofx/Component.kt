@@ -46,7 +46,10 @@ import javax.json.Json
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
-interface Injectable
+@Deprecated("Injectable was a misnomer", ReplaceWith("ScopedInstance"))
+interface Injectable : ScopedInstance
+
+interface ScopedInstance
 
 interface Configurable {
     val config: Properties
@@ -144,7 +147,7 @@ abstract class Component : Configurable {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(overrideScope: Scope = scope, params: Map<String, Any?>? = null): ReadOnlyProperty<Component, T> where T : Component, T : Injectable = object : ReadOnlyProperty<Component, T> {
+    inline fun <reified T> inject(overrideScope: Scope = scope, params: Map<String, Any?>? = null): ReadOnlyProperty<Component, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, params)
     }
 
@@ -201,59 +204,59 @@ abstract class Component : Configurable {
     fun <T> background(func: FXTask<*>.() -> T) = task(func = func)
 
     /**
-     * Perform the given operation on an Injectable of the specified type asynchronousyly.
+     * Perform the given operation on an ScopedInstance of the specified type asynchronousyly.
      *
      * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
-    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : Injectable = task { op(find(T::class, scope)) }
+    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : ScopedInstance = task { op(find(T::class, scope)) }
 
     /**
-     * Perform the given operation on an Injectable class function member asynchronousyly.
+     * Perform the given operation on an ScopedInstance class function member asynchronousyly.
      *
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
     inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
-            where InjectableType : Component, InjectableType : Injectable {
+            where InjectableType : Component, InjectableType : ScopedInstance {
         val t = task { invoke(find(InjectableType::class, scope)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
     }
 
     /**
-     * Perform the given operation on an Injectable class function member asynchronousyly.
+     * Perform the given operation on an ScopedInstance class function member asynchronousyly.
      *
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
     inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : Injectable
+            where InjectableType : Component, InjectableType : ScopedInstance
             = task { invoke(find(InjectableType::class, scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : Injectable
+            where InjectableType : Component, InjectableType : ScopedInstance
             = task { invoke(find(InjectableType::class, scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : Injectable
+            where InjectableType : Component, InjectableType : ScopedInstance
             = task { invoke(find(InjectableType::class, scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : Injectable
+            where InjectableType : Component, InjectableType : ScopedInstance
             = task { invoke(find(InjectableType::class, scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     /**
-     * Find the given property inside the given Injectable. Useful for assigning a property from a View or Controller
+     * Find the given property inside the given ScopedInstance. Useful for assigning a property from a View or Controller
      * in any Component. Example:
      *
      * val person = find(UserController::currentPerson)
      */
     inline fun <reified InjectableType, T> get(prop: KProperty1<InjectableType, T>): T
-            where InjectableType : Component, InjectableType : Injectable {
+            where InjectableType : Component, InjectableType : ScopedInstance {
         val injectable = find(InjectableType::class, scope)
         return prop.get(injectable)
     }
 
     inline fun <reified InjectableType, T> set(prop: KMutableProperty1<InjectableType, T>, value: T)
-            where InjectableType : Component, InjectableType : Injectable {
+            where InjectableType : Component, InjectableType : ScopedInstance {
         val injectable = find(InjectableType::class, scope)
         return prop.set(injectable, value)
     }
@@ -307,7 +310,7 @@ abstract class Component : Configurable {
 
 }
 
-abstract class Controller : Component(), Injectable
+abstract class Controller : Component(), ScopedInstance
 
 const val UI_COMPONENT_PROPERTY = "tornadofx.uicomponent"
 
@@ -872,7 +875,7 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
 
 abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
 
-abstract class View @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon), Injectable
+abstract class View @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon), ScopedInstance
 
 class ResourceLookup(val component: Any) {
     operator fun get(resource: String): String = component.javaClass.getResource(resource).toExternalForm()
