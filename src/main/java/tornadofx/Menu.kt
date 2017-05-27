@@ -28,14 +28,6 @@ fun MenuBar.menu(name: String? = null, graphic: Node? = null, op: (Menu.() -> Un
     return menu
 }
 
-// Submenu
-fun Menu.menu(name: String? = null, graphic: Node? = null, op: (Menu.() -> Unit)? = null): Menu {
-    val menu = Menu(name, graphic)
-    op?.invoke(menu)
-    this += menu
-    return menu
-}
-
 //ContextMenu extensions
 fun ContextMenu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
     val menu = Menu(name)
@@ -114,21 +106,25 @@ fun ContextMenu.separator(op: (SeparatorMenuItem.() -> Unit)? = null) {
 }
 
 //Menu extensions
-fun Menu.menu(name: String? = null, op: (Menu.() -> Unit)? = null): Menu {
-    val menu = Menu(name)
+fun Menu.menu(name: String? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (Menu.() -> Unit)? = null): Menu {
+    val menu = Menu(name, graphic)
+    keyCombination?.apply { menu.accelerator = this }
     op?.invoke(menu)
     this += menu
     return menu
 }
+
+//Menu extensions
+fun Menu.menu(name: String? = null, keyCombination: String, graphic: Node? = null, op: (Menu.() -> Unit)? = null) =
+    menu(name, KeyCombination.valueOf(keyCombination), graphic, op)
 
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
-fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: (() -> Unit)? = null): MenuItem {
-    return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
-}
+fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: (() -> Unit)? = null) =
+    item(name, KeyCombination.valueOf(keyCombination), graphic).apply { if (onAction != null) action(onAction) }
 
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
@@ -157,6 +153,12 @@ fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Nod
     this += menuItem
     return menuItem
 }
+
+/**
+ * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action.
+ */
+fun Menu.item(name: String, keyCombination: String, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null) =
+    item(name, KeyCombination.valueOf(keyCombination), graphic, op)
 
 /**
  * Create a MenuItem with the name property bound to the given observable string. The op block operates on the MenuItem where you can
