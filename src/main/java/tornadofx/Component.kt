@@ -435,6 +435,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             if (newParent == null && oldParent != null && isDocked) callOnUndock()
             if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
         })
+        FX.componentInitialized(this)
         isInitialized = true
     }
 
