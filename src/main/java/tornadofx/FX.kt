@@ -124,7 +124,6 @@ class FX {
         }
 
         val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
-        internal var componentInitializedCallback: (Component) -> Unit = { }
 
         internal val components = HashMap<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
         fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
@@ -290,13 +289,6 @@ class FX {
             })
         }
 
-        internal fun componentInitialized(component: UIComponent) {
-            componentInitializedCallback(component)
-        }
-
-        fun onComponentInitialized(callback: (Component) -> Unit) {
-            componentInitializedCallback = callback
-        }
     }
 }
 
