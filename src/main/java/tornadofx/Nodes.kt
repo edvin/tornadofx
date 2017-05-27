@@ -1056,7 +1056,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
 }
 
 @Deprecated("This will go away in the future. Use the version with centerOnScreen parameter", ReplaceWith("replaceWith(replacement, transition, sizeToScene, false)"))
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, onTransit: (() -> Unit)? = null) =
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean, onTransit: (() -> Unit)? = null) =
         replaceWith(replacement, transition, sizeToScene, false)
 
 fun Node.hide() {
