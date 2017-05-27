@@ -572,6 +572,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         accelerators[combo] = action
     }
 
+    fun <T> shortcut(combo: KeyCombination, command: Command<T>, param: T? = null) {
+        accelerators[combo] = { command.execute(param) }
+    }
+
     /**
      * Configure an action for a key combination.
      */
