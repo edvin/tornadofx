@@ -853,9 +853,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * @return Whether or not the transition will run
      */
     fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false): Boolean {
-        return root.replaceWith(replacement.root, transition, sizeToScene) {
+        return root.replaceWith(replacement.root, transition, sizeToScene, centerOnScreen) {
             if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
-            if (centerOnScreen) root.scene.window?.centerOnScreen()
         }
     }
 

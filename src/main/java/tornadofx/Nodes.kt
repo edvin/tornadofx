@@ -985,7 +985,7 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
@@ -1003,12 +1003,14 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
             transition.call(this, replacement) {
                 scene.root = it as Parent
                 if (sizeToScene) scene.window.sizeToScene()
+                if (centerOnScreen) scene.window.centerOnScreen()
             }
         } else {
             removeFromParent()
             replacement.removeFromParent()
             scene.root = replacement
             if (sizeToScene) scene.window.sizeToScene()
+            if (centerOnScreen) scene.window.centerOnScreen()
         }
         return true
     } else if (parent is Pane) {
@@ -1053,6 +1055,9 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     }
 }
 
+@Deprecated("This will go away in the future. Use the version with centerOnScreen parameter", ReplaceWith("replaceWith(replacement, transition, sizeToScene, false)"))
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, onTransit: (() -> Unit)? = null) =
+        replaceWith(replacement, transition, sizeToScene, false)
 
 fun Node.hide() {
     isVisible = false
