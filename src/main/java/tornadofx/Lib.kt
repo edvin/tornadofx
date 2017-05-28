@@ -228,9 +228,6 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
 
     override fun done() {
         (completedProperty as BooleanProperty).value = true
-
-        if (status?.item == this)
-            status.item = null
     }
 
     override public fun updateProgress(workDone: Long, max: Long) {

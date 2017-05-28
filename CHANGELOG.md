@@ -34,6 +34,7 @@
 - Removed `children` parameter from `hbox` and `vbox` builders - they were early remnants from before we realized how powerful builders could be :)
 - `action` delegate no longer has `ActionEvent` as parameter so it can be used for no-args function references. Fallback to `setOnAction` if you need the event.
 - `Injectable` was a misnomer and has been deprectated in favor of `ScopedInstance`
+- TaskStatus no longer disconnects the current task when the task is completed
 
 ## [1.7.5] - 2017-05-19
 
