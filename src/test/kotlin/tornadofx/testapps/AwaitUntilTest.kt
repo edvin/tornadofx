@@ -1,5 +1,6 @@
 package tornadofx.testapps
 
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.util.converter.IntegerStringConverter
@@ -8,6 +9,7 @@ import java.time.LocalDateTime
 
 class AwaitUntilTest : View("Await Until Test") {
     val number = SimpleObjectProperty<Int>()
+    val flag = SimpleBooleanProperty(false)
     val output = SimpleStringProperty("")
 
     override val root = borderpane {
@@ -19,6 +21,13 @@ class AwaitUntilTest : View("Await Until Test") {
                     number.awaitUntil { it == 42 }
                     output.value += "Number is now 42\n"
                 }
+                button("Wait until true").action {
+                    runLater(2.seconds) {
+                        flag.set(true)
+                    }
+                    flag.awaitUntil()
+                    output.value += "Flag is true\n"
+                }
                 button("Look alive").action {
                     output.value += "Alive at ${LocalDateTime.now()}\n"
                 }
@@ -29,3 +38,5 @@ class AwaitUntilTest : View("Await Until Test") {
         }
     }
 }
+
+class AwaitUntilApp : App(AwaitUntilTest::class)
