@@ -18,7 +18,6 @@
 - DrawerItem has `expandedProperty` and `expanded` var (https://github.com/edvin/tornadofx/issues/332)
 - UIComponent.replaceWith has `centerOnScreen` parameter
 - Shortcut overload for Commands: `shortcut(shortcut, command, param)`
-- FX.onComponentInitialized callback can visit all generated components, useful for Spring Boot AutowireCapableBeanFactory post processing (https://github.com/edvin/tornadofx/issues/334)
 
 ### Fixed
 
