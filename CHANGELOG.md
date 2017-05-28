@@ -4,6 +4,7 @@
 
 ### Additions
 
+- TaskStatus.completed and FXTask.completedProperty can be used to listen to changes in completion state of a task
 - runLater with optional delay: `runLater { }` and `runLater(10.seconds) { .. }`
 - ObservableValue.awaitUntil waits on the UI thread without blocking until a given value is set before resuming execution
 - ViewModel.bind can create observable properties from mutable vars: `val name = bind(MyObject::name)`

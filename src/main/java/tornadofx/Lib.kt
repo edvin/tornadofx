@@ -217,6 +217,9 @@ fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(t
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
 
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
+    val completedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)
+    val completed by completedProperty
+
     override fun call() = func(this)
 
     init {
@@ -224,6 +227,8 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
     }
 
     override fun done() {
+        (completedProperty as BooleanProperty).value = true
+
         if (status?.item == this)
             status.item = null
     }
@@ -251,8 +256,9 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
 
 }
 
-open class TaskStatus : ItemViewModel<Task<*>>() {
+open class TaskStatus : ItemViewModel<FXTask<*>>() {
     val running: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.runningProperty()) } }
+    val completed: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.completedProperty) } }
     val message: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.messageProperty()) } }
     val title: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.titleProperty()) } }
     val progress: ReadOnlyDoubleProperty = bind { SimpleDoubleProperty().apply { if (item != null) bind(item.progressProperty()) } }
