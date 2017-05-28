@@ -81,7 +81,7 @@ class EventBus {
 
     fun fire(event: FXEvent) {
         fun fireEvents() {
-            subscriptions[event.javaClass.kotlin]?.forEach {
+            subscriptions[event.javaClass.kotlin]?.toTypedArray()?.forEach {
                 if (event.scope == null || event.scope == eventScopes[it.action]) {
                     val count = it.count.andIncrement
                     if (it.maxCount == null || count < it.maxCount) {

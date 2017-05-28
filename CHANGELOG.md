@@ -21,6 +21,7 @@
 
 ### Fixed
 
+- ConcurrentModificationException in EventBus fire mechanism
 - UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
 - Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
