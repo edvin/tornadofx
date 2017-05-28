@@ -641,3 +641,12 @@ fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
     addListener(changeListener)
     Toolkit.getToolkit().enterNestedEventLoop(this)
 }
+
+/**
+ * Wait on the UI thread until this observable value is true.
+ *
+ * This method does not block the UI thread even though it halts further execution until the condition is met.
+ */
+fun ObservableValue<Boolean>.awaitUntil() {
+    this.awaitUntil { it }
+}
