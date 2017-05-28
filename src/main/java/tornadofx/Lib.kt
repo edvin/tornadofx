@@ -226,7 +226,15 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
         status?.item = this
     }
 
-    override fun done() {
+    override fun succeeded() {
+        (completedProperty as BooleanProperty).value = true
+    }
+
+    override fun failed() {
+        (completedProperty as BooleanProperty).value = true
+    }
+
+    override fun cancelled() {
         (completedProperty as BooleanProperty).value = true
     }
 
