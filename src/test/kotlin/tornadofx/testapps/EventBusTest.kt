@@ -40,7 +40,7 @@ class EventBusTestView : View("Data Event Table") {
                 }
                 button("Unsubscribe label") {
                     setOnAction {
-                        FX.eventbus.unsubscribe(reg!!)
+                        reg!!.unsubscribe()
                         reg = null
                     }
                     enableWhen { regProperty.isNotNull }

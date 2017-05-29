@@ -44,6 +44,9 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
         return result
     }
 
+    fun unsubscribe() {
+        FX.eventbus.unsubscribe(this)
+    }
 }
 
 class EventBus {
