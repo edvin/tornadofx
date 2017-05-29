@@ -290,12 +290,12 @@ abstract class Component : Configurable {
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): EventContext.(T) -> Unit {
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
         if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
-        return action
+        return registration
     }
 
     @Suppress("UNCHECKED_CAST")
