@@ -21,6 +21,7 @@
 
 ### Fixed
 
+- Workspace navigation now behaves more like a browser with regards to back/forward button functionality
 - ConcurrentModificationException in EventBus fire mechanism
 - UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)

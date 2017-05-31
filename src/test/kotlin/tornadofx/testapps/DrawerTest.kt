@@ -20,12 +20,27 @@ class JustAView : View("Just A View") {
     }
 }
 
+class AnotherView : View("Another") {
+    override val root = stackpane {
+        label(title)
+    }
+}
+
+class YetAnotherView : View("Yet Another") {
+    override val root = stackpane {
+        label(title)
+    }
+}
+
 class TestDrawerContributor : View("Test View with dynamic drawer item") {
     override val root = stackpane {
         vbox {
             label("I add something to the drawer when I'm docked")
-            button("Close").action {
-                close()
+            button("Load another View").action {
+                workspace.dock<AnotherView>()
+            }
+            button("Load yet another View").action {
+                workspace.dock<YetAnotherView>()
             }
         }
     }
@@ -36,10 +51,6 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
                 label("I'm only guest starring!")
             }
         }
-    }
-
-    override fun onUndock() {
-        workspace.viewStack.remove(this)
     }
 }
 
