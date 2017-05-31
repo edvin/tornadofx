@@ -1,6 +1,7 @@
 package tornadofx
 
 import javafx.beans.property.ObjectProperty
+import javafx.beans.value.ObservableValue
 import javafx.event.EventTarget
 import javafx.geometry.Insets
 import javafx.geometry.Orientation
@@ -176,6 +177,14 @@ fun <T : Node> BorderPane.center(centerNode: T, op: (T.() -> Unit)? = null): T {
 
 fun EventTarget.titledpane(title: String? = null, node: Node? = null, collapsible: Boolean = true, op: ((TitledPane).() -> Unit)? = null): TitledPane {
     val titledPane = TitledPane(title, node)
+    titledPane.isCollapsible = collapsible
+    opcr(this, titledPane, op)
+    return titledPane
+}
+
+fun EventTarget.titledpane(title: ObservableValue<String>, node: Node? = null, collapsible: Boolean = true, op: ((TitledPane).() -> Unit)? = null): TitledPane {
+    val titledPane = TitledPane("", node)
+    titledPane.textProperty().bind(title)
     titledPane.isCollapsible = collapsible
     opcr(this, titledPane, op)
     return titledPane
