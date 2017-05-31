@@ -28,6 +28,7 @@
 
 ### Changes
 
+- `runAsyncWithProgress` will display the progress indicator in the `graphic` property if the parent is `Labeled`
 - Cleaned up menu and item builders, might require parameter adjustment in some cases
 - UIComponent.currentWindow is fetched from `root.scene.stage`, falls back to `modalStage` or `primaryStage`
 - ListMenu.activeItem accepts null to signal that no menu item is active
