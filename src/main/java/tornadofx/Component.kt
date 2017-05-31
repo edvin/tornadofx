@@ -267,35 +267,49 @@ abstract class Component : Configurable {
      * Replace this node with a progress node while a long running task
      * is running and swap it back when complete.
      *
+     * If this node is Labeled, the graphic property will contain the progress bar instead while the task is running.
+     *
      * The default progress node is a ProgressIndicator that fills the same
      * client area as the parent. You can swap the progress node for any Node you like.
      */
     fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
-        if (progress is Region)
-            progress.setPrefSize(boundsInParent.width, boundsInParent.height)
-        val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
-        val index = children.indexOf(this)
-        children.add(index, progress)
-        removeFromParent()
-        return task {
-            val result = op()
-            Platform.runLater {
-                children.add(index, this@runAsyncWithProgress)
-                progress.removeFromParent()
+        if (this is Labeled) {
+            val oldGraphic = graphic
+            graphic = progress
+            return task {
+                val result = op()
+                runLater {
+                    this@runAsyncWithProgress.graphic = oldGraphic
+                }
+                result
             }
-            result
+        } else {
+            if (progress is Region)
+                progress.setPrefSize(boundsInParent.width, boundsInParent.height)
+            val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
+            val index = children.indexOf(this)
+            children.add(index, progress)
+            removeFromParent()
+            return task {
+                val result = op()
+                runLater {
+                    children.add(index, this@runAsyncWithProgress)
+                    progress.removeFromParent()
+                }
+                result
+            }
         }
     }
 
     infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): EventContext.(T) -> Unit {
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
         subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
         if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
-        return action
+        return registration
     }
 
     @Suppress("UNCHECKED_CAST")

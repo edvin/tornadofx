@@ -108,6 +108,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         init {
             importStylesheet("/tornadofx/workspace.css")
         }
+
     }
 
     fun disableNavigation() {
@@ -323,27 +324,21 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find(T::class, scope, params))
 
-    fun dock(child: UIComponent, updateViewStack: Boolean = true) {
-        val doUpdate = contentContainer == stackContainer && updateViewStack && maxViewStackDepth > 0 && !viewStack.contains(child)
+    fun dock(child: UIComponent, forward: Boolean = true) {
+        // Remove everything after viewpos if moving forward
+        while (forward && viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
+            viewStack.removeAt(viewPos.get() + 1)
 
-        if (doUpdate) {
-            // Add to end of stack - must happen before setAsCurrentlyDocked so viewPos is updated correctly
+        val addToStack = contentContainer == stackContainer && maxViewStackDepth > 0 && !viewStack.contains(child)
+
+        if (addToStack)
             viewStack.add(child)
-        }
 
         setAsCurrentlyDocked(child)
 
-        if (doUpdate) {
-            // Remove everything after viewpos
-            while (viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
-                viewStack.removeAt(viewPos.get() + 1)
-
-
-            // Ensure max stack size
-            while (viewStack.size >= maxViewStackDepth) {
-                viewStack.removeAt(0)
-            }
-        }
+        // Ensure max stack size
+        while (viewStack.size >= maxViewStackDepth)
+            viewStack.removeAt(0)
     }
 
     private fun setAsCurrentlyDocked(child: UIComponent) {
@@ -429,7 +424,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     /**
      * Will automatically dock the given [UIComponent] if the [ListMenuItem] is selected.
      */
-    inline fun <reified T : UIComponent> ListMenuItem.dockOnSelect() { whenSelected { dock<T>() } }
+    inline fun <reified T : UIComponent> ListMenuItem.dockOnSelect() {
+        whenSelected { dock<T>() }
+    }
 }
 
 open class WorkspaceApp(val initiallyDockedView: KClass<out UIComponent>, vararg stylesheet: KClass<out Stylesheet>) : App(Workspace::class, *stylesheet) {

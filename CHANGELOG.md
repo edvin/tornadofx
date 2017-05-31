@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- Workspace navigation now behaves more like a browser with regards to back/forward button functionality
 - ConcurrentModificationException in EventBus fire mechanism
 - UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
@@ -29,6 +30,7 @@
 
 ### Changes
 
+- `runAsyncWithProgress` will display the progress indicator in the `graphic` property if the parent is `Labeled`
 - Cleaned up menu and item builders, might require parameter adjustment in some cases
 - UIComponent.currentWindow is fetched from `root.scene.stage`, falls back to `modalStage` or `primaryStage`
 - ListMenu.activeItem accepts null to signal that no menu item is active
