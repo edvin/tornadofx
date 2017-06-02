@@ -436,7 +436,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.closeable"] = SimpleBooleanProperty(false)
     }
 
-    fun init() {
+    open fun init() {
         if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener({ _, oldParent, newParent ->

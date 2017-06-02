@@ -225,6 +225,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         return false
     }
 
+    override fun init() {
+        super.init()
+        if (!scope.hasActiveWorkspace) scope.workspaceInstance = this
+    }
+
     init {
         navigationModeProperty.addListener { _, ov, nv -> navigationModeChanged(ov, nv) }
         tabContainer.tabs.onChange { change ->

@@ -30,6 +30,7 @@
 
 ### Changes
 
+- Workspace will preemptively register for current scope in init()
 - `runAsyncWithProgress` will display the progress indicator in the `graphic` property if the parent is `Labeled`
 - Cleaned up menu and item builders, might require parameter adjustment in some cases
 - UIComponent.currentWindow is fetched from `root.scene.stage`, falls back to `modalStage` or `primaryStage`
