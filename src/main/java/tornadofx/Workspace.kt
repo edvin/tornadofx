@@ -226,9 +226,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     init {
-        @Suppress("LeakingThis")
-        // Preemptively assign workspace to scope. We should consider making scope not open - no real use cases for it anymore
-        if (!scope.hasActiveWorkspace) scope.workspaceInstance = this
+//        @Suppress("LeakingThis")
+//        if (!scope.hasActiveWorkspace) scope.workspaceInstance = this
         navigationModeProperty.addListener { _, ov, nv -> navigationModeChanged(ov, nv) }
         tabContainer.tabs.onChange { change ->
             while (change.next()) {
