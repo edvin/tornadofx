@@ -27,6 +27,7 @@
 - UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value
 - DefaultErrorHandler correctly handles errors with no stacktrace available (https://github.com/edvin/tornadofx/issues/328)
 - Non-bound properties inside ViewModels can locate it's ValidationContext, and hence can now be used with validators
+- SortedFilteredList will not overwrite the backing list when column sorting is enabled in TableView (setAll disabled) (https://github.com/edvin/tornadofx/issues/344)
 
 ### Changes
 
