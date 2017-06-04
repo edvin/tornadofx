@@ -1,0 +1,3 @@
+.table-view .column-header .label, .tree-table-view .column-header .label {
+    -fx-text-fill: -fx-dark-text-color;
+}

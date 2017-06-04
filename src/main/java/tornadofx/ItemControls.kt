@@ -642,6 +642,8 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
     var expanded: Boolean get() = expandedProperty().value; set(value) {
         expandedProperty().value = value
     }
+
+    override fun getUserAgentStylesheet() = RowExpanderPane::class.java.getResource("rowexpanderpane.css").toExternalForm()
 }
 
 class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) -> Unit) : TableColumn<S, Boolean>() {
