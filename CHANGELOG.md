@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- TableColumn.useTextField() accepts Property<*> - no longer requires ObjectProperty<*>
 - Workspace navigation now behaves more like a browser with regards to back/forward button functionality
 - ConcurrentModificationException in EventBus fire mechanism
 - UIComponent.headingProperty is bound to titleProperty by default, will be unbound if assigned value

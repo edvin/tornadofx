@@ -373,7 +373,7 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConve
     }
 
     setOnEditCommit {
-        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
@@ -383,7 +383,7 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConve
 fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
     cellFactory = ChoiceBoxTableCell.forTableColumn(items)
     setOnEditCommit {
-        val property = it.tableColumn.getCellObservableValue(it.rowValue) as ObjectProperty<T?>
+        val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
