@@ -855,8 +855,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null): Boolean {
-        return replaceWith(find(component, scope), transition)
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false): Boolean {
+        return replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
     }
 
     /**

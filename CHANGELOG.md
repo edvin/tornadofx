@@ -4,6 +4,7 @@
 
 ### Additions
 
+- replaceWith(component: KClass<T>) accepts `sizeToScene` and `centerOnScreen`
 - titledpane builder that accepts the title as ObservableValue<String>
 - TaskStatus.completed and FXTask.completedProperty can be used to listen to changes in completion state of a task
 - runLater with optional delay: `runLater { }` and `runLater(10.seconds) { .. }`
