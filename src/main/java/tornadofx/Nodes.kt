@@ -402,6 +402,11 @@ fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
 
 @Suppress("UNCHECKED_CAST")
 fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) {
+    // If existing formatter is available, add the new as a decorator instead
+    if (properties["tornadofx.cellCacheCapable"] == true) {
+        cellDecorator(formatter)
+        return
+    }
     properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback { _: TableColumn<S, T> ->
         object : TableCell<S, T>() {
@@ -432,7 +437,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 
     cellFactory = Callback { column: TableColumn<S, T> ->
         val cell = originalFactory.call(column)
-        cell.itemProperty().addListener { obs, oldValue, newValue -> decorator(cell, newValue) }
+        cell.itemProperty().addListener { _, _, newValue -> decorator(cell, newValue) }
         cell
     }
 }
@@ -454,7 +459,7 @@ fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
     }
 }
 
-fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S?) -> Unit)) {
+fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
     val originalFactory = cellFactory
 
     if (originalFactory == null) cellFormat(decorator) else {
