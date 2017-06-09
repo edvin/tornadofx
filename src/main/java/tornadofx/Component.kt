@@ -395,6 +395,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.onRefresh"] = onRefresh
     }
 
+    /**
+     * Forward the Workspace button states and actions to the TabPane, which
+     * in turn will forward these states and actions to whatever View is represented
+     * by the currently active Tab.
+     */
     fun TabPane.connectWorkspaceActions() {
         savableWhen { savable }
         whenSaved { onSave() }
@@ -404,6 +409,24 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
         refreshableWhen { refreshable }
         whenRefreshed { onRefresh() }
+    }
+
+    /**
+     * Forward the Workspace button states and actions to the given UIComponent.
+     * This will override the currently active forwarding to the docked UIComponent.
+     *
+     * When another UIComponent is docked, that UIComponent will be the new receiver for the
+     * Workspace states and actions, hence voiding this call.
+     */
+    fun forwardWorkspaceActions(uiComponent: UIComponent) {
+        savableWhen { uiComponent.savable }
+        whenSaved { uiComponent.onSave() }
+
+        deletableWhen { uiComponent.deletable }
+        whenDeleted { uiComponent.onDelete() }
+
+        refreshableWhen { uiComponent.refreshable }
+        whenRefreshed { uiComponent.onRefresh() }
     }
 
     /**
