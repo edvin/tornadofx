@@ -437,7 +437,9 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 
     cellFactory = Callback { column: TableColumn<S, T> ->
         val cell = originalFactory.call(column)
-        cell.itemProperty().addListener { _, _, newValue -> decorator(cell, newValue) }
+        cell.itemProperty().addListener { _, _, newValue ->
+            if (newValue != null) decorator(cell, newValue)
+        }
         cell
     }
 }

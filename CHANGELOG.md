@@ -33,6 +33,7 @@
 - SortedFilteredList will not overwrite the backing list when column sorting is enabled in TableView (setAll disabled) (https://github.com/edvin/tornadofx/issues/344)
 - RowExpanders containing nested TableViews no longer inherits white label text when owning row is selected
 - Calling `cellFormat` on a TableCell that already has a formatter will now add the new formatter as a decorator instead of overwriting the old
+- `cellDecorator` only decorates cells with items. It previously ran also when a cell item became null
 
 ### Changes
 
