@@ -63,10 +63,10 @@ interface Configurable {
     }
 
     fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
-    fun Properties.boolean(key: String) = config.getProperty(key)?.toBoolean() ?: false
-    fun Properties.double(key: String) = config.getProperty(key)?.toDouble()
-    fun Properties.jsonObject(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
-    fun Properties.jsonArray(key: String) = config.getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
+    fun Properties.boolean(key: String) = getProperty(key)?.toBoolean() ?: false
+    fun Properties.double(key: String) = getProperty(key)?.toDouble()
+    fun Properties.jsonObject(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
+    fun Properties.jsonArray(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
 
     fun Properties.save() {
         val path = configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
