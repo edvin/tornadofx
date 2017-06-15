@@ -4,7 +4,7 @@
 
 ### Additions
 
-- Extension functions to NumberProperty classes
+- Extension functions to NumberProperty classes (obsNumOne + obsNumTwo etc)
 
 ### Fixed
 
