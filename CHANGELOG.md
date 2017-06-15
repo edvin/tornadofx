@@ -4,6 +4,8 @@
 
 ### Additions
 
+- Extension functions to NumberProperty classes
+
 ### Fixed
 
 - Reverted cellFormat change from 1.7.6 (https://github.com/edvin/tornadofx/issues/349)
