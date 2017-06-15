@@ -6,6 +6,7 @@
 
 ### Fixed
 
+- Reverted cellFormat change from 1.7.6 (https://github.com/edvin/tornadofx/issues/349)
 - Accessing json properties from app.config inside a view looked up view.config instead of app.config (https://github.com/edvin/tornadofx/issues/346)
 
 ### Changes

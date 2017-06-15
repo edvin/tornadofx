@@ -402,11 +402,6 @@ fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) {
 
 @Suppress("UNCHECKED_CAST")
 fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) {
-    // If existing formatter is available, add the new as a decorator instead
-    if (cellFactory != null) {
-        cellDecorator(formatter)
-        return
-    }
     properties["tornadofx.cellCacheCapable"] = true
     cellFactory = Callback { _: TableColumn<S, T> ->
         object : TableCell<S, T>() {
