@@ -1,6 +1,15 @@
 # Change Log
 
-## [1.7.7-SNAPSHOT]
+## [1.7.8-SNAPSHOT]
+
+### Additions
+
+### Fixed
+
+### Changes
+
+
+## [1.7.7] - 2017-06-15
 
 ### Additions
 
