@@ -225,11 +225,12 @@ operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, valu
 operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) = set(value)
 
-operator fun ObservableDoubleValue.plus(other: Number): DoubleProperty
-        = SimpleDoubleProperty(get() + other.toDouble())
 
-operator fun ObservableDoubleValue.plus(other: ObservableNumberValue): DoubleProperty
-        = SimpleDoubleProperty(get() + other.doubleValue())
+operator fun ObservableDoubleValue.plus(other: Number): DoubleBinding
+        = Bindings.add(this, other.toDouble())
+
+operator fun ObservableDoubleValue.plus(other: ObservableNumberValue): DoubleBinding
+        = Bindings.add(this, other.doubleValue())
 
 
 operator fun WritableDoubleValue.plusAssign(other: Number)
@@ -244,11 +245,11 @@ operator fun DoubleProperty.inc(): DoubleProperty {
     return this
 }
 
-operator fun ObservableDoubleValue.minus(other: Number): DoubleProperty
-        = SimpleDoubleProperty(get() - other.toDouble())
+operator fun ObservableDoubleValue.minus(other: Number): DoubleBinding
+        = Bindings.subtract(this, other.toDouble())
 
-operator fun ObservableDoubleValue.minus(other: ObservableNumberValue): DoubleProperty
-        = SimpleDoubleProperty(get() - other.doubleValue())
+operator fun ObservableDoubleValue.minus(other: ObservableNumberValue): DoubleBinding
+        = Bindings.subtract(this, other.doubleValue())
 
 
 operator fun WritableDoubleValue.minusAssign(other: Number)
@@ -258,8 +259,7 @@ operator fun WritableDoubleValue.minusAssign(other: ObservableNumberValue)
         = set(get() - other.doubleValue())
 
 
-operator fun ObservableDoubleValue.unaryMinus(): DoubleProperty
-        = SimpleDoubleProperty(-get())
+operator fun ObservableDoubleValue.unaryMinus() = Bindings.negate(this) as DoubleBinding
 
 
 operator fun DoubleProperty.dec(): DoubleProperty {
@@ -267,11 +267,11 @@ operator fun DoubleProperty.dec(): DoubleProperty {
     return this
 }
 
-operator fun ObservableDoubleValue.times(other: Number): DoubleProperty
-        = SimpleDoubleProperty(get() * other.toDouble())
+operator fun ObservableDoubleValue.times(other: Number): DoubleBinding
+        = Bindings.multiply(this, other.toDouble())
 
-operator fun ObservableDoubleValue.times(other: ObservableNumberValue): DoubleProperty
-        = SimpleDoubleProperty(get() * other.doubleValue())
+operator fun ObservableDoubleValue.times(other: ObservableNumberValue): DoubleBinding
+        = Bindings.multiply(this, other.doubleValue())
 
 
 operator fun WritableDoubleValue.timesAssign(other: Number)
@@ -281,11 +281,11 @@ operator fun WritableDoubleValue.timesAssign(other: ObservableNumberValue)
         = set(get() * other.doubleValue())
 
 
-operator fun ObservableDoubleValue.div(other: Number): DoubleProperty
-        = SimpleDoubleProperty(get() / other.toDouble())
+operator fun ObservableDoubleValue.div(other: Number): DoubleBinding
+        = Bindings.divide(this, other.toDouble())
 
-operator fun ObservableDoubleValue.div(other: ObservableNumberValue): DoubleProperty
-        = SimpleDoubleProperty(get() / other.doubleValue())
+operator fun ObservableDoubleValue.div(other: ObservableNumberValue): DoubleBinding
+        = Bindings.divide(this, other.doubleValue())
 
 
 operator fun WritableDoubleValue.divAssign(other: Number)
@@ -295,11 +295,11 @@ operator fun WritableDoubleValue.divAssign(other: ObservableNumberValue)
         = set(get() / other.doubleValue())
 
 
-operator fun ObservableDoubleValue.rem(other: Number): DoubleProperty
-        = SimpleDoubleProperty(get() % other.toDouble())
+operator fun ObservableDoubleValue.rem(other: Number): DoubleBinding
+        = Bindings.createDoubleBinding(Callable { get() % other.toDouble() }, this)
 
-operator fun ObservableDoubleValue.rem(other: ObservableNumberValue): DoubleProperty
-        = SimpleDoubleProperty(get() % other.doubleValue())
+operator fun ObservableDoubleValue.rem(other: ObservableNumberValue): DoubleBinding
+        = Bindings.createDoubleBinding(Callable { get() % other.doubleValue() }, this, other)
 
 
 operator fun WritableDoubleValue.remAssign(other: Number)
@@ -328,11 +328,17 @@ operator fun ObservableDoubleValue.compareTo(other: ObservableNumberValue): Int 
 }
 
 
-operator fun ObservableFloatValue.plus(other: Number): FloatProperty
-        = SimpleFloatProperty(get() + other.toFloat())
+operator fun ObservableFloatValue.plus(other: Number): FloatBinding
+        = Bindings.add(this, other.toFloat()) as FloatBinding
 
-operator fun ObservableFloatValue.plus(other: ObservableNumberValue): FloatProperty
-        = SimpleFloatProperty(get() + other.floatValue())
+operator fun ObservableFloatValue.plus(other: Double): DoubleBinding
+        = Bindings.add(this, other)
+
+operator fun ObservableFloatValue.plus(other: ObservableNumberValue): FloatBinding
+        = Bindings.add(this, other.floatValue()) as FloatBinding
+
+operator fun ObservableFloatValue.plus(other: ObservableDoubleValue): DoubleBinding
+        = Bindings.add(this, other) as DoubleBinding
 
 operator fun WritableFloatValue.plusAssign(other: Number)
         = set(get() + other.toFloat())
@@ -345,10 +351,17 @@ operator fun FloatProperty.inc(): FloatProperty {
     return this
 }
 
-operator fun ObservableFloatValue.minus(other: Number): FloatProperty
-        = SimpleFloatProperty(get() - other.toFloat())
+operator fun ObservableFloatValue.minus(other: Number): FloatBinding
+        = Bindings.subtract(this, other.toFloat()) as FloatBinding
 
-operator fun ObservableFloatValue.minus(other: ObservableNumberValue): FloatProperty = SimpleFloatProperty(get() - other.floatValue())
+operator fun ObservableFloatValue.minus(other: Double): DoubleBinding
+        = Bindings.subtract(this, other)
+
+operator fun ObservableFloatValue.minus(other: ObservableNumberValue): FloatBinding
+        = Bindings.subtract(this, other.floatValue()) as FloatBinding
+
+operator fun ObservableFloatValue.minus(other: ObservableDoubleValue): DoubleBinding
+        = Bindings.subtract(this, other) as DoubleBinding
 
 operator fun WritableFloatValue.minusAssign(other: Number)
         = set(get() - other.toFloat())
@@ -356,19 +369,25 @@ operator fun WritableFloatValue.minusAssign(other: Number)
 operator fun WritableFloatValue.minusAssign(other: ObservableNumberValue)
         = set(get() - other.floatValue())
 
-operator fun ObservableFloatValue.unaryMinus(): FloatProperty
-        = SimpleFloatProperty(-get())
+operator fun ObservableFloatValue.unaryMinus(): FloatBinding
+        = Bindings.negate(this) as FloatBinding
 
 operator fun FloatProperty.dec(): FloatProperty {
     set(get() - 1.0f)
     return this
 }
 
-operator fun ObservableFloatValue.times(other: Number): FloatProperty
-        = SimpleFloatProperty(get() * other.toFloat())
+operator fun ObservableFloatValue.times(other: Number): FloatBinding
+        = Bindings.multiply(this, other.toFloat()) as FloatBinding
 
-operator fun ObservableFloatValue.times(other: ObservableNumberValue): FloatProperty
-        = SimpleFloatProperty(get() * other.floatValue())
+operator fun ObservableFloatValue.times(other: Double): DoubleBinding
+        = Bindings.multiply(this, other)
+
+operator fun ObservableFloatValue.times(other: ObservableNumberValue): FloatBinding
+        = Bindings.multiply(this, other) as FloatBinding
+
+operator fun ObservableFloatValue.times(other: ObservableDoubleValue): DoubleBinding
+        = Bindings.multiply(this, other) as DoubleBinding
 
 operator fun WritableFloatValue.timesAssign(other: Number)
         = set(get() * other.toFloat())
@@ -377,11 +396,17 @@ operator fun WritableFloatValue.timesAssign(other: ObservableNumberValue)
         = set(get() * other.floatValue())
 
 
-operator fun ObservableFloatValue.div(other: Number): FloatProperty
-        = SimpleFloatProperty(get() / other.toFloat())
+operator fun ObservableFloatValue.div(other: Number): FloatBinding
+        = Bindings.divide(this, other.toFloat()) as FloatBinding
 
-operator fun ObservableFloatValue.div(other: ObservableNumberValue): FloatProperty
-        = SimpleFloatProperty(get() / other.floatValue())
+operator fun ObservableFloatValue.div(other: Double): DoubleBinding
+        = Bindings.divide(this, other)
+
+operator fun ObservableFloatValue.div(other: ObservableNumberValue): FloatBinding
+        = Bindings.divide(this, other) as FloatBinding
+
+operator fun ObservableFloatValue.div(other: ObservableDoubleValue): DoubleBinding
+        = Bindings.divide(this, other) as DoubleBinding
 
 operator fun WritableFloatValue.divAssign(other: Number)
         = set(get() / other.toFloat())
@@ -390,11 +415,17 @@ operator fun WritableFloatValue.divAssign(other: ObservableNumberValue)
         = set(get() / other.floatValue())
 
 
-operator fun ObservableFloatValue.rem(other: Number): FloatProperty
-        = SimpleFloatProperty(get() % other.toFloat())
+operator fun ObservableFloatValue.rem(other: Number): FloatBinding
+        = Bindings.createFloatBinding(Callable { get() % other.toFloat() }, this)
 
-operator fun ObservableFloatValue.rem(other: ObservableNumberValue): FloatProperty
-        = SimpleFloatProperty(get() % other.floatValue())
+operator fun ObservableFloatValue.rem(other: Double): DoubleBinding
+        = Bindings.createDoubleBinding(Callable { get() % other }, this)
+
+operator fun ObservableFloatValue.rem(other: ObservableNumberValue): FloatBinding
+        = Bindings.createFloatBinding(Callable { get() % other.floatValue() }, this, other)
+
+operator fun ObservableFloatValue.rem(other: ObservableDoubleValue): DoubleBinding
+        = Bindings.createDoubleBinding(Callable { get() % other.get() }, this, other)
 
 operator fun WritableFloatValue.remAssign(other: Number)
         = set(get() % other.toFloat())
