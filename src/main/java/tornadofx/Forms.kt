@@ -17,6 +17,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
+import javafx.stage.Stage
 import java.util.*
 import java.util.concurrent.Callable
 
@@ -72,7 +73,7 @@ open class Form : VBox() {
 }
 
 @DefaultProperty("children")
-class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : VBox() {
+open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : VBox() {
     var text by property<String>()
     fun textProperty() = getProperty(Fieldset::text)
 
@@ -190,6 +191,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
     }
 }
 
+class StageAwareFieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : Fieldset(text, labelPosition) {
+    lateinit var stage: Stage
+    fun close() = stage.close()
+}
 /**
  * Make this Node (presumably an input element) the mnemonicTarget for the field label. When the label
  * of the field is activated, this input element will receive focus.
@@ -200,7 +205,6 @@ fun Node.mnemonicTarget() {
         label.labelFor = this@mnemonicTarget
     }
 }
-
 
 @DefaultProperty("inputs")
 class ButtonBarField(buttonOrder: String? = null, forceLabelIndent: Boolean = true) : AbstractField("", forceLabelIndent) {

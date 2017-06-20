@@ -8,6 +8,8 @@
 
 ### Changes
 
+- `openModal` and `openWindow` returns the Stage
+- `dialog` builder operates on a StageAwareFieldset so it can close the dialog easier by calling `close()`
 
 ## [1.7.7] - 2017-06-15
 
