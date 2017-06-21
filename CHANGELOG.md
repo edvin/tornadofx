@@ -8,6 +8,7 @@
 
 ### Changes
 
+- All JSON extractor functions support vararg keys, will pick the first available (https://github.com/edvin/tornadofx/issues/350)
 
 ## [1.7.7] - 2017-06-15
 

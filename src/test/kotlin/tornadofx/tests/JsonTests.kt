@@ -130,4 +130,11 @@ class JsonTests {
         Assert.assertEquals(j, rewrittenJ)
 
     }
+
+    @Test
+    fun firstAvailable() {
+        val json = loadJsonObject("""{"dob":"1970-06-12","firstName":"John","global":true,"lastName":"Doe","type":42}""")
+        val dob = json.date("date_of_birth", "dob")
+        Assert.assertEquals(LocalDate.of(1970, 6, 12),dob)
+    }
 }

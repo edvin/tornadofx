@@ -111,39 +111,48 @@ object JsonConfig {
 
 fun JsonObject.isNotNullOrNULL(key: String): Boolean = containsKey(key) && get(key)?.valueType != NULL
 
-fun JsonObject.string(key: String): String? = if (isNotNullOrNULL(key)) getString(key) else null
+fun <T> JsonObject.firstNonNull(vararg keys: String, extractor: (key: String) -> T): T? = keys
+        .firstOrNull { isNotNullOrNULL(it) }
+        ?.let { extractor(it) }
 
-fun JsonObject.double(key: String): Double? = if (isNotNullOrNULL(key)) getDouble(key) else null
-fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
+fun JsonObject.string(vararg key: String): String? = firstNonNull(*key) { getString(it) }
+fun JsonObject.getString(vararg key: String): String = string(*key)!!
 
-fun JsonObject.float(key: String): Float? = if (isNotNullOrNULL(key)) getFloat(key) else null
-fun JsonObject.getFloat(key: String): Float = getJsonNumber(key).doubleValue().toFloat()
+fun JsonObject.double(vararg key: String): Double? = jsonNumber(*key)?.doubleValue()
+fun JsonObject.getDouble(vararg key: String): Double = double(*key)!!
 
-fun JsonObject.bigdecimal(key: String): BigDecimal? = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
-fun JsonObject.getBigDecimal(key: String): BigDecimal = getJsonNumber(key).bigDecimalValue()
+fun JsonObject.jsonNumber(vararg key: String): JsonNumber? = firstNonNull(*key) { getJsonNumber(it) }
+fun JsonObject.getJsonNumber(vararg key: String): JsonNumber = jsonNumber(*key)!!
 
-fun JsonObject.long(key: String): Long? = if (isNotNullOrNULL(key)) getLong(key) else null
-fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
+fun JsonObject.float(vararg key: String): Float? = firstNonNull(*key) { getFloat(it) }
+fun JsonObject.getFloat(vararg key: String): Float = float(*key)!!
 
-fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolean(key) else null
-fun JsonObject.boolean(key: String) = bool(key) // Alias
+fun JsonObject.bigdecimal(vararg key: String): BigDecimal? = jsonNumber(*key)?.bigDecimalValue()
+fun JsonObject.getBigDecimal(vararg key: String): BigDecimal = bigdecimal(*key)!!
 
-fun JsonObject.date(key: String): LocalDate? = if (isNotNullOrNULL(key)) getDate(key) else null
-fun JsonObject.getDate(key: String): LocalDate = LocalDate.parse(getString(key))
+fun JsonObject.long(vararg key: String): Long? = jsonNumber(*key)?.longValue()
+fun JsonObject.getLong(vararg key: String) = long(*key)!!
+
+fun JsonObject.bool(vararg key: String): Boolean? = firstNonNull(*key) { getBoolean(it) }
+fun JsonObject.boolean(vararg key: String) = bool(*key) // Alias
+
+fun JsonObject.date(vararg key: String): LocalDate? = string(*key)?.let { LocalDate.parse(it) }
+fun JsonObject.getDate(vararg key: String): LocalDate = date(*key)!!
 
 fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
-fun JsonObject.getDateTime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(key).datetime(millis)
-fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime? = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
+fun JsonObject.datetime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime? = jsonNumber(*key)?.datetime(millis)
+fun JsonObject.getDateTime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(*key).datetime(millis)
 
-fun JsonObject.uuid(key: String): UUID? = if (isNotNullOrNULL(key)) getUUID(key) else null
-fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
+fun JsonObject.uuid(vararg key: String): UUID? = string(*key)?.let { UUID.fromString(it) }
+fun JsonObject.getUUID(vararg key: String) = uuid(*key)!!
 
-fun JsonObject.int(key: String): Int? = if (isNotNullOrNULL(key)) getInt(key) else null
+fun JsonObject.int(vararg key: String): Int? = firstNonNull(*key) { getInt(it) }
+fun JsonObject.getInt(vararg key: String): Int = int(*key)!!
 
-fun JsonObject.jsonObject(key: String): JsonObject? = if (isNotNullOrNULL(key)) getJsonObject(key) else null
-inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) } else null
+fun JsonObject.jsonObject(vararg key: String): JsonObject? = firstNonNull(*key) { getJsonObject(it) }
+inline fun <reified T : JsonModel> JsonObject.jsonModel(vararg key: String) = firstNonNull(*key) { T::class.java.newInstance().apply { updateModel(getJsonObject(it)) } }
 
-fun JsonObject.jsonArray(key: String): JsonArray? = if (isNotNullOrNULL(key)) getJsonArray(key) else null
+fun JsonObject.jsonArray(vararg key: String): JsonArray? = firstNonNull(*key) { getJsonArray(it) }
 
 class JsonBuilder {
     private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
