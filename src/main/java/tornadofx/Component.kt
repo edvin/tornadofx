@@ -709,7 +709,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) {
+    @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
             if (getRootWrapper() !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
@@ -767,6 +767,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             if (!modalStage!!.isShowing)
                 modalStage!!.show()
         }
+
+        return modalStage
     }
 
     private fun Stage.configureReloading() {
@@ -873,9 +875,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: Fieldset.() -> Unit) = builderFragment(title, scope, { form { fieldset(title, labelPosition = labelPosition) } }).apply {
-        builder((root as Form).fieldsets.first())
-        openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
+    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: StageAwareFieldset.() -> Unit): Stage? {
+        val fragment = builderFragment(title, scope, { form() })
+        val fieldset = StageAwareFieldset(title, labelPosition)
+        fragment.root.add(fieldset)
+        fieldset.stage = fragment.openWindow(modality = modality, stageStyle = stageStyle, owner = owner)!!
+        builder(fieldset)
+        fieldset.stage.sizeToScene()
+        return fieldset.stage
     }
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false): Boolean {
