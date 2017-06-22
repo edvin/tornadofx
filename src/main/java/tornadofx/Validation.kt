@@ -83,7 +83,7 @@ class ValidationContext {
     /**
      * A boolean indicating the current validation status.
      */
-    val valid : ReadOnlyBooleanProperty = SimpleBooleanProperty(true)
+    val valid: ReadOnlyBooleanProperty = SimpleBooleanProperty(true)
     val isValid by valid
 
     /**
@@ -149,10 +149,8 @@ class ValidationContext {
         val isValid: Boolean get() = valid.value
 
         fun validate(decorateErrors: Boolean = true): Boolean {
-            if (decorateErrors) {
-                decorator?.apply { undecorate(node) }
-                decorator = null
-            }
+            decorator?.apply { undecorate(node) }
+            decorator = null
 
             result = validator(this@ValidationContext, property.value)
             (valid as BooleanProperty).value = result == null || result!!.severity != ValidationSeverity.Error
