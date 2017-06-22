@@ -5,7 +5,6 @@ import javafx.beans.binding.*
 import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
-import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -230,8 +229,8 @@ operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, valu
 operator fun DoubleExpression.plus(other: Number): DoubleBinding = add(other.toDouble())
 operator fun DoubleExpression.plus(other: ObservableNumberValue): DoubleBinding = add(other)
 
-operator fun WritableDoubleValue.plusAssign(other: Number) = set(get() + other.toDouble())
-operator fun WritableDoubleValue.plusAssign(other: ObservableNumberValue) = set(get() + other.doubleValue())
+operator fun DoubleProperty.plusAssign(other: Number) = set(get() + other.toDouble())
+operator fun DoubleProperty.plusAssign(other: ObservableNumberValue) = set(get() + other.doubleValue())
 
 operator fun DoubleProperty.inc(): DoubleProperty {
 	set(get() + 1)
@@ -241,8 +240,8 @@ operator fun DoubleProperty.inc(): DoubleProperty {
 operator fun DoubleExpression.minus(other: Number): DoubleBinding = subtract(other.toDouble())
 operator fun DoubleExpression.minus(other: ObservableNumberValue): DoubleBinding = subtract(other)
 
-operator fun WritableDoubleValue.minusAssign(other: Number) = set(get() - other.toDouble())
-operator fun WritableDoubleValue.minusAssign(other: ObservableNumberValue) = set(get() - other.doubleValue())
+operator fun DoubleProperty.minusAssign(other: Number) = set(get() - other.toDouble())
+operator fun DoubleProperty.minusAssign(other: ObservableNumberValue) = set(get() - other.doubleValue())
 
 operator fun DoubleExpression.unaryMinus(): DoubleBinding = negate()
 
@@ -288,7 +287,6 @@ operator fun ObservableDoubleValue.compareTo(other: ObservableNumberValue): Int 
 	else
 		return 0
 }
-
 
 operator fun FloatExpression.plus(other: Number): FloatBinding = add(other.toFloat())
 operator fun FloatExpression.plus(other: Double): DoubleBinding = add(other)
@@ -649,6 +647,7 @@ infix fun BooleanExpression.eq(other: ObservableBooleanValue): BooleanBinding = 
 
 
 operator fun StringExpression.plus(other: Any): StringExpression = concat(other)
+operator fun StringProperty.plusAssign(other: Any) = set(get() + other)
 
 operator fun StringExpression.get(index: Int): Binding<Char?> = objectBinding(this) {
 	if(index < get().length)
@@ -669,10 +668,10 @@ operator fun StringExpression.get(start: ObservableIntegerValue, end: Int): Stri
 operator fun StringExpression.get(start: Int, end: ObservableIntegerValue): StringBinding = stringBinding(this, end) { get().subSequence(start, end.get()).toString() }
 operator fun StringExpression.get(start: ObservableIntegerValue, end: ObservableIntegerValue): StringBinding = stringBinding(this, start, end) { get().subSequence(start.get(), end.get()).toString() }
 
+operator fun StringExpression.unaryMinus(): StringBinding = stringBinding(this) { get().reversed() }
+
 operator fun StringExpression.compareTo(other: String): Int = get().compareTo(other)
 operator fun StringExpression.compareTo(other: ObservableStringValue): Int = get().compareTo(other.get())
-
-operator fun StringExpression.unaryMinus(): StringBinding = stringBinding(this) { get().reversed() }
 
 infix fun StringExpression.gt(other: String): BooleanBinding = greaterThan(other)
 infix fun StringExpression.gt(other: ObservableStringValue): BooleanBinding = greaterThan(other)
@@ -767,6 +766,13 @@ private fun <T> createObservableArray(receiver: T, vararg dependencies: Observab
 fun <T> WritableValue<T>.assignIfNull(creator: () -> T) {
 	if (value == null) value = creator()
 }
+
+fun Double.toProperty(): DoubleProperty = SimpleDoubleProperty(this)
+fun Float.toProperty(): FloatProperty = SimpleFloatProperty(this)
+fun Long.toProperty(): LongProperty = SimpleLongProperty(this)
+fun Int.toProperty(): IntegerProperty = SimpleIntegerProperty(this)
+fun Boolean.toProperty(): BooleanProperty = SimpleBooleanProperty(this)
+fun String.toProperty(): StringProperty = SimpleStringProperty(this)
 
 fun String?.toProperty() = SimpleStringProperty(this ?: "")
 fun Double?.toProperty() = SimpleDoubleProperty(this ?: 0.0)
