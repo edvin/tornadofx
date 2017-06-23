@@ -183,6 +183,8 @@ open class ViewModel : Component(), ScopedInstance {
     fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean =
             validationContext.validate(focusFirstError, decorateErrors, *fields)
 
+    fun clearDecorators() = validationContext.validate(decorateErrors = false)
+
     /**
      * This function is called after a successful commit, right before the optional successFn call sent to the commit
      * call is invoked.
