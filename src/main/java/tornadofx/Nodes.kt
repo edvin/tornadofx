@@ -904,6 +904,11 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
 inline fun <reified T : UIComponent> Node.uiComponent(): T? = properties[UI_COMPONENT_PROPERTY] as? T
 
 /**
+ * Return the UIComponent (View or Fragment) that represents the root of the current Scene within this Stage
+ */
+inline fun <reified T : UIComponent> Stage.uiComponent(): T? = scene.root.uiComponent()
+
+/**
  * Find all UIComponents of the specified type that owns any of this node's children
  */
 inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable

@@ -4,9 +4,12 @@
 
 ### Additions
 
+- Stage.uiComponent()
 - ViewModel.clearDecorators()
 
 ### Fixed
+
+- Improved ProgressIndicator size for `runAsyncWithProgress`
 
 ### Changes
 
