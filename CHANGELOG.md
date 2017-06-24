@@ -6,6 +6,7 @@
 
 - Stage.uiComponent()
 - ViewModel.clearDecorators()
+- Extensions for StringProperty and BooleanProperty
 
 ### Fixed
 
@@ -18,6 +19,7 @@
 - `dialog` builder operates on a StageAwareFieldset so it can close the dialog easier by calling `close()`
 - All JSON extractor functions support vararg keys, will pick the first available (https://github.com/edvin/tornadofx/issues/350)
 - ValidationContext.validate(decorateErrors = false) clears decorators
+- Property.plus(), minus(), etc now return Bindings instead of Properties
 
 ## [1.7.7] - 2017-06-15
 
