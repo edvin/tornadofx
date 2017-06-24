@@ -46,3 +46,16 @@ class ProgressView : View() {
         }
     }
 }
+
+class AsyncProgressButtonView : View() {
+    override val root = stackpane {
+        setPrefSize(400.0, 400.0)
+        button("Click me") {
+            action {
+                runAsyncWithProgress {
+                    Thread.sleep(2000)
+                }
+            }
+        }
+    }
+}

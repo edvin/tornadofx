@@ -275,17 +275,21 @@ abstract class Component : Configurable {
     fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
         if (this is Labeled) {
             val oldGraphic = graphic
+            (progress as? Region)?.setPrefSize(16.0, 16.0)
             graphic = progress
             return task {
-                val result = op()
-                runLater {
-                    this@runAsyncWithProgress.graphic = oldGraphic
+                try {
+                    op()
+                } finally {
+                    runLater {
+                        this@runAsyncWithProgress.graphic = oldGraphic
+                    }
                 }
-                result
             }
         } else {
-            if (progress is Region)
-                progress.setPrefSize(boundsInParent.width, boundsInParent.height)
+            val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
+            val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
+            (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
             val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
             val index = children.indexOf(this)
             children.add(index, progress)
