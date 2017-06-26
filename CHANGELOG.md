@@ -6,6 +6,8 @@
 
 ### Fixed
 
+- Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
+
 ### Changes
 
 

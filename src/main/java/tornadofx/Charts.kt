@@ -3,7 +3,6 @@ package tornadofx
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.scene.chart.*
-import javafx.scene.layout.Pane
 
 /**
  * Create a PieChart with optional title data and add to the parent pane. The optional op will be performed on the new instance.
@@ -92,7 +91,7 @@ fun <X, Y> EventTarget.stackedbarchart(title: String? = null, x: Axis<X>, y: Axi
 fun <X, Y, ChartType : XYChart<X, Y>> ChartType.series(name: String, elements: ObservableList<XYChart.Data<X, Y>>? = null, op: ((XYChart.Series<X, Y>).() -> Unit)? = null): XYChart.Series<X, Y> {
     val series = XYChart.Series<X, Y>()
     series.name = name
-    if (elements != null) data.add(series)
+    if (elements != null) series.data = elements
     if (op != null) op(series)
     data.add(series)
     return series
