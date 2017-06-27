@@ -169,10 +169,10 @@ open class ViewModel : Component(), ScopedInstance {
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
         if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
 
-        if (dirtyProperties.contains(property)) {
-            val sourceValue = propertyMap[property]!!.invoke()?.value
-            if (sourceValue == newValue) dirtyProperties.remove(property)
-        } else if (!autocommitProperties.contains(property)) {
+        val sourceValue = propertyMap[property]!!.invoke()?.value
+        if (sourceValue == newValue) {
+            dirtyProperties.remove(property)
+        } else if (!autocommitProperties.contains(property) && !dirtyProperties.contains(property)) {
             dirtyProperties.add(property)
         }
     }
@@ -453,7 +453,7 @@ inline fun <reified T> validator(control: Control, property: Property<T>, trigge
         ?: throw IllegalArgumentException("The addValidator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or make the property's bean field point to a ViewModel.")
 
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
-    = validator(control, property, trigger, null, validator)
+        = validator(control, property, trigger, null, validator)
 
 /**
  * Extract the ViewModel from a property that is bound towards a ViewModel Facade
