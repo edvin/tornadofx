@@ -8,6 +8,7 @@
 
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
 - External/synced changes to bound ViewModel properties should not affect dirty state (https://github.com/edvin/tornadofx/issues/358)
+- showModal/showWindow now resizes the window before calling onUndock, so the View can override placement easier (https://github.com/edvin/tornadofx/issues/360)
 
 ### Changes
 
