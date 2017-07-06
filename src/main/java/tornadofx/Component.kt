@@ -52,30 +52,33 @@ interface Injectable : ScopedInstance
 interface ScopedInstance
 
 interface Configurable {
-    val config: Properties
+    val config: ConfigProperties
     val configPath: Path
 
-    fun Properties.set(pair: Pair<String, Any?>) {
+    fun loadConfig() = ConfigProperties(this).apply {
+        if (Files.exists(configPath))
+            Files.newInputStream(configPath).use { load(it) }
+    }
+}
+
+class ConfigProperties(val configurable: Configurable) : Properties() {
+    fun set(pair: Pair<String, Any?>) {
         val value = pair.second?.let {
             (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
         }
         set(pair.first, value)
     }
 
-    fun Properties.string(key: String, defaultValue: String? = null) = config.getProperty(key, defaultValue)
-    fun Properties.boolean(key: String) = getProperty(key)?.toBoolean() ?: false
-    fun Properties.double(key: String) = getProperty(key)?.toDouble()
-    fun Properties.jsonObject(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
-    fun Properties.jsonArray(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
+    fun string(key: String, defaultValue: String? = null) = getProperty(key, defaultValue)
+    fun boolean(key: String) = getProperty(key)?.toBoolean() ?: false
+    fun double(key: String) = getProperty(key)?.toDouble()
+    fun jsonObject(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
+    fun jsonArray(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
+    inline fun <reified M : JsonModel> jsonModel(key: String) = jsonObject(key)?.toModel<M>()
 
-    fun Properties.save() {
-        val path = configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
+    fun save() {
+        val path = configurable.configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
         Files.newOutputStream(path).use { output -> store(output, "") }
-    }
-
-    fun loadConfig() = Properties().apply {
-        if (Files.exists(configPath))
-            Files.newInputStream(configPath).use { load(it) }
     }
 }
 
@@ -90,8 +93,7 @@ abstract class Component : Configurable {
      * the configured configBasePath of the application (By default conf in the current directory).
      */
     override val configPath: Path get() = app.configBasePath.resolve("${javaClass.name}.properties")
-    override val config: Properties by lazy { loadConfig() }
-    inline fun <reified M : JsonModel> Properties.jsonModel(key: String) = jsonObject(key)?.toModel<M>()
+    override val config: ConfigProperties by lazy { loadConfig() }
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)

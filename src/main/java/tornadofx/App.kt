@@ -29,8 +29,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
      * Path to app/global configuration settings. Defaults to app.properties inside
      * the configured configBasePath (By default conf in the current directory).
      */
-    override val config: Properties by lazy { loadConfig() }
-    inline fun <reified M : JsonModel> Properties.jsonModel(key: String) = jsonObject(key)?.toModel<M>()
+    override val config: ConfigProperties by lazy { loadConfig() }
 
     /**
      * Default path for configuration. All components will by default

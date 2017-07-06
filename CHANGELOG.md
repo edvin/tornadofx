@@ -9,6 +9,7 @@
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
 - External/synced changes to bound ViewModel properties should not affect dirty state (https://github.com/edvin/tornadofx/issues/358)
 - showModal/showWindow now resizes the window before calling onDock, so the View can override placement easier (https://github.com/edvin/tornadofx/issues/360)
+- Avoid extension function confusion on `Configurable` by introducing a new `ConfigProperties` subclass and changing extension functions to member functions (https://github.com/edvin/tornadofx/issues/362)
 
 ### Changes
 
