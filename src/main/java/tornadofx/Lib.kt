@@ -296,6 +296,24 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
+/**
+ * Listen for changes to this observable. Optionally only listen x times.
+ * The lambda receives the changed value when the change occurs, which may be null,
+ */
+fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
+    var counter = 0
+    val listener = object : ChangeListener<T> {
+        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
+            if (++counter == times) {
+                removeListener(this)
+            }
+            op(newValue)
+        }
+    }
+    addListener(listener)
+}
+fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit) = onChangeTimes(1, op)
+
 fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
 fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new ?: false) } }
 fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0).toInt()) } }

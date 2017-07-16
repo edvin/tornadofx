@@ -311,7 +311,13 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
         resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
         afterResize?.invoke()
     }
-    if (skin == null) Platform.runLater { doResize() } else doResize()
+    if (skin == null) {
+        skinProperty().onChangeOnce {
+            Platform.runLater { doResize() }
+        }
+    } else {
+        doResize()
+    }
 }
 
 fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boolean) {
