@@ -4,10 +4,13 @@
 
 ### Additions
 
+- KeyboardLayout which can export to keyboard-layout-editor.com format
 - ObservableValue<T>.onChangeOnce() and ObservableValue<T>.onChangeTimes(n) will disconnect listener after n events
 
 ### Fixed
 
+- Reified type parameter to ViewModel.bind() to solve properties that are null at the binding call (https://github.com/edvin/tornadofx/issues/365)
+- ViewModel.bind() for properties that are null at the binding call now supports Long as well
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
 - External/synced changes to bound ViewModel properties should not affect dirty state (https://github.com/edvin/tornadofx/issues/358)
 - showModal/showWindow now resizes the window before calling onDock, so the View can override placement easier (https://github.com/edvin/tornadofx/issues/360)

@@ -116,6 +116,8 @@ open class ViewModel : Component(), ScopedInstance {
                         facade = BindingAwareSimpleIntegerProperty(this, null)
                     else if (DoubleProperty::class.java.isAssignableFrom(PropertyType::class.java))
                         facade = BindingAwareSimpleDoubleProperty(this, null)
+                    else if (LongProperty::class.java.isAssignableFrom(PropertyType::class.java))
+                        facade = BindingAwareSimpleLongProperty(this, null)
                     else if (FloatProperty::class.java.isAssignableFrom(PropertyType::class.java))
                         facade = BindingAwareSimpleFloatProperty(this, null)
                     else if (BooleanProperty::class.java.isAssignableFrom(PropertyType::class.java))
@@ -492,11 +494,11 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             = bind(autocommit, forceObjectProperty) { item?.observable(property) }
 
     @JvmName("bindProperty")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N : Any, reified PropertyType: Property<N>, ReturnType : PropertyType> bind(property: KProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
 
     @JvmName("bindMutableProperty")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N : Any, reified PropertyType: Property<N>, ReturnType : PropertyType> bind(property: KMutableProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.observable(property) } as ReturnType
 
     @JvmName("bindGetter")
@@ -504,7 +506,7 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             = bind(autocommit, forceObjectProperty) { item?.let { property.call(it).toProperty() } }
 
     @JvmName("bindPropertyFunction")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<Property<N>>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N : Any, reified PropertyType: Property<N>, ReturnType : PropertyType> bind(property: KFunction<PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.call(it) } }
 }
 
