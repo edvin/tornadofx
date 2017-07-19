@@ -4,6 +4,7 @@
 
 ### Additions
 
+- ObservableList<*>.sizeProperty keeps track of the number of items in an ObservableList
 - KeyboardLayout which can export to keyboard-layout-editor.com format
 - ObservableValue<T>.onChangeOnce() and ObservableValue<T>.onChangeTimes(n) will disconnect listener after n events
 

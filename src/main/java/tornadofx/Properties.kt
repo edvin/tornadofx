@@ -757,6 +757,10 @@ fun <T : Any, R> nonNullObjectBinding(receiver: T, vararg dependencies: Observab
 private fun <T> createObservableArray(receiver: T, vararg dependencies: Observable): Array<out Observable> =
         if (receiver is Observable) arrayOf(receiver, *dependencies) else dependencies
 
+
+/* Generate a calculated IntegerProperty that keeps track of the number of items in this ObservableList */
+val ObservableList<*>.sizeProperty: IntegerBinding get() = integerBinding(this) { size }
+
 /**
  * Assign the value from the creator to this WritableValue if and only if it is currently null
  */
