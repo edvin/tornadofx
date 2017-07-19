@@ -157,21 +157,18 @@ abstract class Component : Configurable {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
             val param = thisRef.params[property.name] as? T
             if (param == null) {
-                if (defaultValue == null) {
-                    throw IllegalStateException("param for name [$property.name] has not been set")
-                }
-                return defaultValue
+                if (defaultValue!=null) return defaultValue
+                @Suppress("ALWAYS_NULL")
+                if (property.returnType.isMarkedNullable) return defaultValue as T
+                throw IllegalStateException("param for name [$property.name] has not been set")
             } else {
                 return param
             }
         }
     }
 
-    inline fun <reified T> nullableParam(defaultValue: T? = null): ReadOnlyProperty<Component, T?> = object : ReadOnlyProperty<Component, T?> {
-        override fun getValue(thisRef: Component, property: KProperty<*>): T? {
-            return thisRef.params[property.name] as? T ?: defaultValue
-        }
-    }
+    @Deprecated("No need to use the nullableParam anymore, use param instead", ReplaceWith("param(defaultValue)"))
+    inline fun <reified T> nullableParam(defaultValue: T? = null) = param(defaultValue)
 
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, params: Map<String, Any?>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var fragment: T? = null
