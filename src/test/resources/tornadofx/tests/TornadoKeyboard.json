@@ -1,0 +1,344 @@
+{
+  "rows": [
+    {
+      "keys": [
+        {
+          "text": "Escape",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "1",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "2",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "3",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "4",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "5",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "⌫",
+          "width": 1.0,
+          "height": 2.0
+        },
+        {
+          "text": "6",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "7",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "8",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "9",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "0",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "-",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "=",
+          "width": 1.0,
+          "height": 1.0
+        }
+      ]
+    },
+    {
+      "keys": [
+        {
+          "text": "Tab",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Q",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "W",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "E",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "R",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "T",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "type": "spacer",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "Y",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "U",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "I",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "O",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "P",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "[",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "]",
+          "width": 1.0,
+          "height": 1.0
+        }
+      ]
+    },
+    {
+      "keys": [
+        {
+          "text": "Control",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "A",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "S",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "D",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "F",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "G",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "Enter",
+          "width": 1.0,
+          "height": 2.0
+        },
+        {
+          "text": "H",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "J",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "K",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "L",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": ";",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "'",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "\\",
+          "width": 1.0,
+          "height": 1.0
+        }
+      ]
+    },
+    {
+      "keys": [
+        {
+          "text": "Shift",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Z",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "X",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "C",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "V",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "B",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "type": "spacer",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "N",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "M",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": ",",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": ".",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "/",
+          "width": 1.0,
+          "height": 1.0
+        },
+        {
+          "text": "Shift",
+          "width": 2.0,
+          "height": 1.0
+        }
+      ]
+    },
+    {
+      "keys": [
+        {
+          "text": "Control",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Win",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Alt",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "FN",
+          "width": 2.75,
+          "height": 1.0
+        },
+        {
+          "text": "Space",
+          "width": 2.75,
+          "height": 1.0
+        },
+        {
+          "text": "Alt",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Super",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Duper",
+          "width": 1.25,
+          "height": 1.0
+        },
+        {
+          "text": "Control",
+          "width": 1.25,
+          "height": 1.0
+        }
+      ]
+    }
+  ]
+}

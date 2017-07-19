@@ -394,6 +394,11 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val datagridCell by cssclass()
         val datagridRow by cssclass()
 
+        // Keyboard
+        val keyboard by cssclass()
+        val keyboardKey by cssclass()
+        val keyboardSpacerKey by cssclass()
+
         // Pseudo classes used by JavaFX
         val armed by csspseudoclass()
         val bottom by csspseudoclass()
