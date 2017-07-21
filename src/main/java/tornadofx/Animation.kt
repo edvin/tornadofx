@@ -4,7 +4,6 @@ import javafx.animation.*
 import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
-import javafx.event.EventTarget
 import javafx.geometry.Point2D
 import javafx.scene.Node
 import javafx.scene.layout.Background
@@ -25,7 +24,29 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
     values.add(keyValue)
 }
 
-fun EventTarget.timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
+fun SequentialTransition.timeline(op: (Timeline).() -> Unit): Timeline {
+    val timeline = timeline(false, op)
+    children.add(timeline)
+    return timeline
+}
+
+fun ParallelTransition.timeline(op: (Timeline).() -> Unit): Timeline {
+    val timeline = timeline(false, op)
+    children.add(timeline)
+    return timeline
+}
+
+fun sequentialTransition(play: Boolean = true, op: (SequentialTransition.() -> Unit))= SequentialTransition().apply {
+    op(this)
+    if (play) play()
+}
+
+fun parallelTransition(play: Boolean = true, op: (ParallelTransition.() -> Unit))= ParallelTransition().apply {
+    op(this)
+    if (play) play()
+}
+
+fun timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
     val timeline = Timeline()
     timeline.op()
     if (play) timeline.play()
