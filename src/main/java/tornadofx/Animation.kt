@@ -375,7 +375,7 @@ fun Node.follow(time: Duration, path: Shape,
     }
 }
 
-fun pause(time: Duration, , play: Boolean = true, op: (PauseTransition.() -> Unit)? = null) = PauseTransition(time).apply {
+fun pause(time: Duration, play: Boolean = true, op: (PauseTransition.() -> Unit)? = null) = PauseTransition(time).apply {
     op?.invoke(this)
     if (play) play()
 }
