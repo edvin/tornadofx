@@ -286,8 +286,9 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Double, scale: P
         }
 
 /**
- * A convenience function for playing multiple animations in parallel.
+ * A convenience function for creating a parallel animation from multiple animations.
  *
+ * @receiver The base animation
  * @param animation The animations to play with this one
  * @param op Modify the animation after it is created
  * @return A ParallelTransition
@@ -296,14 +297,43 @@ fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Uni
         = ParallelTransition(this, *animation).apply { op?.invoke(this) }
 
 /**
- * A convenience function for playing multiple animations sequentially.
+ * A convenience function for playing multiple animations in parallel.
  *
+ * @receiver The animations to play in parallel
+ * @param play Whether to start playing immediately
+ * @param op Modify the animation before playing
+ * @return A ParallelTransition
+ */
+fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransition.() -> Unit)? = null) = ParallelTransition().apply {
+    children.setAll(toList())
+    op?.invoke(this)
+    if (play) play()
+}
+
+/**
+ * A convenience function for creating a sequential animation from multiple animations.
+ *
+ * @receiver The base animation
  * @param animation The animations to play with this one
  * @param op Modify the animation after it is created
  * @return A SequentialTransition
  */
 fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null)
         = SequentialTransition(this, *animation).apply { op?.invoke(this) }
+
+/**
+ * A convenience function for playing multiple animations in sequence.
+ *
+ * @receiver The animations to play in sequence
+ * @param play Whether to start playing immediately
+ * @param op Modify the animation before playing
+ * @return A SequentialTransition
+ */
+fun Iterable<Animation>.playSequential(play: Boolean = true, op: (SequentialTransition.() -> Unit)? = null) = SequentialTransition().apply {
+    children.setAll(toList())
+    op?.invoke(this)
+    if (play) play()
+}
 
 fun Timeline.keyframe(duration: Duration, op: (KeyFrameBuilder).() -> Unit): KeyFrame {
     val keyFrameBuilder = KeyFrameBuilder(duration)
