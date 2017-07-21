@@ -12,6 +12,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
+import javafx.scene.shape.Shape
 import javafx.scene.transform.Rotate
 import javafx.util.Duration
 import java.util.*
@@ -36,12 +37,12 @@ fun ParallelTransition.timeline(op: (Timeline).() -> Unit): Timeline {
     return timeline
 }
 
-fun sequentialTransition(play: Boolean = true, op: (SequentialTransition.() -> Unit))= SequentialTransition().apply {
+fun sequentialTransition(play: Boolean = true, op: (SequentialTransition.() -> Unit)) = SequentialTransition().apply {
     op(this)
     if (play) play()
 }
 
-fun parallelTransition(play: Boolean = true, op: (ParallelTransition.() -> Unit))= ParallelTransition().apply {
+fun parallelTransition(play: Boolean = true, op: (ParallelTransition.() -> Unit)) = ParallelTransition().apply {
     op(this)
     if (play) play()
 }
@@ -337,6 +338,44 @@ infix fun SequentialTransition.then(animation: Animation) = apply { children += 
  */
 fun Iterable<Animation>.playSequential(play: Boolean = true, op: (SequentialTransition.() -> Unit)? = null) = SequentialTransition().apply {
     children.setAll(toList())
+    op?.invoke(this)
+    if (play) play()
+}
+
+fun Shape.animateFill(time: Duration, from: Color, to: Color,
+                      easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                      op: (FillTransition.() -> Unit)? = null): FillTransition {
+    return FillTransition(time, this, from, to).apply {
+        interpolator = easing
+        // TODO: Handle reversed
+        op?.invoke(this)
+        if (play) play()
+    }
+}
+
+fun Shape.animateStroke(time: Duration, from: Color, to: Color,
+                        easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                        op: (StrokeTransition.() -> Unit)? = null): StrokeTransition {
+    return StrokeTransition(time, this, from, to).apply {
+        interpolator = easing
+        // TODO: Handle reversed
+        op?.invoke(this)
+        if (play) play()
+    }
+}
+
+fun Node.follow(time: Duration, path: Shape,
+                easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
+                op: (PathTransition.() -> Unit)? = null): PathTransition {
+    return PathTransition(time, path, this).apply {
+        interpolator = easing
+        // TODO: Handle reversed
+        op?.invoke(this)
+        if (play) play()
+    }
+}
+
+fun pause(time: Duration, , play: Boolean = true, op: (PauseTransition.() -> Unit)? = null) = PauseTransition(time).apply {
     op?.invoke(this)
     if (play) play()
 }
