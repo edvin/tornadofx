@@ -296,6 +296,9 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Double, scale: P
 fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null)
         = ParallelTransition(this, *animation).apply { op?.invoke(this) }
 
+infix fun Animation.and(animation: Animation) = ParallelTransition(this, animation)
+infix fun ParallelTransition.and(animation: Animation) = apply { children += animation }
+
 /**
  * A convenience function for playing multiple animations in parallel.
  *
@@ -320,6 +323,9 @@ fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransiti
  */
 fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null)
         = SequentialTransition(this, *animation).apply { op?.invoke(this) }
+
+infix fun Animation.then(animation: Animation) = SequentialTransition(this, animation)
+infix fun SequentialTransition.then(animation: Animation) = apply { children += animation }
 
 /**
  * A convenience function for playing multiple animations in sequence.
