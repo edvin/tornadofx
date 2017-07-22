@@ -452,6 +452,8 @@ fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
+                    textProperty().unbind()
+                    graphicProperty().unbind()
                     text = null
                     graphic = null
                 } else {

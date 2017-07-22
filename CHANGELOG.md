@@ -11,6 +11,7 @@
 
 ### Fixed
 
+- TreeView.cellFormat now unbinds the textProperty and the graphicProperty
 - Reified type parameter to ViewModel.bind() to solve properties that are null at the binding call (https://github.com/edvin/tornadofx/issues/365)
 - ViewModel.bind() for properties that are null at the binding call now supports Long as well
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
