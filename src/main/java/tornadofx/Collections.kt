@@ -195,7 +195,11 @@ fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceSet: ObservableS
     }
     val listener = SetConversionListener(this, ignoringParentConverter)
     if (this is ObservableList<*>) {
-        (this as ObservableList<TargetType>).setAll(sourceSet.map(ignoringParentConverter))
+        sourceSet.forEach { source ->
+            val converted = ignoringParentConverter(source)
+            listener.sourceToTarget[source] = converted
+        }
+        (this as ObservableList<TargetType>).setAll(listener.sourceToTarget.values)
     } else {
         clear()
         addAll(sourceSet.map(ignoringParentConverter))
