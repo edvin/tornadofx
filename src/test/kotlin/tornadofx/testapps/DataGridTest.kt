@@ -49,7 +49,6 @@ class DataGridTest : View("DataGrid") {
         }
         center {
             datagrid = datagrid<String> {
-                focusedProperty().onChange { println("Focused: $isFocused") }
                 setPrefSize(550.0, 550.0)
 
                 selectionModel.selectionMode = SelectionMode.MULTIPLE
