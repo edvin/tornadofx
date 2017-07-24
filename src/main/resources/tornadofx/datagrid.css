@@ -3,6 +3,7 @@
     -fx-cell-height: 150px;
     -fx-horizontal-cell-spacing: 8px;
     -fx-vertical-cell-spacing: 8px;
+    -fx-focus-traversable: true;
 }
 
 .datagrid-cell {

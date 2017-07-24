@@ -24,6 +24,7 @@
 ### Changes
 
 - Kotlin 1.1.3-2
+- DataGrid receives focus on click
 
 ## [1.7.8] - 2017-06-25
 

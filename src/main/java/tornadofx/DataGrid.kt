@@ -147,6 +147,13 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         addClass(Stylesheet.datagrid)
         itemsProperty.addListener(itemPropertyChangeListener)
         items.addListener(itemsChangeListener)
+        focusOnClick()
+    }
+
+    private fun focusOnClick() {
+        addEventFilter(MouseEvent.MOUSE_CLICKED) {
+            if (!isFocused && isFocusTraversable) requestFocus()
+        }
     }
 
 }
@@ -507,7 +514,6 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         flow.isPannable = false
         flow.isFocusTraversable = skinnable.isFocusTraversable
         flow.setCreateCell { createCell() }
-
         children.add(flow)
 
         updateRowCount()
