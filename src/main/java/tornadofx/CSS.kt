@@ -1311,6 +1311,12 @@ fun Color.ladder(vararg stops: Stop): Color {
     }
 }
 
+/**
+ * Converts the given Paint to a Background
+ */
+fun Paint.asBackground(radii: CornerRadii = CornerRadii.EMPTY, insets: Insets = Insets.EMPTY) =
+        Background(BackgroundFill(this, radii, insets))
+
 fun <T> multi(vararg elements: T) = MultiValue(elements)
 class MultiValue<T>(initialElements: Array<out T>? = null) {
     val elements = mutableListOf<T>()
