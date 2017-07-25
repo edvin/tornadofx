@@ -4,7 +4,6 @@ package tornadofx
 
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
 import com.sun.javafx.application.HostServicesDelegate
-import javafx.application.Platform
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -33,7 +32,6 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
-import javafx.util.Callback
 import java.io.InputStream
 import java.io.StringReader
 import java.net.URL
@@ -157,7 +155,7 @@ abstract class Component : Configurable {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
             val param = thisRef.params[property.name] as? T
             if (param == null) {
-                if (defaultValue!=null) return defaultValue
+                if (defaultValue != null) return defaultValue
                 @Suppress("ALWAYS_NULL")
                 if (property.returnType.isMarkedNullable) return defaultValue as T
                 throw IllegalStateException("param for name [$property.name] has not been set")
@@ -628,54 +626,33 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
     fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) {
-        properties["tornadofx.cellFormat"] = formatter
-        if (properties["tornadofx.cellFormatCapable"] != true)
-            cellFactory = Callback { SmartListCell(scope, this@cellFormat) }
-    }
+    fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) = cellFormat(scope, formatter)
 
-    fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) {
-        properties["tornadofx.cellFragment"] = fragment
-        if (properties["tornadofx.cellFormatCapable"] != true)
-            cellFactory = Callback { listView -> SmartListCell(scope, listView) }
-    }
-
-    fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
-        isEditable = true
-        properties["tornadofx.editSupport"] = eventListener
-        // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
-        if (properties["tornadofx.editCapable"] != true) cellFormat { }
-    }
-
-    fun EventTarget.slideshow(scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope), op)
+    fun <S, T, F : TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
 
     /**
-     * Calculate a unique Node per item and set this Node as the graphic of the ListCell.
+     * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
      *
      * To support this feature, a custom cellFactory is automatically installed, unless an already
      * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
      * how to retrieve cached values.
      */
-    fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) {
-        properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
-        // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
-        if (properties["tornadofx.cellCacheCapable"] != true) {
-            cellFormat { }
-        }
-    }
+    fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) = cellCache(scope, cachedGraphicProvider)
 
-    fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
-        cellFactory = Callback {
-            it?.properties?.put("tornadofx.cellFormat", formatter)
-            SmartListCell(scope, it)
-        }
-        if (formatButtonCell) {
-            Platform.runLater {
-                buttonCell = cellFactory.call(null)
-            }
-        }
-    }
+
+    fun EventTarget.slideshow(scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope), op)
+
+    fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
+
+    fun <T> ListView<T>.cellFormat(formatter: (ListCell<T>.(T) -> Unit)) = cellFormat(scope, formatter)
+
+    fun <T> ListView<T>.onEdit(eventListener: ListCell<T>.(EditEventType, T?) -> Unit) = onEdit(scope, eventListener)
+
+    fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) = cellCache(scope, cachedGraphicProvider)
+
+    fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = useProgressBar(scope, afterCommit)
+
+    fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
     fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
