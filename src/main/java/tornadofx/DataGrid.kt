@@ -148,7 +148,6 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         itemsProperty.addListener(itemPropertyChangeListener)
         items.addListener(itemsChangeListener)
     }
-
 }
 
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
@@ -505,9 +504,8 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
         flow.id = "virtual-flow"
         flow.isPannable = false
-        flow.isFocusTraversable = skinnable.isFocusTraversable
+        flow.isFocusTraversable = false
         flow.setCreateCell { createCell() }
-
         children.add(flow)
 
         updateRowCount()
@@ -522,7 +520,15 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         registerChangeListener(control.widthProperty(), "WIDTH_PROPERTY")
         registerChangeListener(control.heightProperty(), "HEIGHT_PROPERTY")
 
+        focusOnClick()
     }
+
+    private fun focusOnClick() {
+        skinnable.addEventFilter(MouseEvent.MOUSE_PRESSED) {
+            if (!skinnable.isFocused && skinnable.isFocusTraversable) skinnable.requestFocus()
+        }
+    }
+
 
     override public fun handleControlPropertyChanged(p: String) {
         super.handleControlPropertyChanged(p)

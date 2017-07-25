@@ -4,6 +4,8 @@
 
 ### Additions
 
+- TableColumn.cellFragment to match ListView.cellFragment + SmartTableCell which encapsulate cellFormat, cellCache and cellFragment
+- bindChildren(observableSet, converter) to completement the observableList version
 - sequentialTransition, parallelTransition builders (https://github.com/edvin/tornadofx/issues/373)
 - ObservableList<*>.sizeProperty keeps track of the number of items in an ObservableList
 - KeyboardLayout which can export to keyboard-layout-editor.com format
@@ -11,6 +13,8 @@
 
 ### Fixed
 
+- imageview builder now accepts null from an `ObservableValue<String>`
+- TreeView.cellFormat now unbinds the textProperty and the graphicProperty
 - Reified type parameter to ViewModel.bind() to solve properties that are null at the binding call (https://github.com/edvin/tornadofx/issues/365)
 - ViewModel.bind() for properties that are null at the binding call now supports Long as well
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
@@ -22,6 +26,8 @@
 ### Changes
 
 - Kotlin 1.1.3-2
+- DataGrid receives focus on click
+- TableView refactoring, all cell manipulation functions are encapsulated in a SmartTableCell
 
 ## [1.7.8] - 2017-06-25
 

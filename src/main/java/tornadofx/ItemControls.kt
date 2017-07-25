@@ -92,6 +92,18 @@ fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = n
     if (property != null) bind(property)
 }, op)
 
+fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
+    cellFactory = Callback {
+        it?.properties?.put("tornadofx.cellFormat", formatter)
+        SmartListCell(scope, it)
+    }
+    if (formatButtonCell) {
+        Platform.runLater {
+            buttonCell = cellFactory.call(null)
+        }
+    }
+}
+
 fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
     if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
     if (property != null) bind(property)
@@ -390,18 +402,18 @@ fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit
     return this
 }
 
-fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
-    cellFormat {
+fun <S> TableColumn<S, out Number?>.useProgressBar(scope: Scope, afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
+    cellFormat(scope) {
         addClass(Stylesheet.progressBarTableCell)
         graphic = cache {
-            progressbar(itemProperty().doubleBinding { (it as? Number)?.toDouble() ?: 0.0 }) {
+            progressbar(itemProperty().doubleBinding { it?.toDouble() ?: 0.0 }) {
                 useMaxWidth = true
             }
         }
     }
     (this as TableColumn<S, Number?>).setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<Number?>
-        property.value = (it.newValue as? Number)?.toDouble()
+        property.value = it.newValue?.toDouble()
         afterCommit?.invoke(it as TableColumn.CellEditEvent<S, Number?>)
     }
 }

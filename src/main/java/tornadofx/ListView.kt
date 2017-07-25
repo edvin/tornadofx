@@ -11,6 +11,7 @@ import javafx.scene.control.ListView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
+import javafx.util.Callback
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import kotlin.reflect.KClass
@@ -52,8 +53,13 @@ class ListCellCache<T>(private val cacheProvider: (T) -> Node) {
 }
 
 abstract class ItemFragment<T> : Fragment() {
-    val itemProperty: ObjectProperty<T> = SimpleObjectProperty()
-    var item by itemProperty
+    val itemProperty: ObjectProperty<T> = SimpleObjectProperty(this, "item")
+    val item by itemProperty
+}
+
+abstract class RowItemFragment<S, T> : ItemFragment<T>() {
+    val rowItemProperty: ObjectProperty<S> = SimpleObjectProperty(this, "rowItem")
+    val rowItem by rowItemProperty
 }
 
 abstract class ListCellFragment<T> : ItemFragment<T>() {
@@ -117,14 +123,10 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
         super.updateItem(item, empty)
 
         if (item == null || empty) {
-            with(textProperty()) {
-                if (isBound) unbind()
-                value = null
-            }
-            with(graphicProperty()) {
-                if (isBound) unbind()
-                value = null
-            }
+            textProperty().unbind()
+            graphicProperty().unbind()
+            text = null
+            graphic = null
             clearCellFragment()
         } else {
             FX.ignoreParentBuilder = Once
@@ -166,3 +168,38 @@ fun <T> ListView<T>.bindSelected(property: Property<T>) {
 }
 
 fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+
+fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(scope: Scope = DefaultScope, fragment: KClass<F>) {
+    properties["tornadofx.cellFragment"] = fragment
+    if (properties["tornadofx.cellFormatCapable"] != true)
+        cellFactory = Callback { SmartListCell(scope, it) }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T> ListView<T>.cellFormat(scope: Scope = DefaultScope, formatter: (ListCell<T>.(T) -> Unit)) {
+    properties["tornadofx.cellFormat"] = formatter
+    if (properties["tornadofx.cellFormatCapable"] != true)
+        cellFactory = Callback { SmartListCell(scope, it) }
+}
+
+fun <T> ListView<T>.onEdit(scope: Scope = DefaultScope, eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
+    isEditable = true
+    properties["tornadofx.editSupport"] = eventListener
+    // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.editCapable"] != true) cellFormat(scope) { }
+}
+
+/**
+ * Calculate a unique Node per item and set this Node as the graphic of the ListCell.
+ *
+ * To support this feature, a custom cellFactory is automatically installed, unless an already
+ * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
+ * how to retrieve cached values.
+ */
+fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider: (T) -> Node) {
+    properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
+    // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
+    if (properties["tornadofx.cellCacheCapable"] != true) {
+        cellFormat(scope) { }
+    }
+}

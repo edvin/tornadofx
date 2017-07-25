@@ -11,6 +11,7 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.collections.ObservableSet
 import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
@@ -530,6 +531,16 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
 inline fun <reified T> EventTarget.bindChildren(sourceList: ObservableList<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
     val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
     return children.bind(sourceList, converter)
+}
+
+/**
+ * Bind the children of this Layout node to the given observable set of items by converting
+ * them into nodes via the given converter function. Changes to the source set will be reflected
+ * in the children list of this layout node.
+ */
+inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node> {
+    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
+    return children.bind(sourceSet, converter)
 }
 
 /**

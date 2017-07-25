@@ -5,6 +5,8 @@ package tornadofx
 import javafx.beans.WeakListener
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.collections.ObservableSet
+import javafx.collections.SetChangeListener
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import java.lang.ref.WeakReference
@@ -179,6 +181,35 @@ fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceList: Observable
 }
 
 /**
+ * Bind this list to the given observable list by converting them into the correct type via the given converter.
+ * Changes to the observable list are synced.
+ */
+fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceSet: ObservableSet<SourceType>, converter: (SourceType) -> TargetType): SetConversionListener<SourceType, TargetType> {
+    val ignoringParentConverter: (SourceType) -> TargetType = {
+        FX.ignoreParentBuilder = Once
+        try {
+            converter(it)
+        } finally {
+            FX.ignoreParentBuilder = No
+        }
+    }
+    val listener = SetConversionListener(this, ignoringParentConverter)
+    if (this is ObservableList<*>) {
+        sourceSet.forEach { source ->
+            val converted = ignoringParentConverter(source)
+            listener.sourceToTarget[source] = converted
+        }
+        (this as ObservableList<TargetType>).setAll(listener.sourceToTarget.values)
+    } else {
+        clear()
+        addAll(sourceSet.map(ignoringParentConverter))
+    }
+    sourceSet.removeListener(listener)
+    sourceSet.addListener(listener)
+    return listener
+}
+
+/**
  * Listens to changes on a list of SourceType and keeps the target list in sync by converting
  * each object into the TargetType via the supplied converter.
  */
@@ -218,6 +249,51 @@ class ListConversionListener<SourceType, TargetType>(targetList: MutableList<Tar
         val ourList = targetRef.get() ?: return false
 
         if (other is ListConversionListener<*, *>) {
+            val otherList = other.targetRef.get()
+            return ourList === otherList
+        }
+        return false
+    }
+}
+
+/**
+ * Listens to changes on a set of SourceType and keeps the target list in sync by converting
+ * each object into the TargetType via the supplied converter.
+ */
+class SetConversionListener<SourceType, TargetType>(targetList: MutableList<TargetType>, val converter: (SourceType) -> TargetType) : SetChangeListener<SourceType>, WeakListener {
+    internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
+    internal val sourceToTarget = HashMap<SourceType, TargetType>()
+
+    override fun onChanged(change: SetChangeListener.Change<out SourceType>) {
+        val list = targetRef.get()
+        if (list == null) {
+            change.set.removeListener(this)
+            sourceToTarget.clear()
+        } else {
+            if (change.wasRemoved()) {
+                list.remove(sourceToTarget[change.elementRemoved])
+                sourceToTarget.remove(change.elementRemoved)
+            }
+            if (change.wasAdded()) {
+                val converted = converter(change.elementAdded)
+                sourceToTarget[change.elementAdded] = converted
+                list.add(converted)
+            }
+        }
+    }
+
+    override fun wasGarbageCollected() = targetRef.get() == null
+
+    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+
+        val ourList = targetRef.get() ?: return false
+
+        if (other is SetConversionListener<*, *>) {
             val otherList = other.targetRef.get()
             return ourList === otherList
         }
