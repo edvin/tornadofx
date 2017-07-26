@@ -517,9 +517,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         root.scene?.removeEventFilter(KEY_PRESSED, acceleratorListener)
     }
 
+    /**
+     * Called when a Component is detached from the Scene
+     */
     open fun onUndock() {
     }
 
+    /**
+     * Called when a Component is attached to the Scene
+     */
     open fun onDock() {
     }
 
