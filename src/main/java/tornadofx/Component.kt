@@ -525,7 +525,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     /**
      * Called when a Component becomes the Scene root or
-     * when it's root node is attached to another Component.
+     * when its root node is attached to another Component.
      * @see UIComponent.add
      */
     open fun onDock() {
