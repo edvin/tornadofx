@@ -14,6 +14,7 @@
 ### Fixed
 
 - DataGrid properly updates when operating on a bound list (https://github.com/edvin/tornadofx/issues/385)
+- DataGrid reselects same index if item at selected index is removed (https://github.com/edvin/tornadofx/issues/386)
 - imageview builder now accepts null from an `ObservableValue<String>`
 - TreeView.cellFormat now unbinds the textProperty and the graphicProperty
 - Reified type parameter to ViewModel.bind() to solve properties that are null at the binding call (https://github.com/edvin/tornadofx/issues/365)

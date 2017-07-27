@@ -482,10 +482,19 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
      */
     fun clearSelectionAndReapply() {
         val currentItems = selectedItems.toList()
+        val currentIndexes = selectedIndicies.toList()
+        val selectedItemsToIndex = (currentItems zip currentIndexes).toMap()
+
         clearSelection()
+
         for (item in currentItems) {
             val index = dataGrid.items.indexOf(item)
-            select(index)
+            if (index > -1) {
+                select(index)
+            } else {
+                // If item is gone, select the item at the same index position
+                select(selectedItemsToIndex[item]!!)
+            }
         }
     }
 
