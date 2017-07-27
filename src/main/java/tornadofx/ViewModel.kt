@@ -85,10 +85,10 @@ open class ViewModel : Component(), ScopedInstance {
      *     val name = bind { person.nameProperty() }
      *
      *     // Bind Kotlin var based property
-     *     val name = bind { person.observable(Person::name)
+     *     val name = bind { person.observable(Person::name) }
      *
      *     // Bind Java POJO getter/setter
-     *     val name = bind { person.observable(Person::getName, Person::setName)
+     *     val name = bind { person.observable(Person::getName, Person::setName) }
      *
      *     // Bind Java POJO by property name (not type safe)
      *     val name = bind { person.observable("name") }
