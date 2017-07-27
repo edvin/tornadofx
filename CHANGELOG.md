@@ -13,6 +13,8 @@
 
 ### Fixed
 
+- Form and Field properties got updated to the new more concise syntax propertyName() vs. property
+- LazyTreeItem will now only set children once after getChildren is called.
 - DataGrid properly updates when operating on a bound list (https://github.com/edvin/tornadofx/issues/385)
 - DataGrid reselects same index if item at selected index is removed (https://github.com/edvin/tornadofx/issues/386)
 - imageview builder now accepts null from an `ObservableValue<String>`
