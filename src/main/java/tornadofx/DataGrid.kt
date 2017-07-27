@@ -8,6 +8,7 @@ import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -41,7 +42,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     internal var graphicCache = mutableMapOf<T, Node>()
 
-    val itemsProperty = SimpleObjectProperty<ObservableList<T>>(this, "items", items)
+    val itemsProperty = SimpleListProperty<T>(this, "items", items)
     var items: ObservableList<T> get() = itemsProperty.get(); set(value) = itemsProperty.set(value)
 
     val cellFactoryProperty = SimpleObjectProperty<(DataGrid<T>) -> DataGridCell<T>>(this, "cellFactory")
@@ -112,7 +113,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     }
 
     // Called when the items list is swapped for a new
-    private val itemPropertyChangeListener = ChangeListener<ObservableList<T>> { obs, oldList, newList ->
+    private val itemPropertyChangeListener = ChangeListener<ObservableList<T>> { _, oldList, newList ->
         selectionModel.clearSelectionAndReapply()
         if (oldList != null) {
             oldList.removeListener(itemsChangeListener)
@@ -530,7 +531,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
     }
 
 
-    override public fun handleControlPropertyChanged(p: String) {
+    override public fun handleControlPropertyChanged(p: String?) {
         super.handleControlPropertyChanged(p)
 
         when (p) {
