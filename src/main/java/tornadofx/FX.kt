@@ -289,7 +289,7 @@ class FX {
     }
 }
 
-class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
+private class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
     val weakReference = WeakReference(scene)
 
     override fun onChanged(it: ListChangeListener.Change<out String>) {
