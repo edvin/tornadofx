@@ -502,7 +502,7 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             task { func() } success { if (itemProperty.isBound && item is JsonModel) (item as JsonModel).update(it as JsonModel) else item = it }
 
     @JvmName("bindField")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it).toProperty() } }
 
     @JvmName("bindMutableField")

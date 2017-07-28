@@ -32,6 +32,7 @@
 - Kotlin 1.1.3-2
 - DataGrid receives focus on click
 - TableView refactoring, all cell manipulation functions are encapsulated in a SmartTableCell
+- ItemViewModel's bind methods accept properties that return nullable values (https://github.com/edvin/tornadofx/issues/389)
 
 ## [1.7.8] - 2017-06-25
 
