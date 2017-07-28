@@ -304,9 +304,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
 
     private fun resetFilter() {
         listView.items = comboBox.items
-        if(filterHandler is Resettable) {
-            (filterHandler as Resettable).reset()
-        }
+        (filterHandler as? Resettable)?.reset()
     }
 
     /** End of Specific auto complete implementation */
