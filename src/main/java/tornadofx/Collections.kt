@@ -38,7 +38,7 @@ fun <T> MutableList<T>.moveAt(oldIndex: Int, newIndex: Int) {
  * Moves all items meeting a predicate to the given index
  */
 fun <T> MutableList<T>.moveAll(newIndex: Int, predicate: (T) -> Boolean) {
-    check(newIndex >= 0 && newIndex < size)
+    check(newIndex in indices)
     val split = partition(predicate)
     clear()
     addAll(split.second)
@@ -51,7 +51,7 @@ fun <T> MutableList<T>.moveAll(newIndex: Int, predicate: (T) -> Boolean) {
  */
 fun <T> MutableList<T>.moveUpAt(index: Int) {
     if (index == 0) return
-    if (index < 0 || index >= size) throw Exception("Invalid index $index for MutableList of size $size")
+    if (index !in indices) throw Exception("Invalid index $index for MutableList of size $size")
     val newIndex = index + 1
     val item = this[index]
     removeAt(index)
@@ -64,7 +64,7 @@ fun <T> MutableList<T>.moveUpAt(index: Int) {
  */
 fun <T> MutableList<T>.moveDownAt(index: Int) {
     if (index == size - 1) return
-    if (index < 0 || index >= size) throw Exception("Invalid index $index for MutableList of size $size")
+    if (index !in indices) throw Exception("Invalid index $index for MutableList of size $size")
     val newIndex = index - 1
     val item = this[index]
     removeAt(index)

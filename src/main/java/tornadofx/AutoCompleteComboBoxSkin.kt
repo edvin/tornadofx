@@ -397,7 +397,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
                 //listSelectionLock = false
             } else {
                 val index = comboBox.selectionModel.selectedIndex
-                if (index >= 0 && index < comboBoxItems.size) {
+                if (index in comboBoxItems.indices) {
                     val itemsObj = comboBoxItems.get(index)
                     if (itemsObj != null && itemsObj == newValue) {
                         listViewSM.select(index)

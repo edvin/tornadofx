@@ -724,7 +724,7 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
 
     fun getOrCreateExpandedNode(tableRow: TableRow<S>): Node? {
         val index = tableRow.index
-        if (index > -1 && index < tableView.items.size) {
+        if (index in tableView.items.indices) {
             val item = tableView.items[index]!!
             var node: Node? = expandedNodeCache[item]
             if (node == null) {
@@ -1055,7 +1055,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
         super.layoutChildren(x, y, w, h)
 
         cells.forEach { cell ->
-            val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
+            val item = if (cell.index in cell.tableView.items.indices) cell.tableView.items[cell.index] else null
             val polygon = getPolygon(cell)
             val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
             if (isDirty) {
