@@ -101,7 +101,7 @@ class ValidationContext {
 
         val validateThese = if (fields.isEmpty()) validators else validators.filter {
             val facade = it.property.viewModelFacade
-            facade != null && fields.contains(facade)
+            facade != null && facade in fields
         }
 
         for (validator in validateThese) {

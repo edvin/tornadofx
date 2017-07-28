@@ -20,7 +20,6 @@ import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Callable
-import kotlin.collections.ArrayList
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -103,67 +102,43 @@ open class ViewModel : Component(), ScopedInstance {
     inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
         val prop = propertyProducer()
 
-        val facade: Property<*>
-
-        if (forceObjectProperty) {
-            facade = BindingAwareSimpleObjectProperty<T>(this, prop?.name)
+        val facade: Property<*> = if (forceObjectProperty) {
+            BindingAwareSimpleObjectProperty<T>(this, prop?.name)
         } else {
             val propertyType = PropertyType::class.java
             val typeParam = T::class.java
 
             // Match PropertyType against known Property types first
-            if (IntegerProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleIntegerProperty(this, prop?.name)
-            else if (LongProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleLongProperty(this, prop?.name)
-            else if (DoubleProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleDoubleProperty(this, prop?.name)
-            else if (FloatProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleFloatProperty(this, prop?.name)
-            else if (BooleanProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleBooleanProperty(this, prop?.name)
-            else if (StringProperty::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleStringProperty(this, prop?.name)
-            else if (ObservableList::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleListProperty<T>(this, prop?.name)
-            else if (List::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleListProperty<T>(this, prop?.name)
-            else if (ObservableSet::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
-            else if (Set::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
-            else if (Map::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
-            else if (ObservableMap::class.java.isAssignableFrom(propertyType))
-                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+            when {
+                IntegerProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleIntegerProperty(this, prop?.name)
+                LongProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleLongProperty(this, prop?.name)
+                DoubleProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleDoubleProperty(this, prop?.name)
+                FloatProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleFloatProperty(this, prop?.name)
+                BooleanProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleBooleanProperty(this, prop?.name)
+                StringProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleStringProperty(this, prop?.name)
+                ObservableList::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
+                List::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
+                ObservableSet::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
+                Set::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
+                Map::class.java.isAssignableFrom(propertyType) ->BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+                ObservableMap::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
 
             // Match against the type of the Property
-            else if (java.lang.Integer::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleIntegerProperty(this, prop?.name)
-            else if (java.lang.Long::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleLongProperty(this, prop?.name)
-            else if (java.lang.Double::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleDoubleProperty(this, prop?.name)
-            else if (java.lang.Float::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleFloatProperty(this, prop?.name)
-            else if (java.lang.Boolean::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleBooleanProperty(this, prop?.name)
-            else if (java.lang.String::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleStringProperty(this, prop?.name)
-            else if (ObservableList::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleListProperty<T>(this, prop?.name)
-            else if (List::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleListProperty<T>(this, prop?.name)
-            else if (ObservableSet::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
-            else if (Set::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
-            else if (Map::class.java.isAssignableFrom(typeParam))
-                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+                java.lang.Integer::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleIntegerProperty(this, prop?.name)
+                java.lang.Long::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleLongProperty(this, prop?.name)
+                java.lang.Double::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleDoubleProperty(this, prop?.name)
+                java.lang.Float::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleFloatProperty(this, prop?.name)
+                java.lang.Boolean::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleBooleanProperty(this, prop?.name)
+                java.lang.String::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleStringProperty(this, prop?.name)
+                ObservableList::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
+                List::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
+                ObservableSet::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
+                Set::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
+                Map::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
 
             // Default to Object wrapper
-            else
-                facade = BindingAwareSimpleObjectProperty<T>(this, prop?.name)
+                else -> BindingAwareSimpleObjectProperty<T>(this, prop?.name)
+            }
         }
 
         assignValue(facade, prop)
@@ -191,12 +166,12 @@ open class ViewModel : Component(), ScopedInstance {
     inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, _, newValue ->
-        if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
+        if (property!! in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
         if (sourceValue == newValue) {
             dirtyProperties.remove(property)
-        } else if (!autocommitProperties.contains(property) && !dirtyProperties.contains(property)) {
+        } else if (property !in autocommitProperties && property !in dirtyProperties) {
             dirtyProperties.add(property)
         }
     }
@@ -342,7 +317,7 @@ open class ViewModel : Component(), ScopedInstance {
         fun updateMatchingValidators() {
             matchingValidators.setAll(validationContext.validators.filter {
                 val facade = it.property.viewModelFacade
-                facade != null && fields.contains(facade)
+                facade != null && facade in fields
             })
         }
 
@@ -411,7 +386,7 @@ fun <V : ItemViewModel<S>, S, T> V.bindToRowItem(cellFragment: TableCellFragment
 
 fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
     val prop = modelField.get(this)
-    return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
+    return Bindings.createBooleanBinding(Callable { prop in dirtyProperties }, dirtyProperties)
 }
 
 fun <V : ViewModel, T> V.rebindOnTreeItemChange(observable: ObservableValue<TreeItem<T>>, op: V.(T?) -> Unit) {
