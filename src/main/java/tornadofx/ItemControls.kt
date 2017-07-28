@@ -753,7 +753,7 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
 
     private fun getContent(): Node? {
         val node = expander.getOrCreateExpandedNode(tableRow)
-        if (!children.contains(node)) children.add(node)
+        if (node !in children) children.add(node)
         return node
     }
 
@@ -1013,7 +1013,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
             val polygon = getPolygon(cell)
             val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
             if (isDirty) {
-                if (!children.contains(polygon))
+                if (polygon !in children)
                     children.add(polygon)
 
                 polygon.relocate(cell.layoutX, y)

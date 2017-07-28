@@ -104,7 +104,7 @@ fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
 fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     fun updateState() {
         if (predicate.value.not()) tabPane.tabs.remove(this)
-        else if (!tabPane.tabs.contains(this)) tabPane.tabs.add(this)
+        else if (this !in tabPane.tabs) tabPane.tabs.add(this)
     }
     updateState()
     predicate.onChange { updateState() }

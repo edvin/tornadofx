@@ -193,7 +193,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
 
     internal fun updateExpanded(item: DrawerItem) {
         if (item.expanded) {
-            if (!contentArea.children.contains(item)) {
+            if (item !in contentArea.children) {
                 if (!multiselect) {
                     contentArea.children.toTypedArray().forEach {
                         (it as DrawerItem).button.isSelected = false
@@ -215,7 +215,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                     contentArea.children.add(item)
                 }
             }
-        } else if (contentArea.children.contains(item)) {
+        } else if (item !in contentArea.children) {
             contentArea.children.remove(item)
         }
 
@@ -254,10 +254,10 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
 
             if (floatingDrawers) {
                 contentArea.isManaged = false
-                if (!children.contains(contentArea)) children.add(contentArea)
+                if (contentArea !in children) children.add(contentArea)
             } else {
                 contentArea.isManaged = true
-                if (children.contains(contentArea)) children.remove(contentArea)
+                if (contentArea in children) children.remove(contentArea)
                 center = contentArea
             }
         }

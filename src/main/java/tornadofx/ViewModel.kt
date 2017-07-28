@@ -169,12 +169,12 @@ open class ViewModel : Component(), ScopedInstance {
     inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, oldValue, newValue ->
-        if (ignoreDirtyStateProperties.contains(property!!)) return@ChangeListener
+        if (property!! in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
         if (sourceValue == newValue) {
             dirtyProperties.remove(property)
-        } else if (!autocommitProperties.contains(property) && !dirtyProperties.contains(property)) {
+        } else if (property !in autocommitProperties && property !in dirtyProperties) {
             dirtyProperties.add(property)
         }
     }
@@ -292,7 +292,7 @@ open class ViewModel : Component(), ScopedInstance {
         fun updateMatchingValidators() {
             matchingValidators.setAll(validationContext.validators.filter {
                 val facade = it.property.viewModelFacade
-                facade != null && fields.contains(facade)
+                facade != null && facade in fields
             })
         }
 
@@ -361,7 +361,7 @@ fun <V : ItemViewModel<S>, S, T> V.bindToRowItem(cellFragment: TableCellFragment
 
 fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
     val prop = modelField.get(this)
-    return Bindings.createBooleanBinding(Callable { dirtyProperties.contains(prop) }, dirtyProperties)
+    return Bindings.createBooleanBinding(Callable { prop in dirtyProperties }, dirtyProperties)
 }
 
 fun <V : ViewModel, T> V.rebindOnTreeItemChange(observable: ObservableValue<TreeItem<T>>, op: V.(T?) -> Unit) {
