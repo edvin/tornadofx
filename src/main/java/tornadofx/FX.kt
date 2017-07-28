@@ -31,6 +31,7 @@ import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
+import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
@@ -282,14 +283,26 @@ class FX {
 
         fun applyStylesheetsTo(scene: Scene) {
             scene.stylesheets.addAll(stylesheets)
-            stylesheets.addListener(ListChangeListener {
-                while (it.next()) {
-                    if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
-                    if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
-                }
-            })
+            stylesheets.addListener( MyListChangeListener(scene))
         }
 
+    }
+}
+
+class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
+    val weakReference = WeakReference(scene)
+
+    override fun onChanged(it: ListChangeListener.Change<out String>) {
+        val scene = weakReference.get()
+        if (scene == null) {
+            //WeakReference has been collected, remove listener
+            stylesheets.removeListener(this)
+            return
+        }
+        while (it.next()) {
+            if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
+            if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
+        }
     }
 }
 
