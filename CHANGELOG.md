@@ -4,6 +4,8 @@
 
 ### Additions
 
+- The following extension functions (`managedWhen`, `visibleWhen`, `hiddenWhen`, `disableWhen`, `enableWhen`, `removeWhen`, `onHover`) 
+  now return the node the are called on.
 - TableColumn.cellFragment to match ListView.cellFragment + SmartTableCell which encapsulate cellFormat, cellCache and cellFragment
 - bindChildren(observableSet, converter) to completement the observableList version
 - sequentialTransition, parallelTransition builders (https://github.com/edvin/tornadofx/issues/373)
