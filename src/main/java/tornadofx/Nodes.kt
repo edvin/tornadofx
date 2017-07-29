@@ -1113,24 +1113,123 @@ val Region.paddingAllProperty: DoubleProperty get() {
     } as DoubleProperty
 }
 
-fun Node.managedWhen(expr: () -> ObservableValue<Boolean>) = managedWhen(expr())
-fun Node.managedWhen(predicate: ObservableValue<Boolean>) = managedProperty().cleanBind(predicate)
-fun Node.visibleWhen(predicate: ObservableValue<Boolean>) = visibleProperty().cleanBind(predicate)
-fun Node.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleWhen(expr())
-fun Node.hiddenWhen(expr: () -> ObservableValue<Boolean>) = hiddenWhen(expr())
-fun Node.hiddenWhen(predicate: ObservableValue<Boolean>) {
+// -- Node helpers
+/**
+ * This extensions function will automatically bind to the managedProperty of the given node
+ * and will make sure that it is managed, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
+ */
+fun <T: Node> T.managedWhen(expr: () -> ObservableValue<Boolean>): T = managedWhen(expr())
+
+/**
+ * This extensions function will automatically bind to the managedProperty of the given node
+ * and will make sure that it is managed, if the given [predicate] an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
+ */
+fun <T: Node> T.managedWhen(predicate: ObservableValue<Boolean>): T {
+    managedProperty().cleanBind(predicate)
+    return this
+}
+
+/**
+ * This extensions function will automatically bind to the visibleProperty of the given node
+ * and will make sure that it is visible, if the given [predicate] an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
+ */
+fun <T: Node> T.visibleWhen(predicate: ObservableValue<Boolean>): T {
+  visibleProperty().cleanBind(predicate)
+    return this
+}
+
+/**
+ * This extensions function will automatically bind to the visibleProperty of the given node
+ * and will make sure that it is visible, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
+ */
+fun <T: Node> T.visibleWhen(expr: () -> ObservableValue<Boolean>): T = visibleWhen(expr())
+
+/**
+ * This extensions function will make sure to hide the given node,
+ * if the given [expr] returning an observable boolean value equals true.
+ */
+fun <T: Node> T.hiddenWhen(expr: () -> ObservableValue<Boolean>): T = hiddenWhen(expr())
+
+/**
+ * This extensions function will make sure to hide the given node,
+ * if the given [predicate] an observable boolean value equals true.
+ */
+fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>): T {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     visibleProperty().cleanBind(binding)
+    return this
 }
 
-fun Node.disableWhen(expr: () -> ObservableValue<Boolean>) = disableWhen(expr())
-fun Node.disableWhen(obs: ObservableValue<Boolean>) = disableProperty().cleanBind(obs)
-fun Node.enableWhen(expr: () -> ObservableValue<Boolean>) = enableWhen(expr())
-fun Node.enableWhen(predicate: ObservableValue<Boolean>) {
+/**
+ * This extensions function will automatically bind to the disableProperty of the given node
+ * and will disable it, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disable
+ */
+fun <T: Node> T.disableWhen(expr: () -> ObservableValue<Boolean>): T = disableWhen(expr())
+
+/**
+ * This extensions function will automatically bind to the disableProperty of the given node
+ * and will disable it, if the given [predicate] observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disableProperty
+ */
+fun <T: Node> T.disableWhen(predicate: ObservableValue<Boolean>): T {
+    disableProperty().cleanBind(predicate)
+    return this
+}
+
+/**
+ * This extensions function will make sure that the given node is enabled when ever,
+ * the given [expr] returning an observable boolean value equals true.
+ */
+fun <T: Node> T.enableWhen(expr: () -> ObservableValue<Boolean>): T = enableWhen(expr())
+
+/**
+ * This extensions function will make sure that the given node is enabled when ever,
+ * the given [predicate] observable boolean value equals true.
+ */
+fun <T: Node> T.enableWhen(predicate: ObservableValue<Boolean>): T {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
+    return this
 }
 
+/**
+ * This extension function will make sure that the given node will only be visible in the scene graph,
+ * if the given [expr] returning an observable boolean value equals true.
+ */
+fun <T: Node> T.removeWhen(expr: () -> ObservableValue<Boolean>): T = removeWhen(expr())
+
+/**
+ * This extension function will make sure that the given node will only be visible in the scene graph,
+ * if the given [predicate] observable boolean value equals true.
+ */
+fun <T: Node> T.removeWhen(predicate: ObservableValue<Boolean>): T {
+    val remove = booleanBinding(predicate) { predicate.value.not() }
+    visibleProperty().cleanBind(remove)
+    managedProperty().cleanBind(remove)
+    return this
+}
+
+/**
+ * This extension function will make sure that the given [onHover] function will always be calles
+ * when ever the hoverProperty of the given node changes.
+ */
+fun <T: Node> T.onHover(onHover: (Boolean) -> Unit): T {
+    hoverProperty().onChange { onHover(isHover) }
+    return this
+}
+
+// -- MenuItem helpers
 fun MenuItem.visibleWhen(expr: () -> ObservableValue<Boolean>) = visibleWhen(expr())
 fun MenuItem.visibleWhen(predicate: ObservableValue<Boolean>) = visibleProperty().cleanBind(predicate)
 fun MenuItem.disableWhen(expr: () -> ObservableValue<Boolean>) = disableWhen(expr())
@@ -1140,15 +1239,6 @@ fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
     val binding = if (obs is BooleanBinding) obs.not() else obs.toBinding().not()
     disableProperty().cleanBind(binding)
 }
-
-fun Node.removeWhen(expr: () -> ObservableValue<Boolean>) = removeWhen(expr())
-fun Node.removeWhen(predicate: ObservableValue<Boolean>) {
-    val remove = booleanBinding(predicate) { predicate.value.not() }
-    visibleProperty().cleanBind(remove)
-    managedProperty().cleanBind(remove)
-}
-
-fun Node.onHover(onHover: (Boolean) -> Unit) = hoverProperty().onChange { onHover(isHover) }
 
 fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: (SVGIcon.() -> Unit)? = null) = opcr(this, SVGIcon(shape, size, color), op)
 
@@ -1197,19 +1287,21 @@ internal val Node.shortLongPressHandler: ShortLongPressHandler get() = propertie
     ShortLongPressHandler(this)
 } as ShortLongPressHandler
 
-fun Node.shortpress(consume: Boolean = false, action: (InputEvent) -> Unit) {
+fun <T: Node> T.shortpress(consume: Boolean = false, action: (InputEvent) -> Unit): T {
     shortLongPressHandler.apply {
         this.consume = consume
         this.shortAction = action
     }
+    return this
 }
 
-fun Node.longpress(threshold: Duration = 700.millis, consume: Boolean = false, action: (MouseEvent) -> Unit) {
+fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = false, action: (MouseEvent) -> Unit): T {
     shortLongPressHandler.apply {
         this.consume = consume
         this.holdTimer.duration = threshold
         this.longAction = action
     }
+    return this
 }
 
 /**
