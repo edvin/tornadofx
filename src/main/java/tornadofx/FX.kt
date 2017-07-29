@@ -36,6 +36,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -283,25 +284,35 @@ class FX {
 
         fun applyStylesheetsTo(scene: Scene) {
             scene.stylesheets.addAll(stylesheets)
-            stylesheets.addListener( MyListChangeListener(scene))
+            stylesheets.addListener(MyListChangeListener(scene))
         }
 
     }
 }
 
-private class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
-    val weakReference = WeakReference(scene)
+fun <T> weak(referent: T, deinit: (() -> Unit)? = null): WeakDelegate<T> = WeakDelegate(referent, deinit)
 
-    override fun onChanged(it: ListChangeListener.Change<out String>) {
-        val scene = weakReference.get()
-        if (scene == null) {
-            //WeakReference has been collected, remove listener
-            stylesheets.removeListener(this)
-            return
-        }
-        while (it.next()) {
-            if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
-            if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
+class WeakDelegate<T>(referent: T, deinit: (() -> Unit)? = null) : ReadOnlyProperty<Any, DeregisteringWeakReference<T>> {
+    private val weakRef = DeregisteringWeakReference(referent, deinit)
+    override fun getValue(thisRef: Any, property: KProperty<*>) = weakRef
+}
+
+class DeregisteringWeakReference<T>(referent: T, val deinit: (() -> Unit)? = null) : WeakReference<T>(referent) {
+    fun ifActive(op: T.() -> Unit) {
+        val ref = get()
+        if (ref != null) op(ref) else deinit?.invoke()
+    }
+}
+
+private class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
+    val sceneRef by weak(scene) { stylesheets.removeListener(this) }
+
+    override fun onChanged(change: ListChangeListener.Change<out String>) {
+        sceneRef.ifActive {
+            while (change.next()) {
+                if (change.wasAdded()) change.addedSubList.forEach { stylesheets.add(it) }
+                if (change.wasRemoved()) change.removed.forEach { stylesheets.remove(it) }
+            }
         }
     }
 }
@@ -542,6 +553,16 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
  * in the children list of this layout node.
  */
 inline fun <reified T> EventTarget.bindChildren(sourceList: ObservableList<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
+    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
+    return children.bind(sourceList, converter)
+}
+
+/**
+ * Bind the children of this Layout node to the items of the given ListPropery by converting
+ * them into nodes via the given converter function. Changes to the source list and changing the list inside the ListProperty
+ * will be reflected in the children list of this layout node.
+ */
+inline fun <reified T> EventTarget.bindChildren(sourceList: ListProperty<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
     val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
     return children.bind(sourceList, converter)
 }
