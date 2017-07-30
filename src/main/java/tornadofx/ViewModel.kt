@@ -30,7 +30,7 @@ open class ViewModel : Component(), ScopedInstance {
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
     val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
     val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
-    val dirty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
+    open val dirty = booleanBinding(dirtyProperties, dirtyProperties) { isNotEmpty() }
     @Deprecated("Use dirty property instead", ReplaceWith("dirty"))
     fun dirtyStateProperty() = dirty
 
