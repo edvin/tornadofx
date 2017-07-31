@@ -208,7 +208,7 @@ fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
 }
 
 operator fun <T> ObservableValue<T>.getValue(thisRef: Any, property: KProperty<*>) = value
-operator fun <T> Property<T?>.setValue(thisRef: Any, property: KProperty<*>, value: T?) = setValue(value)
+operator fun <T> Property<T>.setValue(thisRef: Any, property: KProperty<*>, value: T?) = setValue(value)
 
 operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) = set(value)

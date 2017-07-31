@@ -240,8 +240,6 @@ class LazyTreeItem<T : Any>(
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
             childFactoryResult = childFactory(this)
-            if (childFactoryResult != null)
-                super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
         }
         return childFactoryResult
     }

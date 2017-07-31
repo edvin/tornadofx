@@ -2,6 +2,8 @@ package tornadofx
 
 import javafx.beans.DefaultProperty
 import javafx.beans.binding.Bindings.createObjectBinding
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
@@ -15,6 +17,7 @@ import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.Priority.SOMETIMES
+import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
@@ -74,23 +77,35 @@ open class Form : VBox() {
 
 @DefaultProperty("children")
 open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : VBox() {
-    var text by property<String>()
-    fun textProperty() = getProperty(Fieldset::text)
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("textProperty"))
+    fun textProperty() = textProperty
+    val textProperty = SimpleStringProperty(text)
+    var text by textProperty
 
-    var inputGrow by property(SOMETIMES)
-    fun inputGrowProperty() = getProperty(Fieldset::inputGrow)
+    val inputGrowProperty = SimpleObjectProperty<Priority>(SOMETIMES)
+    var inputGrow by inputGrowProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("inputGrowProperty"), DeprecationLevel.WARNING)
+    fun inputGrowProperty() = inputGrowProperty
 
-    var labelPosition by property<Orientation>()
-    fun labelPositionProperty() = getProperty(Fieldset::labelPosition)
+    var labelPositionProperty = SimpleObjectProperty<Orientation>(labelPosition)
+    var labelPosition by labelPositionProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("labelPositionProperty"), DeprecationLevel.WARNING)
+    fun labelPositionProperty() = labelPositionProperty
 
-    var wrapWidth by property<Number>()
-    fun wrapWidthProperty() = getProperty(Fieldset::wrapWidth)
+    val wrapWidthProperty = SimpleObjectProperty<Number>()
+    var wrapWidth by wrapWidthProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("wrapWidthProperty"), DeprecationLevel.WARNING)
+    fun wrapWidthProperty() = wrapWidthProperty
 
-    var icon by property<Node>()
-    fun iconProperty() = getProperty(Fieldset::icon)
+    val iconProperty = SimpleObjectProperty<Node>()
+    var icon by iconProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("iconProperty"), DeprecationLevel.WARNING)
+    fun iconProperty() = iconProperty
 
-    var legend by property<Label?>()
-    fun legendProperty() = getProperty(Fieldset::legend)
+    val legendProperty = SimpleObjectProperty<Label>()
+    var legend by legendProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("legendProperty"), DeprecationLevel.WARNING)
+    fun legendProperty() = legendProperty
 
     init {
         addClass(Stylesheet.fieldset)
@@ -99,10 +114,10 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
         syncOrientationState()
 
         // Add legend label when text is populated
-        textProperty().onChange { newValue -> if (!newValue.isNullOrBlank()) addLegend() }
+        textProperty.onChange { newValue -> if (!newValue.isNullOrBlank()) addLegend() }
 
         // Add legend when icon is populated
-        iconProperty().onChange { newValue -> if (newValue != null) addLegend() }
+        iconProperty.onChange { newValue -> if (newValue != null) addLegend() }
 
         // Make sure input children gets the configured HBox.hgrow property
         syncHgrow()
@@ -135,7 +150,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
         })
 
         // Change HGrow for unconfigured children when inputGrow changes
-        inputGrowProperty().onChange {
+        inputGrowProperty.onChange {
             children.asSequence().filterIsInstance<Field>().forEach { field ->
                 field.inputContainer.children.forEach { configureHgrow(it) }
             }
@@ -143,7 +158,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
     }
 
     private fun syncOrientationState() {
-        labelPositionProperty().onChange { newValue ->
+        labelPositionProperty.onChange { newValue ->
             if (newValue == HORIZONTAL) {
                 pseudoClassStateChanged(VERTICAL_PSEUDOCLASS_STATE, false)
                 pseudoClassStateChanged(HORIZONTAL_PSEUDOCLASS_STATE, true)
@@ -154,27 +169,24 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
         }
 
         // Setup listeneres for wrapping
-        wrapWidthProperty().onChange { newValue ->
+        wrapWidthProperty.onChange { newValue ->
             val responsiveOrientation = createObjectBinding<Orientation>(Callable {
                 if (width < newValue?.toDouble() ?: 0.0) VERTICAL else HORIZONTAL
             }, widthProperty())
 
-            if (labelPositionProperty().isBound)
-                labelPositionProperty().unbind()
-
-            labelPositionProperty().bind(responsiveOrientation)
+            labelPositionProperty.cleanBind(responsiveOrientation)
         }
     }
 
     private fun addLegend() {
         if (legend == null) {
             legend = Label()
-            legend!!.textProperty().bind(textProperty())
-            legend!!.addClass(Stylesheet.legend)
+            legend.textProperty().bind(textProperty)
+            legend.addClass(Stylesheet.legend)
             children.add(0, legend)
         }
 
-        legend!!.graphic = icon
+        legend.graphic = icon
     }
 
     private fun configureHgrow(input: Node) {
@@ -237,8 +249,10 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
 
 @DefaultProperty("inputs")
 abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
-    var text: String? by property(text)
-    fun textProperty() = getProperty(Field::text)
+    val textProperty = SimpleStringProperty(text)
+    var text by textProperty
+    @Deprecated("Please use the new more concise syntax.", ReplaceWith("textProperty"), DeprecationLevel.WARNING)
+    fun textProperty() = textProperty
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }

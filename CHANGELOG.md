@@ -4,19 +4,27 @@
 
 ### Additions
 
+- weak delegate for easier construction of weak references that need a deinit callback
+- The following extension functions (`managedWhen`, `visibleWhen`, `hiddenWhen`, `disableWhen`, `enableWhen`, `removeWhen`, `onHover`) 
+  now return the node the are called on.
 - TableColumn.cellFragment to match ListView.cellFragment + SmartTableCell which encapsulate cellFormat, cellCache and cellFragment
 - bindChildren(observableSet, converter) to completement the observableList version
 - sequentialTransition, parallelTransition builders (https://github.com/edvin/tornadofx/issues/373)
 - ObservableList<*>.sizeProperty keeps track of the number of items in an ObservableList
 - KeyboardLayout which can export to keyboard-layout-editor.com format
 - ObservableValue<T>.onChangeOnce() and ObservableValue<T>.onChangeTimes(n) will disconnect listener after n events
+- ViewModel.markDirty(property) to explicitly set a property dirty, for example when a bound list is changed internally
 
 ### Fixed
 
+- Form and Field properties got updated to the new more concise syntax propertyName() vs. property
+- LazyTreeItem will now only set children once after getChildren is called.
+- DataGrid properly updates when operating on a bound list (https://github.com/edvin/tornadofx/issues/385)
+- DataGrid reselects same index if item at selected index is removed (https://github.com/edvin/tornadofx/issues/386)
 - imageview builder now accepts null from an `ObservableValue<String>`
 - TreeView.cellFormat now unbinds the textProperty and the graphicProperty
 - Reified type parameter to ViewModel.bind() to solve properties that are null at the binding call (https://github.com/edvin/tornadofx/issues/365)
-- ViewModel.bind() for properties that are null at the binding call now supports Long as well
+- ViewModel.bind() for properties that are null at the binding call + now supports Long amd ObservableList as well
 - Fixed Chart.series() bug (https://github.com/edvin/tornadofx/issues/354)
 - External/synced changes to bound ViewModel properties should not affect dirty state (https://github.com/edvin/tornadofx/issues/358)
 - showModal/showWindow now resizes the window before calling onDock, so the View can override placement easier (https://github.com/edvin/tornadofx/issues/360)
@@ -28,6 +36,8 @@
 - Kotlin 1.1.3-2
 - DataGrid receives focus on click
 - TableView refactoring, all cell manipulation functions are encapsulated in a SmartTableCell
+- ItemViewModel's bind methods accept properties that return nullable values (https://github.com/edvin/tornadofx/issues/389)
+- ViewModel binding mechanism has been rewritten and supports lists much better now
 
 ## [1.7.8] - 2017-06-25
 

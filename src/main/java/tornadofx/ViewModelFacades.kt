@@ -1,7 +1,12 @@
 package tornadofx
 
+import javafx.beans.Observable
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
+import javafx.collections.ObservableSet
+
+interface BindingAware
 
 /**
  * A property wrapper that will report it's ViewModel relation
@@ -9,19 +14,17 @@ import javafx.beans.value.ObservableValue
  * to retrieve the correct ValidationContext from the ViewModel
  * this property is bound to.
  */
-interface BindingAwareProperty<T> : Property<T> {
+interface BindingAwareProperty<T> : BindingAware, Property<T> {
     fun recordBinding(observableValue: ObservableValue<*>?) {
-        ViewModel.propertyToFacade[observableValue] = this
-        if (observableValue != null) {
+        if (observableValue is Observable) {
+            ViewModel.propertyToFacade[observableValue] = this
             ViewModel.propertyToViewModel[observableValue] = bean as ViewModel
         }
     }
 }
 
-class BindingAwareSimpleBooleanProperty : SimpleBooleanProperty, BindingAwareProperty<Boolean> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: Boolean) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleBooleanProperty(viewModel: ViewModel, name: String?) : SimpleBooleanProperty(viewModel, name), BindingAwareProperty<Boolean> {
+
     override fun bind(rawObservable: ObservableValue<out Boolean>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -33,10 +36,7 @@ class BindingAwareSimpleBooleanProperty : SimpleBooleanProperty, BindingAwarePro
     }
 }
 
-class BindingAwareSimpleStringProperty : SimpleStringProperty, BindingAwareProperty<String> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: String) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleStringProperty(viewModel: ViewModel, name: String?) : SimpleStringProperty(viewModel, name), BindingAwareProperty<String> {
     override fun bind(rawObservable: ObservableValue<out String>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -48,10 +48,7 @@ class BindingAwareSimpleStringProperty : SimpleStringProperty, BindingAwarePrope
     }
 }
 
-class BindingAwareSimpleObjectProperty<T> : SimpleObjectProperty<T>, BindingAwareProperty<T> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: T) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleObjectProperty<T>(viewModel: ViewModel, name: String?) : SimpleObjectProperty<T>(viewModel, name), BindingAwareProperty<T> {
     override fun bind(rawObservable: ObservableValue<out T>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -63,10 +60,60 @@ class BindingAwareSimpleObjectProperty<T> : SimpleObjectProperty<T>, BindingAwar
     }
 }
 
-class BindingAwareSimpleFloatProperty : SimpleFloatProperty, BindingAwareProperty<Number> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: Float) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleListProperty<T>(viewModel: ViewModel, name: String?) : SimpleListProperty<T>(viewModel, name) {
+    override fun bind(newObservable: ObservableValue<out ObservableList<T>>?) {
+        super.bind(newObservable)
+        recordBinding(newObservable)
+    }
+
+    override fun bindContentBidirectional(list: ObservableList<T>?) {
+        super.bindContentBidirectional(list)
+        recordBinding(list)
+    }
+
+    fun recordBinding(observableValue: Observable?) {
+        if (observableValue != null) {
+            ViewModel.propertyToFacade[observableValue] = this
+            ViewModel.propertyToViewModel[observableValue] = bean as ViewModel
+        }
+    }
+
+    /**
+     * Return a unique id for this object instead of the default hashCode which is dependent on the children.
+     * Without this override we wouldn't be able to identify the facade in our internal maps.
+     */
+    override fun hashCode() = System.identityHashCode(this)
+    override fun equals(other: Any?) = this === other
+}
+
+class BindingAwareSimpleSetProperty<T>(viewModel: ViewModel, name: String?) : SimpleSetProperty<T>(viewModel, name) {
+    override fun bind(newObservable: ObservableValue<out ObservableSet<T>>?) {
+        super.bind(newObservable)
+        recordBinding(newObservable)
+    }
+
+    override fun bindContentBidirectional(list: ObservableSet<T>?) {
+        super.bindContentBidirectional(list)
+        recordBinding(list)
+    }
+
+    fun recordBinding(observableValue: Observable?) {
+        if (observableValue != null) {
+            ViewModel.propertyToFacade[observableValue] = this
+            ViewModel.propertyToViewModel[observableValue] = bean as ViewModel
+        }
+    }
+
+    /**
+     * Return a unique id for this object instead of the default hashCode which is dependent on the children.
+     * Without this override we wouldn't be able to identify the facade in our internal maps.
+     */
+    override fun hashCode() = System.identityHashCode(this)
+    override fun equals(other: Any?) = this === other
+}
+
+class BindingAwareSimpleFloatProperty(viewModel: ViewModel, name: String?) : SimpleFloatProperty(viewModel, name), BindingAwareProperty<Number> {
+
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -78,10 +125,8 @@ class BindingAwareSimpleFloatProperty : SimpleFloatProperty, BindingAwarePropert
     }
 }
 
-class BindingAwareSimpleDoubleProperty : SimpleDoubleProperty, BindingAwareProperty<Number> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: Double) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleDoubleProperty(viewModel: ViewModel, name: String?) : SimpleDoubleProperty(viewModel, name), BindingAwareProperty<Number> {
+
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -93,10 +138,8 @@ class BindingAwareSimpleDoubleProperty : SimpleDoubleProperty, BindingAwarePrope
     }
 }
 
-class BindingAwareSimpleLongProperty : SimpleLongProperty, BindingAwareProperty<Number> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: Long) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleLongProperty(viewModel: ViewModel, name: String?) : SimpleLongProperty(viewModel, name), BindingAwareProperty<Number> {
+
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
@@ -108,10 +151,8 @@ class BindingAwareSimpleLongProperty : SimpleLongProperty, BindingAwareProperty<
     }
 }
 
-class BindingAwareSimpleIntegerProperty : SimpleIntegerProperty, BindingAwareProperty<Number> {
-    constructor(viewModel: ViewModel, name: String?, initialValue: Int) : super(viewModel, name, initialValue)
-    constructor(viewModel: ViewModel, name: String?) : super(viewModel, name)
-    
+class BindingAwareSimpleIntegerProperty(viewModel: ViewModel, name: String?) : SimpleIntegerProperty(viewModel, name), BindingAwareProperty<Number> {
+
     override fun bind(rawObservable: ObservableValue<out Number>?) {
         super.bind(rawObservable)
         recordBinding(rawObservable)
