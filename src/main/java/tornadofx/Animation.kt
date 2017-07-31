@@ -347,7 +347,10 @@ fun Shape.animateFill(time: Duration, from: Color, to: Color,
                       op: (FillTransition.() -> Unit)? = null): FillTransition {
     return FillTransition(time, this, from, to).apply {
         interpolator = easing
-        // TODO: Handle reversed
+        if (reversed) {
+            fromValue = to
+            toValue = from
+        }
         op?.invoke(this)
         if (play) play()
     }
@@ -358,7 +361,10 @@ fun Shape.animateStroke(time: Duration, from: Color, to: Color,
                         op: (StrokeTransition.() -> Unit)? = null): StrokeTransition {
     return StrokeTransition(time, this, from, to).apply {
         interpolator = easing
-        // TODO: Handle reversed
+        if (reversed) {
+            fromValue = to
+            toValue = from
+        }
         op?.invoke(this)
         if (play) play()
     }
@@ -369,8 +375,8 @@ fun Node.follow(time: Duration, path: Shape,
                 op: (PathTransition.() -> Unit)? = null): PathTransition {
     return PathTransition(time, path, this).apply {
         interpolator = easing
-        // TODO: Handle reversed
         op?.invoke(this)
+        if (reversed && rate > 0.0) rate = -rate
         if (play) play()
     }
 }
