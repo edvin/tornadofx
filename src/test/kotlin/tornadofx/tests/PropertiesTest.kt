@@ -2880,4 +2880,14 @@ class PropertiesTest {
         property2.value = "Bye World!"
         Assert.assertTrue(binding.get())
     }
+
+    @Test fun propertyFromMapKey() {
+        val map = mutableMapOf("hello" to "world", "number" to 42)
+        val helloProperty = map.toProperty("hello") { SimpleStringProperty(it as String?) }
+        val numberProperty = map.toProperty("number") { SimpleIntegerProperty(it as Int) }
+        helloProperty.value = "there"
+        numberProperty.value = 43
+        Assert.assertEquals("there", map["hello"])
+        Assert.assertEquals(43, map["number"])
+    }
 }

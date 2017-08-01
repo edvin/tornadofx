@@ -1,11 +1,14 @@
 package tornadofx
 
+import javafx.beans.InvalidationListener
 import javafx.beans.Observable
 import javafx.beans.binding.*
 import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
+import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
+import javafx.collections.ObservableMap
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -229,8 +232,13 @@ operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, valu
 operator fun DoubleExpression.plus(other: Number): DoubleBinding = add(other.toDouble())
 operator fun DoubleExpression.plus(other: ObservableNumberValue): DoubleBinding = add(other)
 
-operator fun DoubleProperty.plusAssign(other: Number) { value += other.toDouble() }
-operator fun DoubleProperty.plusAssign(other: ObservableNumberValue) { value += other.doubleValue() }
+operator fun DoubleProperty.plusAssign(other: Number) {
+    value += other.toDouble()
+}
+
+operator fun DoubleProperty.plusAssign(other: ObservableNumberValue) {
+    value += other.doubleValue()
+}
 
 operator fun DoubleProperty.inc(): DoubleProperty {
     value++
@@ -240,8 +248,13 @@ operator fun DoubleProperty.inc(): DoubleProperty {
 operator fun DoubleExpression.minus(other: Number): DoubleBinding = subtract(other.toDouble())
 operator fun DoubleExpression.minus(other: ObservableNumberValue): DoubleBinding = subtract(other)
 
-operator fun DoubleProperty.minusAssign(other: Number) { value -= other.toDouble() }
-operator fun DoubleProperty.minusAssign(other: ObservableNumberValue) { value -= other.doubleValue() }
+operator fun DoubleProperty.minusAssign(other: Number) {
+    value -= other.toDouble()
+}
+
+operator fun DoubleProperty.minusAssign(other: ObservableNumberValue) {
+    value -= other.doubleValue()
+}
 
 operator fun DoubleExpression.unaryMinus(): DoubleBinding = negate()
 
@@ -254,21 +267,36 @@ operator fun DoubleProperty.dec(): DoubleProperty {
 operator fun DoubleExpression.times(other: Number): DoubleBinding = multiply(other.toDouble())
 operator fun DoubleExpression.times(other: ObservableNumberValue): DoubleBinding = multiply(other)
 
-operator fun DoubleProperty.timesAssign(other: Number) { value *= other.toDouble() }
-operator fun DoubleProperty.timesAssign(other: ObservableNumberValue) { value *= other.doubleValue() }
+operator fun DoubleProperty.timesAssign(other: Number) {
+    value *= other.toDouble()
+}
+
+operator fun DoubleProperty.timesAssign(other: ObservableNumberValue) {
+    value *= other.doubleValue()
+}
 
 operator fun DoubleExpression.div(other: Number): DoubleBinding = divide(other.toDouble())
 operator fun DoubleExpression.div(other: ObservableNumberValue): DoubleBinding = divide(other)
 
-operator fun DoubleProperty.divAssign(other: Number) { value /= other.toDouble() }
-operator fun DoubleProperty.divAssign(other: ObservableNumberValue) { value /= other.doubleValue() }
+operator fun DoubleProperty.divAssign(other: Number) {
+    value /= other.toDouble()
+}
+
+operator fun DoubleProperty.divAssign(other: ObservableNumberValue) {
+    value /= other.doubleValue()
+}
 
 
 operator fun DoubleExpression.rem(other: Number): DoubleBinding = doubleBinding(this) { get() % other.toDouble() }
 operator fun DoubleExpression.rem(other: ObservableNumberValue): DoubleBinding = doubleBinding(this, other) { get() % other.doubleValue() }
 
-operator fun DoubleProperty.remAssign(other: Number) { value %= other.toDouble() }
-operator fun DoubleProperty.remAssign(other: ObservableNumberValue) { value %= other.doubleValue() }
+operator fun DoubleProperty.remAssign(other: Number) {
+    value %= other.toDouble()
+}
+
+operator fun DoubleProperty.remAssign(other: ObservableNumberValue) {
+    value %= other.doubleValue()
+}
 
 operator fun ObservableDoubleValue.compareTo(other: Number): Int {
     if (get() > other.toDouble())
@@ -293,8 +321,13 @@ operator fun FloatExpression.plus(other: Double): DoubleBinding = add(other)
 operator fun FloatExpression.plus(other: ObservableNumberValue): FloatBinding = add(other) as FloatBinding
 operator fun FloatExpression.plus(other: ObservableDoubleValue): DoubleBinding = add(other) as DoubleBinding
 
-operator fun FloatProperty.plusAssign(other: Number) { value += other.toFloat() }
-operator fun FloatProperty.plusAssign(other: ObservableNumberValue) { value += other.floatValue() }
+operator fun FloatProperty.plusAssign(other: Number) {
+    value += other.toFloat()
+}
+
+operator fun FloatProperty.plusAssign(other: ObservableNumberValue) {
+    value += other.floatValue()
+}
 
 operator fun FloatProperty.inc(): FloatProperty {
     value++
@@ -306,8 +339,13 @@ operator fun FloatExpression.minus(other: Double): DoubleBinding = subtract(othe
 operator fun FloatExpression.minus(other: ObservableNumberValue): FloatBinding = subtract(other) as FloatBinding
 operator fun FloatExpression.minus(other: ObservableDoubleValue): DoubleBinding = subtract(other) as DoubleBinding
 
-operator fun FloatProperty.minusAssign(other: Number) { value -= other.toFloat() }
-operator fun FloatProperty.minusAssign(other: ObservableNumberValue) { value -= other.floatValue() }
+operator fun FloatProperty.minusAssign(other: Number) {
+    value -= other.toFloat()
+}
+
+operator fun FloatProperty.minusAssign(other: ObservableNumberValue) {
+    value -= other.floatValue()
+}
 
 operator fun FloatExpression.unaryMinus(): FloatBinding = negate()
 
@@ -321,8 +359,13 @@ operator fun FloatExpression.times(other: Double): DoubleBinding = multiply(othe
 operator fun FloatExpression.times(other: ObservableNumberValue): FloatBinding = multiply(other) as FloatBinding
 operator fun FloatExpression.times(other: ObservableDoubleValue): DoubleBinding = multiply(other) as DoubleBinding
 
-operator fun FloatProperty.timesAssign(other: Number) { value *= other.toFloat() }
-operator fun FloatProperty.timesAssign(other: ObservableNumberValue) { value *= other.floatValue() }
+operator fun FloatProperty.timesAssign(other: Number) {
+    value *= other.toFloat()
+}
+
+operator fun FloatProperty.timesAssign(other: ObservableNumberValue) {
+    value *= other.floatValue()
+}
 
 
 operator fun FloatExpression.div(other: Number): FloatBinding = divide(other.toFloat())
@@ -330,8 +373,13 @@ operator fun FloatExpression.div(other: Double): DoubleBinding = divide(other)
 operator fun FloatExpression.div(other: ObservableNumberValue): FloatBinding = divide(other) as FloatBinding
 operator fun FloatExpression.div(other: ObservableDoubleValue): DoubleBinding = divide(other) as DoubleBinding
 
-operator fun FloatProperty.divAssign(other: Number) { value /= other.toFloat() }
-operator fun FloatProperty.divAssign(other: ObservableNumberValue) { value /= other.floatValue() }
+operator fun FloatProperty.divAssign(other: Number) {
+    value /= other.toFloat()
+}
+
+operator fun FloatProperty.divAssign(other: ObservableNumberValue) {
+    value /= other.floatValue()
+}
 
 
 operator fun FloatExpression.rem(other: Number): FloatBinding = floatBinding(this) { get() % other.toFloat() }
@@ -339,8 +387,13 @@ operator fun FloatExpression.rem(other: Double): DoubleBinding = doubleBinding(t
 operator fun FloatExpression.rem(other: ObservableNumberValue): FloatBinding = floatBinding(this, other) { get() % other.floatValue() }
 operator fun FloatExpression.rem(other: ObservableDoubleValue): DoubleBinding = doubleBinding(this, other) { get() % other.get() }
 
-operator fun FloatProperty.remAssign(other: Number) { value %= other.toFloat() }
-operator fun FloatProperty.remAssign(other: ObservableNumberValue) { value %= other.floatValue() }
+operator fun FloatProperty.remAssign(other: Number) {
+    value %= other.toFloat()
+}
+
+operator fun FloatProperty.remAssign(other: ObservableNumberValue) {
+    value %= other.floatValue()
+}
 
 operator fun ObservableFloatValue.compareTo(other: Number): Int {
     if (get() > other.toFloat())
@@ -370,8 +423,13 @@ operator fun IntegerExpression.plus(other: ObservableLongValue): LongBinding = a
 operator fun IntegerExpression.plus(other: ObservableFloatValue): FloatBinding = add(other) as FloatBinding
 operator fun IntegerExpression.plus(other: ObservableDoubleValue): DoubleBinding = add(other) as DoubleBinding
 
-operator fun IntegerProperty.plusAssign(other: Number) { value += other.toInt() }
-operator fun IntegerProperty.plusAssign(other: ObservableNumberValue) { value += other.intValue() }
+operator fun IntegerProperty.plusAssign(other: Number) {
+    value += other.toInt()
+}
+
+operator fun IntegerProperty.plusAssign(other: ObservableNumberValue) {
+    value += other.intValue()
+}
 
 operator fun IntegerProperty.inc(): IntegerProperty {
     value++
@@ -387,8 +445,13 @@ operator fun IntegerExpression.minus(other: ObservableLongValue): LongBinding = 
 operator fun IntegerExpression.minus(other: ObservableFloatValue): FloatBinding = subtract(other) as FloatBinding
 operator fun IntegerExpression.minus(other: ObservableDoubleValue): DoubleBinding = subtract(other) as DoubleBinding
 
-operator fun IntegerProperty.minusAssign(other: Number) { value -= other.toInt() }
-operator fun IntegerProperty.minusAssign(other: ObservableNumberValue) { value -= other.intValue() }
+operator fun IntegerProperty.minusAssign(other: Number) {
+    value -= other.toInt()
+}
+
+operator fun IntegerProperty.minusAssign(other: ObservableNumberValue) {
+    value -= other.intValue()
+}
 
 operator fun IntegerExpression.unaryMinus(): IntegerBinding = negate()
 
@@ -406,8 +469,13 @@ operator fun IntegerExpression.times(other: ObservableLongValue): LongBinding = 
 operator fun IntegerExpression.times(other: ObservableFloatValue): FloatBinding = multiply(other) as FloatBinding
 operator fun IntegerExpression.times(other: ObservableDoubleValue): DoubleBinding = multiply(other) as DoubleBinding
 
-operator fun IntegerProperty.timesAssign(other: Number) { value *= other.toInt() }
-operator fun IntegerProperty.timesAssign(other: ObservableNumberValue) { value *= other.intValue() }
+operator fun IntegerProperty.timesAssign(other: Number) {
+    value *= other.toInt()
+}
+
+operator fun IntegerProperty.timesAssign(other: ObservableNumberValue) {
+    value *= other.intValue()
+}
 
 operator fun IntegerExpression.div(other: Int): IntegerBinding = divide(other)
 operator fun IntegerExpression.div(other: Long): LongBinding = divide(other)
@@ -418,8 +486,13 @@ operator fun IntegerExpression.div(other: ObservableLongValue): LongBinding = di
 operator fun IntegerExpression.div(other: ObservableFloatValue): FloatBinding = divide(other) as FloatBinding
 operator fun IntegerExpression.div(other: ObservableDoubleValue): DoubleBinding = divide(other) as DoubleBinding
 
-operator fun IntegerProperty.divAssign(other: Number) { value /= other.toInt() }
-operator fun IntegerProperty.divAssign(other: ObservableNumberValue) { value /= other.intValue() }
+operator fun IntegerProperty.divAssign(other: Number) {
+    value /= other.toInt()
+}
+
+operator fun IntegerProperty.divAssign(other: ObservableNumberValue) {
+    value /= other.intValue()
+}
 
 operator fun IntegerExpression.rem(other: Int): IntegerBinding = integerBinding(this) { get() % other }
 operator fun IntegerExpression.rem(other: Long): LongBinding = longBinding(this) { get() % other }
@@ -430,8 +503,13 @@ operator fun IntegerExpression.rem(other: ObservableLongValue): LongBinding = lo
 operator fun IntegerExpression.rem(other: ObservableFloatValue): FloatBinding = floatBinding(this, other) { get() % other.get() }
 operator fun IntegerExpression.rem(other: ObservableDoubleValue): DoubleBinding = doubleBinding(this, other) { get() % other.get() }
 
-operator fun IntegerProperty.remAssign(other: Number) { value %= other.toInt() }
-operator fun IntegerProperty.remAssign(other: ObservableNumberValue) { value %= other.intValue() }
+operator fun IntegerProperty.remAssign(other: Number) {
+    value %= other.toInt()
+}
+
+operator fun IntegerProperty.remAssign(other: ObservableNumberValue) {
+    value %= other.intValue()
+}
 
 operator fun ObservableIntegerValue.rangeTo(other: ObservableIntegerValue): Sequence<IntegerProperty> {
     val sequence = mutableListOf<IntegerProperty>()
@@ -491,8 +569,13 @@ operator fun LongExpression.plus(other: ObservableNumberValue): LongBinding = ad
 operator fun LongExpression.plus(other: ObservableFloatValue): FloatBinding = add(other) as FloatBinding
 operator fun LongExpression.plus(other: ObservableDoubleValue): DoubleBinding = add(other) as DoubleBinding
 
-operator fun LongProperty.plusAssign(other: Number) { value += other.toLong() }
-operator fun LongProperty.plusAssign(other: ObservableNumberValue) { value += other.longValue() }
+operator fun LongProperty.plusAssign(other: Number) {
+    value += other.toLong()
+}
+
+operator fun LongProperty.plusAssign(other: ObservableNumberValue) {
+    value += other.longValue()
+}
 
 operator fun LongProperty.inc(): LongProperty {
     value++
@@ -506,8 +589,13 @@ operator fun LongExpression.minus(other: ObservableNumberValue): LongBinding = s
 operator fun LongExpression.minus(other: ObservableFloatValue): FloatBinding = subtract(other) as FloatBinding
 operator fun LongExpression.minus(other: ObservableDoubleValue): DoubleBinding = subtract(other) as DoubleBinding
 
-operator fun LongProperty.minusAssign(other: Number) { value -= other.toLong() }
-operator fun LongProperty.minusAssign(other: ObservableNumberValue) { value -= other.longValue() }
+operator fun LongProperty.minusAssign(other: Number) {
+    value -= other.toLong()
+}
+
+operator fun LongProperty.minusAssign(other: ObservableNumberValue) {
+    value -= other.longValue()
+}
 
 operator fun LongExpression.unaryMinus(): LongBinding = negate()
 
@@ -523,8 +611,13 @@ operator fun LongExpression.times(other: ObservableNumberValue): LongBinding = m
 operator fun LongExpression.times(other: ObservableFloatValue): FloatBinding = multiply(other) as FloatBinding
 operator fun LongExpression.times(other: ObservableDoubleValue): DoubleBinding = multiply(other) as DoubleBinding
 
-operator fun LongProperty.timesAssign(other: Number) { value *= other.toLong() }
-operator fun LongProperty.timesAssign(other: ObservableNumberValue) { value *= other.longValue() }
+operator fun LongProperty.timesAssign(other: Number) {
+    value *= other.toLong()
+}
+
+operator fun LongProperty.timesAssign(other: ObservableNumberValue) {
+    value *= other.longValue()
+}
 
 operator fun LongExpression.div(other: Number): LongBinding = divide(other.toLong())
 operator fun LongExpression.div(other: Float): FloatBinding = divide(other)
@@ -533,8 +626,13 @@ operator fun LongExpression.div(other: ObservableNumberValue): LongBinding = div
 operator fun LongExpression.div(other: ObservableFloatValue): FloatBinding = divide(other) as FloatBinding
 operator fun LongExpression.div(other: ObservableDoubleValue): DoubleBinding = divide(other) as DoubleBinding
 
-operator fun LongProperty.divAssign(other: Number) { value /= other.toLong() }
-operator fun LongProperty.divAssign(other: ObservableNumberValue) { value /= other.longValue() }
+operator fun LongProperty.divAssign(other: Number) {
+    value /= other.toLong()
+}
+
+operator fun LongProperty.divAssign(other: ObservableNumberValue) {
+    value /= other.longValue()
+}
 
 operator fun LongExpression.rem(other: Number): LongBinding = longBinding(this) { get() % other.toLong() }
 operator fun LongExpression.rem(other: Float): FloatBinding = floatBinding(this) { get() % other }
@@ -544,8 +642,13 @@ operator fun LongExpression.rem(other: ObservableNumberValue): LongBinding = lon
 operator fun LongExpression.rem(other: ObservableFloatValue): FloatBinding = floatBinding(this, other) { this.get() % other.get() }
 operator fun LongExpression.rem(other: ObservableDoubleValue): DoubleBinding = doubleBinding(this, other) { this.get() % other.get() }
 
-operator fun LongProperty.remAssign(other: Number) { value %= other.toLong() }
-operator fun LongProperty.remAssign(other: ObservableNumberValue) { value %= other.longValue() }
+operator fun LongProperty.remAssign(other: Number) {
+    value %= other.toLong()
+}
+
+operator fun LongProperty.remAssign(other: ObservableNumberValue) {
+    value %= other.longValue()
+}
 
 operator fun ObservableLongValue.rangeTo(other: ObservableLongValue): Sequence<LongProperty> {
     val sequence = mutableListOf<LongProperty>()
@@ -644,7 +747,9 @@ infix fun BooleanExpression.eq(other: ObservableBooleanValue): BooleanBinding = 
 
 
 operator fun StringExpression.plus(other: Any): StringExpression = concat(other)
-operator fun StringProperty.plusAssign(other: Any) { value += other }
+operator fun StringProperty.plusAssign(other: Any) {
+    value += other
+}
 
 operator fun StringExpression.get(index: Int): Binding<Char?> = objectBinding(this) {
     if (index < get().length)
@@ -781,3 +886,18 @@ fun Float?.toProperty() = SimpleFloatProperty(this ?: 0.0F)
 fun Long?.toProperty() = SimpleLongProperty(this ?: 0L)
 fun Boolean?.toProperty() = SimpleBooleanProperty(this ?: false)
 fun <T : Any> T?.toProperty() = SimpleObjectProperty<T>(this)
+
+/**
+ * Convert the given key in this map to a Property using the given propertyGenerator function.
+ *
+ * The generator is passed the initial value corresponding to the given key.
+ *
+ * Changes to the generated Property will automatically be written back into the map.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <S, V, X : V> MutableMap<S, V>.toProperty(key: S, propertyGenerator: (X?) -> Property<X>): Property<X> {
+    val initialValue = this[key] as X?
+    val property = propertyGenerator(initialValue)
+    property.onChange { this[key] = it as X }
+    return property
+}
