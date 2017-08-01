@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.animation.Animation
+import javafx.animation.Interpolator
 import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -93,7 +94,7 @@ class NewViewTransitionController : Controller() {
     private val fades = listOf(
             "Black" to Color.BLACK,
             "White" to Color.WHITE,
-            "Red" to Color.RED,
+            "Green" to c(0.5, 0.75, 0.5),
             "Fade" to LinearGradient(0.0, 0.0, 0.0, 1.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
             "Crazy" to RadialGradient(0.0, 0.0, 150.0, 100.0, 75.0, false, CycleMethod.REPEAT,
                     Stop(0.0, Color.RED), Stop(0.33, Color.RED),
@@ -102,16 +103,20 @@ class NewViewTransitionController : Controller() {
             )
     )
 
+    private inline infix fun String.eachWay(constructor: (ViewTransition.Direction) -> ViewTransition): Array<Pair<String, ViewTransition>> {
+        return ViewTransition.Direction.values().map { "$this $it" to constructor(it) }.toTypedArray()
+    }
+
     private val transitions = listOf(
             "None" to null,
             "Fade" to ViewTransition.Fade(time),
             *fades.map { "${it.first} Fade" to ViewTransition.FadeThrough(doubleTime, it.second) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Slide $it" to ViewTransition.Slide(time, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Cover $it" to ViewTransition.Cover(time, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Reveal $it" to ViewTransition.Reveal(time, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Metro $it" to ViewTransition.Metro(time, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Swap $it" to ViewTransition.Swap(doubleTime, it) }.toTypedArray(),
-            *ViewTransition.Direction.values().map { "Custom $it" to CustomViewTransition(doubleTime, it) }.toTypedArray(),
+            *"Slide" eachWay { ViewTransition.Slide(time, it) },
+            *"Cover" eachWay { ViewTransition.Cover(time, it) },
+            *"Reveal" eachWay { ViewTransition.Reveal(time, it) },
+            *"Metro" eachWay { ViewTransition.Metro(time, it) },
+            *"Swap" eachWay { ViewTransition.Swap(doubleTime, it) },
+            *"Custom" eachWay { CustomViewTransition(doubleTime, it) },
             "Flip Horizontal" to ViewTransition.Flip(time, false),
             "Flip Vertical" to ViewTransition.Flip(time, true),
             "Explode" to ViewTransition.Explode(time),
@@ -138,6 +143,9 @@ class NewViewTransitionStyles : Stylesheet() {
         val darkLabel by cssclass()
         val lightLabel by cssclass()
         val redLabel by cssclass()
+
+        val nukeRed = c(.75, .5, .5)
+        val nukeBlue = c(.5, .5, .75)
 
         val boxMix = mixin {
             bg force nuke
@@ -171,11 +179,11 @@ class NewViewTransitionStyles : Stylesheet() {
                 alignment = Pos.BASELINE_CENTER
             }
             and(red) {
-                nuke.value = Color(.75, .5, .5, 1.0)
+                nuke.value = nukeRed
                 +boxMix
             }
             and(blue) {
-                nuke.value = Color(.5, .5, .75, 1.0)
+                nuke.value = nukeBlue
                 +boxMix
             }
         }
