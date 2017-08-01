@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.animation.Animation
 import javafx.beans.property.SimpleStringProperty
-import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.layout.StackPane
@@ -201,20 +200,25 @@ class NewViewTransitionStyles : Stylesheet() {
 class CustomViewTransition(duration: Duration, val direction: Direction = ViewTransition.Direction.LEFT) : ViewTransition() {
     val halfSpeed = duration.divide(2.0)!!
     val scale = when (direction) {
-        Direction.UP, Direction.DOWN -> Point2D(1.0, 0.0)
-        Direction.LEFT, Direction.RIGHT -> Point2D(0.0, 1.0)
+        Direction.UP, Direction.DOWN -> 1 xy 0
+        Direction.LEFT, Direction.RIGHT -> 0 xy 1
     }
 
     override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
         val bounds = current.boundsInLocal
-        val currentDestination = when (direction) {
-            Direction.UP -> Point2D(0.0, -bounds.height / 2)
-            Direction.RIGHT -> Point2D(bounds.width / 2, 0.0)
-            Direction.DOWN -> Point2D(0.0, bounds.height / 2)
-            Direction.LEFT -> Point2D(-bounds.width / 2, 0.0)
+        val destination = when (direction) {
+            Direction.UP -> 0 xy -bounds.height / 2
+            Direction.RIGHT -> bounds.width / 2 xy 0
+            Direction.DOWN -> 0 xy bounds.height / 2
+            Direction.LEFT -> -bounds.width / 2 xy 0
         }
-        return replacement.transform(halfSpeed, currentDestination.multiply(-1.0), 0.0, scale, 1.0, reversed = true, play = false)
-                .and(current.transform(halfSpeed, currentDestination, 0.0, scale, 1.0, play = false))
+        return replacement.transform(
+                halfSpeed, destination.multiply(-1.0), 0.0, scale, 1.0,
+                easing = Interpolator.LINEAR, reversed = true, play = false
+        ) and current.transform(
+                halfSpeed, destination, 0.0, scale, 1.0,
+                easing = Interpolator.LINEAR, play = false
+        )
     }
 
     override fun onComplete(removed: Node, replacement: Node) {

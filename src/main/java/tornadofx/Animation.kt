@@ -86,7 +86,7 @@ fun Node.move(time: Duration, destination: Point2D,
               op: (TranslateTransition.() -> Unit)? = null): TranslateTransition {
     val target: Point2D
     if (reversed) {
-        target = Point2D(translateX, translateY)
+        target = translateX xy translateY
         translateX = destination.x
         translateY = destination.y
     } else {
@@ -178,7 +178,7 @@ fun Node.scale(time: Duration, scale: Point2D,
                op: (ScaleTransition.() -> Unit)? = null): ScaleTransition {
     val target: Point2D
     if (reversed) {
-        target = Point2D(scaleX, scaleY)
+        target = scaleX xy scaleY
         scaleX = scale.x
         scaleY = scale.y
     } else {
@@ -661,10 +661,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> Point2D(0.0, -bounds.height)
-                Direction.RIGHT -> Point2D(bounds.width, 0.0)
-                Direction.DOWN -> Point2D(0.0, bounds.height)
-                Direction.LEFT -> Point2D(-bounds.width, 0.0)
+                Direction.UP -> 0 xy -bounds.height
+                Direction.RIGHT -> bounds.width xy 0
+                Direction.DOWN -> 0 xy bounds.height
+                Direction.LEFT -> -bounds.width xy 0
             }
             return current.move(duration, destination, play = false)
                     .and(replacement.move(duration, destination.multiply(-1.0), reversed = true, play = false))
@@ -692,10 +692,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> Point2D(0.0, bounds.height)
-                Direction.RIGHT -> Point2D(-bounds.width, 0.0)
-                Direction.DOWN -> Point2D(0.0, -bounds.height)
-                Direction.LEFT -> Point2D(bounds.width, 0.0)
+                Direction.UP -> 0 xy bounds.height
+                Direction.RIGHT -> -bounds.width xy 0
+                Direction.DOWN -> 0 xy -bounds.height
+                Direction.LEFT -> bounds.width xy 0
             }
             return replacement.move(duration, destination, reversed = true, play = false)
         }
@@ -718,10 +718,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> Point2D(0.0, -bounds.height)
-                Direction.RIGHT -> Point2D(bounds.width, 0.0)
-                Direction.DOWN -> Point2D(0.0, bounds.height)
-                Direction.LEFT -> Point2D(-bounds.width, 0.0)
+                Direction.UP -> 0 xy -bounds.height
+                Direction.RIGHT -> bounds.width xy 0
+                Direction.DOWN -> 0 xy bounds.height
+                Direction.LEFT -> -bounds.width xy 0
             }
             return current.move(duration, destination, play = false)
         }
@@ -748,13 +748,13 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> Point2D(0.0, -bounds.height * distancePercentage)
-                Direction.RIGHT -> Point2D(bounds.width * distancePercentage, 0.0)
-                Direction.DOWN -> Point2D(0.0, bounds.height * distancePercentage)
-                Direction.LEFT -> Point2D(-bounds.width * distancePercentage, 0.0)
+                Direction.UP -> 0 xy -bounds.height * distancePercentage
+                Direction.RIGHT -> bounds.width * distancePercentage xy 0
+                Direction.DOWN -> 0 xy bounds.height * distancePercentage
+                Direction.LEFT -> -bounds.width * distancePercentage xy 0
             }
-            return current.transform(duration.divide(2.0), destination, 0, Point2D(1.0, 1.0), 0, play = false)
-                    .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, Point2D(1.0, 1.0), 0,
+            return current.transform(duration.divide(2.0), destination, 0, 1 xy 1, 0, play = false)
+                    .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, 1 xy 1, 0,
                             reversed = true, play = false))
         }
 
@@ -776,20 +776,20 @@ abstract class ViewTransition {
      * @param direction The direction the current node will initially move
      * @param scale The starting scale of the replacement node and ending scale of the current node
      */
-    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = Point2D(.75, .75)) : ReversibleViewTransition() {
+    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = .75 xy .75) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> Point2D(0.0, -bounds.height * 0.5)
-                Direction.RIGHT -> Point2D(bounds.width * 0.5, 0.0)
-                Direction.DOWN -> Point2D(0.0, bounds.height * 0.5)
-                Direction.LEFT -> Point2D(-bounds.width * 0.5, 0.0)
+                Direction.UP -> 0 xy -bounds.height * 0.5
+                Direction.RIGHT -> bounds.width * 0.5 xy 0
+                Direction.DOWN -> 0 xy bounds.height * 0.5
+                Direction.LEFT -> -bounds.width * 0.5 xy 0
             }
             val halfTime = duration.divide(2.0)
             return current.scale(duration, scale, play = false).and(replacement.scale(duration, scale, reversed = true, play = false))
                     .and(current.move(halfTime, destination).and(replacement.move(halfTime, destination.multiply(-1.0))) {
                         setOnFinished { stack.moveToTop(replacement) }
-                    }.then(current.move(halfTime, Point2D(0.0, 0.0)).and(replacement.move(halfTime, Point2D(0.0, 0.0)))))
+                    }.then(current.move(halfTime, Point2D.ZERO).and(replacement.move(halfTime, Point2D.ZERO))))
         }
 
         override fun onComplete(removed: Node, replacement: Node) {
@@ -852,7 +852,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale How big to scale the node as it fades out
      */
-    class Explode(val duration: Duration, val scale: Point2D = Point2D(2.0, 2.0)) : ReversibleViewTransition() {
+    class Explode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.transform(duration, Point2D.ZERO, 0, scale, 0, play = false)
 
@@ -873,7 +873,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale The initial size the node shrinks from
      */
-    class Implode(val duration: Duration, val scale: Point2D = Point2D(2.0, 2.0)) : ReversibleViewTransition() {
+    class Implode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = replacement.transform(duration, Point2D.ZERO, 0, scale, 0, reversed = true, play = false)
 
