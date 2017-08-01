@@ -40,9 +40,9 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
     class BorderPaneRootView : View("Switching Sub Views In BorderPane") {
         override val root = borderpane {
             top = label("Top") { addClass(NewViewTransitionStyles.darkLabel) }
-            right = label("Right") { addClass(NewViewTransitionStyles.redLabel) }
+            right = label("Right") { addClass(NewViewTransitionStyles.greenLabel) }
             bottom = label("Bottom") { addClass(NewViewTransitionStyles.lightLabel) }
-            left = label("Left") { addClass(NewViewTransitionStyles.redLabel) }
+            left = label("Left") { addClass(NewViewTransitionStyles.greenLabel) }
             center(NewViewTransitionMain::class)
         }
     }
@@ -94,12 +94,12 @@ class NewViewTransitionController : Controller() {
     private val fades = listOf(
             "Black" to Color.BLACK,
             "White" to Color.WHITE,
-            "Green" to c(0.5, 0.75, 0.5),
+            "Green" to NewViewTransitionStyles.nukeGreen,
             "Fade" to LinearGradient(0.0, 0.0, 0.0, 1.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
             "Crazy" to RadialGradient(0.0, 0.0, 150.0, 100.0, 75.0, false, CycleMethod.REPEAT,
-                    Stop(0.0, Color.RED), Stop(0.33, Color.RED),
-                    Stop(0.33, Color.GREEN), Stop(0.66, Color.GREEN),
-                    Stop(0.66, Color.BLUE), Stop(1.0, Color.BLUE)
+                    Stop(0.0, NewViewTransitionStyles.nukeRed), Stop(0.33, NewViewTransitionStyles.nukeRed),
+                    Stop(0.33, NewViewTransitionStyles.nukeGreen), Stop(0.66, NewViewTransitionStyles.nukeGreen),
+                    Stop(0.66, NewViewTransitionStyles.nukeBlue), Stop(1.0, NewViewTransitionStyles.nukeBlue)
             )
     )
 
@@ -142,9 +142,10 @@ class NewViewTransitionStyles : Stylesheet() {
         val nuke by cssproperty<Paint>()
         val darkLabel by cssclass()
         val lightLabel by cssclass()
-        val redLabel by cssclass()
+        val greenLabel by cssclass()
 
         val nukeRed = c(.75, .5, .5)
+        val nukeGreen = c(0.5, 0.75, 0.5)
         val nukeBlue = c(.5, .5, .75)
 
         val boxMix = mixin {
@@ -197,9 +198,9 @@ class NewViewTransitionStyles : Stylesheet() {
             backgroundColor += Color.WHITE
             textFill = Color.BLACK
         }
-        redLabel {
+        greenLabel {
             +labelMix
-            backgroundColor += Color.RED
+            backgroundColor += nukeGreen
             textFill = Color.WHITE
         }
     }
