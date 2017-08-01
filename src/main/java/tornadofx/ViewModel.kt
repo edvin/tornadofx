@@ -130,6 +130,10 @@ open class ViewModel : Component(), ScopedInstance {
                 facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
             else if (Set::class.java.isAssignableFrom(propertyType))
                 facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
+            else if (Map::class.java.isAssignableFrom(propertyType))
+                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+            else if (ObservableMap::class.java.isAssignableFrom(propertyType))
+                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
 
             // Match against the type of the Property
             else if (java.lang.Integer::class.java.isAssignableFrom(typeParam))
@@ -152,6 +156,8 @@ open class ViewModel : Component(), ScopedInstance {
                 facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
             else if (Set::class.java.isAssignableFrom(typeParam))
                 facade = BindingAwareSimpleSetProperty<T>(this, prop?.name)
+            else if (Map::class.java.isAssignableFrom(typeParam))
+                facade = BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
 
             // Default to Object wrapper
             else
@@ -293,7 +299,9 @@ open class ViewModel : Component(), ScopedInstance {
             when (facade) {
                 is ListProperty<*> -> facade.value = FXCollections.observableArrayList()
                 is SetProperty<*> -> facade.value = FXCollections.observableSet()
+                is MapProperty<*, *> -> facade.value = FXCollections.observableHashMap()
                 is MutableList<*> -> facade.value = ArrayList<Any>()
+                is MutableMap<*, *> -> facade.value = HashMap<Any, Any>()
             }
         }
     }

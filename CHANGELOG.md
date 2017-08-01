@@ -14,6 +14,7 @@
 - KeyboardLayout which can export to keyboard-layout-editor.com format
 - ObservableValue<T>.onChangeOnce() and ObservableValue<T>.onChangeTimes(n) will disconnect listener after n events
 - ViewModel.markDirty(property) to explicitly set a property dirty, for example when a bound list is changed internally
+- ViewModel supports binding maps
 
 ### Fixed
 
