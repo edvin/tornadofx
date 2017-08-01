@@ -15,6 +15,7 @@
 - ObservableValue<T>.onChangeOnce() and ObservableValue<T>.onChangeTimes(n) will disconnect listener after n events
 - ViewModel.markDirty(property) to explicitly set a property dirty, for example when a bound list is changed internally
 - ViewModel supports binding maps
+- `MutableMap.toProperty(key) { generateProperty() }` writes back into the map on change
 
 ### Fixed
 
