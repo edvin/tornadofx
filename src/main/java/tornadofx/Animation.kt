@@ -638,14 +638,20 @@ abstract class ViewTransition {
     /**
      * A [ViewTransition] that can be reversed
      */
-    abstract class ReversibleViewTransition : ViewTransition() {
+    abstract class ReversibleViewTransition<out T : ViewTransition> : ViewTransition() {
         /**
          * Create a transition to be the reverse of the current transition. It's generally recommended (though in no way
          * required) for the reverse transition to be a logical reversal of this transition.
          *
          * @return The reversed [ViewTransition]
          */
-        abstract fun reversed(): ViewTransition
+        protected abstract fun reversed(): T
+
+        fun reversed(op: (T.() -> Unit)? = null): T {
+            val reversed = reversed()
+            op?.invoke(reversed)
+            return reversed
+        }
     }
 
     /**
@@ -657,7 +663,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param direction The direction to slide the nodes
      */
-    class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
+    class Slide(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition<Slide>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -688,7 +694,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param direction The direction to slide the node
      */
-    class Cover(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
+    class Cover(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition<Reveal>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -714,7 +720,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param direction The direction to slide the node
      */
-    class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition() {
+    class Reveal(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition<Cover>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -744,7 +750,7 @@ abstract class ViewTransition {
      * @param direction The direction to slide the nodes
      * @param distancePercentage The distance to move the nodes as a percentage of the size of the current node
      */
-    class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition() {
+    class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition<Metro>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -776,7 +782,7 @@ abstract class ViewTransition {
      * @param direction The direction the current node will initially move
      * @param scale The starting scale of the replacement node and ending scale of the current node
      */
-    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = .75 xy .75) : ReversibleViewTransition() {
+    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = .75 xy .75) : ReversibleViewTransition<Swap>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
@@ -852,7 +858,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale How big to scale the node as it fades out
      */
-    class Explode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition() {
+    class Explode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition<Implode>() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.transform(duration, Point2D.ZERO, 0, scale, 0, play = false)
 
@@ -873,7 +879,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale The initial size the node shrinks from
      */
-    class Implode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition() {
+    class Implode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition<Explode>() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = replacement.transform(duration, Point2D.ZERO, 0, scale, 0, reversed = true, play = false)
 

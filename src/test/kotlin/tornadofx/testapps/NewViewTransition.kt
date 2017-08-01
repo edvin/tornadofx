@@ -206,7 +206,7 @@ class NewViewTransitionStyles : Stylesheet() {
     }
 }
 
-class CustomViewTransition(duration: Duration, val direction: Direction = ViewTransition.Direction.LEFT) : ViewTransition() {
+class CustomViewTransition(val duration: Duration, val direction: Direction = ViewTransition.Direction.LEFT) : ViewTransition.ReversibleViewTransition<CustomViewTransition>() {
     val halfSpeed = duration.divide(2.0)!!
     val scale = when (direction) {
         Direction.UP, Direction.DOWN -> 1 xy 0
@@ -229,6 +229,8 @@ class CustomViewTransition(duration: Duration, val direction: Direction = ViewTr
                 easing = Interpolator.LINEAR, play = false
         )
     }
+
+    override fun reversed() = CustomViewTransition(duration, direction.reversed())
 
     override fun onComplete(removed: Node, replacement: Node) {
         removed.translateX = 0.0
