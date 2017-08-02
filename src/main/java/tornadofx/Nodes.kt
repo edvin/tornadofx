@@ -1115,7 +1115,7 @@ val Region.paddingAllProperty: DoubleProperty get() {
 
 // -- Node helpers
 /**
- * This extensions function will automatically bind to the managedProperty of the given node
+ * This extension function will automatically bind to the managedProperty of the given node
  * and will make sure that it is managed, if the given [expr] returning an observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
@@ -1123,7 +1123,7 @@ val Region.paddingAllProperty: DoubleProperty get() {
 fun <T: Node> T.managedWhen(expr: () -> ObservableValue<Boolean>): T = managedWhen(expr())
 
 /**
- * This extensions function will automatically bind to the managedProperty of the given node
+ * This extension function will automatically bind to the managedProperty of the given node
  * and will make sure that it is managed, if the given [predicate] an observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
@@ -1134,7 +1134,7 @@ fun <T: Node> T.managedWhen(predicate: ObservableValue<Boolean>): T {
 }
 
 /**
- * This extensions function will automatically bind to the visibleProperty of the given node
+ * This extension function will automatically bind to the visibleProperty of the given node
  * and will make sure that it is visible, if the given [predicate] an observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
@@ -1145,7 +1145,7 @@ fun <T: Node> T.visibleWhen(predicate: ObservableValue<Boolean>): T {
 }
 
 /**
- * This extensions function will automatically bind to the visibleProperty of the given node
+ * This extension function will automatically bind to the visibleProperty of the given node
  * and will make sure that it is visible, if the given [expr] returning an observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
@@ -1153,13 +1153,13 @@ fun <T: Node> T.visibleWhen(predicate: ObservableValue<Boolean>): T {
 fun <T: Node> T.visibleWhen(expr: () -> ObservableValue<Boolean>): T = visibleWhen(expr())
 
 /**
- * This extensions function will make sure to hide the given node,
+ * This extension function will make sure to hide the given node,
  * if the given [expr] returning an observable boolean value equals true.
  */
 fun <T: Node> T.hiddenWhen(expr: () -> ObservableValue<Boolean>): T = hiddenWhen(expr())
 
 /**
- * This extensions function will make sure to hide the given node,
+ * This extension function will make sure to hide the given node,
  * if the given [predicate] an observable boolean value equals true.
  */
 fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>): T {
@@ -1169,7 +1169,7 @@ fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>): T {
 }
 
 /**
- * This extensions function will automatically bind to the disableProperty of the given node
+ * This extension function will automatically bind to the disableProperty of the given node
  * and will disable it, if the given [expr] returning an observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disable
@@ -1177,7 +1177,7 @@ fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>): T {
 fun <T: Node> T.disableWhen(expr: () -> ObservableValue<Boolean>): T = disableWhen(expr())
 
 /**
- * This extensions function will automatically bind to the disableProperty of the given node
+ * This extension function will automatically bind to the disableProperty of the given node
  * and will disable it, if the given [predicate] observable boolean value equals true.
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disableProperty
@@ -1188,13 +1188,13 @@ fun <T: Node> T.disableWhen(predicate: ObservableValue<Boolean>): T {
 }
 
 /**
- * This extensions function will make sure that the given node is enabled when ever,
+ * This extension function will make sure that the given node is enabled when ever,
  * the given [expr] returning an observable boolean value equals true.
  */
 fun <T: Node> T.enableWhen(expr: () -> ObservableValue<Boolean>): T = enableWhen(expr())
 
 /**
- * This extensions function will make sure that the given node is enabled when ever,
+ * This extension function will make sure that the given node is enabled when ever,
  * the given [predicate] observable boolean value equals true.
  */
 fun <T: Node> T.enableWhen(predicate: ObservableValue<Boolean>): T {
