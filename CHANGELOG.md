@@ -30,6 +30,7 @@
 - showModal/showWindow now resizes the window before calling onDock, so the View can override placement easier (https://github.com/edvin/tornadofx/issues/360)
 - Avoid extension function confusion on `Configurable` by introducing a new `ConfigProperties` subclass and changing extension functions to member functions (https://github.com/edvin/tornadofx/issues/362)
 - TreeTableView.resizeColumnsToFitContent() now waits until the skin is available instead of naively deferring to the next pulse
+- Nested tableColumns with valueProvider lambda now nest correctly
 
 ### Changes
 

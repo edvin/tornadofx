@@ -569,7 +569,7 @@ fun <S, T : Any> TableView<S>.column(title: String, cellType: KClass<T>, op: (Ta
 fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { valueProvider(it) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
