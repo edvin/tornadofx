@@ -12,7 +12,7 @@ import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
 
-open class ViewModelTests {
+open class ViewModelTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     @Test fun rebind_to_null_unbinds() {

@@ -11,7 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ValidationTests {
+class ValidationTest {
     val primaryStage = FxToolkit.registerPrimaryStage()
     val context = ValidationContext()
 

@@ -14,7 +14,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
-class BindingTests {
+class BindingTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     @Test

@@ -9,7 +9,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 
-class ScopeTests {
+class ScopeTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     class PersonModel() : ItemViewModel<Person>()

@@ -9,7 +9,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-class ComponentTests {
+class ComponentTest {
 
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 

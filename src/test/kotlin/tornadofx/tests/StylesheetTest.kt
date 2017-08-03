@@ -21,7 +21,7 @@ import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class StylesheetTests {
+class StylesheetTest {
     val vbox by cssclass()
     val wrapper by cssclass()
 

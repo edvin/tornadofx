@@ -12,7 +12,7 @@ import tornadofx.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class NodeTests {
+class NodeTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     lateinit var pane: StackPane

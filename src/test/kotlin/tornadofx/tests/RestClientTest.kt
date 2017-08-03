@@ -12,7 +12,7 @@ import java.net.InetSocketAddress
 import javax.json.Json
 import javax.json.JsonObject
 
-class RestClientTests {
+class RestClientTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     companion object {

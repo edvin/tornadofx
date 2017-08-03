@@ -6,7 +6,7 @@ import org.junit.Test
 import tornadofx.*
 import java.time.LocalDate
 
-class JsonTests {
+class JsonTest {
 
     class AutoPerson : JsonModelAuto {
         val firstNameProperty = SimpleStringProperty()

@@ -6,9 +6,9 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import org.junit.Assert
 import org.junit.Test
-import tornadofx.SortedFilteredList
+import tornadofx.*
 
-class ListTests {
+class ListTest {
     class Person(name: String, age: Int, checked: Boolean = true) {
         val name = SimpleStringProperty(name)
         val age = SimpleIntegerProperty(age)
