@@ -148,7 +148,7 @@ open class ViewModelTest {
         val person = Person("John", 37)
         val model = object : PersonModel(person) {
             override fun onCommit(commits: List<Commit>) {
-                assertEquals(3, commits.size)
+                assertEquals(4, commits.size)
                 assertEquals(1, commits.filter { it.changed }.size)
                 val theOnlyChange = commits.find { it.changed }!!
                 assertEquals(name, theOnlyChange.property)
