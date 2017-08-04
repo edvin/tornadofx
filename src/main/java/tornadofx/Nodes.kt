@@ -16,10 +16,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
 import javafx.event.EventTarget
-import javafx.geometry.HPos
-import javafx.geometry.Insets
-import javafx.geometry.Pos
-import javafx.geometry.VPos
+import javafx.geometry.*
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -288,6 +285,7 @@ var Region.usePrefSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
+infix fun Number.xy(y: Number) = Point2D(toDouble(), y.toDouble())
 
 fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
