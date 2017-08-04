@@ -483,7 +483,7 @@ class StylesheetTest {
                 -fx-border-width: 5px 5px 5px 5px;
                 -fx-background-radius: 25px 25px 25px 25px;
                 -fx-border-radius: 25px 25px 25px 25px;
-                -fx-font: normal 14.0px "System";
+                -fx-font: normal 14.0pt "System";
                 -fx-font-weight: 700;
                 -fx-text-fill: rgba(255, 255, 255, 1);
                 -fx-rotate: 0.95turn;
