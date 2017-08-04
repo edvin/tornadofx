@@ -69,7 +69,7 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.8
+  -DarchetypeVersion=1.7.9
 ```
 
 ### Add TornadoFX to your project
@@ -80,14 +80,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.8</version>
+    <version>1.7.9</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.8'
+compile 'no.tornado:tornadofx:1.7.9'
 ```
 
 ### Snapshots are published to Sonatype
