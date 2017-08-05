@@ -14,12 +14,8 @@ import javafx.geometry.Orientation.VERTICAL
 import javafx.scene.Node
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.Label
-import javafx.scene.layout.HBox
-import javafx.scene.layout.Pane
+import javafx.scene.layout.*
 import javafx.scene.layout.Priority.SOMETIMES
-import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
-import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import java.util.*
 import java.util.concurrent.Callable
@@ -79,7 +75,7 @@ open class Form : VBox() {
 open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : VBox() {
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("textProperty"))
     fun textProperty() = textProperty
-    val textProperty = SimpleStringProperty(text)
+    val textProperty = SimpleStringProperty()
     var text by textProperty
 
     val inputGrowProperty = SimpleObjectProperty<Priority>(SOMETIMES)

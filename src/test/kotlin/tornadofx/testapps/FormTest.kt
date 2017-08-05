@@ -7,7 +7,7 @@ class FormApp : App(FormView::class)
 
 class FormView : View("My Form") {
     override val root = form {
-        fieldset(labelPosition = Orientation.VERTICAL) {
+        fieldset(title, labelPosition = Orientation.VERTICAL) {
             field("Name") {
                 textfield()
             }

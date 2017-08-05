@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.7.10-SNAPSHOT]
+
+### Fixes
+
+- Fieldset captions are gone (https://github.com/edvin/tornadofx/issues/399)
+
 ## [1.7.9] - 2017-08-04
 
 ### Additions
