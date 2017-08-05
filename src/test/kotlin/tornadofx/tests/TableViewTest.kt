@@ -5,16 +5,12 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.scene.Scene
-import javafx.scene.control.TableColumn
 import javafx.scene.layout.StackPane
 import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
-import tornadofx.column
-import tornadofx.makeIndexColumn
-import tornadofx.tableview
-import tornadofx.value
+import tornadofx.*
 import java.nio.file.Paths
 
 class TableViewTest {
@@ -35,9 +31,8 @@ class TableViewTest {
                 tableview(TestList) {
                     makeIndexColumn()
                     column("A Column", TestObject::A)
-                    column("A Column", Boolean::class).x()
+                    column("A Column", Boolean::class)
                     column("B Column", Double::class) {
-                        x()
                         value { it.value.B }
                     }
                     column("C Column", TestObject::C)
@@ -51,15 +46,4 @@ class TableViewTest {
         val robot = FxRobot()
         robot.robotContext().captureSupport.saveImage(robot.capture(primaryStage.scene.root), Paths.get("example-table.png"))
     }
-}
-
-inline fun <T, reified S : Any> TableColumn<T, S>.x(): TableColumn<T, S> {
-    tableView?.isEditable = true
-    isEditable = true
-    println(S::class)
-    println(S::class.javaPrimitiveType)
-    println(S::class.java)
-    val type = S::class.javaPrimitiveType ?: S::class
-    println(type == Double::class.java)
-    return this
 }
