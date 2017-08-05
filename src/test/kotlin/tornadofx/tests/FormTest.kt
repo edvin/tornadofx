@@ -16,6 +16,6 @@ class FormTest {
         }
         val fieldset = form.select<Fieldset>(Stylesheet.fieldset)
         assertEquals(fieldset.text, "Hello world")
-        assertTrue(fieldset.isVisible, "Fieldset show be visible")
+        assertTrue(fieldset.isVisible, "Fieldset should be visible")
     }
 }
