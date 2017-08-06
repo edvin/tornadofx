@@ -11,7 +11,6 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableMap
-import javafx.event.ActionEvent
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.scene.Node
@@ -401,12 +400,16 @@ fun EventTarget.label(text: String = "", graphic: Node? = null, op: (Label.() ->
     return opcr(this, label, op)
 }
 
-inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphicProperty: ObjectProperty<Node>? = null, noinline op: (Label.() -> Unit)? = null) = label().apply {
-    if (T::class == String::class) {
-        @Suppress("UNCHECKED_CAST")
-        textProperty().bind(observable as ObservableValue<String>)
+inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphicProperty: ObjectProperty<Node>? = null, converter: StringConverter<in T>? = null, noinline op: (Label.() -> Unit)? = null) = label().apply {
+    if (converter == null) {
+        if (T::class == String::class) {
+            @Suppress("UNCHECKED_CAST")
+            textProperty().bind(observable as ObservableValue<String>)
+        } else {
+            textProperty().bind(observable.stringBinding { it?.toString() })
+        }
     } else {
-        textProperty().bind(observable.stringBinding { it?.toString() })
+        textProperty().bind(observable.stringBinding { converter.toString(it) })
     }
     if (graphic != null) graphicProperty().bind(graphicProperty)
     op?.invoke(this)

@@ -136,6 +136,6 @@ fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = DefaultScope, cachedGraph
 }
 
 
-fun <T, S : Any> TableColumn<T, S?>.converter(converter: StringConverter<S>): TableColumn<T, S?> = apply {
+fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): TableColumn<T, S?> = apply {
     cellFormat(DefaultScope) { text = converter.toString(it) }
 }

@@ -5,13 +5,12 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.embed.swing.JFXPanel
 import javafx.scene.layout.VBox
+import javafx.util.StringConverter
 import javafx.util.converter.NumberStringConverter
 import org.junit.Assert
 import org.junit.Test
-import tornadofx.View
-import tornadofx.bind
-import tornadofx.imageview
-import tornadofx.textfield
+import tornadofx.*
+import java.text.NumberFormat
 
 /**
  * @author carl
@@ -55,5 +54,30 @@ class ControlsTest {
         property.value = "/tornadofx/tests/person.png"
 
         Assert.assertNotNull(imageView.image)
+    }
+
+    @Test
+    fun testLabelWithStringObservable() {
+        val view = TestView()
+        val property = SimpleStringProperty("Daan")
+        val label = view.label(property)
+        val labelWithConverter = view.label(property, converter = object : StringConverter<String>() {
+            override fun toString(string: String?) = string?.toUpperCase() ?: ""
+            override fun fromString(string: String?) = throw NotImplementedError()
+        })
+
+        Assert.assertEquals("Daan", label.text)
+        Assert.assertEquals("DAAN", labelWithConverter.text)
+    }
+
+    @Test
+    fun testLabelWithIntegerObservable() {
+        val view = TestView()
+        val property = SimpleIntegerProperty(12718)
+        val label = view.label(property)
+        val labelWithConverter = view.label(property, converter = NumberStringConverter())
+
+        Assert.assertEquals("12718", label.text)
+        Assert.assertEquals(NumberFormat.getNumberInstance().format(12718), labelWithConverter.text)
     }
 }
