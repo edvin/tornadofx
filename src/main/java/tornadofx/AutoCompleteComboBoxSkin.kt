@@ -222,12 +222,9 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
             comboBox.hide()
             updateDisplayArea()
         }
-        // Note that we cannot bind prefWidthProperty because JavaFX sets
-        // the preferred width upon reconfiguration. (ComboBoxPopupControl.java:322)
-        if (useAutomaticPopupWidth) {
-            listView.prefWidthProperty().onChange { listView.prefWidth = comboBox.width }
-        }
-        else {
+        if (!useAutomaticPopupWidth) {
+            // Note that we cannot bind prefWidthProperty because JavaFX sets
+            // the preferred width upon reconfiguration. (ComboBoxPopupControl.java:322)
             comboBox.widthProperty().onChange { listView.prefWidth = it }
         }
         updateCellFactory()
