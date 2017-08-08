@@ -221,7 +221,9 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
             comboBox.hide()
             updateDisplayArea()
         }
-        listView.prefWidthProperty().bind(comboBox.widthProperty())
+        // Note that we cannot bind prefWidthProperty because JavaFX sets
+        // the preferred width upon reconfiguration. (ComboBoxPopupControl.java:322)
+        listView.prefWidthProperty().onChange { listView.prefWidth = comboBox.width }
         updateCellFactory()
         updateButtonCell()
         updateValue()

@@ -2,9 +2,10 @@
 
 ## [1.7.10-SNAPSHOT]
 
-### Fixes
+### Fixed
 
 - Fieldset captions are gone (https://github.com/edvin/tornadofx/issues/399)
+- AutoCompleteComboBoxSkin no longer throws upon reconfiguration
 
 ## [1.7.9] - 2017-08-04
 
