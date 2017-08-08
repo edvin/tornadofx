@@ -472,7 +472,23 @@ fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
     }
 }
 
-val TableView<*>.selectedColumn: TableColumn<Any?, Any?>? get() = selectionModel.selectedCells.firstOrNull()?.tableColumn
+val <T> TableView<T>.selectedCell: TablePosition<T, *>?
+    get() = selectionModel.selectedCells.firstOrNull() as TablePosition<T, *>?
+
+val <T> TableView<T>.selectedColumn: TableColumn<T, *>?
+    get() = selectedCell?.tableColumn
+
+val <T> TableView<T>.selectedValue: Any?
+    get() = selectedColumn?.getCellObservableValue(selectedItem)?.value
+
+val <T> TreeTableView<T>.selectedCell: TreeTablePosition<T, *>?
+    get() = selectionModel.selectedCells.firstOrNull()
+
+val <T> TreeTableView<T>.selectedColumn: TreeTableColumn<T, *>?
+    get() = selectedCell?.tableColumn
+
+val <T> TreeTableView<T>.selectedValue: Any?
+    get() = selectedColumn?.getCellObservableValue(selectionModel.selectedItem)?.value
 
 /**
  * Create a column with a value factory that extracts the value from the given mutable
