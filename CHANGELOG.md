@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fieldset captions are gone (https://github.com/edvin/tornadofx/issues/399)
+- Fieldset padding is missing (https://github.com/edvin/tornadofx/issues/401)
 
 ## [1.7.9] - 2017-08-04
 
