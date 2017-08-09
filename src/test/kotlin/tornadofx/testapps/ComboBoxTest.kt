@@ -29,6 +29,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
     val itemsGlobal = itemsGlobalObject.map { it.displayCountry }
     val selectedItem = SimpleStringProperty(itemsGlobal.first())
     val selectedItem2 = SimpleStringProperty(itemsGlobal.first())
+    val selectedItem3 = SimpleStringProperty(itemsGlobal.first())
     val selectedItemObject = SimpleObjectProperty(itemsGlobalObject.first())
     val selectedItemObject2 = SimpleObjectProperty(itemsGlobalObject.first())
     val selectedItemObject3 = SimpleObjectProperty(itemsGlobalObject.first())
@@ -50,15 +51,25 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                 useMaxSize = true
             }
             /**
+             * Example using automatic popup width
+             */
+            field("With automatic popup width") {
+                combobox(selectedItem2, itemsGlobal) {
+                    makeAutocompletable(automaticPopupWidth = true)
+                }
+                textfield(selectedItem2)
+                useMaxSize = true
+            }
+            /**
              * Example using custom filter using startswith instead of contains
              */
             field("With custom Filter") {
-                combobox(selectedItem2, itemsGlobal) {
+                combobox(selectedItem3, itemsGlobal) {
                     makeAutocompletable {
                         itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
                     }
                 }
-                textfield(selectedItem2)
+                textfield(selectedItem3)
                 useMaxSize = true
             }
             /**
