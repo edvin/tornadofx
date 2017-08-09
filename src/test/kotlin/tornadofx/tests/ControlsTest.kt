@@ -9,8 +9,11 @@ import javafx.util.StringConverter
 import javafx.util.converter.NumberStringConverter
 import org.junit.Assert
 import org.junit.Test
+import org.testfx.api.FxToolkit
+import org.testfx.toolkit.ToolkitService
 import tornadofx.*
 import java.text.NumberFormat
+import java.util.*
 
 /**
  * @author carl
@@ -72,12 +75,14 @@ class ControlsTest {
 
     @Test
     fun testLabelWithIntegerObservable() {
+        FxToolkit.registerPrimaryStage()
+
         val view = TestView()
         val property = SimpleIntegerProperty(12718)
         val label = view.label(property)
-        val labelWithConverter = view.label(property, converter = NumberStringConverter())
+        val labelWithConverter = view.label(property, converter = NumberStringConverter(Locale.US))
 
         Assert.assertEquals("12718", label.text)
-        Assert.assertEquals(NumberFormat.getNumberInstance().format(12718), labelWithConverter.text)
+        Assert.assertEquals(NumberFormat.getNumberInstance(Locale.US).format(12718), labelWithConverter.text)
     }
 }
