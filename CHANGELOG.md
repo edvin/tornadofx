@@ -10,6 +10,7 @@
 ### Changes
 
 - AutoCompleteComboBoxSkin: Added an option to use automatic width for the popup
+- Fieldset padding is missing (https://github.com/edvin/tornadofx/issues/401)
 
 ## [1.7.9] - 2017-08-04
 

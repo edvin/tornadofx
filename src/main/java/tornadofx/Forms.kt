@@ -83,7 +83,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("inputGrowProperty"), DeprecationLevel.WARNING)
     fun inputGrowProperty() = inputGrowProperty
 
-    var labelPositionProperty = SimpleObjectProperty<Orientation>(labelPosition)
+    var labelPositionProperty = SimpleObjectProperty<Orientation>()
     var labelPosition by labelPositionProperty
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("labelPositionProperty"), DeprecationLevel.WARNING)
     fun labelPositionProperty() = labelPositionProperty
