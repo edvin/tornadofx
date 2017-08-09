@@ -19,10 +19,10 @@ import javafx.util.Callback
  * Extension function to combobox to add autocomplete capabilities
  * Accept in parameter a callback to create the autocomplete list based on input text
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
- * @param useAutomaticPopupWidth Use the width required to display all content. Default: false
+ * @param automaticPopupWidth Use the width required to display all content. Default: false
  */
-fun <T> ComboBox<T>.makeAutocompletable(useAutomaticPopupWidth: Boolean = false, autoCompleteFilter: ((String) -> List<T>)? = null) {
-    skin = AutoCompleteComboBoxSkin(this, autoCompleteFilter, useAutomaticPopupWidth)
+fun <T> ComboBox<T>.makeAutocompletable(automaticPopupWidth: Boolean = false, autoCompleteFilter: ((String) -> List<T>)? = null) {
+    skin = AutoCompleteComboBoxSkin(this, autoCompleteFilter, automaticPopupWidth)
 }
 
 interface Resettable {
@@ -179,7 +179,7 @@ class FilterInputTextHandler(val editor : TextField, val filterHandler : FilterH
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
  * Created by anouira on 15/02/2017.
  */
-open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?, useAutomaticPopupWidth: Boolean) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
+open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?, automaticPopupWidth: Boolean) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
     var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
@@ -222,7 +222,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
             comboBox.hide()
             updateDisplayArea()
         }
-        if (!useAutomaticPopupWidth) {
+        if (!automaticPopupWidth) {
             // Note that we cannot bind prefWidthProperty because JavaFX sets
             // the preferred width upon reconfiguration. (ComboBoxPopupControl.java:322)
             comboBox.widthProperty().onChange { listView.prefWidth = it }

@@ -55,7 +55,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("With automatic popup width") {
                 combobox(selectedItem2, itemsGlobal) {
-                    makeAutocompletable(useAutomaticPopupWidth = true)
+                    makeAutocompletable(automaticPopupWidth = true)
                 }
                 textfield(selectedItem2)
                 useMaxSize = true
