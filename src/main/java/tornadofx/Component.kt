@@ -814,7 +814,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         val componentType = this@UIComponent.javaClass
         val targetLocation = location ?: componentType.simpleName + ".fxml"
         val fxml = componentType.getResource(targetLocation) ?:
-                throw IllegalArgumentException("FXML not found for $componentType")
+                throw IllegalArgumentException("FXML not found for $componentType in $targetLocation")
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
