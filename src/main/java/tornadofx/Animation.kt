@@ -294,11 +294,26 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Number, scale: P
  * @param op Modify the animation after it is created
  * @return A ParallelTransition
  */
-fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null)
-        = ParallelTransition(this, *animation).apply { op?.invoke(this) }
+fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null) : ParallelTransition {
+    if (this is ParallelTransition) {
+        children += animation
+        op?.invoke(this)
+        return this
+    } else {
+        val transition = ParallelTransition(this, *animation)
+        op?.invoke(transition)
+        return transition
+    }
+}
 
-infix fun Animation.and(animation: Animation) = ParallelTransition(this, animation)
-infix fun ParallelTransition.and(animation: Animation) = apply { children += animation }
+infix fun Animation.and(animation: Animation): ParallelTransition {
+    if (this is ParallelTransition) {
+        children += animation
+        return this
+    } else {
+        return ParallelTransition(this, animation)
+    }
+}
 
 /**
  * A convenience function for playing multiple animations in parallel.
@@ -322,11 +337,26 @@ fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransiti
  * @param op Modify the animation after it is created
  * @return A SequentialTransition
  */
-fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null)
-        = SequentialTransition(this, *animation).apply { op?.invoke(this) }
+fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null): SequentialTransition {
+    if (this is SequentialTransition) {
+        children += animation
+        op?.invoke(this)
+        return this
+    } else {
+        val transition = SequentialTransition(this, *animation)
+        op?.invoke(transition)
+        return transition
+    }
+}
 
-infix fun Animation.then(animation: Animation) = SequentialTransition(this, animation)
-infix fun SequentialTransition.then(animation: Animation) = apply { children += animation }
+infix fun Animation.then(animation: Animation): SequentialTransition {
+    if (this is SequentialTransition) {
+        children += animation
+        return this
+    } else {
+        return SequentialTransition(this, animation)
+    }
+}
 
 /**
  * A convenience function for playing multiple animations in sequence.
