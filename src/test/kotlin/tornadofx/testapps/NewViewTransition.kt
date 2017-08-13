@@ -209,17 +209,17 @@ class NewViewTransitionStyles : Stylesheet() {
 class CustomViewTransition(val duration: Duration, val direction: Direction = ViewTransition.Direction.LEFT) : ViewTransition.ReversibleViewTransition<CustomViewTransition>() {
     val halfSpeed = duration.divide(2.0)!!
     val scale = when (direction) {
-        Direction.UP, Direction.DOWN -> 1 xy 0
-        Direction.LEFT, Direction.RIGHT -> 0 xy 1
+        Direction.UP, Direction.DOWN -> point(1, 0)
+        Direction.LEFT, Direction.RIGHT -> point(0, 1)
     }
 
     override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
         val bounds = current.boundsInLocal
         val destination = when (direction) {
-            Direction.UP -> 0 xy -bounds.height / 2
-            Direction.RIGHT -> bounds.width / 2 xy 0
-            Direction.DOWN -> 0 xy bounds.height / 2
-            Direction.LEFT -> -bounds.width / 2 xy 0
+            Direction.UP -> point(0, -bounds.height / 2)
+            Direction.RIGHT -> point(bounds.width / 2, 0)
+            Direction.DOWN -> point(0, bounds.height / 2)
+            Direction.LEFT -> point(-bounds.width / 2, 0)
         }
         return replacement.transform(
                 halfSpeed, destination.multiply(-1.0), 0.0, scale, 1.0,

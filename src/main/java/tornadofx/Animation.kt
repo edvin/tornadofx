@@ -86,7 +86,7 @@ fun Node.move(time: Duration, destination: Point2D,
               op: (TranslateTransition.() -> Unit)? = null): TranslateTransition {
     val target: Point2D
     if (reversed) {
-        target = translateX xy translateY
+        target = point(translateX, translateY)
         translateX = destination.x
         translateY = destination.y
     } else {
@@ -178,7 +178,7 @@ fun Node.scale(time: Duration, scale: Point2D,
                op: (ScaleTransition.() -> Unit)? = null): ScaleTransition {
     val target: Point2D
     if (reversed) {
-        target = scaleX xy scaleY
+        target = point(scaleX, scaleY)
         scaleX = scale.x
         scaleY = scale.y
     } else {
@@ -294,11 +294,26 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Number, scale: P
  * @param op Modify the animation after it is created
  * @return A ParallelTransition
  */
-fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null)
-        = ParallelTransition(this, *animation).apply { op?.invoke(this) }
+fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null) : ParallelTransition {
+    if (this is ParallelTransition) {
+        children += animation
+        op?.invoke(this)
+        return this
+    } else {
+        val transition = ParallelTransition(this, *animation)
+        op?.invoke(transition)
+        return transition
+    }
+}
 
-infix fun Animation.and(animation: Animation) = ParallelTransition(this, animation)
-infix fun ParallelTransition.and(animation: Animation) = apply { children += animation }
+infix fun Animation.and(animation: Animation): ParallelTransition {
+    if (this is ParallelTransition) {
+        children += animation
+        return this
+    } else {
+        return ParallelTransition(this, animation)
+    }
+}
 
 /**
  * A convenience function for playing multiple animations in parallel.
@@ -322,11 +337,26 @@ fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransiti
  * @param op Modify the animation after it is created
  * @return A SequentialTransition
  */
-fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null)
-        = SequentialTransition(this, *animation).apply { op?.invoke(this) }
+fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null): SequentialTransition {
+    if (this is SequentialTransition) {
+        children += animation
+        op?.invoke(this)
+        return this
+    } else {
+        val transition = SequentialTransition(this, *animation)
+        op?.invoke(transition)
+        return transition
+    }
+}
 
-infix fun Animation.then(animation: Animation) = SequentialTransition(this, animation)
-infix fun SequentialTransition.then(animation: Animation) = apply { children += animation }
+infix fun Animation.then(animation: Animation): SequentialTransition {
+    if (this is SequentialTransition) {
+        children += animation
+        return this
+    } else {
+        return SequentialTransition(this, animation)
+    }
+}
 
 /**
  * A convenience function for playing multiple animations in sequence.
@@ -667,10 +697,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> 0 xy -bounds.height
-                Direction.RIGHT -> bounds.width xy 0
-                Direction.DOWN -> 0 xy bounds.height
-                Direction.LEFT -> -bounds.width xy 0
+                Direction.UP -> point(0, -bounds.height)
+                Direction.RIGHT -> point(bounds.width, 0)
+                Direction.DOWN -> point(0, bounds.height)
+                Direction.LEFT -> point(-bounds.width, 0)
             }
             return current.move(duration, destination, play = false)
                     .and(replacement.move(duration, destination.multiply(-1.0), reversed = true, play = false))
@@ -698,10 +728,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> 0 xy bounds.height
-                Direction.RIGHT -> -bounds.width xy 0
-                Direction.DOWN -> 0 xy -bounds.height
-                Direction.LEFT -> bounds.width xy 0
+                Direction.UP -> point(0, bounds.height)
+                Direction.RIGHT -> point(-bounds.width, 0)
+                Direction.DOWN -> point(0, -bounds.height)
+                Direction.LEFT -> point(bounds.width, 0)
             }
             return replacement.move(duration, destination, reversed = true, play = false)
         }
@@ -724,10 +754,10 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> 0 xy -bounds.height
-                Direction.RIGHT -> bounds.width xy 0
-                Direction.DOWN -> 0 xy bounds.height
-                Direction.LEFT -> -bounds.width xy 0
+                Direction.UP -> point(0, -bounds.height)
+                Direction.RIGHT -> point(bounds.width, 0)
+                Direction.DOWN -> point(0, bounds.height)
+                Direction.LEFT -> point(-bounds.width, 0)
             }
             return current.move(duration, destination, play = false)
         }
@@ -754,13 +784,13 @@ abstract class ViewTransition {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> 0 xy -bounds.height * distancePercentage
-                Direction.RIGHT -> bounds.width * distancePercentage xy 0
-                Direction.DOWN -> 0 xy bounds.height * distancePercentage
-                Direction.LEFT -> -bounds.width * distancePercentage xy 0
+                Direction.UP -> point(0, -bounds.height * distancePercentage)
+                Direction.RIGHT -> point(bounds.width * distancePercentage, 0)
+                Direction.DOWN -> point(0, bounds.height * distancePercentage)
+                Direction.LEFT -> point(-bounds.width * distancePercentage, 0)
             }
-            return current.transform(duration.divide(2.0), destination, 0, 1 xy 1, 0, play = false)
-                    .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, 1 xy 1, 0,
+            return current.transform(duration.divide(2.0), destination, 0, point(1, 1), 0, play = false)
+                    .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, point(1, 1), 0,
                             reversed = true, play = false))
         }
 
@@ -782,14 +812,14 @@ abstract class ViewTransition {
      * @param direction The direction the current node will initially move
      * @param scale The starting scale of the replacement node and ending scale of the current node
      */
-    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = .75 xy .75) : ReversibleViewTransition<Swap>() {
+    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = point(.75, .75)) : ReversibleViewTransition<Swap>() {
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val bounds = current.boundsInLocal
             val destination = when (direction) {
-                Direction.UP -> 0 xy -bounds.height * 0.5
-                Direction.RIGHT -> bounds.width * 0.5 xy 0
-                Direction.DOWN -> 0 xy bounds.height * 0.5
-                Direction.LEFT -> -bounds.width * 0.5 xy 0
+                Direction.UP -> point(0, -bounds.height * 0.5)
+                Direction.RIGHT -> point(bounds.width * 0.5, 0)
+                Direction.DOWN -> point(0, bounds.height * 0.5)
+                Direction.LEFT -> point(-bounds.width * 0.5, 0)
             }
             val halfTime = duration.divide(2.0)
             return current.scale(duration, scale, play = false).and(replacement.scale(duration, scale, reversed = true, play = false))
@@ -858,7 +888,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale How big to scale the node as it fades out
      */
-    class Explode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition<Implode>() {
+    class Explode(val duration: Duration, val scale: Point2D = point(2, 2)) : ReversibleViewTransition<Implode>() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.transform(duration, Point2D.ZERO, 0, scale, 0, play = false)
 
@@ -879,7 +909,7 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param scale The initial size the node shrinks from
      */
-    class Implode(val duration: Duration, val scale: Point2D = 2 xy 2) : ReversibleViewTransition<Explode>() {
+    class Implode(val duration: Duration, val scale: Point2D = point(2, 2)) : ReversibleViewTransition<Explode>() {
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = replacement.transform(duration, Point2D.ZERO, 0, scale, 0, reversed = true, play = false)
 

@@ -285,6 +285,8 @@ var Region.usePrefSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
     set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
 
+fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
+fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
 infix fun Number.xy(y: Number) = Point2D(toDouble(), y.toDouble())
 
 fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
