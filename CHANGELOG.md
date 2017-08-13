@@ -1,16 +1,16 @@
 # Change Log
 
-## [1.7.10-SNAPSHOT]
+## [1.7.10]
 
 ### Fixed
 
 - Fieldset captions are gone (https://github.com/edvin/tornadofx/issues/399)
+- Fieldset padding is missing (https://github.com/edvin/tornadofx/issues/401)
 - AutoCompleteComboBoxSkin no longer throws upon reconfiguration
 
 ### Changes
 
 - AutoCompleteComboBoxSkin: Added an option to use automatic width for the popup
-- Fieldset padding is missing (https://github.com/edvin/tornadofx/issues/401)
 
 ## [1.7.9] - 2017-08-04
 
