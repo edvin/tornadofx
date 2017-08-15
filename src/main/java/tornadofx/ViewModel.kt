@@ -25,6 +25,8 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
 
+val viewModelBundle: ResourceBundle = ResourceBundle.getBundle("tornadofx/i18n/ViewModel")
+
 open class ViewModel : Component(), ScopedInstance {
     val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
     val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
@@ -445,10 +447,10 @@ inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationT
         = (bean as? ViewModel)?.addValidator(node, this, trigger, validator)
         ?: throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
 
-fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
-inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = "This field is required")
+inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it == null) error(message) else null }
 
 /**

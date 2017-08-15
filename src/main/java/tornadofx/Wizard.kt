@@ -18,8 +18,11 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.paint.Color
 import javafx.scene.text.FontWeight
+import java.util.*
 
 abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: String? = null) : View(title) {
+    private val wizardBundle: ResourceBundle = ResourceBundle.getBundle("tornadofx/i18n/Wizard")
+
     val pages: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
 
     val currentPageProperty = SimpleObjectProperty<UIComponent>()
@@ -40,11 +43,11 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
     open val canGoNext: BooleanExpression = hasNext
     open val canGoBack: BooleanExpression = hasPrevious
 
-    val stepsTextProperty = SimpleStringProperty("Steps")
-    val backButtonTextProperty = SimpleStringProperty("< _Back")
-    val nextButtonTextProperty = SimpleStringProperty("_Next >")
-    val finishButtonTextProperty = SimpleStringProperty("_Finish")
-    val cancelButtonTextProperty = SimpleStringProperty("_Cancel")
+    val stepsTextProperty = SimpleStringProperty(wizardBundle["steps"])
+    val backButtonTextProperty = SimpleStringProperty(wizardBundle["back"])
+    val nextButtonTextProperty = SimpleStringProperty(wizardBundle["next"])
+    val finishButtonTextProperty = SimpleStringProperty(wizardBundle["finish"])
+    val cancelButtonTextProperty = SimpleStringProperty(wizardBundle["cancel"])
 
     val showStepsHeaderProperty = SimpleBooleanProperty(true)
     var showStepsHeader by showStepsHeaderProperty
