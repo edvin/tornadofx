@@ -6,6 +6,9 @@
 
 ### Changes
 
+- Kotlin 1.1.4
+- Wizard and ViewModel are now internationalized
+
 ### Additions
 
 ## [1.7.10]
