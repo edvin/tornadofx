@@ -264,6 +264,13 @@ class JsonBuilder {
         return this
     }
 
+    fun add(key: String, value: Iterable<JsonModel>?): JsonBuilder {
+        if (value != null)
+            delegate.add(key, value.toJSON())
+
+        return this
+    }
+
     fun build(): JsonObject {
         return delegate.build()
     }

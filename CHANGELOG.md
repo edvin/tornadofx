@@ -11,6 +11,8 @@
 
 ### Additions
 
+- Added JsonBuilder.add(key, Iterable<JsonModel>) to avoid having to call toJSON() on it (https://github.com/edvin/tornadofx/issues/414)
+
 ## [1.7.10]
 
 ### Fixed
