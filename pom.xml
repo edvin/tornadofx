@@ -103,12 +103,12 @@
             <organization>SYSE AS</organization>
             <organizationUrl>https://www.syse.no</organizationUrl>
         </developer>
-		<developer>
-			<name>Thomas Nield</name>
-			<email>thomasnield@live.com</email>
-			<organization>Southwest Airlines</organization>
-			<organizationUrl>https://www.southwest.com/</organizationUrl>
-	</developer>
+        <developer>
+            <name>Thomas Nield</name>
+            <email>thomasnield@live.com</email>
+            <organization>Southwest Airlines</organization>
+            <organizationUrl>https://www.southwest.com/</organizationUrl>
+        </developer>
         <developer>
             <name>Matthew Turnblom</name>
             <email>uberawesomeemailaddressofdoom@gmail.com</email>
@@ -270,7 +270,7 @@
     </pluginRepositories>
 
     <properties>
-        <kotlin.version>1.1.4</kotlin.version>
+        <kotlin.version>1.1.4-2</kotlin.version>
         <dokka.version>0.9.9</dokka.version>
 
         <org.glassfish.javax.json.version>1.0.4</org.glassfish.javax.json.version>
