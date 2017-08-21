@@ -273,11 +273,17 @@ open class ViewModel : Component(), ScopedInstance {
             throw IllegalArgumentException("The property $property is not a facade of this ViewModel ($this)")
     }
 
+    /**
+     * Rollback all or the specified fields
+     */
     @Suppress("UNCHECKED_CAST")
-    fun rollback() {
+    fun rollback(vararg fields: Property<*>) {
         runAndWait {
-            for ((facade, propExtractor) in propertyMap) {
-                val prop = propExtractor()
+            val rollbackThese = if (fields.isNotEmpty()) fields.toList() else propertyMap.keys
+
+            for (facade in rollbackThese) {
+                val prop: Property<*>? = propertyMap[facade]?.invoke()
+
                 // Rebind external change listener in case the source property changed
                 val oldProp = propertyCache[facade]
                 if (oldProp != prop) {
