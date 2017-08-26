@@ -38,7 +38,7 @@ import kotlin.reflect.KProperty1
 /**
  * Create a spinner for an arbitrary type. This spinner requires you to configure a value factory, or it will throw an exception.
  */
-fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>()
     spinner.isEditable = editable
     opcr(this, spinner, op)
@@ -47,10 +47,18 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
         spinner.valueFactory.valueProperty().bindBidirectional(property)
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
+
+    if (enableScroll) {
+        spinner.setOnScroll { event ->
+            if(event.deltaY > 0) spinner.increment()
+            if(event.deltaY < 0) spinner.decrement()
+        }
+    }
+
     return spinner
 }
 
-inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = null, initialValue: T? = null, amountToStepBy: T? = null, editable: Boolean = false, property: Property<T>? = null, noinline op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = null, initialValue: T? = null, amountToStepBy: T? = null, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, noinline op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner: Spinner<T>
     val isInt = (property is IntegerProperty && property !is DoubleProperty && property !is FloatProperty) || min is Int || max is Int || initialValue is Int ||
             T::class == Int::class || T::class == Integer::class || T::class.javaPrimitiveType == Integer::class.java
@@ -64,26 +72,50 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
     spinner.isEditable = editable
+
+    if (enableScroll) {
+        spinner.setOnScroll { event ->
+            if(event.deltaY > 0) spinner.increment()
+            if(event.deltaY < 0) spinner.decrement()
+        }
+    }
+
     return opcr(this, spinner, op)
 }
 
-fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(items)
     if (property != null) {
         spinner.valueFactory.valueProperty().bindBidirectional(property)
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
     spinner.isEditable = editable
+
+    if (enableScroll) {
+        spinner.setOnScroll { event ->
+            if(event.deltaY > 0) spinner.increment()
+            if(event.deltaY < 0) spinner.decrement()
+        }
+    }
+
     return opcr(this, spinner, op)
 }
 
-fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, property: Property<T>? = null, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>(valueFactory)
     if (property != null) {
         spinner.valueFactory.valueProperty().bindBidirectional(property)
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
     spinner.isEditable = editable
+
+    if (enableScroll) {
+        spinner.setOnScroll { event ->
+            if(event.deltaY > 0) spinner.increment()
+            if(event.deltaY < 0) spinner.decrement()
+        }
+    }
+
     return opcr(this, spinner, op)
 }
 
