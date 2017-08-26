@@ -133,6 +133,22 @@ class FX {
 
         val lock = Any()
 
+        /**
+         * An interceptor that can veto or provide another mechanism for adding children to their parent.
+         *
+         * This callback is called for all builders right before the default mechanism adds the newly created
+         * node to the parent container. Returning false means that the default will be used. Returning true means
+         * that you added the child yourself and that the default mechanism should do nothing.
+         *
+         * This is useful for layout containers that need special handling when adding child nodes.
+         *
+         * Example: MigPane needs to add a default ComponentConstraint object to be able to manipulate the
+         * constraint after the child is added.
+         *
+         * FX.addChildInterceptor = { parent, node, index -> if (parent is MigPane) { parent.add(node, CC()); true } else false }
+         */
+        var addChildInterceptor: (parent: EventTarget, node: Node, index: Int?) -> Boolean = { _, _, _ -> false }
+
         @JvmStatic
         var dicontainer: DIContainer? = null
         var reloadStylesheetsOnFocus = false
@@ -286,7 +302,6 @@ class FX {
             scene.stylesheets.addAll(stylesheets)
             stylesheets.addListener(MyListChangeListener(scene))
         }
-
     }
 }
 
@@ -439,6 +454,7 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
+    if (FX.addChildInterceptor(this, node, index)) return
     if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     if (this is Node) {
         val target = builderTarget

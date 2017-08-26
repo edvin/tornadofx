@@ -13,6 +13,7 @@
 
 - Added JsonBuilder.add(key, Iterable<JsonModel>) to avoid having to call toJSON() on it (https://github.com/edvin/tornadofx/issues/414)
 - ViewModel partial rollback (https://github.com/edvin/tornadofx/issues/420)
+- FX.addChildInterceptor that can veto or custom add builder children to their parent. Useful for MigPane for example.
 
 ## [1.7.10]
 
