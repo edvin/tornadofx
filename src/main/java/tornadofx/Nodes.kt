@@ -275,15 +275,15 @@ var Region.useMaxSize: Boolean
 
 var Region.usePrefWidth: Boolean
     get() = width == prefWidth
-    set(value) = if (value) setMinWidth(Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinWidth(Region.USE_PREF_SIZE) else Unit
 
 var Region.usePrefHeight: Boolean
     get() = height == prefHeight
-    set(value) = if (value) setMinHeight(Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinHeight(Region.USE_PREF_SIZE) else Unit
 
 var Region.usePrefSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
-    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE) else Unit
 
 fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
 fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
