@@ -429,7 +429,7 @@ fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (Im
 fun EventTarget.imageview(url: ObservableValue<String>, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, ImageView().apply { imageProperty().bind(objectBinding(url) { value?.let { Image(it, lazyload) } }) }, op)
 
-fun EventTarget.imageview(image: ObservableValue<Image>, op: (ImageView.() -> Unit)? = null)
+fun EventTarget.imageview(image: ObservableValue<Image?>, op: (ImageView.() -> Unit)? = null)
         = opcr(this, ImageView().apply { imageProperty().bind(image) }, op)
 
 fun EventTarget.imageview(image: Image, op: (ImageView.() -> Unit)? = null)
