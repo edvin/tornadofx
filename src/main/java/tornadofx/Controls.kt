@@ -95,6 +95,10 @@ fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
     return tab
 }
 
+fun <T : Node> Iterable<T>.contains(cmp: UIComponent) = any { it == cmp.root }
+
+fun TabPane.contains(cmp: UIComponent) = tabs.map { it.content }.contains(cmp)
+
 fun Tab.disableWhen(predicate: ObservableValue<Boolean>) = disableProperty().cleanBind(predicate)
 fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
