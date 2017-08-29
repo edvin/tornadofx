@@ -10,6 +10,7 @@
 - Wizard and ViewModel are now internationalized
 - imageview() builder accepts ObservableValue<Image?> (https://github.com/edvin/tornadofx-guide/issues/43)
 - added option to increment and decrement spinners by scrolling (https://github.com/edvin/tornadofx/pull/425)
+- bind supports nullable pojo types
 
 ### Additions
 

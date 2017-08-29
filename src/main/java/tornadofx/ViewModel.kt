@@ -100,7 +100,7 @@ open class ViewModel : Component(), ScopedInstance {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
+    inline fun <reified PropertyType : Property<T>, reified T, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
         val prop = propertyProducer()
 
         val facade: Property<*>
@@ -173,14 +173,14 @@ open class ViewModel : Component(), ScopedInstance {
         propertyCache[facade] = prop
 
         // Listener that can track external changes for this facade
-        externalChangeListeners[facade] = ChangeListener<Any> { _, _, nv ->
+        externalChangeListeners[facade] = ChangeListener { _, _, nv ->
             val facadeProperty = (facade as Property<Any>)
             if (!facadeProperty.isBound)
                 facadeProperty.value = nv
         }
 
         // Update facade when the property returned to us is changed externally
-        prop?.addListener(externalChangeListeners[facade]!!)
+        prop?.addListener(externalChangeListeners[facade]!! as ChangeListener<in T>)
 
         // Autocommit makes sure changes are written back to the underlying property. Validation will run before the commit is performed.
         if (autocommit) autocommitProperties.add(facade)
@@ -556,7 +556,7 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it).toProperty() } }
 
     @JvmName("bindMutableField")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N : Any, ReturnType : Property<N?>> bind(property: KMutableProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.observable(property) }
 
     @JvmName("bindProperty")
@@ -564,7 +564,7 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
 
     @JvmName("bindMutableProperty")
-    inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KMutableProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+    inline fun <reified N, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KMutableProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.observable(property) } as ReturnType
 
     @JvmName("bindGetter")
