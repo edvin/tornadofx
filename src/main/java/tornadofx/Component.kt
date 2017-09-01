@@ -477,8 +477,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             if (newParent != null && newParent != oldParent && !isDocked) {
                 // Call undock when window closes
                 newParent.windowProperty().onChangeOnce {
-                    it?.showingProperty()?.onChangeOnce {
-                        if (isDocked) callOnUndock()
+                    it?.showingProperty()?.onChange {
+                        if (!it && isDocked) callOnUndock()
                     }
                 }
                 callOnDock()
