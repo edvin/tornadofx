@@ -98,7 +98,8 @@ abstract class Component : Configurable {
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
-    @JvmOverloads fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
+    @JvmOverloads
+    fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
 
     fun <T : Any> k(javaClass: Class<T>): KClass<T> = javaClass.kotlin
 
@@ -355,9 +356,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
     open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
-    var isComplete: Boolean get() = complete.value; set(value) {
-        (complete as? BooleanProperty)?.value = value
-    }
+    var isComplete: Boolean
+        get() = complete.value;
+        set(value) {
+            (complete as? BooleanProperty)?.value = value
+        }
 
     fun wrapper(op: () -> Parent) {
         FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once
@@ -471,16 +474,25 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         root.sceneProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null || root.parent != null) return@addListener
             if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
+            if (newParent != null && newParent != oldParent && !isDocked) {
+                // Call undock when window closes
+                newParent.windowProperty().onChangeOnce {
+                    it?.showingProperty()?.onChangeOnce {
+                        if (isDocked) callOnUndock()
+                    }
+                }
+                callOnDock()
+            }
         })
         isInitialized = true
     }
 
-    val currentStage: Stage? get() {
-        val stage = (currentWindow as? Stage)
-        if (stage == null) FX.log.warning { "CurrentStage not available for $this" }
-        return stage
-    }
+    val currentStage: Stage?
+        get() {
+            val stage = (currentWindow as? Stage)
+            if (stage == null) FX.log.warning { "CurrentStage not available for $this" }
+            return stage
+        }
 
     fun setWindowMinSize(width: Number, height: Number) = currentStage?.apply {
         minWidth = width.toDouble()
@@ -694,10 +706,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    @JvmOverloads fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
+    @JvmOverloads
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
+    @JvmOverloads
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
             if (getRootWrapper() !is Parent) {
                 throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")

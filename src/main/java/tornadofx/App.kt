@@ -104,7 +104,6 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
     override fun stop() {
-        FX.primaryStage.uiComponent<UIComponent>()?.callOnUndock()
         scope.deregister()
         trayIcons.forEach {
             SwingUtilities.invokeLater { SystemTray.getSystemTray().remove(it) }
