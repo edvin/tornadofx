@@ -1106,7 +1106,7 @@ val Region.paddingHorizontalProperty: DoubleProperty get() {
 }
 
 val Region.paddingAllProperty: DoubleProperty get() {
-    return properties.getOrPut("paddingVerticalProperty") {
+    return properties.getOrPut("paddingAllProperty") {
         proxypropDouble(paddingProperty(), { paddingAll.toDouble() }) {
             Insets(it, it, it, it)
         }
