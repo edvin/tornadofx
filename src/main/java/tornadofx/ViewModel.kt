@@ -20,6 +20,7 @@ import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Callable
+import kotlin.collections.ArrayList
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -102,7 +103,7 @@ open class ViewModel : Component(), ScopedInstance {
     inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
         val prop = propertyProducer()
 
-        val facade: Property<*> = if (forceObjectProperty) {
+        val facade : Property<*> = if (forceObjectProperty) {
             BindingAwareSimpleObjectProperty<T>(this, prop?.name)
         } else {
             val propertyType = PropertyType::class.java
@@ -120,7 +121,7 @@ open class ViewModel : Component(), ScopedInstance {
                 List::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
                 ObservableSet::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
                 Set::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
-                Map::class.java.isAssignableFrom(propertyType) ->BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+                Map::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
                 ObservableMap::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
 
             // Match against the type of the Property
@@ -134,7 +135,7 @@ open class ViewModel : Component(), ScopedInstance {
                 List::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
                 ObservableSet::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
                 Set::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
-                Map::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleMapProperty<Any, Any>(this, prop?.name)
+                Map::class.java.isAssignableFrom(typeParam) -> BindingAwareSimpleMapProperty<Any,Any>(this, prop?.name)
 
             // Default to Object wrapper
                 else -> BindingAwareSimpleObjectProperty<T>(this, prop?.name)
