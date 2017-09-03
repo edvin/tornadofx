@@ -256,10 +256,10 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Component> find(componentType: Class<T>, scope: Scope): T = find(componentType.kotlin, scope)
+        @JvmOverloads
+        fun <T : Component> find(componentType: Class<T>, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope)
 
-        @JvmStatic
-        fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
+        inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T::class, scope)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
@@ -362,6 +362,7 @@ fun importStylesheet(stylesheet: String) {
         FX.log.log(Level.WARNING, "Unable to find stylesheet at $stylesheet - check that the path is correct")
 }
 
+inline fun <reified T : Stylesheet> importStylesheet() = importStylesheet(T::class)
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
     if (FX.osgiAvailable) {
@@ -372,6 +373,7 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     if (urlString !in FX.stylesheets) FX.stylesheets.add(url.toString())
 }
 
+inline fun <reified T : Stylesheet> removeStylesheet() = removeStylesheet(T::class)
 fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
     if (FX.osgiAvailable) {
@@ -381,7 +383,6 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
 fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
@@ -397,6 +398,8 @@ fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
     params.forEach { m.put(it.first, it.second) }
     return m
 }
+
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
@@ -442,6 +445,9 @@ interface DIContainer {
         throw AssertionError("Injector is not configured, so bean of type $type with name $name can not be resolved")
     }
 }
+
+inline fun <reified T : Any> DIContainer.getInstance() = getInstance(T::class)
+inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance(T::class, name)
 
 /**
  * Add the given node to the pane, invoke the node operation and return the node

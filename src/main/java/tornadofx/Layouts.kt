@@ -146,7 +146,12 @@ fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     return opcr(this, topNode, op)
 }
 
-internal fun <C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
+inline fun <reified C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>) : BorderPane {
+    region.invoke(this).value = find<C>(scope).root
+    return this
+}
+
+fun <C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
     region.invoke(this).value = find(nodeType, scope).root
     return this
 }

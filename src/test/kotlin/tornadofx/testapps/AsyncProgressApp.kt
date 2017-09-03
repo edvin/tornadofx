@@ -27,7 +27,7 @@ class AsyncProgressView : View("Async Progress") {
             }
         }
         bottom {
-            add(ProgressView::class)
+            add<ProgressView>()
         }
     }
 }

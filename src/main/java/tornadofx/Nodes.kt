@@ -201,7 +201,7 @@ fun Stage.hookGlobalShortcuts() {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
         else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(OSGIConsole::class).openModal(modality = Modality.NONE)
+            find<OSGIConsole>().openModal(modality = Modality.NONE)
     }
 }
 

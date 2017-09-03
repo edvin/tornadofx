@@ -35,6 +35,7 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     val indexProperty: ReadOnlyIntegerProperty = ReadOnlyIntegerProperty.readOnlyIntegerProperty(realIndexProperty)
     val index by indexProperty
 
+    inline fun <reified T:UIComponent> slide(transition: ViewTransition? = null) = slide(T::class,transition)
     fun slide(view: KClass<out UIComponent>, transition: ViewTransition? = null) = slides.addAll(Slide(view, transition))
 
     fun next(): Boolean {

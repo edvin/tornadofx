@@ -29,6 +29,7 @@ fun getBundleId(classFromBundle: KClass<*>): Long? {
         return null
     }
 }
+inline fun <reified T:Any?> getBundleId(): Long? = getBundleId(T::class)
 
 inline fun <S, T> ServiceTracker<S, T>.withEach(fn: (S) -> Unit) {
     services?.forEach {

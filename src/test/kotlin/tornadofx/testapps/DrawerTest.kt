@@ -86,7 +86,7 @@ Process finished with exit code 0
             }
         }
         with(leftDrawer) {
-            item(TableViewDirtyTest::class)
+            item<TableViewDirtyTest>()
             item("Form item") {
                 form {
                     fieldset("Customer Details") {
