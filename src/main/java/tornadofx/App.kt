@@ -194,3 +194,6 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 }
 
 inline fun <reified T : Application> launch(vararg args: String) = Application.launch(T::class.java, *args)
+
+@JvmName("launchWithArrayArgs")
+inline fun <reified T : Application> launch(args: Array<String>) = Application.launch(T::class.java, *args)
