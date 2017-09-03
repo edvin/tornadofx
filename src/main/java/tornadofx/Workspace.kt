@@ -299,7 +299,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             }
         }
         if (newMode == Stack) {
-            if (!root.header.items.contains(backButton)) {
+            if (backButton !in root.header.items) {
                 root.header.items.add(0, backButton)
                 root.header.items.add(1, forwardButton)
             }
@@ -331,7 +331,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         while (forward && viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
             viewStack.removeAt(viewPos.get() + 1)
 
-        val addToStack = contentContainer == stackContainer && maxViewStackDepth > 0 && !viewStack.contains(child)
+        val addToStack = contentContainer == stackContainer && maxViewStackDepth > 0 && child !in viewStack
 
         if (addToStack)
             viewStack.add(child)

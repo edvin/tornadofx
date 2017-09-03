@@ -650,7 +650,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
         )
 
         val header = "Digest " + authParams.map {
-            val q = if (QuotedStringParameters.contains(it.key)) "\"" else ""
+            val q = if (it.key in QuotedStringParameters) "\"" else ""
             "${it.key}=$q${it.value}$q"
         }.joinToString()
 
