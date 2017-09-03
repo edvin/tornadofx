@@ -118,7 +118,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         if (oldList != null) {
             oldList.removeListener(itemsChangeListener)
             // Keep cache for elements in present in the new list
-            oldList.filterNot { newList.contains(it) }.forEach { graphicCache.remove(it) }
+            oldList.filterNot { it in newList }.forEach { graphicCache.remove(it) }
         } else {
             graphicCache.clear()
         }
@@ -179,7 +179,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         }
 
         // Preemptive update of selected state
-        val isActuallySelected = dataGrid.selectionModel.selectedIndices.contains(index)
+        val isActuallySelected = index in dataGrid.selectionModel.selectedIndices
         if (!isSelected && isActuallySelected) updateSelected(true)
         else if (isSelected && !isActuallySelected) updateSelected(false)
     }
@@ -428,7 +428,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
     }
 
     override fun clearSelection(index: Int) {
-        if (selectedIndicies.contains(index)) {
+        if (index in selectedIndicies) {
             selectedIndicies.remove(index)
             selectedItems.remove(dataGrid.items[index])
         }
@@ -452,7 +452,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         indices.forEach { select(it) }
     }
 
-    override fun isSelected(index: Int) = selectedIndicies.contains(index)
+    override fun isSelected(index: Int) = index in selectedIndicies
 
     override fun select(obj: T) {
         val index = dataGrid.items.indexOf(obj)
@@ -470,7 +470,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
             selectedItems.removeAll { it != selectedItem }
         }
 
-        if (!selectedIndicies.contains(index)) {
+        if (index !in selectedIndicies) {
             selectedIndicies.add(index)
             selectedItems.add(selectedItem)
             dataGrid.focusModel.focus(index)

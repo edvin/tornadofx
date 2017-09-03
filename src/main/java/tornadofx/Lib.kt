@@ -48,7 +48,7 @@ class SortedFilteredList<T>(
     }
 
     override val size: Int get() = sortedItems.size
-    override fun contains(element: T) = sortedItems.contains(element)
+    override fun contains(element: T) = element in sortedItems
     override fun containsAll(elements: Collection<T>) = sortedItems.containsAll(elements)
     override fun get(index: Int) = sortedItems[index]
     override fun indexOf(element: T) = sortedItems.indexOf(element)
