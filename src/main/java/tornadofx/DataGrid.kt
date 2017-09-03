@@ -166,7 +166,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
 
     internal fun doUpdateItem() {
         val totalCount = dataGrid.items.size
-        val item = if (index in 0 until totalCount) null else dataGrid.items[index]
+        val item = if (index !in 0 until totalCount) null else dataGrid.items[index]
         val cacheProvider = dataGrid.cellCache
         if (item != null) {
             if (cacheProvider != null)
@@ -211,7 +211,7 @@ class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataG
 class DataGridCellSkin<T>(control: DataGridCell<T>) : CellSkinBase<DataGridCell<T>, DataGridCellBehavior<T>>(control, DataGridCellBehavior(control))
 
 class DataGridFocusModel<T>(val dataGrid: DataGrid<T>) : FocusModel<T>() {
-    override fun getModelItem(index: Int) = if (index in 0 until itemCount - 1) dataGrid.items[index] else null
+    override fun getModelItem(index: Int) = if (index in 0 until itemCount) dataGrid.items[index] else null
     override fun getItemCount() = dataGrid.items.size
 }
 
