@@ -66,11 +66,11 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 
     override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.minHeight(width) }.sum() + topInset + bottomInset
+        return children.sumByDouble { it.minHeight(width) } + topInset + bottomInset
     }
 
     override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.prefHeight(width) }.sum() + topInset + bottomInset
+        return children.sumByDouble { it.prefHeight(width) } + topInset + bottomInset
     }
 
     override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {

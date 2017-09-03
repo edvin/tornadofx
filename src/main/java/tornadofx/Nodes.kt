@@ -875,8 +875,9 @@ inline fun <reified T : UIComponent> Stage.uiComponent(): T? = scene.root.uiComp
  */
 inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable
         .filterIsInstance<Parent>()
-        .filter { it.uiComponent<UIComponent>() is T }
-        .map { it.uiComponent<T>()!! }
+        .map { it.uiComponent<UIComponent>() }
+        .filterIsInstance<T>()
+
 
 /**
  * Find all UIComponents of the specified type that owns any of this UIComponent's root node's children

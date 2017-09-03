@@ -104,7 +104,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
                     fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.weight?.toDouble() ?: 1.0
 
-                    val totalWeight = consideredColumns.map { it.weight() }.sum()
+                    val totalWeight = consideredColumns.sumByDouble { it.weight() }
                     val perWeight = remainingWidth / totalWeight
 
                     consideredColumns.forEach {
@@ -136,7 +136,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 // Adjustment if we didn't assign all width
                 if (remainingWidth > 0.0) {
                     // Give remaining width to the right-most resizable column
-                    val rightMostResizable = param.table.contentColumns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
+                    val rightMostResizable = param.table.contentColumns.lastOrNull { it.resizeType.isResizable }
                     rightMostResizable?.apply {
                         prefWidth = width + remainingWidth
                         remainingWidth -= width
@@ -356,7 +356,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
                     fun TreeTableColumn<*, *>.weight() = (resizeType as? Weight)?.weight?.toDouble() ?: 1.0
 
-                    val totalWeight = consideredColumns.map { it.weight() }.sum()
+                    val totalWeight = consideredColumns.sumByDouble { it.weight() }
                     val perWeight = remainingWidth / totalWeight
 
                     consideredColumns.forEach {
@@ -388,7 +388,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                 // Adjustment if we didn't assign all width
                 if (remainingWidth > 0.0) {
                     // Give remaining width to the right-most resizable column
-                    val rightMostResizable = param.table.contentColumns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
+                    val rightMostResizable = param.table.contentColumns.lastOrNull { it.resizeType.isResizable }
                     rightMostResizable?.apply {
                         prefWidth = width + remainingWidth
                         remainingWidth -= width
