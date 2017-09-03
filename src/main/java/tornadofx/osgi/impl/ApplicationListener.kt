@@ -11,8 +11,7 @@ import org.osgi.framework.ServiceEvent.REGISTERED
 import org.osgi.framework.ServiceEvent.UNREGISTERING
 import org.osgi.framework.ServiceListener
 import org.osgi.util.tracker.ServiceTracker
-import tornadofx.App
-import tornadofx.FX
+import tornadofx.*
 import tornadofx.osgi.ApplicationProvider
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -36,19 +35,20 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
         var delegate: App? = null
         var realPrimaryStage: Stage? = null
 
-        private val fxRuntimeInitialized: Boolean get() {
-            val initializedField = PlatformImpl::class.java.getDeclaredField("initialized")
-            initializedField.isAccessible = true
-            val initialized = initializedField.get(null) as AtomicBoolean
-            return initialized.get()
-        }
+        private val fxRuntimeInitialized: Boolean
+            get() {
+                val initializedField = PlatformImpl::class.java.getDeclaredField("initialized")
+                initializedField.isAccessible = true
+                val initialized = initializedField.get(null) as AtomicBoolean
+                return initialized.get()
+            }
 
         private fun ensureFxRuntimeInitialized() {
             if (!fxRuntimeInitialized) {
                 thread(true) {
                     val originalClassLoader = Thread.currentThread().contextClassLoader
                     Thread.currentThread().contextClassLoader = ApplicationListener::class.java.classLoader
-                    Application.launch(ProxyApplication::class.java)
+                    launch<ProxyApplication>()
                     Thread.currentThread().contextClassLoader = originalClassLoader
                 }
                 print("Waiting for JavaFX Runtime Startup")

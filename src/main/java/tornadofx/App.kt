@@ -193,4 +193,4 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
 }
 
-inline fun <reified T : App> launch(vararg args: String) = Application.launch(T::class.java, *args)
+inline fun <reified T : Application> launch(vararg args: String) = Application.launch(T::class.java, *args)
