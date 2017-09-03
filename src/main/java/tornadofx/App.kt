@@ -121,13 +121,13 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
             val viewClass = Class.forName(viewClassName)
             if (UIComponent::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out UIComponent>
             throw IllegalArgumentException("Class specified by --class-name is not a subclass of tornadofx.View")
-         } else {
+        } else {
             return primaryView
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T: ScopedInstance = object : ReadOnlyProperty<App, T> {
+    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<App, T> {
         override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class, scope)
     }
 
@@ -135,12 +135,12 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
         override val root = Pane()
     }
 
-    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit){
+    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit) {
         Platform.setImplicitExit(implicitExit)
         SwingUtilities.invokeLater {
             Toolkit.getDefaultToolkit()
             val trayIcon = TrayIcon(image, tooltip)
-            trayIcon.isImageAutoSize= autoSize
+            trayIcon.isImageAutoSize = autoSize
             op(trayIcon)
             SystemTray.getSystemTray().add(trayIcon)
             trayIcons.add(trayIcon)
@@ -192,4 +192,5 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
 }
-inline fun <reified T: App> launch(vararg strings: String) =Application.launch(T::class.java, *strings)
+
+inline fun <reified T : App> launch(vararg args: String) = Application.launch(T::class.java, *args)
