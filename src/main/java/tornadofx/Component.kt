@@ -785,7 +785,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             close()
             modalStage = null
         }
-        root.findParentOfType(InternalWindow::class)?.close()
+        root.findParent<InternalWindow>()?.close()
         (root.properties["tornadofx.tab"] as? Tab)?.apply {
             tabPane?.tabs?.remove(this)
         }

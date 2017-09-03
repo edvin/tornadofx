@@ -124,8 +124,8 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
 
         // Register/deregister with parent Form
         parentProperty().addListener { _, oldParent, newParent ->
-            ((oldParent as? Form) ?: oldParent?.findParentOfType(Form::class))?.fieldsets?.remove(this)
-            ((newParent as? Form) ?: newParent?.findParentOfType(Form::class))?.fieldsets?.add(this)
+            ((oldParent as? Form) ?: oldParent?.findParent<Form>())?.fieldsets?.remove(this)
+            ((newParent as? Form) ?: newParent?.findParent<Form>())?.fieldsets?.add(this)
         }
     }
 
@@ -189,7 +189,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
         HBox.setHgrow(input, inputGrow)
     }
 
-    val form: Form get() = findParentOfType(Form::class)!!
+    val form: Form get() = findParent<Form>()!!
 
     internal val fields = HashSet<Field>()
 
@@ -208,7 +208,7 @@ class StageAwareFieldset(text: String? = null, labelPosition: Orientation = HORI
  * of the field is activated, this input element will receive focus.
  */
 fun Node.mnemonicTarget() {
-    findParentOfType(Field::class)?.apply {
+    findParent<Field>()?.apply {
         label.isMnemonicParsing = true
         label.labelFor = this@mnemonicTarget
     }
@@ -237,8 +237,8 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
 
         // Register/deregister with parent Fieldset
         parentProperty().addListener { _, oldParent, newParent ->
-            ((oldParent as? Fieldset) ?: oldParent?.findParentOfType(Fieldset::class))?.fields?.remove(this)
-            ((newParent as? Fieldset) ?: newParent?.findParentOfType(Fieldset::class))?.fields?.add(this)
+            ((oldParent as? Fieldset) ?: oldParent?.findParent<Fieldset>())?.fields?.remove(this)
+            ((newParent as? Fieldset) ?: newParent?.findParent<Fieldset>())?.fields?.add(this)
         }
     }
 }
@@ -260,11 +260,11 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
     init {
         isFocusTraversable = false
         addClass(Stylesheet.field)
-        label.textProperty().bind(textProperty())
+        label.textProperty().bind(textProperty)
         children.add(labelContainer)
     }
 
-    val fieldset: Fieldset get() = findParentOfType(Fieldset::class)!!
+    val fieldset: Fieldset get() = findParent()!!
 
     override fun computePrefHeight(width: Double): Double {
         val labelHasContent = forceLabelIndent || !text.isNullOrBlank()

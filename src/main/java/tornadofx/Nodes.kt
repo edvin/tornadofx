@@ -1047,6 +1047,8 @@ fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
     }
 }
 
+inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
