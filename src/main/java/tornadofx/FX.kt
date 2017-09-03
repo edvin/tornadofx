@@ -270,7 +270,7 @@ class FX {
             if (obsolete is UIComponent) {
                 replacement = find(obsolete.javaClass.kotlin, obsolete.scope)
             } else {
-                val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
+                val noArgsConstructor = obsolete.javaClass.constructors.any { it.parameterCount == 0 }
                 if (noArgsConstructor) {
                     replacement = obsolete.javaClass.newInstance()
                 } else {
