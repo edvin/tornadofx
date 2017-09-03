@@ -69,8 +69,8 @@ class OSGIConsole : View() {
                 }
 
                 setOnContextMenuRequested {
-                    val stop = contextMenu.items.find { it.text == "Stop" }!!
-                    val start = contextMenu.items.find { it.text == "Start" }!!
+                    val stop = contextMenu.items.first { it.text == "Stop" }
+                    val start = contextMenu.items.first { it.text == "Start" }
                     stop.isDisable = selectedItem?.state != Bundle.ACTIVE
                     start.isDisable = !stop.isDisable
                 }

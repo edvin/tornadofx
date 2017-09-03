@@ -232,21 +232,18 @@ internal fun MessageDigest.concat(vararg values: String): String {
 
 val Rest.Response.digestParams: Map<String, String>? get() {
     fun String.clean() = trim('\t', ' ', '"')
-    return headers["WWW-Authenticate"]
-            ?.filter { it.startsWith("Digest ") }
-            ?.first()
+    return headers["WWW-Authenticate"]?.first { it.startsWith("Digest ") }
             ?.substringAfter("Digest ")
             ?.split(",")
-            ?.map {
+            ?.associate {
                 val (name, value) = it.split("=", limit = 2)
                 name.clean() to value.clean()
             }
-            ?.toMap()
 }
 
 private val HexChars = "0123456789abcdef".toCharArray()
 
-val ByteArray.hex get() = map(Byte::toInt).map { "${HexChars[(it and 0xF0).ushr(4)]}${HexChars[it and 0x0F]}" }.joinToString("")
+val ByteArray.hex get() = map(Byte::toInt).joinToString("") { "${HexChars[(it and 0xF0).ushr(4)]}${HexChars[it and 0x0F]}" }
 
 class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override val method: Rest.Request.Method, override val uri: URI, override val entity: Any?) : Rest.Request {
     lateinit var connection: HttpURLConnection
@@ -501,7 +498,7 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
         }
     }
 
-    override val headers get() = response.allHeaders.map { it.name to listOf(it.value) }.toMap()
+    override val headers get() = response.allHeaders.associate { it.name to listOf(it.value) }
 }
 
 inline fun <reified T : JsonModel> JsonObject.toModel(): T {
@@ -525,7 +522,7 @@ class RestProgressBar : Fragment() {
             val size = c.list.size
 
             Platform.runLater {
-                val tooltip = c.list.map { r -> "%s %s".format(r.method, r.uri) }.joinToString("\n")
+                val tooltip = c.list.joinToString("\n") { r -> "%s %s".format(r.method, r.uri) }
 
                 root.tooltip = Tooltip(tooltip)
                 root.isVisible = size > 0
@@ -595,7 +592,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             nonce = params["nonce"]!!
             opaque = params["opaque"] ?: ""
             nonceCounter.set(0)
-            qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first()
+            qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.last()
 
             val request = response.request
             request.reset()
@@ -609,10 +606,10 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
     private fun extractNextNonce(response: Rest.Response) {
         val authInfo = response.header("Authentication-Info")
         if (authInfo != null) {
-            val params = authInfo.split(",").map {
+            val params = authInfo.split(",").associate {
                 val (name, value) = it.split("=", limit = 2)
                 name to value
-            }.toMap()
+            }
             val nextNonce = params["nextnonce"]
             if (nextNonce != null) {
                 nonceCounter.set(0)
