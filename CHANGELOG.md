@@ -6,6 +6,7 @@
 
 ### Changes
 
+- Lots of internal refactoring thanks to @tieskedh
 - Kotlin 1.1.4
 - Wizard and ViewModel are now internationalized
 - imageview() builder accepts ObservableValue<Image?> (https://github.com/edvin/tornadofx-guide/issues/43)
