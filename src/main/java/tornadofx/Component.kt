@@ -128,8 +128,7 @@ abstract class Component : Configurable {
             if (super.get() == null) {
                 try {
                     val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl.INSTANCE)
-                    if (bundle is FXPropertyResourceBundle)
-                        bundle.inheritFromGlobal()
+                    (bundle as? FXPropertyResourceBundle)?.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
                     FX.log.fine("No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle")

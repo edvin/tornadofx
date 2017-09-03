@@ -484,7 +484,7 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
     override fun consume(): Rest.Response {
         EntityUtils.consumeQuietly(response.entity)
         try {
-            if (response is CloseableHttpResponse) response.close()
+            (response as? CloseableHttpResponse)?.close()
             return this
         } finally {
             Platform.runLater { Rest.ongoingRequests.remove(request) }

@@ -152,8 +152,7 @@ fun <T> EventTarget.listview(values: ReadOnlyListProperty<T>, op: (ListView<T>.(
 
 fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     fun rebinder() {
-        if (items is SortedFilteredList<*>)
-            (items as SortedFilteredList<T>).bindTo(this)
+        (items as? SortedFilteredList<T>)?.bindTo(this)
     }
     itemsProperty().bind(values)
     rebinder()
@@ -176,8 +175,7 @@ fun <T> EventTarget.tableview(items: ReadOnlyListProperty<T>, op: (TableView<T>.
 fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
     fun rebinder() {
-        if (tableview.items is SortedFilteredList<*>)
-            (tableview.items as SortedFilteredList<T>).bindTo(tableview)
+        (tableview.items as? SortedFilteredList<T>)?.bindTo(tableview)
     }
     tableview.itemsProperty().bind(items)
     rebinder()
@@ -1080,8 +1078,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
 @Suppress("UNCHECKED_CAST")
 fun <S, T> TableColumn<S, T>.setValue(item: S, value: T?) {
     val property = getTableColumnProperty(item)
-    if (property is WritableValue<*>)
-        (property as WritableValue<T>).value = value
+    (property as? WritableValue<T>)?.value = value
 }
 
 /**

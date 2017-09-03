@@ -414,7 +414,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
-                    if (cmp is UIComponent) cmp.init()
+                    (cmp as? UIComponent)?.init()
                     // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != useScope) {
                         components = FX.getComponents(cmp.scope)
@@ -427,7 +427,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
     }
 
     val cmp = type.java.newInstance()
-    if (cmp is Fragment) cmp.init()
+    (cmp as? Fragment)?.init()
 
     // Become default workspace for scope if not set
     if (cmp is Workspace && cmp.scope.workspaceInstance == null)
