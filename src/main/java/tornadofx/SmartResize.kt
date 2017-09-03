@@ -16,6 +16,9 @@ import tornadofx.*
 import tornadofx.ResizeType.*
 import kotlin.collections.set
 
+private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
+private const val SMART_RESIZE = "tornadofx.smartResize"
+private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Number) : ResizeType(true)
     class Fixed(val width: Number) : ResizeType(false)
@@ -46,50 +49,49 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
                 var remainingWidth = contentWidth
 
+                val groupedColumns = param.table.contentColumns.groupBy{ it.resizeType::class }
                 // Fixed columns always keep their size
-                val fixedColumns = param.table.contentColumns.filter { it.resizeType is Fixed }
-                fixedColumns.forEach {
+                groupedColumns[Fixed::class]?.forEach {
                     val rt = it.resizeType as Fixed
                     it.prefWidth = rt.width.toDouble()
                     remainingWidth -= it.width
                 }
 
                 // Preferred sized columns get their size and are adjusted for resize-delta that affected them
-                val prefColumns = param.table.contentColumns.filter { it.resizeType is Pref }
-                prefColumns.forEach {
+                groupedColumns[Pref::class]?.forEach {
                     val rt = it.resizeType as Pref
                     it.prefWidth = rt.width.toDouble() + rt.delta.toDouble()
                     remainingWidth -= it.width
                 }
 
                 // Content columns are resized to their content and adjusted for resize-delta that affected them
-                val contentColumns = param.table.contentColumns.filter { it.resizeType is Content }
-                param.table.resizeColumnsToFitContent(contentColumns)
-                contentColumns.forEach {
-                    val rt = it.resizeType as Content
+                groupedColumns[Content::class]?.also { contentColumns ->
+                    param.table.resizeColumnsToFitContent(contentColumns)
+                    contentColumns.forEach {
+                        val rt = it.resizeType as Content
 
-                    it.prefWidth = it.width + rt.delta.toDouble() + rt.padding.toDouble()
+                        it.prefWidth = it.width + rt.delta.toDouble() + rt.padding.toDouble()
 
-                    // Save minWidth if different from default
-                    if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
-                        it.minWidth = it.width
-                        rt.minRecorded = true
+                        // Save minWidth if different from default
+                        if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
+                            it.minWidth = it.width
+                            rt.minRecorded = true
+                        }
+
+                        // Save maxWidth if different from default
+                        if (rt.useAsMax && !rt.maxRecorded && it.width != 80.0) {
+                            it.maxWidth = it.width
+                            rt.maxRecorded = true
+                        }
+
+                        remainingWidth -= it.width
                     }
-
-                    // Save maxWidth if different from default
-                    if (rt.useAsMax && !rt.maxRecorded && it.width != 80.0) {
-                        it.maxWidth = it.width
-                        rt.maxRecorded = true
-                    }
-
-                    remainingWidth -= it.width
                 }
 
                 // Pct columns share what's left of space from here
-                val pctColumns = param.table.contentColumns.filter { it.resizeType is Pct }
-                if (pctColumns.isNotEmpty()) {
+                groupedColumns[Pct::class]?.also {pctColumn->
                     val widthPerPct = contentWidth / 100.0
-                    pctColumns.forEach {
+                    pctColumn.forEach {
                         val rt = it.resizeType as Pct
                         it.prefWidth = (widthPerPct * rt.value.toDouble()) + rt.delta.toDouble()
                         remainingWidth -= it.width
@@ -98,8 +100,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
                 // Weighted columns shouldn't be combined with Pct. Weight is converted to pct of remaining width
                 // and distributed to weigthed columns + remaining type columns
-                val weightColumns = param.table.contentColumns.filter { it.resizeType is Weight }
-                if (weightColumns.isNotEmpty()) {
+                groupedColumns[Weight::class]?.also {weightColumns->
                     val consideredColumns = weightColumns + param.table.contentColumns.filter { it.resizeType is Remaining }
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
                     fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.weight?.toDouble() ?: 1.0
@@ -121,14 +122,15 @@ class SmartResize private constructor() : TableViewResizeCallback {
                         remainingWidth -= it.width
                     }
 
-                } else {
+                } ?: run {
                     // If no weighted columns, give the rest of the width to the "Remaining" columns
-                    val remainingColumns = param.table.contentColumns.filter { it.resizeType is Remaining }
-                    if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
-                        val perColumn = remainingWidth / remainingColumns.size.toDouble()
-                        remainingColumns.forEach {
-                            it.prefWidth = perColumn + it.resizeType.delta
-                            remainingWidth -= it.width
+                    groupedColumns[Remaining::class]?.also { remainingColumns->
+                        if (remainingWidth > 0){
+                            val perColumn = remainingWidth / remainingColumns.size.toDouble()
+                            remainingColumns.forEach {
+                                it.prefWidth = perColumn + it.resizeType.delta
+                                remainingWidth -= it.width
+                            }
                         }
                     }
                 }
@@ -136,7 +138,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 // Adjustment if we didn't assign all width
                 if (remainingWidth > 0.0) {
                     // Give remaining width to the right-most resizable column
-                    val rightMostResizable = param.table.contentColumns.reversed().filter { it.resizeType.isResizable }.firstOrNull()
+                    val rightMostResizable = param.table.contentColumns.lastOrNull { it.resizeType.isResizable }
                     rightMostResizable?.apply {
                         prefWidth = width + remainingWidth
                         remainingWidth -= width
@@ -178,12 +180,10 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 val colIndex = param.table.contentColumns.indexOf(param.column)
 
                 val rightCol = param.table.contentColumns
-                        .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
-                        .filter {
-                            val newWidth = it.width + rightColDelta
-                            newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
-                        }
-                        .firstOrNull() ?: return false
+                        .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
+                    val newWidth = it.width + rightColDelta
+                    newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
+                } ?: return false
 
                 // Apply negative delta and set new with for the right column
                 with(rightCol) {
@@ -205,9 +205,9 @@ class SmartResize private constructor() : TableViewResizeCallback {
     }
 
     var TableView<*>.isSmartResizing: Boolean
-        get() = properties["tornadofx.isSmartResizing"] == true
+        get() = properties[IS_SMART_RESIZING] == true
         set(value) {
-            properties["tornadofx.isSmartResizing"] = value
+            properties[IS_SMART_RESIZING] = value
         }
 
     fun requestResize(table: TableView<*>) {
@@ -221,9 +221,9 @@ class SmartResize private constructor() : TableViewResizeCallback {
         val ResizeTypeKey = "tornadofx.smartColumnResizeType"
 
         internal var TableView<*>.isSmartResizing: Boolean
-            get() = properties["tornadofx.isSmartResizing"] == true
+            get() = properties[IS_SMART_RESIZING] == true
             set(value) {
-                properties["tornadofx.isSmartResizing"] = value
+                properties[IS_SMART_RESIZING] = value
             }
 
         private val policyChangeListener = ChangeListener<Callback<TableView.ResizeFeatures<*>, Boolean>> { observable, oldValue, newValue ->
@@ -262,7 +262,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
         }
 
         private fun isPolicyInstalled(table: TableView<*>): Boolean {
-            return table.properties["tornadofx.smartResize"] is SmartResize
+            return table.properties[SMART_RESIZE] is SmartResize
         }
 
         private fun install(table: TableView<*>) {
@@ -270,7 +270,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.addListener(columnsChangeListener)
             table.itemsProperty().addListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties["tornadofx.smartResizeInstalled"] = true
+            table.properties[SMART_RESIZE_INSTALLED] = true
         }
 
         private fun uninstall(table: TableView<*>) {
@@ -278,7 +278,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.removeListener(columnsChangeListener)
             table.itemsProperty().removeListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove("tornadofx.smartResizeInstalled")
+            table.properties.remove(SMART_RESIZE_INSTALLED)
         }
     }
 }
@@ -457,9 +457,9 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
     }
 
     var TreeTableView<*>.isSmartResizing: Boolean
-        get() = properties["tornadofx.isSmartResizing"] == true
+        get() = properties[IS_SMART_RESIZING] == true
         set(value) {
-            properties["tornadofx.isSmartResizing"] = value
+            properties[IS_SMART_RESIZING] = value
         }
 
     fun requestResize(table: TreeTableView<*>) {
@@ -470,12 +470,12 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
     companion object {
         val POLICY = TreeTableSmartResize()
-        val ResizeTypeKey = "tornadofx.smartColumnResizeType"
+        const val ResizeTypeKey = "tornadofx.smartColumnResizeType"
 
         internal var TreeTableView<*>.isSmartResizing: Boolean
-            get() = properties["tornadofx.isSmartResizing"] == true
+            get() = properties[IS_SMART_RESIZING] == true
             set(value) {
-                properties["tornadofx.isSmartResizing"] = value
+                properties[IS_SMART_RESIZING] = value
             }
 
         private val policyChangeListener = ChangeListener<Callback<TreeTableView.ResizeFeatures<*>, Boolean>> { observable, oldValue, newValue ->
@@ -509,21 +509,21 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
         }
 
         private fun isPolicyInstalled(table: TreeTableView<*>): Boolean {
-            return table.properties["tornadofx.smartResize"] is SmartResize
+            return table.properties[SMART_RESIZE] is SmartResize
         }
 
         private fun install(table: TreeTableView<*>) {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties["tornadofx.smartResizeInstalled"] = true
+            table.properties[SMART_RESIZE_INSTALLED] = true
         }
 
         private fun uninstall(table: TreeTableView<*>) {
             table.columnResizePolicyProperty().removeListener(policyChangeListener)
             table.columns.removeListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove("tornadofx.smartResizeInstalled")
+            table.properties.remove(SMART_RESIZE_INSTALLED)
         }
     }
 }
