@@ -181,10 +181,10 @@ class FX {
          */
         private fun loadMessages() {
             try {
-                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl.INSTANCE)
+                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl)
             } catch (ex: Exception) {
                 log.fine("No global Messages found in locale $locale, using empty bundle")
-                messages = EmptyResourceBundle.INSTANCE
+                messages = EmptyResourceBundle
             }
         }
 
