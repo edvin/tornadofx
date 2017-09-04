@@ -34,8 +34,7 @@ class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, 
 
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
-    val field = javaClass.findFieldByName("${prop.name}\$delegate")
-            ?: throw IllegalArgumentException("No delegate field with name '${prop.name}' found")
+    val field = requireNotNull(javaClass.findFieldByName("${prop.name}\$delegate")){"No delegate field with name '${prop.name}' found"}
 
     field.isAccessible = true
     @Suppress("UNCHECKED_CAST")

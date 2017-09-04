@@ -243,10 +243,8 @@ open class ViewModel : Component(), ScopedInstance {
     }
 
     fun markDirty(property: ObservableValue<*>) {
-        if (propertyMap.containsKey(property))
-            dirtyProperties.add(property)
-        else
-            throw IllegalArgumentException("The property $property is not a facade of this ViewModel ($this)")
+        require(propertyMap.containsKey(property)){"The property $property is not a facade of this ViewModel ($this)"}
+        dirtyProperties+=property
     }
 
     /**
@@ -426,8 +424,9 @@ fun <T : ViewModel> T.rebind(op: (T.() -> Unit)) {
  * tracks focus on the supplied node while OnChange tracks changes to the property itself.
  */
 inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
-        = (bean as? ViewModel)?.addValidator(node, this, trigger, validator)
-        ?: throw IllegalArgumentException("The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead.")
+        = requireNotNull(bean as? ViewModel){"The addValidator extension on Property can only be used on properties inside a ViewModel. Use validator.addValidator() instead."}
+        .addValidator(node, this, trigger, validator)
+
 
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
@@ -493,8 +492,10 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
  * Add a validator to the given Control for the given model property.
  */
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, model: ViewModel? = null, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
-        = (model ?: property.viewModel)?.addValidator(control, property, trigger, validator)
-        ?: throw IllegalArgumentException("The addValidator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. Use validator.addValidator() instead or make the property's bean field point to a ViewModel.")
+        = requireNotNull(model ?: property.viewModel){
+    "The addValidator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. " +
+            "Use validator.addValidator() instead or make the property's bean field point to a ViewModel."
+        }.addValidator(control, property, trigger, validator)
 
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(control, property, trigger, null, validator)

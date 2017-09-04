@@ -568,41 +568,32 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
  * them into nodes via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceList: ObservableList<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceList, converter)
-}
+fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -> Node): ListConversionListener<T, Node>
+        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the items of the given ListPropery by converting
  * them into nodes via the given converter function. Changes to the source list and changing the list inside the ListProperty
  * will be reflected in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceList: ListProperty<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceList, converter)
-}
+fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node>
+        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the given observable set of items by converting
  * them into nodes via the given converter function. Changes to the source set will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceSet, converter)
-}
+inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node>
+    = requireNotNull(getChildList()?.bind(sourceSet, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the given observable list of items by converting
  * them into UIComponents via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node> {
-    val children: MutableList<Node> = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    val componentConverter: (T) -> Node = { converter(it).root }
-    return children.bind(sourceList, componentConverter)
-}
+inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node>
+         = requireNotNull(getChildList()?.bind(sourceList){ converter(it).root }) { "Unable to extract child nodes from $this" }
 
 
 /**
