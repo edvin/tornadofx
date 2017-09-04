@@ -13,6 +13,7 @@
 - added option to increment and decrement spinners by scrolling (https://github.com/edvin/tornadofx/pull/425)
 - onUndock is now called for the View currently embedded as the scene root of a Window when it closes (https://github.com/edvin/tornadofx/issues/427)
 - Launch<AppClass> helper for nicer main functions (https://github.com/edvin/tornadofx/pull/431)
+- Changed PropertyHolder.fontFamily from String to MultiValue<String>
 
 ### Additions
 
