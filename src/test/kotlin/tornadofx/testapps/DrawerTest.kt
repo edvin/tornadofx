@@ -76,7 +76,7 @@ Process finished with exit code 0
                     style {
                         backgroundColor += Color.BLACK
                         textFill = Color.LIGHTGREY
-                        fontFamily = "Consolas"
+                        fontFamily += "Consolas"
                     }
                 }
             }
