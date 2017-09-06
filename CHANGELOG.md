@@ -6,6 +6,7 @@
 
 ### Changes
 
+- loadFont size parameter is changed from Double to Number
 - Lots of internal refactoring thanks to @tieskedh
 - Kotlin 1.1.4
 - Wizard and ViewModel are now internationalized

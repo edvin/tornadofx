@@ -1171,8 +1171,8 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
-fun loadFont(path: String, size: Double): Font? {
-    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size) }
+fun loadFont(path: String, size: Number): Font? {
+    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size.toDouble()) }
 }
 
 // Style Class
