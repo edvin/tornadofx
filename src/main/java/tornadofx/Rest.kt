@@ -377,7 +377,7 @@ class HttpClientEngine(val rest: Rest) : Rest.Engine() {
             HttpClientRequest(this, client, seq, method, uri, entity)
 
     override fun setBasicAuth(username: String, password: String) {
-        if (rest.baseURI == null) throw IllegalArgumentException("You must configure the baseURI first.")
+        requireNotNull(rest.baseURI){"You must configure the baseURI first."}
 
         val uri = URI.create(rest.baseURI)
 

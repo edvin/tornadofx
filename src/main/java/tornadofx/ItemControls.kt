@@ -43,7 +43,10 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     spinner.isEditable = editable
     opcr(this, spinner, op)
     if (property != null) {
-        if (spinner.valueFactory == null) throw IllegalArgumentException("You must configure the value factory or use the Number based spinner builder which configures a default value factory along with min, max and initialValue!")
+        requireNotNull(spinner.valueFactory){
+            "You must configure the value factory or use the Number based spinner builder " +
+                    "which configures a default value factory along with min, max and initialValue!"
+        }
         spinner.valueFactory.valueProperty().bindBidirectional(property)
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
@@ -204,7 +207,7 @@ fun <T : Any> TreeView<T>.lazyPopulate(
 ) {
     fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) }
 
-    if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
+    requireNotNull(root){"You must set a root TreeItem before calling lazyPopulate"}
 
     task {
         childFactory.invoke(root)
@@ -406,8 +409,7 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConve
             stringColumn.cellFactory = TextFieldTableCell.forTableColumn()
         }
         else -> {
-            if (converter == null)
-                throw IllegalArgumentException("You must supply a converter for non String columns")
+            requireNotNull(converter){"You must supply a converter for non String columns"}
             cellFactory = TextFieldTableCell.forTableColumn(converter)
         }
     }

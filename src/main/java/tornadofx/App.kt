@@ -117,10 +117,11 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out UIComponent> {
         if (primaryView == DeterminedByParameter::class) {
-            val viewClassName = parameters.named?.get("view-class") ?: throw IllegalArgumentException("No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View")
+            val viewClassName = requireNotNull(parameters.named?.get("view-class")){"No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View"}
             val viewClass = Class.forName(viewClassName)
-            if (UIComponent::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out UIComponent>
-            throw IllegalArgumentException("Class specified by --class-name is not a subclass of tornadofx.View")
+
+            require(UIComponent::class.java.isAssignableFrom(viewClass)){"Class specified by --class-name is not a subclass of tornadofx.View"}
+            return viewClass.kotlin as KClass<out UIComponent>
         } else {
             return primaryView
         }

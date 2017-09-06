@@ -226,7 +226,7 @@ fun Pane.replaceChildren(vararg uiComponents: UIComponent) =
         this.replaceChildren(*(uiComponents.map { it.root }.toTypedArray()))
 
 fun EventTarget.replaceChildren(vararg node: Node) {
-    val children = getChildList() ?: throw IllegalArgumentException("This node doesn't have a child list")
+    val children = requireNotNull(getChildList()){"This node doesn't have a child list"}
     children.clear()
     children.addAll(node)
 }
@@ -962,6 +962,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     onTransit?.invoke()
     if (this == scene?.root) {
         val scene = scene!!
+
         if (replacement !is Parent) {
             throw IllegalArgumentException("Replacement scene root must be a Parent")
         }

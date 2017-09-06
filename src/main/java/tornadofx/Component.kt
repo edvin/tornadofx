@@ -287,7 +287,7 @@ abstract class Component : Configurable {
             val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
             val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
             (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
-            val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
+            val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
             val index = children.indexOf(this)
             children.add(index, progress)
             removeFromParent()
@@ -712,57 +712,54 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
-            if (getRootWrapper() !is Parent) {
-                throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
-            } else {
-                modalStage = Stage(stageStyle)
-                // modalStage needs to be set before this code to make close() work in blocking mode
-                with(modalStage!!) {
-                    if (resizable != null) isResizable = resizable
-                    titleProperty().bind(titleProperty)
-                    initModality(modality)
-                    if (owner != null) initOwner(owner)
+            require(getRootWrapper() !is Parent) { "Only Parent Fragments can be opened in a Modal" }
+            modalStage = Stage(stageStyle)
+            // modalStage needs to be set before this code to make close() work in blocking mode
+            with(modalStage!!) {
+                if (resizable != null) isResizable = resizable
+                titleProperty().bind(titleProperty)
+                initModality(modality)
+                if (owner != null) initOwner(owner)
 
-                    if (getRootWrapper().scene != null) {
-                        scene = getRootWrapper().scene
-                        this@UIComponent.properties["tornadofx.scene"] = getRootWrapper().scene
-                    } else {
-                        Scene(getRootWrapper()).apply {
-                            if (escapeClosesWindow) {
-                                addEventFilter(KeyEvent.KEY_PRESSED) {
-                                    if (it.code == KeyCode.ESCAPE)
-                                        close()
-                                }
+                if (getRootWrapper().scene != null) {
+                    scene = getRootWrapper().scene
+                    this@UIComponent.properties["tornadofx.scene"] = getRootWrapper().scene
+                } else {
+                    Scene(getRootWrapper()).apply {
+                        if (escapeClosesWindow) {
+                            addEventFilter(KeyEvent.KEY_PRESSED) {
+                                if (it.code == KeyCode.ESCAPE)
+                                    close()
                             }
-
-                            FX.applyStylesheetsTo(this)
-                            val primaryStage = FX.getPrimaryStage(scope)
-                            if (primaryStage != null) icons += primaryStage.icons
-                            scene = this
-                            this@UIComponent.properties["tornadofx.scene"] = this
                         }
+
+                        FX.applyStylesheetsTo(this)
+                        val primaryStage = FX.getPrimaryStage(scope)
+                        if (primaryStage != null) icons += primaryStage.icons
+                        scene = this
+                        this@UIComponent.properties["tornadofx.scene"] = this
                     }
-
-                    hookGlobalShortcuts()
-
-                    showingProperty().onChange {
-                        if (it) {
-                            if (owner != null) {
-                                x = owner.x + (owner.width / 2) - (scene.width / 2)
-                                y = owner.y + (owner.height / 2) - (scene.height / 2)
-                            }
-                            callOnDock()
-                            if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                                configureReloading()
-                            }
-                        } else {
-                            modalStage = null
-                            callOnUndock()
-                        }
-                    }
-
-                    if (block) showAndWait() else show()
                 }
+
+                hookGlobalShortcuts()
+
+                showingProperty().onChange {
+                    if (it) {
+                        if (owner != null) {
+                            x = owner.x + (owner.width / 2) - (scene.width / 2)
+                            y = owner.y + (owner.height / 2) - (scene.height / 2)
+                        }
+                        callOnDock()
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                            configureReloading()
+                        }
+                    } else {
+                        modalStage = null
+                        callOnUndock()
+                    }
+                }
+
+                if (block) showAndWait() else show()
             }
         } else {
             if (!modalStage!!.isShowing)
@@ -826,8 +823,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
         val componentType = this@UIComponent.javaClass
         val targetLocation = location ?: componentType.simpleName + ".fxml"
-        val fxml = componentType.getResource(targetLocation) ?:
-                throw IllegalArgumentException("FXML not found for $componentType in $targetLocation")
+        val fxml = requireNotNull(componentType.getResource(targetLocation)){"FXML not found for $componentType in $targetLocation"}
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
