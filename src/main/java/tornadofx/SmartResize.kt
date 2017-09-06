@@ -173,30 +173,30 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
-                if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
+                if (targetWidth !in param.column.minWidthProperty().value .. param.column.maxWidthProperty().value) return false
 
                 // Prepare to adjust the right column by the same amount we subtract or add to this column
                 val rightColDelta = param.delta * -1.0
                 val colIndex = param.table.contentColumns.indexOf(param.column)
 
                 val rightCol = param.table.contentColumns
-                        .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
-                    val newWidth = it.width + rightColDelta
-                    newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
-                } ?: return false
+                            .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
+                        val newWidth = it.width + rightColDelta
+                    newWidth in it.minWidthProperty().value .. it.maxWidthProperty().value
+                    } ?: return false
 
                 // Apply negative delta and set new with for the right column
                 with(rightCol) {
-                    resizeType.delta += rightColDelta
-                    prefWidth = width + rightColDelta
-                }
+                        resizeType.delta += rightColDelta
+                        prefWidth = width + rightColDelta
+                    }
 
                 // Apply delta and set new width for the resized column
                 with(param.column) {
-                    rt.delta += param.delta
-                    prefWidth = width + param.delta
-                }
-
+                        rt.delta += param.delta
+                        prefWidth = width + param.delta
+                    }
+                return true
             }
             return true
         } finally {
@@ -423,7 +423,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
-                if (targetWidth < param.column.minWidthProperty().value || targetWidth > param.column.maxWidthProperty().value) return false
+                if (targetWidth !in param.column.minWidthProperty().value .. param.column.maxWidthProperty().value) return false
 
                 // Prepare to adjust the right column by the same amount we subtract or add to this column
                 val rightColDelta = param.delta * -1.0
@@ -433,7 +433,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                         .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
                         .filter {
                             val newWidth = it.width + rightColDelta
-                            newWidth <= it.maxWidthProperty().value && newWidth >= it.minWidthProperty().value
+                            newWidth in it.minWidthProperty().value .. it.maxWidthProperty().value
                         }
                         .firstOrNull() ?: return false
 
@@ -448,7 +448,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                     rt.delta += param.delta
                     prefWidth = width + param.delta
                 }
-
+                return true
             }
             return true
         } finally {

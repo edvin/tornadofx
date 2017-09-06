@@ -726,7 +726,7 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
 
     fun getOrCreateExpandedNode(tableRow: TableRow<S>): Node? {
         val index = tableRow.index
-        if (index > -1 && index < tableView.items.size) {
+        if (index in tableView.items.indices) {
             val item = tableView.items[index]!!
             var node: Node? = expandedNodeCache[item]
             if (node == null) {
