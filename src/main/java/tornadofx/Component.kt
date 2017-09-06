@@ -712,7 +712,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
-            require(getRootWrapper() !is Parent) { "Only Parent Fragments can be opened in a Modal" }
+            require(getRootWrapper() is Parent) { "Only Parent Fragments can be opened in a Modal" }
             modalStage = Stage(stageStyle)
             // modalStage needs to be set before this code to make close() work in blocking mode
             with(modalStage!!) {
