@@ -19,6 +19,7 @@ import kotlin.collections.set
 private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
 private const val SMART_RESIZE = "tornadofx.smartResize"
 private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
+
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Number) : ResizeType(true)
     class Fixed(val width: Number) : ResizeType(false)
@@ -49,7 +50,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
                 var remainingWidth = contentWidth
 
-                val groupedColumns = param.table.contentColumns.groupBy{ it.resizeType::class }
+                val groupedColumns = param.table.contentColumns.groupBy { it.resizeType::class }
                 // Fixed columns always keep their size
                 groupedColumns[Fixed::class]?.forEach {
                     val rt = it.resizeType as Fixed
@@ -89,7 +90,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 }
 
                 // Pct columns share what's left of space from here
-                groupedColumns[Pct::class]?.also {pctColumn->
+                groupedColumns[Pct::class]?.also { pctColumn ->
                     val widthPerPct = contentWidth / 100.0
                     pctColumn.forEach {
                         val rt = it.resizeType as Pct
@@ -100,7 +101,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
                 // Weighted columns shouldn't be combined with Pct. Weight is converted to pct of remaining width
                 // and distributed to weigthed columns + remaining type columns
-                groupedColumns[Weight::class]?.also {weightColumns->
+                groupedColumns[Weight::class]?.also { weightColumns ->
                     val consideredColumns = weightColumns + param.table.contentColumns.filter { it.resizeType is Remaining }
                     // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
                     fun TableColumn<*, *>.weight() = (resizeType as? Weight)?.weight?.toDouble() ?: 1.0
@@ -124,8 +125,8 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
                 } ?: run {
                     // If no weighted columns, give the rest of the width to the "Remaining" columns
-                    groupedColumns[Remaining::class]?.also { remainingColumns->
-                        if (remainingWidth > 0){
+                    groupedColumns[Remaining::class]?.also { remainingColumns ->
+                        if (remainingWidth > 0) {
                             val perColumn = remainingWidth / remainingColumns.size.toDouble()
                             remainingColumns.forEach {
                                 it.prefWidth = perColumn + it.resizeType.delta
@@ -173,29 +174,29 @@ class SmartResize private constructor() : TableViewResizeCallback {
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
-                if (targetWidth !in param.column.minWidthProperty().value .. param.column.maxWidthProperty().value) return false
+                if (targetWidth !in param.column.minWidthProperty().value..param.column.maxWidthProperty().value) return false
 
                 // Prepare to adjust the right column by the same amount we subtract or add to this column
                 val rightColDelta = param.delta * -1.0
                 val colIndex = param.table.contentColumns.indexOf(param.column)
 
                 val rightCol = param.table.contentColumns
-                            .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
-                        val newWidth = it.width + rightColDelta
-                    newWidth in it.minWidthProperty().value .. it.maxWidthProperty().value
-                    } ?: return false
+                        .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
+                    val newWidth = it.width + rightColDelta
+                    newWidth in it.minWidthProperty().value..it.maxWidthProperty().value
+                } ?: return false
 
                 // Apply negative delta and set new with for the right column
                 with(rightCol) {
-                        resizeType.delta += rightColDelta
-                        prefWidth = width + rightColDelta
-                    }
+                    resizeType.delta += rightColDelta
+                    prefWidth = width + rightColDelta
+                }
 
                 // Apply delta and set new width for the resized column
                 with(param.column) {
-                        rt.delta += param.delta
-                        prefWidth = width + param.delta
-                    }
+                    rt.delta += param.delta
+                    prefWidth = width + param.delta
+                }
                 return true
             }
             return true
@@ -423,7 +424,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                 val targetWidth = param.column.width + param.delta
 
                 // Would resize result in illegal width?
-                if (targetWidth !in param.column.minWidthProperty().value .. param.column.maxWidthProperty().value) return false
+                if (targetWidth !in param.column.minWidthProperty().value..param.column.maxWidthProperty().value) return false
 
                 // Prepare to adjust the right column by the same amount we subtract or add to this column
                 val rightColDelta = param.delta * -1.0
@@ -433,7 +434,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
                         .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }
                         .filter {
                             val newWidth = it.width + rightColDelta
-                            newWidth in it.minWidthProperty().value .. it.maxWidthProperty().value
+                            newWidth in it.minWidthProperty().value..it.maxWidthProperty().value
                         }
                         .firstOrNull() ?: return false
 
@@ -560,13 +561,15 @@ fun TreeTableView<*>.getContentWidth() = TreeTableView::class.java.getDeclaredFi
     it.get(this@getContentWidth) as Double
 }
 
-val TableView<*>.contentColumns: List<TableColumn<*, *>> get() = columns.flatMap {
-    if (it.columns.isEmpty()) listOf(it) else it.columns
-}
+val TableView<*>.contentColumns: List<TableColumn<*, *>>
+    get() = columns.flatMap {
+        if (it.columns.isEmpty()) listOf(it) else it.columns
+    }
 
-val TreeTableView<*>.contentColumns: List<TreeTableColumn<*, *>> get() = columns.flatMap {
-    if (it.columns.isEmpty()) listOf(it) else it.columns
-}
+val TreeTableView<*>.contentColumns: List<TreeTableColumn<*, *>>
+    get() = columns.flatMap {
+        if (it.columns.isEmpty()) listOf(it) else it.columns
+    }
 
 internal var TableColumn<*, *>.resizeType: ResizeType
     get() = resizeTypeProperty().value
