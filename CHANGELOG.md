@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- Sequence returned from rangeTo in Properties was not lazy evaluated
+- inc() and dec() of the Properties were not implemented correctly 
+
 ### Changes
 
 - loadFont size parameter is changed from Double to Number
