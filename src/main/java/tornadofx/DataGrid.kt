@@ -211,7 +211,7 @@ class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataG
 class DataGridCellSkin<T>(control: DataGridCell<T>) : CellSkinBase<DataGridCell<T>, DataGridCellBehavior<T>>(control, DataGridCellBehavior(control))
 
 class DataGridFocusModel<T>(val dataGrid: DataGrid<T>) : FocusModel<T>() {
-    override fun getModelItem(index: Int) = if (index in 0 until itemCount) dataGrid.items[index] else null
+    override fun getModelItem(index: Int) = if (index in (0 until itemCount)-1) dataGrid.items[index] else null
     override fun getItemCount() = dataGrid.items.size
 }
 
