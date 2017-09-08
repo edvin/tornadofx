@@ -6,6 +6,7 @@ import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
 import javafx.collections.ObservableList
+import tornadofx.FX.Companion.initialized
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -29,7 +30,7 @@ class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, 
 
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
-    val field = requireNotNull(javaClass.findFieldByName("${prop.name}\$delegate")){"No delegate field with name '${prop.name}' found"}
+    val field = requireNotNull(javaClass.findFieldByName("${prop.name}\$delegate")) { "No delegate field with name '${prop.name}' found" }
 
     field.isAccessible = true
     @Suppress("UNCHECKED_CAST")
@@ -122,10 +123,9 @@ fun <S : Any, T : Any> S.observable(
         @Suppress("UNUSED_PARAMETER") propertyType: KClass<T>? = null
 ): ObjectProperty<T> {
     if (getter == null && propertyName == null) throw AssertionError("Either getter or propertyName must be provided")
-    var propName = propertyName
-    if (propName == null && getter != null) {
-        propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
-    }
+    val propName = propertyName
+            ?: getter?.name?.substring(3)?.let { it.first().toLowerCase() + it.substring(1) }
+
     return JavaBeanObjectPropertyBuilder.create().apply {
         bean(this@observable)
         this.name(propName)
@@ -142,63 +142,39 @@ enum class SingleAssignThreadSafetyMode {
 fun <T> singleAssign(threadSafetyMode: SingleAssignThreadSafetyMode = SingleAssignThreadSafetyMode.SYNCHRONIZED): SingleAssign<T> =
         if (threadSafetyMode == SingleAssignThreadSafetyMode.SYNCHRONIZED) SynchronizedSingleAssign() else UnsynchronizedSingleAssign()
 
-private object UNINITIALIZED_VALUE
-
 interface SingleAssign<T> {
     fun isInitialized(): Boolean
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
 }
 
-private class SynchronizedSingleAssign<T> : SingleAssign<T> {
+private class SynchronizedSingleAssign<T> : UnsynchronizedSingleAssign<T>() {
 
     @Volatile
-    private var initialized = false
+    override var _value: Any? = UNINITIALIZED_VALUE
 
-    @Volatile
-    private var _value: Any? = UNINITIALIZED_VALUE
-
-    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        if (!initialized)
-            throw Exception("Value has not been assigned yet!")
-        @Suppress("UNCHECKED_CAST")
-        return _value as T
+    override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = synchronized(this) {
+        super.setValue(thisRef, property, value)
     }
-
-    override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        synchronized(this) {
-            if (initialized) {
-                throw Exception("Value has already been assigned!")
-            }
-            _value = value
-            initialized = true
-        }
-    }
-
-    override fun isInitialized() = initialized
 }
 
-private class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
+private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
-    private var initialized = false
-    private var _value: Any? = UNINITIALIZED_VALUE
+    protected object UNINITIALIZED_VALUE
+    protected open var _value: Any? = UNINITIALIZED_VALUE
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-        if (!initialized)
-            throw Exception("Value has not been assigned yet!")
+        if (!isInitialized()) throw UninitializedPropertyAccessException("Value has not been assigned yet!")
         @Suppress("UNCHECKED_CAST")
         return _value as T
     }
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        if (initialized) {
-            throw Exception("Value has already been assigned!")
-        }
+        if (isInitialized()) throw Exception("Value has already been assigned!")
         _value = value
-        initialized = true
     }
 
-    override fun isInitialized() = initialized
+    override fun isInitialized() = _value != UNINITIALIZED_VALUE
 }
 
 /**
@@ -546,16 +522,16 @@ operator fun LongProperty.remAssign(other: ObservableNumberValue) {
     value %= other.longValue()
 }
 
-operator fun ObservableLongValue.rangeTo(other: ObservableLongValue) : Sequence<LongProperty>
+operator fun ObservableLongValue.rangeTo(other: ObservableLongValue): Sequence<LongProperty>
         = get().rangeTo(other.get()).asSequence().map { SimpleLongProperty(it) }
 
 operator fun ObservableLongValue.rangeTo(other: Long): Sequence<LongProperty>
         = get().rangeTo(other).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableLongValue.rangeTo(other: ObservableIntegerValue) : Sequence<LongProperty>
+operator fun ObservableLongValue.rangeTo(other: ObservableIntegerValue): Sequence<LongProperty>
         = get().rangeTo(other.get()).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableLongValue.rangeTo(other: Int) : Sequence<LongProperty>
+operator fun ObservableLongValue.rangeTo(other: Int): Sequence<LongProperty>
         = get().rangeTo(other).asSequence().map(::SimpleLongProperty)
 
 operator fun ObservableLongValue.compareTo(other: Number) = get().compareTo(other.toDouble())

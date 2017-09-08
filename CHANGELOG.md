@@ -8,6 +8,7 @@
 
 ### Changes
 
+- SingleAssign now throws UninitializedPropertyAccessException instead of Exception
 - Removed inc() and dec() from properties
 - rangeTo from properties is now lazy
 - loadFont size parameter is changed from Double to Number
