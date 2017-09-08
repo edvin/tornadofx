@@ -1,14 +1,11 @@
 package tornadofx
 
-import javafx.beans.InvalidationListener
 import javafx.beans.Observable
 import javafx.beans.binding.*
 import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
-import javafx.collections.MapChangeListener
 import javafx.collections.ObservableList
-import javafx.collections.ObservableMap
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -22,9 +19,7 @@ fun <T> property(block: () -> Property<T>) = PropertyDelegate(block())
 
 class PropertyDelegate<T>(val fxProperty: Property<T>) : ReadWriteProperty<Any, T> {
 
-    override fun getValue(thisRef: Any, property: KProperty<*>): T {
-        return fxProperty.value
-    }
+    override fun getValue(thisRef: Any, property: KProperty<*>) = fxProperty.value
 
     override fun setValue(thisRef: Any, property: KProperty<*>, value: T) {
         fxProperty.value = value
@@ -120,7 +115,12 @@ inline fun <reified T : Any> Any.observable(propName: String) =
  *          val observableName = myPojo.observable("name")
  */
 @Suppress("UNCHECKED_CAST")
-inline fun <reified S : Any, reified T : Any> S.observable(getter: KFunction<T>? = null, setter: KFunction2<S, T, Unit>? = null, propertyName: String? = null, @Suppress("UNUSED_PARAMETER") propertyType: KClass<T>? = null): ObjectProperty<T> {
+fun <S : Any, T : Any> S.observable(
+        getter: KFunction<T>? = null,
+        setter: KFunction2<S, T, Unit>? = null,
+        propertyName: String? = null,
+        @Suppress("UNUSED_PARAMETER") propertyType: KClass<T>? = null
+): ObjectProperty<T> {
     if (getter == null && propertyName == null) throw AssertionError("Either getter or propertyName must be provided")
     var propName = propertyName
     if (propName == null && getter != null) {
@@ -140,7 +140,7 @@ enum class SingleAssignThreadSafetyMode {
 }
 
 fun <T> singleAssign(threadSafetyMode: SingleAssignThreadSafetyMode = SingleAssignThreadSafetyMode.SYNCHRONIZED): SingleAssign<T> =
-        if (threadSafetyMode.equals(SingleAssignThreadSafetyMode.SYNCHRONIZED)) SynchronizedSingleAssign<T>() else UnsynchronizedSingleAssign<T>()
+        if (threadSafetyMode == SingleAssignThreadSafetyMode.SYNCHRONIZED) SynchronizedSingleAssign() else UnsynchronizedSingleAssign()
 
 private object UNINITIALIZED_VALUE
 
@@ -239,11 +239,6 @@ operator fun DoubleProperty.plusAssign(other: ObservableNumberValue) {
     value += other.doubleValue()
 }
 
-operator fun DoubleProperty.inc(): DoubleProperty {
-    value++
-    return this
-}
-
 operator fun DoubleExpression.minus(other: Number): DoubleBinding = subtract(other.toDouble())
 operator fun DoubleExpression.minus(other: ObservableNumberValue): DoubleBinding = subtract(other)
 
@@ -256,12 +251,6 @@ operator fun DoubleProperty.minusAssign(other: ObservableNumberValue) {
 }
 
 operator fun DoubleExpression.unaryMinus(): DoubleBinding = negate()
-
-
-operator fun DoubleProperty.dec(): DoubleProperty {
-    value--
-    return this
-}
 
 operator fun DoubleExpression.times(other: Number): DoubleBinding = multiply(other.toDouble())
 operator fun DoubleExpression.times(other: ObservableNumberValue): DoubleBinding = multiply(other)
@@ -297,23 +286,9 @@ operator fun DoubleProperty.remAssign(other: ObservableNumberValue) {
     value %= other.doubleValue()
 }
 
-operator fun ObservableDoubleValue.compareTo(other: Number): Int {
-    if (get() > other.toDouble())
-        return 1
-    else if (get() < other.toDouble())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableDoubleValue.compareTo(other: Number) = get().compareTo(other.toDouble())
 
-operator fun ObservableDoubleValue.compareTo(other: ObservableNumberValue): Int {
-    if (get() > other.doubleValue())
-        return 1
-    else if (get() < other.doubleValue())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableDoubleValue.compareTo(other: ObservableNumberValue) = get().compareTo(other.doubleValue())
 
 operator fun FloatExpression.plus(other: Number): FloatBinding = add(other.toFloat())
 operator fun FloatExpression.plus(other: Double): DoubleBinding = add(other)
@@ -326,11 +301,6 @@ operator fun FloatProperty.plusAssign(other: Number) {
 
 operator fun FloatProperty.plusAssign(other: ObservableNumberValue) {
     value += other.floatValue()
-}
-
-operator fun FloatProperty.inc(): FloatProperty {
-    value++
-    return this
 }
 
 operator fun FloatExpression.minus(other: Number): FloatBinding = subtract(other.toFloat())
@@ -347,11 +317,6 @@ operator fun FloatProperty.minusAssign(other: ObservableNumberValue) {
 }
 
 operator fun FloatExpression.unaryMinus(): FloatBinding = negate()
-
-operator fun FloatProperty.dec(): FloatProperty {
-    value--
-    return this
-}
 
 operator fun FloatExpression.times(other: Number): FloatBinding = multiply(other.toFloat())
 operator fun FloatExpression.times(other: Double): DoubleBinding = multiply(other)
@@ -394,23 +359,9 @@ operator fun FloatProperty.remAssign(other: ObservableNumberValue) {
     value %= other.floatValue()
 }
 
-operator fun ObservableFloatValue.compareTo(other: Number): Int {
-    if (get() > other.toFloat())
-        return 1
-    else if (get() < other.toFloat())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableFloatValue.compareTo(other: Number) = get().compareTo(other.toFloat())
 
-operator fun ObservableFloatValue.compareTo(other: ObservableNumberValue): Int {
-    if (get() > other.floatValue())
-        return 1
-    else if (get() < other.floatValue())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableFloatValue.compareTo(other: ObservableNumberValue) = get().compareTo(other.floatValue())
 
 
 operator fun IntegerExpression.plus(other: Int): IntegerBinding = add(other)
@@ -428,11 +379,6 @@ operator fun IntegerProperty.plusAssign(other: Number) {
 
 operator fun IntegerProperty.plusAssign(other: ObservableNumberValue) {
     value += other.intValue()
-}
-
-operator fun IntegerProperty.inc(): IntegerProperty {
-    value++
-    return this
 }
 
 operator fun IntegerExpression.minus(other: Int): IntegerBinding = subtract(other)
@@ -453,11 +399,6 @@ operator fun IntegerProperty.minusAssign(other: ObservableNumberValue) {
 }
 
 operator fun IntegerExpression.unaryMinus(): IntegerBinding = negate()
-
-operator fun IntegerProperty.dec(): IntegerProperty {
-    value--
-    return this
-}
 
 operator fun IntegerExpression.times(other: Int): IntegerBinding = multiply(other)
 operator fun IntegerExpression.times(other: Long): LongBinding = multiply(other)
@@ -510,55 +451,20 @@ operator fun IntegerProperty.remAssign(other: ObservableNumberValue) {
     value %= other.intValue()
 }
 
-operator fun ObservableIntegerValue.rangeTo(other: ObservableIntegerValue): Sequence<IntegerProperty> {
-    val sequence = mutableListOf<IntegerProperty>()
-    for (i in get()..other.get()) {
-        sequence += SimpleIntegerProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableIntegerValue.rangeTo(other: ObservableIntegerValue): Sequence<IntegerProperty>
+        = get().rangeTo(other.get()).asSequence().map(::SimpleIntegerProperty)
 
-operator fun ObservableIntegerValue.rangeTo(other: Int): Sequence<IntegerProperty> {
-    val sequence = mutableListOf<IntegerProperty>()
-    for (i in get()..other) {
-        sequence += SimpleIntegerProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableIntegerValue.rangeTo(other: Int): Sequence<IntegerProperty>
+        = get().rangeTo(other).asSequence().map(::SimpleIntegerProperty)
 
-operator fun ObservableIntegerValue.rangeTo(other: ObservableLongValue): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other.get()) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableIntegerValue.rangeTo(other: ObservableLongValue): Sequence<LongProperty>
+        = get().rangeTo(other.get()).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableIntegerValue.rangeTo(other: Long): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableIntegerValue.rangeTo(other: Long): Sequence<LongProperty>
+        = get().rangeTo(other).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableIntegerValue.compareTo(other: Number): Int {
-    if (get() > other.toDouble())
-        return 1
-    else if (get() < other.toDouble())
-        return -1
-    else
-        return 0
-}
-
-operator fun ObservableIntegerValue.compareTo(other: ObservableNumberValue): Int {
-    if (get() > other.doubleValue())
-        return 1
-    else if (get() < other.doubleValue())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableIntegerValue.compareTo(other: Number) = get().compareTo(other.toDouble())
+operator fun ObservableIntegerValue.compareTo(other: ObservableNumberValue) = get().compareTo(other.doubleValue())
 
 
 operator fun LongExpression.plus(other: Number): LongBinding = add(other.toLong())
@@ -574,11 +480,6 @@ operator fun LongProperty.plusAssign(other: Number) {
 
 operator fun LongProperty.plusAssign(other: ObservableNumberValue) {
     value += other.longValue()
-}
-
-operator fun LongProperty.inc(): LongProperty {
-    value++
-    return this
 }
 
 operator fun LongExpression.minus(other: Number): LongBinding = subtract(other.toLong())
@@ -598,10 +499,6 @@ operator fun LongProperty.minusAssign(other: ObservableNumberValue) {
 
 operator fun LongExpression.unaryMinus(): LongBinding = negate()
 
-operator fun LongProperty.dec(): LongProperty {
-    value--
-    return this
-}
 
 operator fun LongExpression.times(other: Number): LongBinding = multiply(other.toLong())
 operator fun LongExpression.times(other: Float): FloatBinding = multiply(other)
@@ -649,55 +546,20 @@ operator fun LongProperty.remAssign(other: ObservableNumberValue) {
     value %= other.longValue()
 }
 
-operator fun ObservableLongValue.rangeTo(other: ObservableLongValue): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other.get()) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableLongValue.rangeTo(other: ObservableLongValue) : Sequence<LongProperty>
+        = get().rangeTo(other.get()).asSequence().map { SimpleLongProperty(it) }
 
-operator fun ObservableLongValue.rangeTo(other: Long): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableLongValue.rangeTo(other: Long): Sequence<LongProperty>
+        = get().rangeTo(other).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableLongValue.rangeTo(other: ObservableIntegerValue): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other.get()) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableLongValue.rangeTo(other: ObservableIntegerValue) : Sequence<LongProperty>
+        = get().rangeTo(other.get()).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableLongValue.rangeTo(other: Int): Sequence<LongProperty> {
-    val sequence = mutableListOf<LongProperty>()
-    for (i in get()..other) {
-        sequence += SimpleLongProperty(i)
-    }
-    return sequence.asSequence()
-}
+operator fun ObservableLongValue.rangeTo(other: Int) : Sequence<LongProperty>
+        = get().rangeTo(other).asSequence().map(::SimpleLongProperty)
 
-operator fun ObservableLongValue.compareTo(other: Number): Int {
-    if (get() > other.toDouble())
-        return 1
-    else if (get() < other.toDouble())
-        return -1
-    else
-        return 0
-}
-
-operator fun ObservableLongValue.compareTo(other: ObservableNumberValue): Int {
-    if (get() > other.doubleValue())
-        return 1
-    else if (get() < other.doubleValue())
-        return -1
-    else
-        return 0
-}
+operator fun ObservableLongValue.compareTo(other: Number) = get().compareTo(other.toDouble())
+operator fun ObservableLongValue.compareTo(other: ObservableNumberValue) = get().compareTo(other.doubleValue())
 
 
 infix fun NumberExpression.gt(other: Int): BooleanBinding = greaterThan(other)
