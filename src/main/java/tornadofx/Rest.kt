@@ -104,13 +104,18 @@ open class Rest : Controller() {
     }
 
     fun execute(method: Request.Method, target: String, data: Any? = null, processor: ((Request) -> Unit)? = null): Response {
-        val request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
+        var request: Rest.Request? = null
+        try {
+            request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
 
-        if (processor != null)
-            processor(request)
+            if (processor != null)
+                processor(request)
 
-        Platform.runLater { ongoingRequests.add(request) }
-        return request.execute()
+            Platform.runLater { ongoingRequests.add(request) }
+            return request.execute()
+        } catch (t: Throwable) {
+            throw RestException("Failed to execute request", request, null, t)
+        }
     }
 
     abstract class Engine {
@@ -172,6 +177,8 @@ open class Rest : Controller() {
                     is JsonObject -> Json.createArrayBuilder().add(json).build()
                     else -> throw IllegalArgumentException("Unknown json result value")
                 }
+            } catch (t: Throwable) {
+                throw RestException("JsonArray parsing failed", request, this, t)
             } finally {
                 consume()
             }
@@ -196,6 +203,8 @@ open class Rest : Controller() {
                     is JsonObject -> json
                     else -> throw IllegalArgumentException("Unknown json result value")
                 }
+            } catch (t: Throwable) {
+                throw RestException("JsonObject parsing failed", request, this, t)
             } finally {
                 consume()
             }
@@ -667,3 +676,5 @@ class HttpURLBasicAuthContext(val username: String, val password: String) : Auth
         return response
     }
 }
+
+class RestException(message: String, val request: Rest.Request?, val response: Rest.Response?, cause: Throwable) : RuntimeException(message, cause)
