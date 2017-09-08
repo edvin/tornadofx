@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Accessing last item in DataGridFocusModel was not possible
 ### Changes
 
 - loadFont size parameter is changed from Double to Number
