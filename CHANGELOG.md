@@ -26,6 +26,7 @@
 - FX.addChildInterceptor that can veto or custom add builder children to their parent. Useful for MigPane for example.
 - Tab.select() for easier selection of tab without having to access tabPane.selectionModel
 - TabPane.contains(UIComponent) and Iterable<Node>.contains(UIComponent)
+- Override -fx-accent with type-safe CSS property accentColor
 
 ## [1.7.10]
 
