@@ -196,7 +196,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
     }
 
     init {
-        importStylesheet(WizardStyles::class)
+        importStylesheet<WizardStyles>()
         this.heading = heading ?: ""
         currentPageProperty.addListener { _, oldPage, newPage ->
             if (newPage != null) {

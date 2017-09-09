@@ -7,7 +7,7 @@ class TabPaneTestApp : App(TabPaneTest::class)
 
 class TabPaneTest : View("TabPane Test") {
     override val root = tabpane {
-        tab(TabOne::class)
+        tab<TabOne>()
     }
 }
 

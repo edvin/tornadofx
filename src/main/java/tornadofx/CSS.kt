@@ -1064,7 +1064,7 @@ fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssE
 fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
 fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
 fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
-inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
+inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
 
 class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)

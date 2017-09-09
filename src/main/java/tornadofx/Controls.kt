@@ -86,6 +86,7 @@ fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() 
     return tab
 }
 
+inline fun <reified  T: UIComponent> TabPane.tab(noinline op: (Tab.() -> Unit)? = null) = tab(T::class, op)
 fun TabPane.tab(uiComponent: KClass<out UIComponent>, op: (Tab.() -> Unit)? = null) = tab(find(uiComponent), op)
 
 fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {

@@ -201,7 +201,7 @@ fun Stage.hookGlobalShortcuts() {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
         else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(OSGIConsole::class).openModal(modality = Modality.NONE)
+            find<OSGIConsole>().openModal(modality = Modality.NONE)
     }
 }
 
@@ -1047,6 +1047,8 @@ fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
         }
     }
 }
+
+inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {

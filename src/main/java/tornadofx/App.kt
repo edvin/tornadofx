@@ -129,7 +129,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<App, T> {
-        override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class, scope)
+        override fun getValue(thisRef: App, property: KProperty<*>) = find<T>(scope)
     }
 
     class DeterminedByParameter : View() {

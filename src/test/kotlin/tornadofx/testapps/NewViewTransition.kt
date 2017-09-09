@@ -25,7 +25,7 @@ class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::
     class VBoxRootView : View("Switching Sub Views In VBox") {
         override val root = vbox {
             label("Top").addClass(NewViewTransitionStyles.darkLabel)
-            add(NewViewTransitionMain::class)
+            add<NewViewTransitionMain>()
             label("Bottom").addClass(NewViewTransitionStyles.lightLabel)
         }
     }
@@ -43,7 +43,7 @@ class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransi
             right = label("Right") { addClass(NewViewTransitionStyles.greenLabel) }
             bottom = label("Bottom") { addClass(NewViewTransitionStyles.lightLabel) }
             left = label("Left") { addClass(NewViewTransitionStyles.greenLabel) }
-            center(NewViewTransitionMain::class)
+            center<NewViewTransitionMain>()
         }
     }
 }

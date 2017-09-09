@@ -19,8 +19,8 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
     override val canFinish = allPagesComplete
 
     init {
-        add(WizardStep1::class)
-        add(WizardStep2::class)
+        add<WizardStep1>()
+        add<WizardStep2>()
         customer.item = Customer()
         graphic = resources.imageview("/tornadofx/tests/person.png")
         showSteps = true

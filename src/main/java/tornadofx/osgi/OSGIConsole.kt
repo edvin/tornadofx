@@ -18,7 +18,7 @@ class OSGIConsole : View() {
         prefHeight = 600.0
 
         center {
-            tableview<Bundle>() {
+            tableview<Bundle> {
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
                 column("ID", Long::class) {
