@@ -1271,7 +1271,7 @@ fun <T : Node> T.setId(cssId: CssRule): T {
 // Containers
 
 fun <T> box(all: T) = CssBox(all, all, all, all)
-fun <T> box(vertical: T, horizontal: T) = CssBox(vertical, horizontal, vertical, horizontal)
+fun <T> box(horizontal: T, vertical: T) = CssBox(horizontal, vertical, horizontal, vertical)
 fun <T> box(top: T, right: T, bottom: T, left: T) = CssBox(top, right, bottom, left)
 data class CssBox<out T>(val top: T, val right: T, val bottom: T, val left: T)
 
