@@ -8,6 +8,9 @@
 
 ### Changes
 
+- SingleAssign now throws UninitializedPropertyAccessException instead of Exception
+- Removed inc() and dec() from properties
+- rangeTo from properties is now lazy
 - loadFont size parameter is changed from Double to Number
 - Lots of internal refactoring thanks to @tieskedh
 - Kotlin 1.1.4
