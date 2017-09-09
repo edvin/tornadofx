@@ -5,7 +5,6 @@
 ### Fixed
 
 - Accessing last item in DataGridFocusModel was not possible
-- SmartTreeResize always added listeners, also if they were added
 
 ### Changes
 
