@@ -58,7 +58,7 @@ class EventBus {
     inline fun <reified T: FXEvent> subscribe(scope: Scope, registration : FXEventRegistration)
             = subscribe(T::class, scope, registration)
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration : FXEventRegistration) {
-        subscriptions.computeIfAbsent(event, { HashSet() }).add(registration)
+        subscriptions.getOrPut(event, { HashSet() }).add(registration)
         eventScopes[registration.action] = scope
     }
 
