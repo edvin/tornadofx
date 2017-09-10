@@ -411,6 +411,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         stringKeyedMap[stringKey] = params[it.key]
     }
     inheritParamHolder.set(stringKeyedMap)
+
     if (ScopedInstance::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(useScope)
         if (!components.containsKey(type as KClass<out ScopedInstance>)) {
@@ -426,10 +427,13 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
                 }
             }
         }
-        return components[type] as T
+        val cmp = components[type] as T
+        cmp.activeParams = stringKeyedMap
+        return cmp
     }
 
     val cmp = type.java.newInstance()
+    cmp.activeParams = stringKeyedMap
     (cmp as? Fragment)?.init()
 
     // Become default workspace for scope if not set

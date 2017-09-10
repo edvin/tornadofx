@@ -83,7 +83,8 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
 abstract class Component : Configurable {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val workspace: Workspace get() = scope.workspace
-    val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
+    internal var activeParams = FX.inheritParamHolder.get() ?: mapOf()
+    val params: Map<String, Any?> get() = activeParams
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
     /**
