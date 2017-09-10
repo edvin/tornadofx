@@ -1,6 +1,5 @@
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TreeTableViewSkin
 import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyProperty
@@ -16,11 +15,6 @@ import javafx.util.Callback
 import tornadofx.adapters.*
 
 import kotlin.collections.set
-
-//private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
-private const val SMART_RESIZE = "tornadofx.smartResize"
-private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
-const val RESIZE_TYPE_KEY = "tornadofx.smartColumnResizeType"
 
 
 sealed class ResizeType(val isResizable: Boolean) {

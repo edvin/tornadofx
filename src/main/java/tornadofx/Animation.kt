@@ -522,6 +522,7 @@ abstract class ViewTransition {
         this.setup = setup
     }
 
+    internal operator fun invoke(current: Node, replacement: Node, attach: (Node) -> Unit) = call(current, replacement, attach)
     internal fun call(current: Node, replacement: Node, attach: (Node) -> Unit) {
         current.isTransitioning = true
         replacement.isTransitioning = true
