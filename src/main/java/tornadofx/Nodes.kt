@@ -3,6 +3,7 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableColumnHeader
+import com.sun.javafx.scene.control.skin.TreeTableViewSkin
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Platform
@@ -36,6 +37,9 @@ import javafx.util.Callback
 import javafx.util.Duration
 import javafx.util.StringConverter
 import javafx.util.converter.*
+import tornadofx.adapters.TornadoFXColumn
+import tornadofx.adapters.TornadoFXTable
+import tornadofx.adapters.toTornadoFXTable
 import tornadofx.osgi.OSGIConsole
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -289,10 +293,20 @@ fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
 fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
 infix fun Number.xy(y: Number) = Point2D(toDouble(), y.toDouble())
 
-fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+inline fun <reified C, T : Any> TornadoFXTable<C, T>.resizeColumnsToFitContent(
+        resizeColumns: List<TornadoFXColumn<out C>> = contentColumns,
+        maxRows: Int = 50,
+        noinline afterResize: (() -> Unit)? = null
+) = this.internalResizeColumnsToFitContent(resizeColumns.map { it.column }, maxRows, afterResize)
+
+inline fun <reified C, T : Any> TornadoFXTable<C, T>.internalResizeColumnsToFitContent(
+        resizeColumns: List<C>,
+        maxRows: Int = 50,
+        noinline afterResize: (() -> Unit)? = null
+) {
     val doResize = {
         try {
-            val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
+            val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", C::class.java, Int::class.java)
             resizer.isAccessible = true
             resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
             afterResize?.invoke()
@@ -301,24 +315,21 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
             //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
         }
     }
-    if (skin == null) Platform.runLater { doResize() } else doResize()
-}
-
-fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
-    val doResize = {
-        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
-    }
     if (skin == null) {
-        skinProperty().onChangeOnce {
+        skinProperty.onChangeOnce {
             Platform.runLater { doResize() }
         }
     } else {
         doResize()
     }
 }
+
+
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null)
+        = this.toTornadoFXTable().internalResizeColumnsToFitContent(resizeColumns, maxRows, afterResize)
+
+fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null)
+        = this.toTornadoFXTable().internalResizeColumnsToFitContent(resizeColumns, maxRows, afterResize)
 
 fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boolean) {
     items.asSequence().filter(condition)

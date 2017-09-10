@@ -206,18 +206,12 @@ fun TreeTableView<*>.requestResize() {
 /**
  * Get the width of the area available for columns inside the TableView
  */
-fun TableView<*>.getContentWidth() = TableView::class.java.getDeclaredField("contentWidth").let {
-    it.isAccessible = true
-    it.get(this@getContentWidth) as Double
-}
+fun TableView<*>.getContentWidth() = this.toTornadoFXTable().contentWidth
 
 /**
  * Get the width of the area available for columns inside the TableView
  */
-fun TreeTableView<*>.getContentWidth() = TreeTableView::class.java.getDeclaredField("contentWidth").let {
-    it.isAccessible = true
-    it.get(this@getContentWidth) as Double
-}
+fun TreeTableView<*>.getContentWidth() = this.toTornadoFXTable().contentWidth
 
 val TableView<*>.contentColumns: List<TableColumn<*, *>>
     get() = columns.flatMap {
@@ -242,102 +236,78 @@ internal var TreeTableColumn<*, *>.resizeType: ResizeType
     }
 
 @Suppress("UNCHECKED_CAST")
-internal fun TableColumn<*, *>.resizeTypeProperty() =
-        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
+internal fun TornadoFXColumn<*>.resizeTypeProperty() =
+        properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
 
-@Suppress("UNCHECKED_CAST")
-internal fun TreeTableColumn<*, *>.resizeTypeProperty() =
-        properties.getOrPut(TreeTableSmartResize.ResizeTypeKey) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
+internal fun TableColumn<*, *>.resizeTypeProperty() = this.toTornadoFXColumn().resizeTypeProperty()
+internal fun TreeTableColumn<*, *>.resizeTypeProperty() = this.toTornadoFXColumn().resizeTypeProperty()
 
-fun <S, T> TableColumn<S, T>.fixedWidth(width: Number): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
     resizeType = ResizeType.Fixed(width.toDouble())
-    return this
 }
+fun <S, T> TableColumn<S, T>.fixedWidth(width: Number) = this.toTornadoFXColumn().fixedWidth(width).column
+fun <S, T> TreeTableColumn<S, T>.fixedWidth(width: Number) = this.toTornadoFXColumn().fixedWidth(width).column
 
-fun <S, T> TreeTableColumn<S, T>.fixedWidth(width: Number): TreeTableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.minWidth(width: Number) = apply {
     minWidth = width.toDouble()
+}
+fun <S, T> TableColumn<S, T>.minWidth(width: Number) = this.toTornadoFXColumn().minWidth(width).column
+fun <S, T> TreeTableColumn<S, T>.minWidth(width: Number) = this.toTornadoFXColumn().minWidth(width).column
+
+fun <S> TornadoFXColumn<S>.maxWidth(width: Number) = apply {
     maxWidth = width.toDouble()
-    resizeType = ResizeType.Fixed(width.toDouble())
-    return this
 }
+fun <S, T> TableColumn<S, T>.maxWidth(width: Number) = this.toTornadoFXColumn().maxWidth(width).column
+fun <S, T> TreeTableColumn<S, T>.maxWidth(width: Number) = this.toTornadoFXColumn().maxWidth(width).column
 
-fun <S, T> TableColumn<S, T>.minWidth(width: Number): TableColumn<S, T> {
-    minWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TreeTableColumn<S, T>.minWidth(width: Number): TreeTableColumn<S, T> {
-    minWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.maxWidth(width: Number): TableColumn<S, T> {
-    maxWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TreeTableColumn<S, T>.maxWidth(width: Number): TreeTableColumn<S, T> {
-    maxWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.prefWidth(width: Number): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.prefWidth(width: Number) = apply {
     prefWidth = width.toDouble()
-    return this
 }
+fun <S, T> TableColumn<S, T>.prefWidth(width: Number) = this.toTornadoFXColumn().prefWidth(width).column
+fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number) = this.toTornadoFXColumn().prefWidth(width).column
 
-fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number): TreeTableColumn<S, T> {
-    prefWidth = width.toDouble()
-    return this
-}
 
-fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.remainingWidth() = apply {
     resizeType = ResizeType.Remaining()
-    return this
 }
+fun <S, T> TableColumn<S, T>.remainingWidth() = this.toTornadoFXColumn().remainingWidth().column
+fun <S, T> TreeTableColumn<S, T>.remainingWidth() = this.toTornadoFXColumn().remainingWidth().column
 
-fun <S, T> TreeTableColumn<S, T>.remainingWidth(): TreeTableColumn<S, T> {
-    resizeType = ResizeType.Remaining()
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
-    return this
 }
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false)
+        = this.toTornadoFXColumn().weigthedWidth(weight, padding, minContentWidth).column
+fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false)
+        = this.toTornadoFXColumn().weigthedWidth(weight, padding, minContentWidth).column
 
-fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false): TreeTableColumn<S, T> {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.pctWidth(pct: Number): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.pctWidth(pct: Number) = apply {
     resizeType = ResizeType.Pct(pct.toDouble())
-    return this
 }
+fun <S, T> TableColumn<S, T>.pctWidth(pct: Number) = this.toTornadoFXColumn().pctWidth(pct).column
+fun <S, T> TreeTableColumn<S, T>.pctWidth(pct: Number) = this.toTornadoFXColumn().pctWidth(pct).column
 
-fun <S, T> TreeTableColumn<S, T>.pctWidth(pct: Number): TreeTableColumn<S, T> {
-    resizeType = ResizeType.Pct(pct.toDouble())
-    return this
-}
+
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
-fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TableColumn<S, T> {
+fun <S> TornadoFXColumn<S>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
-    return this
 }
-
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
-fun <S, T> TreeTableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TreeTableColumn<S, T> {
-    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
-    return this
-}
+fun <S, T> TableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false)
+        = this.toTornadoFXColumn().contentWidth(padding, useAsMin, useAsMax).column
+/**
+ * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
+ */
+fun <S, T> TreeTableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false)
+        = this.toTornadoFXColumn().contentWidth(padding, useAsMin, useAsMax).column
+
 
 internal var TornadoFXColumn<*>.resizeType: ResizeType
     get() = resizeTypeProperty().value
@@ -345,71 +315,11 @@ internal var TornadoFXColumn<*>.resizeType: ResizeType
         resizeTypeProperty().value = value
     }
 
-@Suppress("UNCHECKED_CAST")
-internal fun TornadoFXColumn<*>.resizeTypeProperty() =
-        properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
-
 var TornadoFXTable<*, *>.isSmartResizing: Boolean
     get() = properties[IS_SMART_RESIZING] == true
     set(value) {
         properties[IS_SMART_RESIZING] = value
     }
-
-fun <S> TornadoFXColumn<S>.fixedWidth(width: Number) = apply {
-    minWidth = width.toDouble()
-    maxWidth = width.toDouble()
-    resizeType = ResizeType.Fixed(width.toDouble())
-}
-
-
-fun <S> TornadoFXColumn<S>.minWidth(width: Number) = apply {
-    minWidth = width.toDouble()
-}
-
-
-fun <S> TornadoFXColumn<S>.maxWidth(width: Number) = apply {
-    maxWidth = width.toDouble()
-}
-
-fun <S> TornadoFXColumn<S>.prefWidth(width: Number) = apply {
-    prefWidth = width.toDouble()
-}
-
-fun <S> TornadoFXColumn<S>.remainingWidth() = apply {
-    resizeType = ResizeType.Remaining()
-}
-
-fun <S> TornadoFXColumn<S>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
-}
-
-fun <S> TornadoFXColumn<S>.pctWidth(pct: Number) = apply {
-    resizeType = ResizeType.Pct(pct.toDouble())
-}
-
-/**
- * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
- */
-fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
-    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
-}
-
-fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
-    val doResize = {
-        val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
-        val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it.column, maxRows) }
-        afterResize?.invoke()
-    }
-    if (skin == null) {
-        skinProperty.onChangeOnce {
-            Platform.runLater { doResize() }
-        }
-    } else {
-        doResize()
-    }
-}
 
 fun <TABLE : Any> resizeCall(
         param: TornadoFXResizeFeatures<*, TABLE>,
@@ -445,7 +355,7 @@ fun <TABLE : Any> resizeCall(
 
             // Content columns are resized to their content and adjusted for resize-delta that affected them
             groupedColumns[ResizeType.Content::class]?.also { contentColumns ->
-                param.table.resizeColumnsToFitContent(contentColumns)
+//                param.table.resizeColumnsToFitContent(contentColumns)
                 contentColumns.forEach {
                     val rt = it.resizeType as ResizeType.Content
 
