@@ -22,6 +22,7 @@
 
 ### Additions
 
+- Lots of reified functions
 - The default ErrorHandler shows structured information about failed HTTP requests
 - RestException containing request, response and the underlying exception
 - Added JsonBuilder.add(key, Iterable<JsonModel>) to avoid having to call toJSON() on it (https://github.com/edvin/tornadofx/issues/414)
