@@ -61,12 +61,12 @@ class TornadoFXNormalTable(override val table: TableView<*>) : TornadoFXTable<Ta
             table.skin = value
         }
 
-    private val contentWidhtField by lazy {
+    private val contentWidthField by lazy {
         TableView::class.java.getDeclaredField("contentWidth").also{
             it.isAccessible = true
         }
     }
 
-    override val contentWidth get() = contentWidhtField.get(table) as Double
+    override val contentWidth get() = contentWidthField.get(table) as Double
     override val properties = table.properties
 }
