@@ -39,7 +39,7 @@ typealias TreeTableViewResizeCallback = Callback<TreeTableView.ResizeFeatures<ou
 
 class SmartResize private constructor() : TableViewResizeCallback {
 
-    override fun call(param: TableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXFeatures()){table ->
+    override fun call(param: TableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXFeatures()) { table ->
         if (!isPolicyInstalled(table)) install(table)
     }
 
@@ -118,7 +118,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
 
 class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
-    override fun call(param: TreeTableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXResizeFeatures()){ table->
+    override fun call(param: TreeTableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXResizeFeatures()) { table ->
         if (!isPolicyInstalled(table)) install(table)
     }
 
@@ -348,7 +348,7 @@ internal var TornadoFXColumn<*>.resizeType: ResizeType
 internal fun TornadoFXColumn<*>.resizeTypeProperty() =
         properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
 
-var TornadoFXTable<*,*>.isSmartResizing: Boolean
+var TornadoFXTable<*, *>.isSmartResizing: Boolean
     get() = properties[IS_SMART_RESIZING] == true
     set(value) {
         properties[IS_SMART_RESIZING] = value
@@ -393,7 +393,7 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
 }
 
-fun <S, T: Any> TornadoFXTable<S,T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
         val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
@@ -409,9 +409,9 @@ fun <S, T: Any> TornadoFXTable<S,T>.resizeColumnsToFitContent(resizeColumns: Lis
     }
 }
 
-fun <TABLE: Any> resizeCall(
+fun <TABLE : Any> resizeCall(
         param: TornadoFXResizeFeatures<*, TABLE>,
-        installIfNeeded: (TABLE)->Unit
+        installIfNeeded: (TABLE) -> Unit
 ): Boolean {
     param.table.isSmartResizing = true
     val paramColumn = param.column
