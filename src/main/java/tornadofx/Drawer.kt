@@ -215,7 +215,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                     contentArea.children.add(item)
                 }
             }
-        } else if (item !in contentArea.children) {
+        } else if (item in contentArea.children) {
             contentArea.children.remove(item)
         }
 
