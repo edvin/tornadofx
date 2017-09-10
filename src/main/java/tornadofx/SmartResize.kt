@@ -1,5 +1,6 @@
 package tornadofx
 
+import com.sun.javafx.scene.control.skin.TreeTableViewSkin
 import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyProperty
@@ -16,7 +17,7 @@ import tornadofx.adapters.*
 
 import kotlin.collections.set
 
-private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
+//private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
 private const val SMART_RESIZE = "tornadofx.smartResize"
 private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
 const val RESIZE_TYPE_KEY = "tornadofx.smartColumnResizeType"
@@ -39,7 +40,7 @@ typealias TreeTableViewResizeCallback = Callback<TreeTableView.ResizeFeatures<ou
 
 class SmartResize private constructor() : TableViewResizeCallback {
 
-    override fun call(param: TableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXFeatures()){table ->
+    override fun call(param: TableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXFeatures()) { table ->
         if (!isPolicyInstalled(table)) install(table)
     }
 
@@ -103,7 +104,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.addListener(columnsChangeListener)
             table.itemsProperty().addListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE_INSTALLED] = true
+            table.properties[SMART_RESIZE] = this
         }
 
         private fun uninstall(table: TableView<*>) {
@@ -111,14 +112,14 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.removeListener(columnsChangeListener)
             table.itemsProperty().removeListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove(SMART_RESIZE_INSTALLED)
+            table.properties.remove(SMART_RESIZE)
         }
     }
 }
 
 class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
-    override fun call(param: TreeTableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXResizeFeatures()){ table->
+    override fun call(param: TreeTableView.ResizeFeatures<out Any>) = resizeCall(param.toTornadoFXResizeFeatures()) { table ->
         if (!isPolicyInstalled(table)) install(table)
     }
 
@@ -174,14 +175,14 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE_INSTALLED] = true
+            table.properties[SMART_RESIZE] = this
         }
 
         private fun uninstall(table: TreeTableView<*>) {
             table.columnResizePolicyProperty().removeListener(policyChangeListener)
             table.columns.removeListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove(SMART_RESIZE_INSTALLED)
+            table.properties.remove(SMART_RESIZE)
         }
     }
 }
@@ -348,7 +349,7 @@ internal var TornadoFXColumn<*>.resizeType: ResizeType
 internal fun TornadoFXColumn<*>.resizeTypeProperty() =
         properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
 
-var TornadoFXTable<*,*>.isSmartResizing: Boolean
+var TornadoFXTable<*, *>.isSmartResizing: Boolean
     get() = properties[IS_SMART_RESIZING] == true
     set(value) {
         properties[IS_SMART_RESIZING] = value
@@ -393,11 +394,12 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
 }
 
-fun <S, T: Any> TornadoFXTable<S,T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
     val doResize = {
-        val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
+        val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
+        val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+        resizeColumns.forEach { resizer.invoke(skin, it.column, maxRows) }
         afterResize?.invoke()
     }
     if (skin == null) {
@@ -409,9 +411,9 @@ fun <S, T: Any> TornadoFXTable<S,T>.resizeColumnsToFitContent(resizeColumns: Lis
     }
 }
 
-fun <TABLE: Any> resizeCall(
+fun <TABLE : Any> resizeCall(
         param: TornadoFXResizeFeatures<*, TABLE>,
-        installIfNeeded: (TABLE)->Unit
+        installIfNeeded: (TABLE) -> Unit
 ): Boolean {
     param.table.isSmartResizing = true
     val paramColumn = param.column
