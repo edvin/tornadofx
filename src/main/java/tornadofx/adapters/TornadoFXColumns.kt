@@ -8,6 +8,7 @@ fun TreeTableColumn<*,*>.toTornadoFXColumn() = TornadoFXTreeTableColumn(this)
 fun TableColumn<*,*>.toTornadoFXColumn() = TornadoFxNormalTableColumn(this)
 
 interface TornadoFXColumn<COLUMN> {
+    val column: Any
     val properties: Properties
     var prefWidth: Double
     var maxWidth: Double
@@ -17,7 +18,7 @@ interface TornadoFXColumn<COLUMN> {
     val maxWidthProperty: DoubleProperty
 }
 
-class TornadoFXTreeTableColumn(val column: TreeTableColumn<*, *>) : TornadoFXColumn<TreeTableColumn<*, *>> {
+class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : TornadoFXColumn<TreeTableColumn<*, *>> {
     override val minWidthProperty get() = column.minWidthProperty()
     override val maxWidthProperty get() = column.maxWidthProperty()
     override var minWidth: Double
@@ -43,7 +44,7 @@ class TornadoFXTreeTableColumn(val column: TreeTableColumn<*, *>) : TornadoFXCol
         }
 }
 
-class TornadoFxNormalTableColumn(val column: TableColumn<*, *>) : TornadoFXColumn<TableColumn<*, *>> {
+class TornadoFxNormalTableColumn(override val column: TableColumn<*, *>) : TornadoFXColumn<TableColumn<*, *>> {
     override var minWidth: Double
         get() = column.minWidth;
         set(value) {
