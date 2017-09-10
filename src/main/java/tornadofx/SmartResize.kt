@@ -16,7 +16,7 @@ import tornadofx.adapters.*
 
 import kotlin.collections.set
 
-private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
+//private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
 private const val SMART_RESIZE = "tornadofx.smartResize"
 private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
 const val RESIZE_TYPE_KEY = "tornadofx.smartColumnResizeType"
@@ -103,7 +103,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.addListener(columnsChangeListener)
             table.itemsProperty().addListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE_INSTALLED] = true
+            table.properties[SMART_RESIZE] = this
         }
 
         private fun uninstall(table: TableView<*>) {
@@ -111,7 +111,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
             table.columns.removeListener(columnsChangeListener)
             table.itemsProperty().removeListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove(SMART_RESIZE_INSTALLED)
+            table.properties.remove(SMART_RESIZE)
         }
     }
 }
@@ -174,14 +174,14 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE_INSTALLED] = true
+            table.properties[SMART_RESIZE] = this
         }
 
         private fun uninstall(table: TreeTableView<*>) {
             table.columnResizePolicyProperty().removeListener(policyChangeListener)
             table.columns.removeListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
-            table.properties.remove(SMART_RESIZE_INSTALLED)
+            table.properties.remove(SMART_RESIZE)
         }
     }
 }
