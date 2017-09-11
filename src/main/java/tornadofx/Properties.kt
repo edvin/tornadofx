@@ -6,9 +6,7 @@ import javafx.beans.binding.*
 import javafx.beans.property.*
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder
 import javafx.beans.value.*
-import javafx.collections.MapChangeListener
-import javafx.collections.ObservableList
-import javafx.collections.ObservableMap
+import javafx.collections.*
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
@@ -227,6 +225,15 @@ operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, valu
 
 operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) = set(value)
+
+operator fun <E> ObservableListValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableList<E> = value
+operator fun <E> ListProperty<E>.setValue(thisRef: Any, property: KProperty<*>, list: List<E>) = set(FXCollections.observableList(list))
+
+operator fun <E> ObservableSetValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableSet<E> = value
+operator fun <E> SetProperty<E>.setValue(thisRef: Any, property: KProperty<*>, set: Set<E>) = set(FXCollections.observableSet(set))
+
+operator fun <K, V> ObservableMapValue<K, V>.getValue(thisRef: Any, property: KProperty<*>): MutableMap<K, V> = value
+operator fun <K, V> MapProperty<K, V>.setValue(thisRef: Any, property: KProperty<*>, map: Map<K, V>) = set(FXCollections.observableMap(map))
 
 
 operator fun DoubleExpression.plus(other: Number): DoubleBinding = add(other.toDouble())
