@@ -38,6 +38,7 @@ class WorkspaceArea : BorderPane() {
 open class Workspace(title: String = "Workspace", navigationMode: NavigationMode = Stack) : View(title) {
     var refreshButton: Button by singleAssign()
     var saveButton: Button by singleAssign()
+    var createButton: Button by singleAssign()
     var deleteButton: Button by singleAssign()
     var backButton: Button by singleAssign()
     var forwardButton: Button by singleAssign()
@@ -104,6 +105,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         var defaultRefreshable = true
         var defaultCloseable = true
         var defaultComplete = true
+        var defaultCreatable = true
 
         init {
             importStylesheet("/tornadofx/workspace.css")
@@ -119,6 +121,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     private fun registerWorkspaceAccelerators() {
         accelerators[KeyCombination.valueOf("Ctrl+S")] = {
             if (!saveButton.isDisable) onSave()
+        }
+        accelerators[KeyCombination.valueOf("Ctrl+N")] = {
+            if (!createButton.isDisable) onSave()
         }
         accelerators[KeyCombination.valueOf("Ctrl+R")] = {
             if (!refreshButton.isDisable) onRefresh()
@@ -195,6 +200,15 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                     }
                     button {
                         addClass("icon-only")
+                        createButton = this
+                        isDisable = true
+                        graphic = label { addClass("icon", "create") }
+                        action {
+                            onCreate()
+                        }
+                    }
+                    button {
+                        addClass("icon-only")
                         deleteButton = this
                         isDisable = true
                         graphic = label { addClass("icon", "delete") }
@@ -237,6 +251,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                             titleProperty.unbind()
                             refreshButton.disableProperty().unbind()
                             saveButton.disableProperty().unbind()
+                            createButton.disableProperty().unbind()
                             deleteButton.disableProperty().unbind()
                         }
                     }
@@ -319,6 +334,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             dockedComponentProperty.value?.onDelete()
     }
 
+    override fun onCreate() {
+        if (dockedComponentProperty.value?.creatable?.value ?: false)
+            dockedComponentProperty.value?.onCreate()
+    }
+
     override fun onRefresh() {
         if (dockedComponentProperty.value?.refreshable?.value ?: false)
             dockedComponentProperty.value?.onRefresh()
@@ -347,6 +367,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         titleProperty.bind(child.titleProperty)
         refreshButton.disableProperty().cleanBind(child.refreshable.not())
         saveButton.disableProperty().cleanBind(child.savable.not())
+        createButton.disableProperty().cleanBind(child.creatable.not())
         deleteButton.disableProperty().cleanBind(child.deletable.not())
 
         headingContainer.children.clear()

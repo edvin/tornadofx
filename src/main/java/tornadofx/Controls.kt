@@ -184,6 +184,7 @@ val TabPane.refreshable: BooleanExpression
 inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent<T>()
 fun TabPane.onDelete() = contentUiComponent<UIComponent>()?.onDelete()
 fun TabPane.onSave() = contentUiComponent<UIComponent>()?.onSave()
+fun TabPane.onCreate() = contentUiComponent<UIComponent>()?.onCreate()
 fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
 fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
 fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true

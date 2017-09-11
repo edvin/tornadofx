@@ -23,6 +23,7 @@
 
 ### Additions
 
+- Workspace.create button and corresponding UIComponent onCreate callback and creatable property
 - Lots of reified functions
 - The default ErrorHandler shows structured information about failed HTTP requests
 - RestException containing request, response and the underlying exception

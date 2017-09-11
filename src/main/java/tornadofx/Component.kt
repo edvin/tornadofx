@@ -355,9 +355,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
+    open val creatable: BooleanExpression get() = properties.getOrPut("tornadofx.creatable") { SimpleBooleanProperty(Workspace.defaultCreatable) } as BooleanExpression
     open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
+
     var isComplete: Boolean
-        get() = complete.value;
+        get() = complete.value
         set(value) {
             (complete as? BooleanProperty)?.value = value
         }
@@ -379,20 +381,28 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.deletable"] = deletable()
     }
 
+    fun creatableWhen(creatable: () -> BooleanExpression) {
+        properties["tornadofx.creatable"] = creatable()
+    }
+
     fun closeableWhen(closeable: () -> BooleanExpression) {
         properties["tornadofx.closeable"] = closeable()
+    }
+
+    fun refreshableWhen(refreshable: () -> BooleanExpression) {
+        properties["tornadofx.refreshable"] = refreshable()
     }
 
     fun whenSaved(onSave: () -> Unit) {
         properties["tornadofx.onSave"] = onSave
     }
 
-    fun whenDeleted(onDelete: () -> Unit) {
-        properties["tornadofx.onDelete"] = onDelete
+    fun whenCreated(onCreate: () -> Unit) {
+        properties["tornadofx.onCreate"] = onCreate
     }
 
-    fun refreshableWhen(refreshable: () -> BooleanExpression) {
-        properties["tornadofx.refreshable"] = refreshable()
+    fun whenDeleted(onDelete: () -> Unit) {
+        properties["tornadofx.onDelete"] = onDelete
     }
 
     fun whenRefreshed(onRefresh: () -> Unit) {
@@ -407,6 +417,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun TabPane.connectWorkspaceActions() {
         savableWhen { savable }
         whenSaved { onSave() }
+
+        creatableWhen { creatable }
+        whenCreated { onCreate() }
 
         deletableWhen { deletable }
         whenDeleted { onDelete() }
@@ -453,6 +466,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun disableRefresh() {
         properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
+    }
+
+    fun disableCreate() {
+        properties["tornadofx.creatable"] = SimpleBooleanProperty(false)
     }
 
     fun disableDelete() {
@@ -559,6 +576,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     open fun onSave() {
         (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
+    }
+
+    /**
+     * Create callback which is triggered when the Creaste button in the Workspace
+     * is clicked.
+     */
+    open fun onCreate() {
+        (properties["tornadofx.onCreate"] as? () -> Unit)?.invoke()
     }
 
     open fun onDelete() {
