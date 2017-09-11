@@ -7,6 +7,7 @@ import com.sun.javafx.application.HostServicesDelegate
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventHandler
@@ -83,7 +84,8 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
 abstract class Component : Configurable {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val workspace: Workspace get() = scope.workspace
-    val params: Map<String, Any?> = FX.inheritParamHolder.get() ?: mapOf()
+    val paramsProperty = SimpleObjectProperty<Map<String, Any?>>(FX.inheritParamHolder.get() ?: mapOf())
+    val params: Map<String, Any?> get() = paramsProperty.value
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
     /**
@@ -98,7 +100,8 @@ abstract class Component : Configurable {
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
-    @JvmOverloads fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
+    @JvmOverloads
+    fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
 
     fun <T : Any> k(javaClass: Class<T>): KClass<T> = javaClass.kotlin
 
@@ -126,9 +129,8 @@ abstract class Component : Configurable {
         override fun get(): ResourceBundle? {
             if (super.get() == null) {
                 try {
-                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl.INSTANCE)
-                    if (bundle is FXPropertyResourceBundle)
-                        bundle.inheritFromGlobal()
+                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl)
+                    (bundle as? FXPropertyResourceBundle)?.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
                     FX.log.fine("No Messages found for ${javaClass.name} in locale ${FX.locale}, using global bundle")
@@ -148,7 +150,7 @@ abstract class Component : Configurable {
     }
 
     inline fun <reified T> inject(overrideScope: Scope = scope, params: Map<String, Any?>? = null): ReadOnlyProperty<Component, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find(T::class, overrideScope, params)
+        override fun getValue(thisRef: Component, property: KProperty<*>) = find<T>(overrideScope, params)
     }
 
     inline fun <reified T> param(defaultValue: T? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
@@ -172,7 +174,7 @@ abstract class Component : Configurable {
         var fragment: T? = null
 
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(T::class, overrideScope, params)
+            if (fragment == null) fragment = find(overrideScope, params)
             return fragment!!
         }
     }
@@ -185,9 +187,9 @@ abstract class Component : Configurable {
             } else {
                 if (injected == null) injected = FX.dicontainer?.let {
                     if (name != null) {
-                        it.getInstance(T::class, name)
+                        it.getInstance(name)
                     } else {
-                        it.getInstance(T::class)
+                        it.getInstance()
                     }
                 }
             }
@@ -205,7 +207,7 @@ abstract class Component : Configurable {
      *
      * MyController::class.runAsync { functionOnMyController() } ui { processResultOnUiThread(it) }
      */
-    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : ScopedInstance = task { op(find(T::class, scope)) }
+    inline fun <reified T, R> KClass<T>.runAsync(noinline op: T.() -> R) where T : Component, T : ScopedInstance = task { op(find(scope)) }
 
     /**
      * Perform the given operation on an ScopedInstance class function member asynchronousyly.
@@ -214,7 +216,7 @@ abstract class Component : Configurable {
      */
     inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
             where InjectableType : Component, InjectableType : ScopedInstance {
-        val t = task { invoke(find(InjectableType::class, scope)) }
+        val t = task { invoke(find(scope)) }
         if (doOnUi != null) t.ui(doOnUi)
         return t
     }
@@ -226,19 +228,19 @@ abstract class Component : Configurable {
      */
     inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(InjectableType::class, scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(InjectableType::class, scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(InjectableType::class, scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(InjectableType::class, scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
 
     /**
      * Find the given property inside the given ScopedInstance. Useful for assigning a property from a View or Controller
@@ -248,17 +250,17 @@ abstract class Component : Configurable {
      */
     inline fun <reified InjectableType, T> get(prop: KProperty1<InjectableType, T>): T
             where InjectableType : Component, InjectableType : ScopedInstance {
-        val injectable = find(InjectableType::class, scope)
+        val injectable = find<InjectableType>(scope)
         return prop.get(injectable)
     }
 
     inline fun <reified InjectableType, T> set(prop: KMutableProperty1<InjectableType, T>, value: T)
             where InjectableType : Component, InjectableType : ScopedInstance {
-        val injectable = find(InjectableType::class, scope)
+        val injectable = find<InjectableType>(scope)
         return prop.set(injectable, value)
     }
 
-    fun <T> runAsync(status: TaskStatus? = find<TaskStatus>(scope), func: FXTask<*>.() -> T) = task(status, func)
+    fun <T> runAsync(status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(status, func)
 
     /**
      * Replace this node with a progress node while a long running task
@@ -287,7 +289,7 @@ abstract class Component : Configurable {
             val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
             val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
             (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
-            val children = parent.getChildList() ?: throw IllegalArgumentException("This node has no child list, and cannot contain the progress node")
+            val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
             val index = children.indexOf(this)
             children.add(index, progress)
             removeFromParent()
@@ -307,16 +309,16 @@ abstract class Component : Configurable {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
-        subscribedEvents.computeIfAbsent(T::class, { ArrayList() }).add(registration)
+        subscribedEvents.getOrPut(T::class) { ArrayList() }.add(registration)
         val fireNow = if (this is UIComponent) isDocked else true
-        if (fireNow) FX.eventbus.subscribe(T::class, scope, registration)
+        if (fireNow) FX.eventbus.subscribe<T>(scope, registration)
         return registration
     }
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) {
         subscribedEvents[T::class]?.removeAll { it.action == action }
-        FX.eventbus.unsubscribe(T::class, action)
+        FX.eventbus.unsubscribe(action)
     }
 
     fun <T : FXEvent> fire(event: T) {
@@ -354,10 +356,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val savable: BooleanExpression get() = properties.getOrPut("tornadofx.savable") { SimpleBooleanProperty(Workspace.defaultSavable) } as BooleanExpression
     open val closeable: BooleanExpression get() = properties.getOrPut("tornadofx.closeable") { SimpleBooleanProperty(Workspace.defaultCloseable) } as BooleanExpression
     open val deletable: BooleanExpression get() = properties.getOrPut("tornadofx.deletable") { SimpleBooleanProperty(Workspace.defaultDeletable) } as BooleanExpression
+    open val creatable: BooleanExpression get() = properties.getOrPut("tornadofx.creatable") { SimpleBooleanProperty(Workspace.defaultCreatable) } as BooleanExpression
     open val complete: BooleanExpression get() = properties.getOrPut("tornadofx.complete") { SimpleBooleanProperty(Workspace.defaultComplete) } as BooleanExpression
-    var isComplete: Boolean get() = complete.value; set(value) {
-        (complete as? BooleanProperty)?.value = value
-    }
+
+    var isComplete: Boolean
+        get() = complete.value
+        set(value) {
+            (complete as? BooleanProperty)?.value = value
+        }
 
     fun wrapper(op: () -> Parent) {
         FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once
@@ -376,20 +382,28 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.deletable"] = deletable()
     }
 
+    fun creatableWhen(creatable: () -> BooleanExpression) {
+        properties["tornadofx.creatable"] = creatable()
+    }
+
     fun closeableWhen(closeable: () -> BooleanExpression) {
         properties["tornadofx.closeable"] = closeable()
+    }
+
+    fun refreshableWhen(refreshable: () -> BooleanExpression) {
+        properties["tornadofx.refreshable"] = refreshable()
     }
 
     fun whenSaved(onSave: () -> Unit) {
         properties["tornadofx.onSave"] = onSave
     }
 
-    fun whenDeleted(onDelete: () -> Unit) {
-        properties["tornadofx.onDelete"] = onDelete
+    fun whenCreated(onCreate: () -> Unit) {
+        properties["tornadofx.onCreate"] = onCreate
     }
 
-    fun refreshableWhen(refreshable: () -> BooleanExpression) {
-        properties["tornadofx.refreshable"] = refreshable()
+    fun whenDeleted(onDelete: () -> Unit) {
+        properties["tornadofx.onDelete"] = onDelete
     }
 
     fun whenRefreshed(onRefresh: () -> Unit) {
@@ -404,6 +418,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun TabPane.connectWorkspaceActions() {
         savableWhen { savable }
         whenSaved { onSave() }
+
+        creatableWhen { creatable }
+        whenCreated { onCreate() }
 
         deletableWhen { deletable }
         whenDeleted { onDelete() }
@@ -452,6 +469,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.refreshable"] = SimpleBooleanProperty(false)
     }
 
+    fun disableCreate() {
+        properties["tornadofx.creatable"] = SimpleBooleanProperty(false)
+    }
+
     fun disableDelete() {
         properties["tornadofx.deletable"] = SimpleBooleanProperty(false)
     }
@@ -471,16 +492,25 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         root.sceneProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null || root.parent != null) return@addListener
             if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
+            if (newParent != null && newParent != oldParent && !isDocked) {
+                // Call undock when window closes
+                newParent.windowProperty().onChangeOnce {
+                    it?.showingProperty()?.onChange {
+                        if (!it && isDocked) callOnUndock()
+                    }
+                }
+                callOnDock()
+            }
         })
         isInitialized = true
     }
 
-    val currentStage: Stage? get() {
-        val stage = (currentWindow as? Stage)
-        if (stage == null) FX.log.warning { "CurrentStage not available for $this" }
-        return stage
-    }
+    val currentStage: Stage?
+        get() {
+            val stage = (currentWindow as? Stage)
+            if (stage == null) FX.log.warning { "CurrentStage not available for $this" }
+            return stage
+        }
 
     fun setWindowMinSize(width: Number, height: Number) = currentStage?.apply {
         minWidth = width.toDouble()
@@ -547,6 +577,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     open fun onSave() {
         (properties["tornadofx.onSave"] as? () -> Unit)?.invoke()
+    }
+
+    /**
+     * Create callback which is triggered when the Creaste button in the Workspace
+     * is clicked.
+     */
+    open fun onCreate() {
+        (properties["tornadofx.onCreate"] as? () -> Unit)?.invoke()
     }
 
     open fun onDelete() {
@@ -627,17 +665,20 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
+    inline fun <reified C: UIComponent> BorderPane.top() = top(C::class)
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
-
+    inline fun <reified C: UIComponent> BorderPane.right() = right(C::class)
     fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
+    inline fun <reified C: UIComponent> BorderPane.bottom() = bottom(C::class)
     fun <C : UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
+    inline fun <reified C: UIComponent> BorderPane.left() = left(C::class)
     fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
+    inline fun <reified C: UIComponent> BorderPane.center() = center(C::class)
     fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
 
     fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) = cellFormat(scope, formatter)
 
     fun <S, T, F : TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
-
     /**
      * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
      *
@@ -662,11 +703,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
+    inline fun <reified T: UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: (DrawerItem.() -> Unit)? = null)
+            =  item(T::class, scope, params, expanded, showHeader, op)
+
     fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
     @JvmName("addView")
-    inline fun <reified T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null): Unit = plusAssign(find(type, scope, params).root)
+    fun <T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null): Unit = plusAssign(find(type, scope, params).root)
+    inline fun <reified T: View> EventTarget.add(vararg params: Pair<*, Any?>): Unit = add(T::class,params.toMap())
 
     @JvmName("addFragmentByClass")
     inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): Unit {
@@ -674,8 +719,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         plusAssign(fragment.root)
         op?.invoke(fragment)
     }
+    inline fun <reified T: Fragment> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: (T.() -> Unit)) = add(T::class,params.toMap(),op)
+
 
     fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
+    inline fun <reified T : UIComponent> EventTarget.add() = add(find(T::class))
+
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
     fun EventTarget.add(child: Node) = plusAssign(child)
 
@@ -684,6 +733,17 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
+
+    protected inline fun <reified T: UIComponent> openInternalWindow(
+            scope: Scope = this@UIComponent.scope,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4),
+            params: Map<*, Any?>? = null
+    ) = openInternalWindow(T::class, scope, icon, modal,owner,escapeClosesWindow, closeButton, overlayPaint, params)
 
     protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
@@ -694,62 +754,61 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
-    @JvmOverloads fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
+    @JvmOverloads
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
             = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
-    @JvmOverloads fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
+    @JvmOverloads
+    fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
-            if (getRootWrapper() !is Parent) {
-                throw IllegalArgumentException("Only Parent Fragments can be opened in a Modal")
-            } else {
-                modalStage = Stage(stageStyle)
-                // modalStage needs to be set before this code to make close() work in blocking mode
-                with(modalStage!!) {
-                    if (resizable != null) isResizable = resizable
-                    titleProperty().bind(titleProperty)
-                    initModality(modality)
-                    if (owner != null) initOwner(owner)
+            require(getRootWrapper() is Parent) { "Only Parent Fragments can be opened in a Modal" }
+            modalStage = Stage(stageStyle)
+            // modalStage needs to be set before this code to make close() work in blocking mode
+            with(modalStage!!) {
+                if (resizable != null) isResizable = resizable
+                titleProperty().bind(titleProperty)
+                initModality(modality)
+                if (owner != null) initOwner(owner)
 
-                    if (getRootWrapper().scene != null) {
-                        scene = getRootWrapper().scene
-                        this@UIComponent.properties["tornadofx.scene"] = getRootWrapper().scene
-                    } else {
-                        Scene(getRootWrapper()).apply {
-                            if (escapeClosesWindow) {
-                                addEventFilter(KeyEvent.KEY_PRESSED) {
-                                    if (it.code == KeyCode.ESCAPE)
-                                        close()
-                                }
+                if (getRootWrapper().scene != null) {
+                    scene = getRootWrapper().scene
+                    this@UIComponent.properties["tornadofx.scene"] = getRootWrapper().scene
+                } else {
+                    Scene(getRootWrapper()).apply {
+                        if (escapeClosesWindow) {
+                            addEventFilter(KeyEvent.KEY_PRESSED) {
+                                if (it.code == KeyCode.ESCAPE)
+                                    close()
                             }
-
-                            FX.applyStylesheetsTo(this)
-                            val primaryStage = FX.getPrimaryStage(scope)
-                            if (primaryStage != null) icons += primaryStage.icons
-                            scene = this
-                            this@UIComponent.properties["tornadofx.scene"] = this
                         }
+
+                        FX.applyStylesheetsTo(this)
+                        val primaryStage = FX.getPrimaryStage(scope)
+                        if (primaryStage != null) icons += primaryStage.icons
+                        scene = this
+                        this@UIComponent.properties["tornadofx.scene"] = this
                     }
-
-                    hookGlobalShortcuts()
-
-                    showingProperty().onChange {
-                        if (it) {
-                            if (owner != null) {
-                                x = owner.x + (owner.width / 2) - (scene.width / 2)
-                                y = owner.y + (owner.height / 2) - (scene.height / 2)
-                            }
-                            callOnDock()
-                            if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                                configureReloading()
-                            }
-                        } else {
-                            modalStage = null
-                            callOnUndock()
-                        }
-                    }
-
-                    if (block) showAndWait() else show()
                 }
+
+                hookGlobalShortcuts()
+
+                showingProperty().onChange {
+                    if (it) {
+                        if (owner != null) {
+                            x = owner.x + (owner.width / 2) - (scene.width / 2)
+                            y = owner.y + (owner.height / 2) - (scene.height / 2)
+                        }
+                        callOnDock()
+                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                            configureReloading()
+                        }
+                    } else {
+                        modalStage = null
+                        callOnUndock()
+                    }
+                }
+
+                if (block) showAndWait() else show()
             }
         } else {
             if (!modalStage!!.isShowing)
@@ -772,7 +831,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             close()
             modalStage = null
         }
-        root.findParentOfType(InternalWindow::class)?.close()
+        root.findParent<InternalWindow>()?.close()
         (root.properties["tornadofx.tab"] as? Tab)?.apply {
             tabPane?.tabs?.remove(this)
         }
@@ -813,8 +872,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
         val componentType = this@UIComponent.javaClass
         val targetLocation = location ?: componentType.simpleName + ".fxml"
-        val fxml = componentType.getResource(targetLocation) ?:
-                throw IllegalArgumentException("FXML not found for $componentType in $targetLocation")
+        val fxml = requireNotNull(componentType.getResource(targetLocation)){"FXML not found for $componentType in $targetLocation"}
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
@@ -873,9 +931,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fieldset.stage
     }
 
-    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false): Boolean {
-        return replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
-    }
+    inline fun <reified T: UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false)
+            = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) =
+            replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
 
     /**
      * Replace this component with another, optionally using a transition animation.

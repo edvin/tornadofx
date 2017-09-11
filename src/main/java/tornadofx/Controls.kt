@@ -53,12 +53,13 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: (T.() -> Unit)? = null)
     return tab
 }
 
-internal val EventTarget.properties: ObservableMap<Any, Any> get() = when (this) {
-    is Node -> properties
-    is Tab -> properties
-    is MenuItem -> properties
-    else -> throw IllegalArgumentException("Don't know how to extract properties object from $this")
-}
+internal val EventTarget.properties: ObservableMap<Any, Any>
+    get() = when (this) {
+        is Node -> properties
+        is Tab -> properties
+        is MenuItem -> properties
+        else -> throw IllegalArgumentException("Don't know how to extract properties object from $this")
+    }
 
 var EventTarget.tagProperty: Property<Any?>
     get() = properties.getOrPut("tornadofx.value") {
@@ -85,6 +86,7 @@ fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: (Tab.() 
     return tab
 }
 
+inline fun <reified  T: UIComponent> TabPane.tab(noinline op: (Tab.() -> Unit)? = null) = tab(T::class, op)
 fun TabPane.tab(uiComponent: KClass<out UIComponent>, op: (Tab.() -> Unit)? = null) = tab(find(uiComponent), op)
 
 fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
@@ -93,6 +95,10 @@ fun TabPane.tab(uiComponent: UIComponent, op: (Tab.() -> Unit)? = null): Tab {
     op?.invoke(tab)
     return tab
 }
+
+fun <T : Node> Iterable<T>.contains(cmp: UIComponent) = any { it == cmp.root }
+
+fun TabPane.contains(cmp: UIComponent) = tabs.map { it.content }.contains(cmp)
 
 fun Tab.disableWhen(predicate: ObservableValue<Boolean>) = disableProperty().cleanBind(predicate)
 fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
@@ -103,78 +109,82 @@ fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
 fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     fun updateState() {
         if (predicate.value.not()) tabPane.tabs.remove(this)
-        else if (!tabPane.tabs.contains(this)) tabPane.tabs.add(this)
+        else if (this !in tabPane.tabs) tabPane.tabs.add(this)
     }
     updateState()
     predicate.onChange { updateState() }
 }
 
-val TabPane.savable: BooleanExpression get() {
-    val savable = SimpleBooleanProperty(true)
+val TabPane.savable: BooleanExpression
+    get() {
+        val savable = SimpleBooleanProperty(true)
 
-    fun updateState() {
-        savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
-    }
+        fun updateState() {
+            savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
+        }
 
-    val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
+        val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
 
-    updateState()
-
-    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
         updateState()
-        oldTab?.contentProperty()?.removeListener(contentChangeListener)
-        newTab?.contentProperty()?.addListener(contentChangeListener)
+
+        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+            updateState()
+            oldTab?.contentProperty()?.removeListener(contentChangeListener)
+            newTab?.contentProperty()?.addListener(contentChangeListener)
+        }
+
+        return savable
     }
 
-    return savable
-}
+val TabPane.deletable: BooleanExpression
+    get() {
+        val deletable = SimpleBooleanProperty(true)
 
-val TabPane.deletable: BooleanExpression get() {
-    val deletable = SimpleBooleanProperty(true)
+        fun updateState() {
+            deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
+        }
 
-    fun updateState() {
-        deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
-    }
+        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
-    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
-
-    updateState()
-
-    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
         updateState()
-        oldTab?.contentProperty()?.removeListener(contentChangeListener)
-        newTab?.contentProperty()?.addListener(contentChangeListener)
+
+        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+            updateState()
+            oldTab?.contentProperty()?.removeListener(contentChangeListener)
+            newTab?.contentProperty()?.addListener(contentChangeListener)
+        }
+
+        return deletable
     }
 
-    return deletable
-}
+val TabPane.refreshable: BooleanExpression
+    get() {
+        val refreshable = SimpleBooleanProperty(true)
 
-val TabPane.refreshable: BooleanExpression get() {
-    val refreshable = SimpleBooleanProperty(true)
+        fun updateState() {
+            refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
+        }
 
-    fun updateState() {
-        refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
-    }
+        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
 
-    val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
-
-    updateState()
-
-    selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-    selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
         updateState()
-        oldTab?.contentProperty()?.removeListener(contentChangeListener)
-        newTab?.contentProperty()?.addListener(contentChangeListener)
-    }
 
-    return refreshable
-}
+        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+            updateState()
+            oldTab?.contentProperty()?.removeListener(contentChangeListener)
+            newTab?.contentProperty()?.addListener(contentChangeListener)
+        }
+
+        return refreshable
+    }
 
 inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent<T>()
 fun TabPane.onDelete() = contentUiComponent<UIComponent>()?.onDelete()
 fun TabPane.onSave() = contentUiComponent<UIComponent>()?.onSave()
+fun TabPane.onCreate() = contentUiComponent<UIComponent>()?.onCreate()
 fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
 fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
 fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true
@@ -189,6 +199,11 @@ fun TabPane.tab(text: String? = null, tag: Any? = null, op: (Tab.() -> Unit)? = 
 
 fun Tab.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
+}
+
+fun Tab.select(): Tab {
+    tabPane.selectionModel.select(this)
+    return this
 }
 
 @Deprecated("No need to use the content{} wrapper anymore, just use a builder directly inside the Tab", ReplaceWith("no content{} wrapper"), DeprecationLevel.WARNING)
@@ -429,7 +444,7 @@ fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: (Im
 fun EventTarget.imageview(url: ObservableValue<String>, lazyload: Boolean = true, op: (ImageView.() -> Unit)? = null)
         = opcr(this, ImageView().apply { imageProperty().bind(objectBinding(url) { value?.let { Image(it, lazyload) } }) }, op)
 
-fun EventTarget.imageview(image: ObservableValue<Image>, op: (ImageView.() -> Unit)? = null)
+fun EventTarget.imageview(image: ObservableValue<Image?>, op: (ImageView.() -> Unit)? = null)
         = opcr(this, ImageView().apply { imageProperty().bind(image) }, op)
 
 fun EventTarget.imageview(image: Image, op: (ImageView.() -> Unit)? = null)

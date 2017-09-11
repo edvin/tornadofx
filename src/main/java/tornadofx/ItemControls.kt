@@ -43,7 +43,10 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     spinner.isEditable = editable
     opcr(this, spinner, op)
     if (property != null) {
-        if (spinner.valueFactory == null) throw IllegalArgumentException("You must configure the value factory or use the Number based spinner builder which configures a default value factory along with min, max and initialValue!")
+        requireNotNull(spinner.valueFactory){
+            "You must configure the value factory or use the Number based spinner builder " +
+                    "which configures a default value factory along with min, max and initialValue!"
+        }
         spinner.valueFactory.valueProperty().bindBidirectional(property)
         ViewModel.register(spinner.valueFactory.valueProperty(), property)
     }
@@ -152,8 +155,7 @@ fun <T> EventTarget.listview(values: ReadOnlyListProperty<T>, op: (ListView<T>.(
 
 fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: (ListView<T>.() -> Unit)? = null) = opcr(this, ListView<T>().apply {
     fun rebinder() {
-        if (items is SortedFilteredList<*>)
-            (items as SortedFilteredList<T>).bindTo(this)
+        (items as? SortedFilteredList<T>)?.bindTo(this)
     }
     itemsProperty().bind(values)
     rebinder()
@@ -176,8 +178,7 @@ fun <T> EventTarget.tableview(items: ReadOnlyListProperty<T>, op: (TableView<T>.
 fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: (TableView<T>.() -> Unit)? = null): TableView<T> {
     val tableview = TableView<T>()
     fun rebinder() {
-        if (tableview.items is SortedFilteredList<*>)
-            (tableview.items as SortedFilteredList<T>).bindTo(tableview)
+        (tableview.items as? SortedFilteredList<T>)?.bindTo(tableview)
     }
     tableview.itemsProperty().bind(items)
     rebinder()
@@ -206,7 +207,7 @@ fun <T : Any> TreeView<T>.lazyPopulate(
 ) {
     fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) }
 
-    if (root == null) throw IllegalArgumentException("You must set a root TreeItem before calling lazyPopulate")
+    requireNotNull(root){"You must set a root TreeItem before calling lazyPopulate"}
 
     task {
         childFactory.invoke(root)
@@ -408,8 +409,7 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConve
             stringColumn.cellFactory = TextFieldTableCell.forTableColumn()
         }
         else -> {
-            if (converter == null)
-                throw IllegalArgumentException("You must supply a converter for non String columns")
+            requireNotNull(converter){"You must supply a converter for non String columns"}
             cellFactory = TextFieldTableCell.forTableColumn(converter)
         }
     }
@@ -726,7 +726,7 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
 
     fun getOrCreateExpandedNode(tableRow: TableRow<S>): Node? {
         val index = tableRow.index
-        if (index > -1 && index < tableView.items.size) {
+        if (index in tableView.items.indices) {
             val item = tableView.items[index]!!
             var node: Node? = expandedNodeCache[item]
             if (node == null) {
@@ -801,7 +801,7 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
 
     private fun getContent(): Node? {
         val node = expander.getOrCreateExpandedNode(tableRow)
-        if (!children.contains(node)) children.add(node)
+        if (node !in children) children.add(node)
         return node
     }
 
@@ -1061,7 +1061,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
             val polygon = getPolygon(cell)
             val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
             if (isDirty) {
-                if (!children.contains(polygon))
+                if (polygon !in children)
                     children.add(polygon)
 
                 polygon.relocate(cell.layoutX, y)
@@ -1080,8 +1080,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
 @Suppress("UNCHECKED_CAST")
 fun <S, T> TableColumn<S, T>.setValue(item: S, value: T?) {
     val property = getTableColumnProperty(item)
-    if (property is WritableValue<*>)
-        (property as WritableValue<T>).value = value
+    (property as? WritableValue<T>)?.value = value
 }
 
 /**

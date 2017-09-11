@@ -274,14 +274,6 @@ class PropertiesTest {
         Assert.assertEquals(5.0, property1.get(), .001)
     }
 
-    @Test fun testDoublePropertyInc() {
-        var property = 0.1.toProperty()
-        for (i in 0..9) {
-            property++
-            Assert.assertEquals(i + 1.1, property.get(), .001)
-        }
-    }
-
     @Test fun testDoubleExpressionMinusNumber() {
         val property = 0.0.toProperty()
 
@@ -329,14 +321,6 @@ class PropertiesTest {
 
         property += 1
         Assert.assertEquals(-2.0, binding.get(), .001)
-    }
-
-    @Test fun testDoublePropertyDec() {
-        var property = 9.1.toProperty()
-        for (i in 9 downTo 0) {
-            property--
-            Assert.assertEquals(i - 0.9, property.get(), .001)
-        }
     }
 
     @Test fun testDoubleExpressionTimesNumber() {
@@ -558,14 +542,6 @@ class PropertiesTest {
         Assert.assertEquals(5.0f, property1.get(), .001f)
     }
 
-    @Test fun testFloatPropertyInc() {
-        var property = 0.1f.toProperty()
-        for (i in 0..9) {
-            property++
-            Assert.assertEquals(i + 1.1f, property.get(), .001f)
-        }
-    }
-
     @Test fun testFloatExpressionMinusNumber() {
         val property = 0.0f.toProperty()
 
@@ -641,14 +617,6 @@ class PropertiesTest {
 
         property += 1
         Assert.assertEquals(-2.0f, binding.get(), .001f)
-    }
-
-    @Test fun testFloatPropertyDec() {
-        var property = 9.1f.toProperty()
-        for (i in 9 downTo 0) {
-            property--
-            Assert.assertEquals(i - 0.9f, property.get(), .001f)
-        }
     }
 
     @Test fun testFloatExpressionTimesNumber() {
@@ -1006,14 +974,6 @@ class PropertiesTest {
         Assert.assertEquals(5, property1.get())
     }
 
-    @Test fun testIntegerPropertyInc() {
-        var property = 0.toProperty()
-        for (i in 0..9) {
-            property++
-            Assert.assertEquals(i + 1, property.get())
-        }
-    }
-
     @Test fun testIntegerExpressionMinusInt() {
         val property = 0.toProperty()
 
@@ -1141,14 +1101,6 @@ class PropertiesTest {
 
         property += 1
         Assert.assertEquals(-2, binding.get())
-    }
-
-    @Test fun testIntegerPropertyDec() {
-        var property = 9.toProperty()
-        for (i in 9 downTo 0) {
-            property--
-            Assert.assertEquals(i - 1, property.get())
-        }
     }
 
     @Test fun testIntegerExpressionTimesInt() {
@@ -1686,14 +1638,6 @@ class PropertiesTest {
         Assert.assertEquals(5L, property1.get())
     }
 
-    @Test fun testLongPropertyInc() {
-        var property = 0L.toProperty()
-        for (i in 0..9) {
-            property++
-            Assert.assertEquals(i + 1L, property.get())
-        }
-    }
-
     @Test fun testLongExpressionMinusNumber() {
         val property = 0L.toProperty()
 
@@ -1795,14 +1739,6 @@ class PropertiesTest {
 
         property += 1
         Assert.assertEquals(-2L, binding.get())
-    }
-
-    @Test fun testLongPropertyDec() {
-        var property = 9L.toProperty()
-        for (i in 9 downTo 0) {
-            property--
-            Assert.assertEquals(i - 1L, property.get())
-        }
     }
 
     @Test fun testLongExpressionTimesNumber() {

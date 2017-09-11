@@ -104,13 +104,18 @@ open class Rest : Controller() {
     }
 
     fun execute(method: Request.Method, target: String, data: Any? = null, processor: ((Request) -> Unit)? = null): Response {
-        val request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
+        var request: Rest.Request? = null
+        try {
+            request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
 
-        if (processor != null)
-            processor(request)
+            if (processor != null)
+                processor(request)
 
-        Platform.runLater { ongoingRequests.add(request) }
-        return request.execute()
+            Platform.runLater { ongoingRequests.add(request) }
+            return request.execute()
+        } catch (t: Throwable) {
+            throw RestException("Failed to execute request", request, null, t)
+        }
     }
 
     abstract class Engine {
@@ -172,6 +177,8 @@ open class Rest : Controller() {
                     is JsonObject -> Json.createArrayBuilder().add(json).build()
                     else -> throw IllegalArgumentException("Unknown json result value")
                 }
+            } catch (t: Throwable) {
+                throw RestException("JsonArray parsing failed", request, this, t)
             } finally {
                 consume()
             }
@@ -196,6 +203,8 @@ open class Rest : Controller() {
                     is JsonObject -> json
                     else -> throw IllegalArgumentException("Unknown json result value")
                 }
+            } catch (t: Throwable) {
+                throw RestException("JsonObject parsing failed", request, this, t)
             } finally {
                 consume()
             }
@@ -232,21 +241,18 @@ internal fun MessageDigest.concat(vararg values: String): String {
 
 val Rest.Response.digestParams: Map<String, String>? get() {
     fun String.clean() = trim('\t', ' ', '"')
-    return headers["WWW-Authenticate"]
-            ?.filter { it.startsWith("Digest ") }
-            ?.first()
+    return headers["WWW-Authenticate"]?.first { it.startsWith("Digest ") }
             ?.substringAfter("Digest ")
             ?.split(",")
-            ?.map {
+            ?.associate {
                 val (name, value) = it.split("=", limit = 2)
                 name.clean() to value.clean()
             }
-            ?.toMap()
 }
 
 private val HexChars = "0123456789abcdef".toCharArray()
 
-val ByteArray.hex get() = map(Byte::toInt).map { "${HexChars[(it and 0xF0).ushr(4)]}${HexChars[it and 0x0F]}" }.joinToString("")
+val ByteArray.hex get() = map(Byte::toInt).joinToString("") { "${HexChars[(it and 0xF0).ushr(4)]}${HexChars[it and 0x0F]}" }
 
 class HttpURLRequest(val engine: HttpURLEngine, override val seq: Long, override val method: Rest.Request.Method, override val uri: URI, override val entity: Any?) : Rest.Request {
     lateinit var connection: HttpURLConnection
@@ -380,7 +386,7 @@ class HttpClientEngine(val rest: Rest) : Rest.Engine() {
             HttpClientRequest(this, client, seq, method, uri, entity)
 
     override fun setBasicAuth(username: String, password: String) {
-        if (rest.baseURI == null) throw IllegalArgumentException("You must configure the baseURI first.")
+        requireNotNull(rest.baseURI){"You must configure the baseURI first."}
 
         val uri = URI.create(rest.baseURI)
 
@@ -484,7 +490,7 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
     override fun consume(): Rest.Response {
         EntityUtils.consumeQuietly(response.entity)
         try {
-            if (response is CloseableHttpResponse) response.close()
+            (response as? CloseableHttpResponse)?.close()
             return this
         } finally {
             Platform.runLater { Rest.ongoingRequests.remove(request) }
@@ -501,7 +507,7 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
         }
     }
 
-    override val headers get() = response.allHeaders.map { it.name to listOf(it.value) }.toMap()
+    override val headers get() = response.allHeaders.associate { it.name to listOf(it.value) }
 }
 
 inline fun <reified T : JsonModel> JsonObject.toModel(): T {
@@ -525,7 +531,7 @@ class RestProgressBar : Fragment() {
             val size = c.list.size
 
             Platform.runLater {
-                val tooltip = c.list.map { r -> "%s %s".format(r.method, r.uri) }.joinToString("\n")
+                val tooltip = c.list.joinToString("\n") { r -> "%s %s".format(r.method, r.uri) }
 
                 root.tooltip = Tooltip(tooltip)
                 root.isVisible = size > 0
@@ -595,7 +601,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
             nonce = params["nonce"]!!
             opaque = params["opaque"] ?: ""
             nonceCounter.set(0)
-            qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.reversed().first()
+            qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.last()
 
             val request = response.request
             request.reset()
@@ -609,10 +615,10 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
     private fun extractNextNonce(response: Rest.Response) {
         val authInfo = response.header("Authentication-Info")
         if (authInfo != null) {
-            val params = authInfo.split(",").map {
+            val params = authInfo.split(",").associate {
                 val (name, value) = it.split("=", limit = 2)
                 name to value
-            }.toMap()
+            }
             val nextNonce = params["nextnonce"]
             if (nextNonce != null) {
                 nonceCounter.set(0)
@@ -650,7 +656,7 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
         )
 
         val header = "Digest " + authParams.map {
-            val q = if (QuotedStringParameters.contains(it.key)) "\"" else ""
+            val q = if (it.key in QuotedStringParameters) "\"" else ""
             "${it.key}=$q${it.value}$q"
         }.joinToString()
 
@@ -670,3 +676,5 @@ class HttpURLBasicAuthContext(val username: String, val password: String) : Auth
         return response
     }
 }
+
+class RestException(message: String, val request: Rest.Request?, val response: Rest.Response?, cause: Throwable) : RuntimeException(message, cause)

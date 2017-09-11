@@ -9,6 +9,7 @@ interface ApplicationProvider {
     val application: KClass<out App>
 }
 
+inline fun <reified T: App> BundleContext.registerApplication() = registerApplication(T::class)
 fun BundleContext.registerApplication(application: KClass<out App>) {
     val provider = object : ApplicationProvider {
         override val application = application

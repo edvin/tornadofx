@@ -56,9 +56,7 @@ class ListMenu : Control() {
     val iconPositionProperty: ObjectProperty<Side> = object : SimpleObjectProperty<Side>(Side.LEFT) {
         override fun invalidated() {
             children.forEach { child ->
-                if (child is ListMenuItem) {
-                    child.needsLayout()
-                }
+                (child as? ListMenuItem)?.needsLayout()
             }
         }
     }

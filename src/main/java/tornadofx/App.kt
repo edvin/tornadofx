@@ -117,30 +117,31 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out UIComponent> {
         if (primaryView == DeterminedByParameter::class) {
-            val viewClassName = parameters.named?.get("view-class") ?: throw IllegalArgumentException("No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View")
+            val viewClassName = requireNotNull(parameters.named?.get("view-class")){"No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View"}
             val viewClass = Class.forName(viewClassName)
-            if (UIComponent::class.java.isAssignableFrom(viewClass)) return viewClass.kotlin as KClass<out UIComponent>
-            throw IllegalArgumentException("Class specified by --class-name is not a subclass of tornadofx.View")
-         } else {
+
+            require(UIComponent::class.java.isAssignableFrom(viewClass)){"Class specified by --class-name is not a subclass of tornadofx.View"}
+            return viewClass.kotlin as KClass<out UIComponent>
+        } else {
             return primaryView
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T: ScopedInstance = object : ReadOnlyProperty<App, T> {
-        override fun getValue(thisRef: App, property: KProperty<*>) = find(T::class, scope)
+    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<App, T> {
+        override fun getValue(thisRef: App, property: KProperty<*>) = find<T>(scope)
     }
 
     class DeterminedByParameter : View() {
         override val root = Pane()
     }
 
-    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit){
+    fun trayicon(image: BufferedImage, tooltip: String?, implicitExit: Boolean = false, autoSize: Boolean = false, op: TrayIcon.() -> Unit) {
         Platform.setImplicitExit(implicitExit)
         SwingUtilities.invokeLater {
             Toolkit.getDefaultToolkit()
             val trayIcon = TrayIcon(image, tooltip)
-            trayIcon.isImageAutoSize= autoSize
+            trayIcon.isImageAutoSize = autoSize
             op(trayIcon)
             SystemTray.getSystemTray().add(trayIcon)
             trayIcons.add(trayIcon)
@@ -192,3 +193,8 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     }
 
 }
+
+inline fun <reified T : Application> launch(vararg args: String) = Application.launch(T::class.java, *args)
+
+@JvmName("launchWithArrayArgs")
+inline fun <reified T : Application> launch(args: Array<String>) = Application.launch(T::class.java, *args)

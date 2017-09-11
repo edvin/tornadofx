@@ -201,7 +201,7 @@ fun Stage.hookGlobalShortcuts() {
         if (FX.layoutDebuggerShortcut?.match(it) ?: false)
             LayoutDebugger.debug(scene)
         else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find(OSGIConsole::class).openModal(modality = Modality.NONE)
+            find<OSGIConsole>().openModal(modality = Modality.NONE)
     }
 }
 
@@ -226,7 +226,7 @@ fun Pane.replaceChildren(vararg uiComponents: UIComponent) =
         this.replaceChildren(*(uiComponents.map { it.root }.toTypedArray()))
 
 fun EventTarget.replaceChildren(vararg node: Node) {
-    val children = getChildList() ?: throw IllegalArgumentException("This node doesn't have a child list")
+    val children = requireNotNull(getChildList()){"This node doesn't have a child list"}
     children.clear()
     children.addAll(node)
 }
@@ -275,15 +275,15 @@ var Region.useMaxSize: Boolean
 
 var Region.usePrefWidth: Boolean
     get() = width == prefWidth
-    set(value) = if (value) setMinWidth(Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinWidth(Region.USE_PREF_SIZE) else Unit
 
 var Region.usePrefHeight: Boolean
     get() = height == prefHeight
-    set(value) = if (value) setMinHeight(Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinHeight(Region.USE_PREF_SIZE) else Unit
 
 var Region.usePrefSize: Boolean
     get() = maxWidth == Double.MAX_VALUE && maxHeight == Double.MAX_VALUE
-    set(value) = if (value) setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE) else Unit
+    set(value) = if (value) setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE) else Unit
 
 fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
 fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
@@ -875,8 +875,9 @@ inline fun <reified T : UIComponent> Stage.uiComponent(): T? = scene.root.uiComp
  */
 inline fun <reified T : UIComponent> Parent.findAll(): List<T> = childrenUnmodifiable
         .filterIsInstance<Parent>()
-        .filter { it.uiComponent<UIComponent>() is T }
-        .map { it.uiComponent<T>()!! }
+        .map { it.uiComponent<UIComponent>() }
+        .filterIsInstance<T>()
+
 
 /**
  * Find all UIComponents of the specified type that owns any of this UIComponent's root node's children
@@ -961,6 +962,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     onTransit?.invoke()
     if (this == scene?.root) {
         val scene = scene!!
+
         if (replacement !is Parent) {
             throw IllegalArgumentException("Replacement scene root must be a Parent")
         }
@@ -1046,6 +1048,8 @@ fun Node.whenVisible(runLater: Boolean = true, op: () -> Unit) {
     }
 }
 
+inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
@@ -1106,7 +1110,7 @@ val Region.paddingHorizontalProperty: DoubleProperty get() {
 }
 
 val Region.paddingAllProperty: DoubleProperty get() {
-    return properties.getOrPut("paddingVerticalProperty") {
+    return properties.getOrPut("paddingAllProperty") {
         proxypropDouble(paddingProperty(), { paddingAll.toDouble() }) {
             Insets(it, it, it, it)
         }

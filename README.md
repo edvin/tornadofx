@@ -189,7 +189,7 @@ class Customer : JsonModel {
 
     override fun updateModel(json: JsonObject) {
         with(json) {
-            id = int("id")
+            id = int("id") ?: 0
             name = string("name")
         }
     }

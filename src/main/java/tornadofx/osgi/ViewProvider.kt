@@ -20,6 +20,7 @@ interface ViewReceiver {
     fun viewProvided(provider: ViewProvider)
 }
 
+
 /**
  * Provide this View to other OSGi Bundles. To receive this View, call `Node.addViewWhen` on the containing Node
  */
@@ -30,6 +31,7 @@ fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator:
     }
     registerService(ViewProvider::class.java, provider, Hashtable<String, String>())
 }
+inline fun <reified T:UIComponent> BundleContext.registerView(discriminator: Any? = null) = registerView(T::class, discriminator)
 
 /**
  * Subscribe to ViewProvider events from other OSGi bundles and

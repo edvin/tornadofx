@@ -202,8 +202,7 @@ fun <T> ObservableValue<T>.selectBoolean(nested: (T) -> BooleanExpression): Bool
         override fun getValue() = currentNested.value
 
         override fun setValue(v: Boolean?) {
-            if (currentNested is WritableValue<*>)
-                (currentNested as WritableValue<Boolean>).value = v
+            (currentNested as? WritableValue<*>)?.value = v
             super.setValue(v)
         }
 

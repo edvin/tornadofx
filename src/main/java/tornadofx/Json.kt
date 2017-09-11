@@ -292,7 +292,7 @@ interface JsonModelAuto : JsonModel {
     val jsonProperties: Collection<KProperty1<JsonModelAuto, *>> get() {
         val props = javaClass.kotlin.memberProperties
         val propNames = props.map { it.name }
-        return props.filterNot { it.name.endsWith("Property") && propNames.contains(it.name.substringBefore("Property")) }.filterNot { it.name == "jsonProperties" }
+        return props.filterNot { it.name.endsWith("Property") && it.name.substringBefore("Property") in propNames }.filterNot { it.name == "jsonProperties" }
     }
 
     override fun updateModel(json: JsonObject) {

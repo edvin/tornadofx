@@ -89,12 +89,12 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
         top {
             hbox {
                 addClass(WizardStyles.header)
-                removeWhen { showHeaderProperty.not() }
+                removeWhen(showHeaderProperty.not())
                 vbox(5) {
                     label(titleProperty)
                     label(headingProperty) {
                         addClass(WizardStyles.heading)
-                        visibleWhen { titleProperty.isEqualTo(headingProperty).not() }
+                        visibleWhen(titleProperty.isEqualTo(headingProperty).not())
                     }
                 }
                 spacer()
@@ -196,7 +196,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
     }
 
     init {
-        importStylesheet(WizardStyles::class)
+        importStylesheet<WizardStyles>()
         this.heading = heading ?: ""
         currentPageProperty.addListener { _, oldPage, newPage ->
             if (newPage != null) {

@@ -118,7 +118,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         if (oldList != null) {
             oldList.removeListener(itemsChangeListener)
             // Keep cache for elements in present in the new list
-            oldList.filterNot { newList.contains(it) }.forEach { graphicCache.remove(it) }
+            oldList.filterNot { it in newList }.forEach { graphicCache.remove(it) }
         } else {
             graphicCache.clear()
         }
@@ -166,7 +166,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
 
     internal fun doUpdateItem() {
         val totalCount = dataGrid.items.size
-        val item = if (index < 0 || index >= totalCount) null else dataGrid.items[index]
+        val item = if (index !in 0 until totalCount) null else dataGrid.items[index]
         val cacheProvider = dataGrid.cellCache
         if (item != null) {
             if (cacheProvider != null)
@@ -179,7 +179,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         }
 
         // Preemptive update of selected state
-        val isActuallySelected = dataGrid.selectionModel.selectedIndices.contains(index)
+        val isActuallySelected = index in dataGrid.selectionModel.selectedIndices
         if (!isSelected && isActuallySelected) updateSelected(true)
         else if (isSelected && !isActuallySelected) updateSelected(false)
     }
@@ -211,7 +211,7 @@ class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataG
 class DataGridCellSkin<T>(control: DataGridCell<T>) : CellSkinBase<DataGridCell<T>, DataGridCellBehavior<T>>(control, DataGridCellBehavior(control))
 
 class DataGridFocusModel<T>(val dataGrid: DataGrid<T>) : FocusModel<T>() {
-    override fun getModelItem(index: Int) = if (index > -1 && index < itemCount - 1) dataGrid.items[index] else null
+    override fun getModelItem(index: Int) = if (index in 0 until itemCount) dataGrid.items[index] else null
     override fun getItemCount() = dataGrid.items.size
 }
 
@@ -428,7 +428,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
     }
 
     override fun clearSelection(index: Int) {
-        if (selectedIndicies.contains(index)) {
+        if (index in selectedIndicies) {
             selectedIndicies.remove(index)
             selectedItems.remove(dataGrid.items[index])
         }
@@ -452,7 +452,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         indices.forEach { select(it) }
     }
 
-    override fun isSelected(index: Int) = selectedIndicies.contains(index)
+    override fun isSelected(index: Int) = index in selectedIndicies
 
     override fun select(obj: T) {
         val index = dataGrid.items.indexOf(obj)
@@ -460,8 +460,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
     }
 
     override fun select(index: Int) {
-        if (index < 0 || index >= dataGrid.items.size) return
-
+        if (index !in dataGrid.items.indices) return
         selectedIndex = index
         selectedItem = dataGrid.items[index]
 
@@ -470,7 +469,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
             selectedItems.removeAll { it != selectedItem }
         }
 
-        if (!selectedIndicies.contains(index)) {
+        if (index !in selectedIndicies) {
             selectedIndicies.add(index)
             selectedItems.add(selectedItem)
             dataGrid.focusModel.focus(index)
