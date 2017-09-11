@@ -7,6 +7,7 @@ import com.sun.javafx.application.HostServicesDelegate
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventHandler
@@ -83,8 +84,8 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
 abstract class Component : Configurable {
     open val scope: Scope = FX.inheritScopeHolder.get()
     val workspace: Workspace get() = scope.workspace
-    internal var activeParams = FX.inheritParamHolder.get() ?: mapOf()
-    val params: Map<String, Any?> get() = activeParams
+    val paramsProperty = SimpleObjectProperty<Map<String, Any?>>(FX.inheritParamHolder.get() ?: mapOf())
+    val params: Map<String, Any?> get() = paramsProperty.value
     val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
 
     /**

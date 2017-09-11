@@ -428,12 +428,12 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
             }
         }
         val cmp = components[type] as T
-        cmp.activeParams = stringKeyedMap
+        cmp.paramsProperty.value = stringKeyedMap
         return cmp
     }
 
     val cmp = type.java.newInstance()
-    cmp.activeParams = stringKeyedMap
+    cmp.paramsProperty.value = stringKeyedMap
     (cmp as? Fragment)?.init()
 
     // Become default workspace for scope if not set
