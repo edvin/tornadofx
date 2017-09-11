@@ -36,7 +36,6 @@ import javafx.util.Callback
 import javafx.util.Duration
 import javafx.util.StringConverter
 import javafx.util.converter.*
-import tornadofx.Stylesheet.Companion.tabPane
 import tornadofx.adapters.TornadoFXColumn
 import tornadofx.adapters.TornadoFXTable
 import tornadofx.adapters.toTornadoFXTable
@@ -107,7 +106,7 @@ fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = appl
     }
 }
 
-fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
+fun Node.getToggleGroup(): ToggleGroup? = properties[TOGGLE_GROUP] as ToggleGroup?
 
 fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null) = Tooltip(text).also { newToolTip->
     graphic?.apply { newToolTip.graphic = this }
@@ -118,14 +117,13 @@ fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() ->
 fun Scene.reloadStylesheets() {
     val styles = stylesheets.toMutableList()
     stylesheets.clear()
-    styles.toTypedArray().withIndex().filter { (_, s) -> s.startsWith("css://") }.mapValueIndexedTo(styles) { s ->
+    styles.toTypedArray().asSequence().withIndex().filter { (_, s) -> s.startsWith("css://") }.mapValueIndexedTo(styles) { s ->
         buildString {
             val queryPairs = mutableListOf<String>()
 
             if ("?" in s) {
                 val (url, query) = s.split(Regex("\\?"), 2)
                 append(url)
-
                 query.split("&").filterNotTo(queryPairs) { it.startsWith("squash=") }
             } else {
                 append(s)
@@ -140,7 +138,7 @@ fun Scene.reloadStylesheets() {
 }
 
 internal fun Scene.reloadViews() {
-    if (properties["tornadofx.layoutdebugger"] == null) {
+    if (properties[LAYOUT_DEBUGGER] == null) {
         findUIComponents().forEach {
             FX.replaceComponent(it)
         }
@@ -335,7 +333,7 @@ fun <T> ListView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Bool
 
 fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     if (select) selectionModel.clearSelection()
-    backingList.asSequence().filter(predicate).toList().asSequence().forEach {
+    backingList.filter(predicate).forEach {
         backingList -= it
         backingList.add(0, it)
         if (select) selectionModel.select(it)
@@ -345,7 +343,7 @@ fun <T> TableView<T>.moveToTopWhere(backingList: ObservableList<T> = items, sele
 fun <T> TableView<T>.moveToBottomWhere(backingList: ObservableList<T> = items, select: Boolean = true, predicate: (T) -> Boolean) {
     val end = backingList.size - 1
     if (select) selectionModel.clearSelection()
-    backingList.asSequence().filter(predicate).toList().asSequence().forEach {
+    backingList.filter(predicate).forEach {
         backingList -= it
         backingList.add(end, it)
         if (select) selectionModel.select(it)
@@ -878,7 +876,7 @@ fun <S : EventTarget, T> S.dynamicContent(property: ObservableValue<T>, onChange
     onChange(property.value)
 }
 
-const val TRANSITIONING_PROPERTY = "tornadofx.transitioning"
+
 /**
  * Whether this node is currently being used in a [ViewTransition]. Used to determine whether it can be used in a
  * transition. (Nodes can only exist once in the scenegraph, so it cannot be in two transitions at once.)
@@ -911,8 +909,9 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
                 throw IllegalArgumentException("Replacement scene root must be a Parent")
             }
 
+
             // Update scene property to support Live Views
-            replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
+            replacement.uiComponent<UIComponent>()?.properties?.put(SCENE, scene)
 
             if (transition != null) {
                 transition(this, replacement) {
@@ -1216,7 +1215,7 @@ internal class ShortLongPressHandler(node: Node) {
 }
 
 internal val Node.shortLongPressHandler: ShortLongPressHandler
-    get() = properties.getOrPut("tornadofx.shortLongPressHandler") {
+    get() = properties.getOrPut(SHORT_LONG_PRESS_HANDLER) {
         ShortLongPressHandler(this)
     } as ShortLongPressHandler
 
@@ -1261,6 +1260,6 @@ fun <T : Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = 
  *
  * Remember that you can still update whatever you assign to graphic below it on each `cellFormat` update item callback.
  */
-fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
+fun <T : Node> Node.cache(key: Any = CACHED_NODE, op: EventTarget.() -> T) = properties.getOrPut(key) {
     op(this)
 } as T

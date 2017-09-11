@@ -389,7 +389,7 @@ fun insets(top: Number? = null, right: Number? = null, bottom: Number? = null, l
 
 internal operator fun <P, R> Callback<P, R>.invoke(param: P) = call(param)
 
-internal inline fun <T, R, C : MutableList<R>> Iterable<IndexedValue<T>>.mapValueIndexedTo(destination: C, transform: (T) -> R): C {
+internal inline fun <T, R, C : MutableList<R>> Sequence<IndexedValue<T>>.mapValueIndexedTo(destination: C, transform: (T) -> R): C {
     for ((index, item) in this) destination[index] = transform(item)
     return destination
 }
