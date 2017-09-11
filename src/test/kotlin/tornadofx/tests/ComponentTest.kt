@@ -3,7 +3,10 @@ package tornadofx.tests
 import javafx.stage.Stage
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import tornadofx.*
+import tornadofx.Fragment
+import tornadofx.singleAssign
+import tornadofx.vbox
+//import tornadofx.*
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -42,13 +45,13 @@ class ComponentTest {
         var subFragmentWithParam: SubFragment by singleAssign()
 
         override val root = vbox {
-            add(SubFragment::class) {
+            add<SubFragment> {
                 subFragmentNoParam = this
             }
-            add(SubFragment::class, mapOf(
-                    SubFragment::booleanParam to false,
-                    SubFragment::nullableBooleanParam to null
-            )) {
+            add<SubFragment>(
+                SubFragment::booleanParam to false,
+                SubFragment::nullableBooleanParam to null
+            ){
                 subFragmentWithParam = this
             }
         }

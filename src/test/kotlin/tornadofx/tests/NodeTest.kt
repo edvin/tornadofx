@@ -31,9 +31,9 @@ class NodeTest {
 
     @Test
     fun findComponents() {
-        val view1 = find(View1::class)
-        val view2 = find(View2::class)
-        val view3 = find(View3::class)
+        val view1 = find<View1>()
+        val view2 = find<View2>()
+        val view3 = find<View3>()
 
         view1 += view2
         view1 += view3

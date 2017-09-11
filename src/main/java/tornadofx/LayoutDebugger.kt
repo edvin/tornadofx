@@ -212,7 +212,7 @@ class LayoutDebugger : Fragment() {
                 text(node.javaClass.name)
             }
             field("StyleClass") {
-                text(node.styleClass.map { ".$it" }.joinToString(", "))
+                text(node.styleClass.joinToString(", ") { ".$it" })
             }
         }
         fieldset("Dimensions") {

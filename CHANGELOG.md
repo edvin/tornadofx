@@ -4,16 +4,36 @@
 
 ### Fixed
 
+- Accessing last item in DataGridFocusModel was not possible
+
 ### Changes
 
+- Parameters passed to Views will now be updated if you do another find() (https://github.com/edvin/tornadofx/issues/443)
+- SingleAssign now throws UninitializedPropertyAccessException instead of Exception
+- Removed inc() and dec() from properties
+- rangeTo from properties is now lazy
+- loadFont size parameter is changed from Double to Number
+- Lots of internal refactoring thanks to @tieskedh
 - Kotlin 1.1.4
 - Wizard and ViewModel are now internationalized
+- imageview() builder accepts ObservableValue<Image?> (https://github.com/edvin/tornadofx-guide/issues/43)
+- added option to increment and decrement spinners by scrolling (https://github.com/edvin/tornadofx/pull/425)
+- onUndock is now called for the View currently embedded as the scene root of a Window when it closes (https://github.com/edvin/tornadofx/issues/427)
+- Launch<AppClass> helper for nicer main functions (https://github.com/edvin/tornadofx/pull/431)
 
 ### Additions
 
+- Workspace.create button and corresponding UIComponent onCreate callback and creatable property
+- Lots of reified functions
+- The default ErrorHandler shows structured information about failed HTTP requests
+- RestException containing request, response and the underlying exception
 - Added JsonBuilder.add(key, Iterable<JsonModel>) to avoid having to call toJSON() on it (https://github.com/edvin/tornadofx/issues/414)
 - ViewModel partial rollback (https://github.com/edvin/tornadofx/issues/420)
 - FX.addChildInterceptor that can veto or custom add builder children to their parent. Useful for MigPane for example.
+- Tab.select() for easier selection of tab without having to access tabPane.selectionModel
+- TabPane.contains(UIComponent) and Iterable<Node>.contains(UIComponent)
+- Override -fx-accent with type-safe CSS property accentColor
+- Component.paramsProperty can be used to detec changes to incoming parameters (overriden on new find)
 
 ## [1.7.10]
 

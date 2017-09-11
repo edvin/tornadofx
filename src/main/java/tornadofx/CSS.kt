@@ -555,6 +555,7 @@ open class PropertyHolder {
 
     // Root
     var baseColor: Color by cssprop("-fx-base")
+    var accentColor: Color by cssprop("-fx-accent")
     var focusColor: Paint by cssprop("-fx-focus-color")
     var faintFocusColor: Paint by cssprop("-fx-faint-focus-color")
 
@@ -1063,7 +1064,7 @@ fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssE
 fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
 fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
 fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
-inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate<T>(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
+inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
 
 class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
     override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
@@ -1171,8 +1172,8 @@ internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
 
-fun loadFont(path: String, size: Double): Font? {
-    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size) }
+fun loadFont(path: String, size: Number): Font? {
+    return MethodHandles.lookup().lookupClass().getResourceAsStream(path)?.use { Font.loadFont(it, size.toDouble()) }
 }
 
 // Style Class

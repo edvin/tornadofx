@@ -55,22 +55,25 @@ class EventBus {
     private val subscriptions = HashMap<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
     private val eventScopes = HashMap<EventContext.(FXEvent) -> Unit, Scope>()
 
+    inline fun <reified T: FXEvent> subscribe(scope: Scope, registration : FXEventRegistration)
+            = subscribe(T::class, scope, registration)
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration : FXEventRegistration) {
-        subscriptions.computeIfAbsent(event, { HashSet() }).add(registration)
+        subscriptions.getOrPut(event, { HashSet() }).add(registration)
         eventScopes[registration.action] = scope
     }
+
+    inline fun <reified T:FXEvent> subscribe(owner: Component? = null, times: Long? = null, scope: Scope, noinline action: (T) -> Unit)
+     = subscribe(owner, times, T::class, scope, action)
 
     fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: KClass<T>, scope: Scope, action: (T) -> Unit) {
         subscribe(event, scope, FXEventRegistration(event, owner, times, action as EventContext.(FXEvent) -> Unit))
     }
 
-    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit) {
-        subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
-    }
+    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit)
+            = subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
 
-    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit) {
-        unsubscribe(event.kotlin, action)
-    }
+    inline fun <reified T: FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) = unsubscribe(T::class, action)
+    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit)  = unsubscribe(event.kotlin, action)
 
     fun <T : FXEvent> unsubscribe(event: KClass<T>, action: EventContext.(T) -> Unit) {
         subscriptions[event]?.removeAll { it.action == action }

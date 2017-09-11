@@ -6,7 +6,7 @@ class ReloadStylesInModal : App(MainView::class, Styles::class) {
     class MainView : View() {
         override val root = hbox {
             button("Open").action {
-                find(MyModal::class).openModal()
+                find<MyModal>().openModal()
             }
         }
     }

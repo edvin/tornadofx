@@ -181,10 +181,10 @@ class FX {
          */
         private fun loadMessages() {
             try {
-                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl.INSTANCE)
+                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl)
             } catch (ex: Exception) {
                 log.fine("No global Messages found in locale $locale, using empty bundle")
-                messages = EmptyResourceBundle.INSTANCE
+                messages = EmptyResourceBundle
             }
         }
 
@@ -256,10 +256,10 @@ class FX {
         }
 
         @JvmStatic
-        fun <T : Component> find(componentType: Class<T>, scope: Scope): T = find(componentType.kotlin, scope)
+        @JvmOverloads
+        fun <T : Component> find(componentType: Class<T>, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope)
 
-        @JvmStatic
-        fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
+        inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T::class, scope)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
@@ -270,7 +270,7 @@ class FX {
             if (obsolete is UIComponent) {
                 replacement = find(obsolete.javaClass.kotlin, obsolete.scope)
             } else {
-                val noArgsConstructor = obsolete.javaClass.constructors.filter { it.parameterCount == 0 }.isNotEmpty()
+                val noArgsConstructor = obsolete.javaClass.constructors.any { it.parameterCount == 0 }
                 if (noArgsConstructor) {
                     replacement = obsolete.javaClass.newInstance()
                 } else {
@@ -362,6 +362,7 @@ fun importStylesheet(stylesheet: String) {
         FX.log.log(Level.WARNING, "Unable to find stylesheet at $stylesheet - check that the path is correct")
 }
 
+inline fun <reified T : Stylesheet> importStylesheet() = importStylesheet(T::class)
 fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
     if (FX.osgiAvailable) {
@@ -369,9 +370,10 @@ fun <T : Stylesheet> importStylesheet(stylesheetType: KClass<T>) {
         if (bundleId != null) url.append("?$bundleId")
     }
     val urlString = url.toString()
-    if (!FX.stylesheets.contains(urlString)) FX.stylesheets.add(url.toString())
+    if (urlString !in FX.stylesheets) FX.stylesheets.add(url.toString())
 }
 
+inline fun <reified T : Stylesheet> removeStylesheet() = removeStylesheet(T::class)
 fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     val url = StringBuilder("css://${stylesheetType.java.name}")
     if (FX.osgiAvailable) {
@@ -381,7 +383,6 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
     FX.stylesheets.remove(url.toString())
 }
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
 fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
@@ -398,6 +399,8 @@ fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
     return m
 }
 
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
@@ -408,13 +411,14 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         stringKeyedMap[stringKey] = params[it.key]
     }
     inheritParamHolder.set(stringKeyedMap)
+
     if (ScopedInstance::class.java.isAssignableFrom(type.java)) {
         var components = FX.getComponents(useScope)
         if (!components.containsKey(type as KClass<out ScopedInstance>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
                     val cmp = type.java.newInstance()
-                    if (cmp is UIComponent) cmp.init()
+                    (cmp as? UIComponent)?.init()
                     // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != useScope) {
                         components = FX.getComponents(cmp.scope)
@@ -423,11 +427,14 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
                 }
             }
         }
-        return components[type] as T
+        val cmp = components[type] as T
+        cmp.paramsProperty.value = stringKeyedMap
+        return cmp
     }
 
     val cmp = type.java.newInstance()
-    if (cmp is Fragment) cmp.init()
+    cmp.paramsProperty.value = stringKeyedMap
+    (cmp as? Fragment)?.init()
 
     // Become default workspace for scope if not set
     if (cmp is Workspace && cmp.scope.workspaceInstance == null)
@@ -442,6 +449,9 @@ interface DIContainer {
         throw AssertionError("Injector is not configured, so bean of type $type with name $name can not be resolved")
     }
 }
+
+inline fun <reified T : Any> DIContainer.getInstance() = getInstance(T::class)
+inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance(T::class, name)
 
 /**
  * Add the given node to the pane, invoke the node operation and return the node
@@ -568,41 +578,32 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
  * them into nodes via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceList: ObservableList<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceList, converter)
-}
+fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -> Node): ListConversionListener<T, Node>
+        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the items of the given ListPropery by converting
  * them into nodes via the given converter function. Changes to the source list and changing the list inside the ListProperty
  * will be reflected in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceList: ListProperty<T>, noinline converter: (T) -> Node): ListConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceList, converter)
-}
+fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node>
+        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the given observable set of items by converting
  * them into nodes via the given converter function. Changes to the source set will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node> {
-    val children = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    return children.bind(sourceSet, converter)
-}
+inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node>
+    = requireNotNull(getChildList()?.bind(sourceSet, converter)){"Unable to extract child nodes from $this"}
 
 /**
  * Bind the children of this Layout node to the given observable list of items by converting
  * them into UIComponents via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node> {
-    val children: MutableList<Node> = getChildList() ?: throw IllegalArgumentException("Unable to extract child nodes from $this")
-    val componentConverter: (T) -> Node = { converter(it).root }
-    return children.bind(sourceList, componentConverter)
-}
+inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node>
+         = requireNotNull(getChildList()?.bind(sourceList){ converter(it).root }) { "Unable to extract child nodes from $this" }
 
 
 /**

@@ -33,14 +33,14 @@ class ScopeTest {
     fun instanceCheck() {
         val scope1 = PersonScope()
 
-        val obj_a = find(C::class, scope1)
-        val obj_a1 = find(C::class, scope1)
+        val obj_a = find<C>(scope1)
+        val obj_a1 = find<C>(scope1)
 
         assertEquals(obj_a, obj_a1)
 
         val scope2 = PersonScope()
 
-        val obj_a2 = find(C::class, scope2)
+        val obj_a2 = find<C>(scope2)
 
         assertNotEquals(obj_a, obj_a2)
     }
@@ -49,15 +49,15 @@ class ScopeTest {
     fun controllerAndViewModelPerScopeInInjectedFragments() {
         val scope1 = PersonScope()
 
-        val f1 = find(F::class, scope1)
-        val f2 = find(F::class, scope1)
+        val f1 = find<F>(scope1)
+        val f2 = find<F>(scope1)
 
         assertEquals(f1.c, f2.c)
         assertEquals(f1.vm, f2.vm)
 
         val scope2 = PersonScope()
 
-        val f3 = find(F::class, scope2)
+        val f3 = find<F>(scope2)
 
         assertTrue(f1.scope.model is PersonModel)
         assertNotEquals(f1.c, f3.c)

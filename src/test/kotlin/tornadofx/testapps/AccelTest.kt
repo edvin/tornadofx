@@ -10,7 +10,7 @@ class AccelTestApp : App(AccelTest::class)
 
 class AccelTest : View() {
     override val root = stackpane {
-        add(AccelView::class)
+        add<AccelView>()
     }
 }
 

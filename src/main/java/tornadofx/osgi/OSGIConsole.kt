@@ -18,7 +18,7 @@ class OSGIConsole : View() {
         prefHeight = 600.0
 
         center {
-            tableview<Bundle>() {
+            tableview<Bundle> {
                 columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY
 
                 column("ID", Long::class) {
@@ -69,8 +69,8 @@ class OSGIConsole : View() {
                 }
 
                 setOnContextMenuRequested {
-                    val stop = contextMenu.items.find { it.text == "Stop" }!!
-                    val start = contextMenu.items.find { it.text == "Start" }!!
+                    val stop = contextMenu.items.first { it.text == "Stop" }
+                    val start = contextMenu.items.first { it.text == "Start" }
                     stop.isDisable = selectedItem?.state != Bundle.ACTIVE
                     start.isDisable = !stop.isDisable
                 }
