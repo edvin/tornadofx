@@ -1,6 +1,5 @@
 package tornadofx
 
-import javafx.beans.InvalidationListener
 import javafx.beans.Observable
 import javafx.beans.binding.*
 import javafx.beans.property.*
