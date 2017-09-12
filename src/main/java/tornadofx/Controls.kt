@@ -314,6 +314,13 @@ fun EventTarget.button(text: String = "", graphic: Node? = null, op: (Button.() 
     return opcr(this, button, op)
 }
 
+fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+    val button = Button()
+    button.textProperty().bind(text)
+    if (graphic != null) button.graphic = graphic
+    return opcr(this, button, op)
+}
+
 fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
     if (graphic != null)
@@ -323,8 +330,30 @@ fun ToolBar.button(text: String = "", graphic: Node? = null, op: (Button.() -> U
     return button
 }
 
+fun ToolBar.button(text: ObservableValue<String>, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+    val button = Button()
+    button.textProperty().bind(text)
+    if (graphic != null)
+        button.graphic = graphic
+    items.add(button)
+    op?.invoke(button)
+    return button
+}
+
 fun ButtonBar.button(text: String = "", type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button(text)
+    if (type != null)
+        ButtonBar.setButtonData(button, type)
+    if (graphic != null)
+        button.graphic = graphic
+    buttons.add(button)
+    op?.invoke(button)
+    return button
+}
+
+fun ButtonBar.button(text: ObservableValue<String>, type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
+    val button = Button()
+    button.textProperty().bind(text)
     if (type != null)
         ButtonBar.setButtonData(button, type)
     if (graphic != null)

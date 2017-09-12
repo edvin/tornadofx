@@ -23,6 +23,7 @@
 
 ### Additions
 
+- Button builders with text property support
 - Collection Property Delegates (https://github.com/edvin/tornadofx/pull/454)
 - Workspace.create button and corresponding UIComponent onCreate callback and creatable property
 - Lots of reified functions
