@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class ScopeTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
-    class PersonModel() : ItemViewModel<Person>()
+    class PersonModel : ItemViewModel<Person>()
 
     class PersonScope : Scope() {
         val model = PersonModel()

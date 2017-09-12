@@ -10,7 +10,6 @@ import javafx.util.converter.NumberStringConverter
 import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import org.testfx.toolkit.ToolkitService
 import tornadofx.*
 import java.text.NumberFormat
 import java.util.*
@@ -19,9 +18,9 @@ import java.util.*
  * @author carl
  */
 
-class TestView : View() {
-    override val root = VBox()
-}
+class TestView : SimpleView({
+    VBox()
+})
 
 class ControlsTest {
 

@@ -8,8 +8,8 @@ class SqueezeBoxTestApp : App(SqueezeBoxTestView::class)
 
 object AddFoldEvent : FXEvent()
 
-class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
-    override val root = vbox(5.0) {
+class SqueezeBoxTestView : SimpleView("SqueezeBox Multiple Open Folds", {
+    vbox(5.0) {
         setPrefSize(300.0, 600.0)
 
         button("Add node") {
@@ -52,4 +52,4 @@ class SqueezeBoxTestView : View("SqueezeBox Multiple Open Folds") {
             }
         }
     }
-}
+})

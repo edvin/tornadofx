@@ -969,7 +969,23 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
 
 abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
 
+abstract class SimpleFragment(title: String? = null, icon: Node? = null, rootBuilder: Fragment.()->Parent): Fragment(title, icon){
+    constructor(title: String? = null, rootBuilder: Fragment.()->Parent) : this(title, null, rootBuilder)
+    constructor(icon: Node? = null, rootBuilder: Fragment.()->Parent) : this(null, icon, rootBuilder)
+    constructor(rootBuilder: Fragment.()->Parent) : this(null, null, rootBuilder)
+
+    override val root: Parent = rootBuilder()
+}
+
 abstract class View @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon), ScopedInstance
+
+abstract class SimpleView(title: String?, icon: Node?, rootGenerator: View.()-> Parent) : View(title, icon){
+    constructor(title: String?, rootGenerator: View.()-> Parent) : this(title, null, rootGenerator)
+    constructor(icon: Node?, rootGenerator: View.()-> Parent) : this(null, icon, rootGenerator)
+    constructor(rootGenerator: View.()-> Parent) : this(null, null, rootGenerator)
+
+    override val root: Parent by lazy { rootGenerator(this) }
+}
 
 class ResourceLookup(val component: Any) {
     operator fun get(resource: String): String = component.javaClass.getResource(resource).toExternalForm()

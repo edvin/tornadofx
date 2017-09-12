@@ -3,6 +3,7 @@ package tornadofx.testapps
 import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import tornadofx.*
+import tornadofx.Stylesheet.Companion.selected
 import tornadofx.testapps.DataGridTestApp.Companion.images
 
 class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
@@ -78,10 +79,8 @@ class DataGridTest : View("DataGrid") {
 
 }
 
-class DataGridStyles : Stylesheet() {
-    init {
-        datagridCell and selected {
-            opacity = 0.7
-        }
+class DataGridStyles : SimpleStylesheet({
+    datagridCell and selected {
+        opacity = 0.7
     }
-}
+})

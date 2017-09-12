@@ -186,13 +186,11 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
 
 class LocaleStringConverter : StringConverter<Locale>() {
     val mapLocale = hashMapOf<String, Locale>()
-    override fun fromString(string: String?): Locale? {
-        return if (string == null) null else mapLocale[string]
-    }
+    override fun fromString(string: String?) = string?.let{ mapLocale[it] }
 
     override fun toString(locale: Locale?): String? {
         val output = locale?.displayCountry + ", " + locale?.isO3Country
-        if (locale != null && !mapLocale.containsKey(output)) mapLocale.put(output, locale)
+        if (locale != null) mapLocale.putIfAbsent(output, locale)
         return output
     }
 }
