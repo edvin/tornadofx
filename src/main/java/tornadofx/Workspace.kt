@@ -35,6 +35,17 @@ class WorkspaceArea : BorderPane() {
     }
 }
 
+
+open class SimpleWorkSpace(title: String = "Workspace", navigationMode: Workspace.NavigationMode = Stack, initializer: Workspace.()->Unit)
+    : Workspace(title, navigationMode){
+    constructor(title: String, init: Workspace.()->Unit): this(title, Stack, init)
+    constructor(navigationMode: Workspace.NavigationMode, init: Workspace.()->Unit): this("Workspace", navigationMode, init)
+    constructor(init: Workspace.()->Unit): this("Workspace", Stack, init)
+    init {
+        initializer()
+    }
+}
+
 open class Workspace(title: String = "Workspace", navigationMode: NavigationMode = Stack) : View(title) {
     var refreshButton: Button by singleAssign()
     var saveButton: Button by singleAssign()

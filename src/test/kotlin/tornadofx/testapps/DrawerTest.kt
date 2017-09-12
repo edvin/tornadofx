@@ -11,26 +11,26 @@ class DrawerTestApp : App(DrawerWorkspace::class) {
     }
 }
 
-class JustAView : View("Just A View") {
-    override val root = vbox {
+class JustAView : SimpleView("Just A View", {
+    vbox {
         label("I'm just a view - I do nothing")
         button("Load another View").action {
             workspace.dock<TestDrawerContributor>()
         }
     }
-}
+})
 
-class AnotherView : View("Another") {
-    override val root = stackpane {
+class AnotherView : SimpleView("Another", {
+    stackpane {
         label(title)
     }
-}
+})
 
-class YetAnotherView : View("Yet Another") {
-    override val root = stackpane {
+class YetAnotherView : SimpleView("Yet Another", {
+    stackpane {
         label(title)
     }
-}
+})
 
 class TestDrawerContributor : View("Test View with dynamic drawer item") {
     override val root = stackpane {
@@ -54,69 +54,67 @@ class TestDrawerContributor : View("Test View with dynamic drawer item") {
     }
 }
 
-class DrawerWorkspace : Workspace("Drawer Workspace", Workspace.NavigationMode.Stack) {
-    init {
-        menubar {
-            menu("Options") {
-                checkmenuitem("Toggle Navigation Mode").action {
-                    navigationMode = if (navigationMode == NavigationMode.Stack) NavigationMode.Tabs else NavigationMode.Stack
-                }
+class DrawerWorkspace : SimpleWorkSpace("Drawer Workspace", Workspace.NavigationMode.Stack, {
+    menubar {
+        menu("Options") {
+            checkmenuitem("Toggle Navigation Mode").action {
+                navigationMode = if (navigationMode == NavigationMode.Stack) NavigationMode.Tabs else NavigationMode.Stack
             }
         }
-        with(bottomDrawer) {
-            item("Console") {
-                style {
-                    backgroundColor += Color.BLACK
-                }
-                label("""Connected to the target VM, address: '127.0.0.1:64653', transport: 'socket'
+    }
+    with(bottomDrawer) {
+        item("Console") {
+            style {
+                backgroundColor += Color.BLACK
+            }
+            label("""Connected to the target VM, address: '127.0.0.1:64653', transport: 'socket'
 Disconnected from the target VM, address: '127.0.0.1:64653', transport: 'socket'
 
 Process finished with exit code 0
 """) {
-                    style {
-                        backgroundColor += Color.BLACK
-                        textFill = Color.LIGHTGREY
-                        fontFamily = "Consolas"
-                    }
+                style {
+                    backgroundColor += Color.BLACK
+                    textFill = Color.LIGHTGREY
+                    fontFamily = "Consolas"
                 }
-            }
-
-            item("Events") {
-
             }
         }
-        with(leftDrawer) {
-            item<TableViewDirtyTest>()
-            item("Form item") {
-                form {
-                    fieldset("Customer Details") {
-                        field("Name") { textfield() }
-                        field("Password") { textfield() }
-                    }
+
+        item("Events") {
+
+        }
+    }
+    with(leftDrawer) {
+        item<TableViewDirtyTest>()
+        item("Form item") {
+            form {
+                fieldset("Customer Details") {
+                    field("Name") { textfield() }
+                    field("Password") { textfield() }
                 }
             }
-            item("SqueezeBox Item", showHeader = false) {
-                squeezebox(multiselect = false, fillHeight = true) {
-                    fold("Customer Editor") {
-                        form {
-                            fieldset("Customer Details") {
-                                field("Name") { textfield() }
-                                field("Password") { textfield() }
-                            }
+        }
+        item("SqueezeBox Item", showHeader = false) {
+            squeezebox(multiselect = false, fillHeight = true) {
+                fold("Customer Editor") {
+                    form {
+                        fieldset("Customer Details") {
+                            field("Name") { textfield() }
+                            field("Password") { textfield() }
                         }
                     }
-                    fold("Some other editor") {
-                        stackpane {
-                            label("Nothing here")
-                        }
+                }
+                fold("Some other editor") {
+                    stackpane {
+                        label("Nothing here")
                     }
-                    fold("A Table") {
-                        tableview(listOf("One", "Two", "Three").observable()) {
-                            column<String, String>("Value") { SimpleStringProperty(it.value) }
-                        }
+                }
+                fold("A Table") {
+                    tableview(listOf("One", "Two", "Three").observable()) {
+                        column<String, String>("Value") { SimpleStringProperty(it.value) }
                     }
                 }
             }
         }
     }
-}
+})

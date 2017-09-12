@@ -22,13 +22,13 @@ class NewViewTransitionRoot : App(NewViewTransitionMain::class, NewViewTransitio
  * Notice the z-ordering is based on the index withing the VBox
  */
 class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::class) {
-    class VBoxRootView : View("Switching Sub Views In VBox") {
-        override val root = vbox {
+    class VBoxRootView : SimpleView("Switching Sub Views In VBox", {
+        vbox {
             label("Top").addClass(NewViewTransitionStyles.darkLabel)
             add<NewViewTransitionMain>()
             label("Bottom").addClass(NewViewTransitionStyles.lightLabel)
         }
-    }
+    })
 }
 
 /**
@@ -37,15 +37,15 @@ class NewViewTransitionVBox : App(VBoxRootView::class, NewViewTransitionStyles::
  * Notice the z-ordering is based on when the node was added to the scene graph
  */
 class NewViewTransitionBorderPane : App(BorderPaneRootView::class, NewViewTransitionStyles::class) {
-    class BorderPaneRootView : View("Switching Sub Views In BorderPane") {
-        override val root = borderpane {
+    class BorderPaneRootView : SimpleView("Switching Sub Views In BorderPane", {
+        borderpane {
             top = label("Top") { addClass(NewViewTransitionStyles.darkLabel) }
             right = label("Right") { addClass(NewViewTransitionStyles.greenLabel) }
             bottom = label("Bottom") { addClass(NewViewTransitionStyles.lightLabel) }
             left = label("Left") { addClass(NewViewTransitionStyles.greenLabel) }
             center<NewViewTransitionMain>()
         }
-    }
+    })
 }
 
 abstract class NewViewTransitionSwapView(name: String, cssClass: CssRule) : View("Switching Views On Scene Root") {

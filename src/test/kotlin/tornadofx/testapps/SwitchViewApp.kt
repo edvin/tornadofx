@@ -39,8 +39,8 @@ class GotoSubView1 : View("GotoSubView2") {
     }
 }
 
-class GotoSubView2 : View("GotoSubView2") {
-    override val root = hbox {
+class GotoSubView2 : SimpleView("GotoSubView2", {
+    hbox {
         label("I'm subview 2")
     }
-}
+})

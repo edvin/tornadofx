@@ -4,8 +4,8 @@ import tornadofx.*
 
 class BorderPaneTestApp : App(BorderPaneTest::class)
 
-class BorderPaneTest : View("Border Pane Builder Test") {
-    override val root = borderpane {
+class BorderPaneTest : SimpleView("Border Pane Builder Test", {
+    borderpane {
         // Direct access
         top = label("Top")
         // Builder target
@@ -15,4 +15,4 @@ class BorderPaneTest : View("Border Pane Builder Test") {
             }
         }
     }
-}
+})

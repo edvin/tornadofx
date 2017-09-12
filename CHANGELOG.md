@@ -23,6 +23,8 @@
 
 ### Additions
 
+- added SimpleStyleSheet and SimpleWorkspace, where the last constructor parameter is a lambda called during init{}
+- Added SimpleView, SimpleFragment where the last constructor parameter is a lambda with root
 - Button builders with text property support
 - Collection Property Delegates (https://github.com/edvin/tornadofx/pull/454)
 - Workspace.create button and corresponding UIComponent onCreate callback and creatable property

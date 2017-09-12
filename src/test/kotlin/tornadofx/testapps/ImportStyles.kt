@@ -12,12 +12,12 @@ class ImportStyles : App(MainView::class, Styles::class) {
         dumpStylesheets()
     }
 
-    class MainView : View() {
-        override val root = vbox {
+    class MainView : SimpleView({
+        vbox {
             addClass(box)
             label("Test").addClass(test)
         }
-    }
+    })
 
     companion object {
         val box by cssclass()
@@ -34,12 +34,10 @@ class ImportStyles : App(MainView::class, Styles::class) {
         }
     }
 
-    class ParentStyles : Stylesheet() {
-        init {
-            box {
-                backgroundColor += Color.GRAY
-                padding = box(10.px, 100.px)
-            }
+    class ParentStyles : SimpleStylesheet({
+        box {
+            backgroundColor += Color.GRAY
+            padding = box(10.px, 100.px)
         }
-    }
+    })
 }
