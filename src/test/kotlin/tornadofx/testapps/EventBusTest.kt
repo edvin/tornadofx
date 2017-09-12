@@ -72,8 +72,10 @@ class EventBusTestView : View("Data Event Table") {
 }
 
 
-class MyController : SimpleController({
-    subscribe<GiveMeData> {
-        fire(MyDataEvent(listOf("Simulate", "Data", "Loaded", "From", "The", "Database")))
+class MyController : Controller(){
+    init {
+        subscribe<GiveMeData> {
+            fire(MyDataEvent(listOf("Simulate", "Data", "Loaded", "From", "The", "Database")))
+        }
     }
-})
+}
