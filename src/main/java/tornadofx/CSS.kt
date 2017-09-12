@@ -89,7 +89,7 @@ interface SelectionHolder {
         return selection
     }
 }
-open class SimpleStylesheet(init: Stylesheet.()->Unit): Stylesheet(*imports){
+open class SimpleStylesheet(init: Stylesheet.()->Unit): Stylesheet(){
     init {
         init()
     }
