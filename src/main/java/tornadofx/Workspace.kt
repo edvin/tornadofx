@@ -68,29 +68,23 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private val viewPos = integerBinding(viewStack, dockedComponentProperty) { viewStack.indexOf(dockedComponent) }
 
-    val leftDrawer: Drawer get() {
-        if (root.left is Drawer) return root.left as Drawer
-        val drawer = Drawer(Side.LEFT, false, false)
-        root.left = drawer
-        drawer.toFront()
-        return drawer
-    }
+    val leftDrawer: Drawer
+        get() = (root.left as? Drawer) ?: Drawer(Side.LEFT, false, false).also {
+            root.left = it
+            it.toFront()
+        }
 
-    val rightDrawer: Drawer get() {
-        if (root.right is Drawer) return root.right as Drawer
-        val drawer = Drawer(Side.RIGHT, false, false)
-        root.right = drawer
-        drawer.toFront()
-        return drawer
-    }
+    val rightDrawer: Drawer
+        get() = (root.right as? Drawer) ?: Drawer(Side.RIGHT, false, false).also {
+            root.right = it
+            it.toFront()
+        }
 
-    val bottomDrawer: Drawer get() {
-        if (root.bottom is Drawer) return root.bottom as Drawer
-        val drawer = Drawer(Side.BOTTOM, false, false)
-        root.bottom = drawer
-        drawer.toFront()
-        return drawer
-    }
+    val bottomDrawer: Drawer
+        get() = (root.bottom as? Drawer) ?: Drawer(Side.BOTTOM, false, false).also {
+            root.bottom = it
+            it.toFront()
+        }
 
     companion object {
         val activeWorkspaces = FXCollections.observableArrayList<Workspace>()
@@ -134,11 +128,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     override fun onDock() {
-        activeWorkspaces.add(this)
+        activeWorkspaces += this
     }
 
     override fun onUndock() {
-        activeWorkspaces.remove(this)
+        activeWorkspaces -= this
     }
 
     override val root = WorkspaceArea().apply {
@@ -151,8 +145,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         (lookup(".container") as? HBox)?.apply {
                             alignment = Pos.CENTER_LEFT
                             alignmentProperty().onChange {
-                                if (it != Pos.CENTER_LEFT)
-                                    alignment = Pos.CENTER_LEFT
+                                if (it != Pos.CENTER_LEFT) alignment = Pos.CENTER_LEFT
                             }
                         }
                     }
@@ -224,7 +217,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun navigateForward(): Boolean {
-        if (forwardButton.isDisabled.not()) {
+        if (!forwardButton.isDisabled) {
             dock(viewStack[viewPos.get() + 1], false)
             return true
         }
@@ -232,7 +225,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     fun navigateBack(): Boolean {
-        if (backButton.isDisabled.not()) {
+        if (!backButton.isDisabled) {
             dock(viewStack[viewPos.get() - 1], false)
             return true
         }
@@ -269,9 +262,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             if (newCmp != null && newCmp != dockedComponent) {
                 setAsCurrentlyDocked(newCmp)
             }
-            if (oldCmp != null && oldCmp != newCmp) {
-                oldCmp.callOnUndock()
-            }
+            if (oldCmp != newCmp) oldCmp?.callOnUndock()
         }
         dockedComponentProperty.onChange { child ->
             if (child != null) {
@@ -280,13 +271,13 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         tabContainer.tabs.clear()
 
                         stackContainer.clear()
-                        stackContainer.add(child)
+                        stackContainer += child
                     } else {
                         stackContainer.clear()
 
                         var tab = tabContainer.tabs.find { it.content == child.root }
                         if (tab == null) {
-                            tabContainer.add(child)
+                            tabContainer += child
                             tab = tabContainer.tabs.last()
                         } else {
                             child.callOnDock()
@@ -307,10 +298,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             if (contentContainer == stackContainer && tabContainer.tabs.isNotEmpty()) {
                 tabContainer.tabs.clear()
             }
-            val wasdocked = dockedComponent
-            if (wasdocked != null) {
+            dockedComponent?.also {
                 dockedComponentProperty.value = null
-                dock(wasdocked, true)
+                dock(it, true)
             }
         }
         if (newMode == Stack) {
@@ -319,42 +309,44 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 root.header.items.add(1, forwardButton)
             }
         } else {
-            root.header.items.remove(backButton)
-            root.header.items.remove(forwardButton)
+            root.header.items -= backButton
+            root.header.items -= forwardButton
         }
     }
 
     override fun onSave() {
-        if (dockedComponentProperty.value?.savable?.value ?: false)
-            dockedComponentProperty.value?.onSave()
+        dockedComponentProperty.value
+                ?.takeIf { it.savable.value }
+                ?.onSave()
     }
 
     override fun onDelete() {
-        if (dockedComponentProperty.value?.deletable?.value ?: false)
-            dockedComponentProperty.value?.onDelete()
+        dockedComponentProperty.value
+                ?.takeIf { it.deletable.value }
+                ?.onDelete()
     }
 
     override fun onCreate() {
-        if (dockedComponentProperty.value?.creatable?.value ?: false)
-            dockedComponentProperty.value?.onCreate()
+        dockedComponentProperty.value
+                ?.takeIf { it.creatable.value }
+                ?.onCreate()
     }
 
     override fun onRefresh() {
-        if (dockedComponentProperty.value?.refreshable?.value ?: false)
-            dockedComponentProperty.value?.onRefresh()
+        dockedComponentProperty.value
+                ?.takeIf { it.refreshable.value }
+                ?.onRefresh()
     }
 
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find<T>(scope, params))
 
     fun dock(child: UIComponent, forward: Boolean = true) {
         // Remove everything after viewpos if moving forward
-        while (forward && viewPos.get() != (viewStack.size - 1) && viewStack.size > viewPos.get())
-            viewStack.removeAt(viewPos.get() + 1)
+        if (forward) while (viewPos.get() < viewStack.size -1) viewStack.removeAt(viewPos.get() + 1)
 
         val addToStack = contentContainer == stackContainer && maxViewStackDepth > 0 && child !in viewStack
 
-        if (addToStack)
-            viewStack.add(child)
+        if (addToStack) viewStack += child
 
         setAsCurrentlyDocked(child)
 
@@ -365,15 +357,15 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private fun setAsCurrentlyDocked(child: UIComponent) {
         titleProperty.bind(child.titleProperty)
-        refreshButton.disableProperty().cleanBind(child.refreshable.not())
-        saveButton.disableProperty().cleanBind(child.savable.not())
-        createButton.disableProperty().cleanBind(child.creatable.not())
-        deleteButton.disableProperty().cleanBind(child.deletable.not())
+        refreshButton.disableProperty().cleanBind(!child.refreshable)
+        saveButton.disableProperty().cleanBind(!child.savable)
+        createButton.disableProperty().cleanBind(!child.creatable)
+        deleteButton.disableProperty().cleanBind(!child.deletable)
 
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty) {
             graphicProperty().bind(child.iconProperty)
-            removeWhen(showHeadingLabelProperty.not())
+            removeWhen(!showHeadingLabelProperty)
         }
 
         clearDynamicComponents()
@@ -408,10 +400,10 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * </pre>
      */
     fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit) {
-        val newScope = Scope()
-        newScope.workspaceInstance = this
-        newScope.set(*setInScope)
-        op(this, newScope)
+        this.op(Scope().also {
+            it.workspaceInstance = this
+            it.set(*setInScope)
+        })
     }
 
     /**
