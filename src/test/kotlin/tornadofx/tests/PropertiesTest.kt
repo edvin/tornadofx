@@ -2828,108 +2828,108 @@ class PropertiesTest {
         Assert.assertEquals(43, map["number"])
     }
 
-//    class ListHolder {
-//        val listProperty: ListProperty<String> = SimpleListProperty<String>(FXCollections.observableArrayList())
-//        var list: MutableList<String> by listProperty
-//    }
-//
-//    @Test fun listPropertyDelegateModifyList() {
-//        val listHolder = ListHolder()
-//        var notified = false
-//        listHolder.listProperty.addListener { _, _, _-> notified = true }
-//
-//        listHolder.list.add("Test")
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        listHolder.list.remove("Test")
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        listHolder.list.addAll(arrayOf("1", "2"))
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        listHolder.list.clear()
-//        Assert.assertTrue(notified)
-//    }
-//
-//    @Test fun listPropertyDelegateChangeList() {
-//        val listHolder = ListHolder()
-//        var notified = false
-//        listHolder.listProperty.addListener { _, _, _-> notified = true }
-//
-//        listHolder.list = mutableListOf("Test")
-//        Assert.assertTrue(notified)
-//    }
-//
-//    class SetHolder {
-//        val setProperty: SetProperty<String> = SimpleSetProperty<String>(FXCollections.observableSet())
-//        var set: MutableSet<String> by setProperty
-//    }
-//
-//    @Test fun setPropertyDelegateModifySet() {
-//        val setHolder = SetHolder()
-//        var notified = false
-//        setHolder.setProperty.addListener { _, _, _-> notified = true }
-//
-//        setHolder.set.add("Test")
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        setHolder.set.remove("Test")
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        setHolder.set.addAll(arrayOf("1", "2"))
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        setHolder.set.clear()
-//        Assert.assertTrue(notified)
-//    }
-//
-//    @Test fun setPropertyDelegateChangeSet() {
-//        val setHolder = SetHolder()
-//        var notified = false
-//        setHolder.setProperty.addListener { _, _, _-> notified = true }
-//
-//        setHolder.set = mutableSetOf("Test")
-//        Assert.assertTrue(notified)
-//    }
-//
-//    class MapHolder {
-//        val mapProperty: MapProperty<Int, String> = SimpleMapProperty<Int, String>(FXCollections.observableHashMap())
-//        var map: MutableMap<Int, String> by mapProperty
-//    }
-//
-//    @Test fun mapPropertyDelegateModifyMap() {
-//        val mapHolder = MapHolder()
-//        var notified = false
-//        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
-//
-//        mapHolder.map.put(0, "Test")
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        mapHolder.map.remove(0)
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        mapHolder.map.putAll(mapOf(1 to "1", 2 to "2"))
-//        Assert.assertTrue(notified)
-//
-//        notified = false
-//        mapHolder.map.clear()
-//        Assert.assertTrue(notified)
-//    }
-//
-//    @Test fun mapPropertyDelegateChangeMap() {
-//        val mapHolder = MapHolder()
-//        var notified = false
-//        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
-//
-//        mapHolder.map = mutableMapOf(0 to "Test")
-//        Assert.assertTrue(notified)
-//    }
+    class ListHolder {
+        val listProperty: ListProperty<String> = SimpleListProperty<String>(FXCollections.observableArrayList())
+        var list: MutableList<String> by listProperty
+    }
+
+    @Test fun listPropertyDelegateModifyList() {
+        val listHolder = ListHolder()
+        var notified = false
+        listHolder.listProperty.addListener { _, _, _-> notified = true }
+
+        listHolder.list.add("Test")
+        Assert.assertTrue(notified)
+
+        notified = false
+        listHolder.list.remove("Test")
+        Assert.assertTrue(notified)
+
+        notified = false
+        listHolder.list.addAll(arrayOf("1", "2"))
+        Assert.assertTrue(notified)
+
+        notified = false
+        listHolder.list.clear()
+        Assert.assertTrue(notified)
+    }
+
+    @Test fun listPropertyDelegateChangeList() {
+        val listHolder = ListHolder()
+        var notified = false
+        listHolder.listProperty.addListener { _, _, _-> notified = true }
+
+        listHolder.list = mutableListOf("Test")
+        Assert.assertTrue(notified)
+    }
+
+    class SetHolder {
+        val setProperty: SetProperty<String> = SimpleSetProperty<String>(FXCollections.observableSet())
+        var set: MutableSet<String> by setProperty
+    }
+
+    @Test fun setPropertyDelegateModifySet() {
+        val setHolder = SetHolder()
+        var notified = false
+        setHolder.setProperty.addListener { _, _, _-> notified = true }
+
+        setHolder.set.add("Test")
+        Assert.assertTrue(notified)
+
+        notified = false
+        setHolder.set.remove("Test")
+        Assert.assertTrue(notified)
+
+        notified = false
+        setHolder.set.addAll(arrayOf("1", "2"))
+        Assert.assertTrue(notified)
+
+        notified = false
+        setHolder.set.clear()
+        Assert.assertTrue(notified)
+    }
+
+    @Test fun setPropertyDelegateChangeSet() {
+        val setHolder = SetHolder()
+        var notified = false
+        setHolder.setProperty.addListener { _, _, _-> notified = true }
+
+        setHolder.set = mutableSetOf("Test")
+        Assert.assertTrue(notified)
+    }
+
+    class MapHolder {
+        val mapProperty: MapProperty<Int, String> = SimpleMapProperty<Int, String>(FXCollections.observableHashMap())
+        var map: MutableMap<Int, String> by mapProperty
+    }
+
+    @Test fun mapPropertyDelegateModifyMap() {
+        val mapHolder = MapHolder()
+        var notified = false
+        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
+
+        mapHolder.map.put(0, "Test")
+        Assert.assertTrue(notified)
+
+        notified = false
+        mapHolder.map.remove(0)
+        Assert.assertTrue(notified)
+
+        notified = false
+        mapHolder.map.putAll(mapOf(1 to "1", 2 to "2"))
+        Assert.assertTrue(notified)
+
+        notified = false
+        mapHolder.map.clear()
+        Assert.assertTrue(notified)
+    }
+
+    @Test fun mapPropertyDelegateChangeMap() {
+        val mapHolder = MapHolder()
+        var notified = false
+        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
+
+        mapHolder.map = mutableMapOf(0 to "Test")
+        Assert.assertTrue(notified)
+    }
 }
