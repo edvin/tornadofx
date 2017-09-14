@@ -2,6 +2,8 @@ package tornadofx.tests
 
 import javafx.css.PseudoClass
 import javafx.scene.control.Label
+import javafx.scene.effect.BlurType
+import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.Pane
 import javafx.scene.paint.*
 import javafx.scene.text.Font
@@ -13,6 +15,7 @@ import org.testfx.api.FxToolkit
 import tornadofx.*
 import tornadofx.Stylesheet.Companion.armed
 import tornadofx.Stylesheet.Companion.hover
+import tornadofx.Stylesheet.Companion.imageView
 import tornadofx.Stylesheet.Companion.label
 import tornadofx.Stylesheet.Companion.star
 import java.net.URI
@@ -510,6 +513,21 @@ class StylesheetTest {
             padding = box(10.px)
         }
         assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
+    }
+
+    @Test
+    fun innerShadowRendering() {
+        stylesheet {
+            s(imageView) {
+                effect = InnerShadow(BlurType.GAUSSIAN, Color.GREENYELLOW, 7.0, 1.0, 1.0, 1.0)
+            }
+        } shouldEqual {
+            """
+            .image-view {
+                -fx-effect: innershadow(gaussian, rgba(173, 255, 47, 1), 7.0, 1.0, 1.0, 1.0);
+            }
+            """
+        }
     }
 
     private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
