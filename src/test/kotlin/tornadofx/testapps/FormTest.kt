@@ -1,12 +1,11 @@
 package tornadofx.testapps
 
-import javafx.geometry.Orientation
 import tornadofx.*
 
 class FormApp : App(FormView::class)
 
-class FormView : View("My Form") {
-    override val root = form {
+class FormView : SimpleView("My Form", {
+    form {
         fieldset(title) {
             field("Name") {
                 textfield()
@@ -27,4 +26,4 @@ class FormView : View("My Form") {
             }
         }
     }
-}
+})

@@ -89,6 +89,11 @@ interface SelectionHolder {
         return selection
     }
 }
+open class SimpleStylesheet(init: Stylesheet.()->Unit): Stylesheet(){
+    init {
+        init()
+    }
+}
 
 open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHolder, Rendered {
     companion object {

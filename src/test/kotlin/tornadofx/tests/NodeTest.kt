@@ -43,7 +43,7 @@ class NodeTest {
         assertEquals(2, view1.findAll<View>().size)
     }
 
-    class View1 : View() { override val root = HBox(Label("View 1")) }
-    class View2 : View() { override val root = HBox(Label("View 2")) }
-    class View3 : View() { override val root = HBox(Label("View 3")) }
+    class View1 : SimpleView({ HBox(Label("View 1")) })
+    class View2 : SimpleView({ HBox(Label("View 2")) })
+    class View3 : SimpleView({ HBox(Label("View 3")) })
 }

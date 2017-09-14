@@ -5,13 +5,13 @@ import java.time.LocalDateTime
 
 class ParamTestApp : App(ParamCallerView::class)
 
-class ParamCallerView : View() {
-    override val root = button("Open modal with param") {
+class ParamCallerView : SimpleView({
+    button("Open modal with param") {
         action {
             find<ParamReceiverView>(mapOf("name" to "Param ${LocalDateTime.now()}")).openModal()
         }
     }
-}
+})
 
 class ParamReceiverView : View() {
     val name: String by param()

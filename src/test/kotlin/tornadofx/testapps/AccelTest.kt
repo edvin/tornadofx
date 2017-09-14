@@ -8,17 +8,17 @@ import tornadofx.*
 
 class AccelTestApp : App(AccelTest::class)
 
-class AccelTest : View() {
-    override val root = stackpane {
+class AccelTest : SimpleView({
+    stackpane {
         add<AccelView>()
     }
-}
+})
 
-class AccelView : View() {
-    override val root = button("Click me") {
+class AccelView : SimpleView({
+    button("Click me") {
         shortcut(KeyCodeCombination(KeyCode.A, KeyCombination.SHORTCUT_ANY, KeyCombination.SHIFT_ANY))
         action {
             alert(Alert.AlertType.INFORMATION, "Fire!", "You clicked.")
         }
     }
-}
+})

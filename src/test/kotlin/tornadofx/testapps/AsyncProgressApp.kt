@@ -6,8 +6,8 @@ import tornadofx.*
 
 class AsyncProgressApp : App(AsyncProgressView::class)
 
-class AsyncProgressView : View("Async Progress") {
-    override val root = borderpane {
+class AsyncProgressView : SimpleView("Async Progress", {
+    borderpane {
         setPrefSize(400.0, 300.0)
 
         center {
@@ -30,7 +30,7 @@ class AsyncProgressView : View("Async Progress") {
             add<ProgressView>()
         }
     }
-}
+})
 
 class ProgressView : View() {
     val status: TaskStatus by inject()
@@ -47,8 +47,8 @@ class ProgressView : View() {
     }
 }
 
-class AsyncProgressButtonView : View() {
-    override val root = stackpane {
+class AsyncProgressButtonView : SimpleView({
+    stackpane {
         setPrefSize(400.0, 400.0)
         button("Click me") {
             action {
@@ -58,4 +58,4 @@ class AsyncProgressButtonView : View() {
             }
         }
     }
-}
+})

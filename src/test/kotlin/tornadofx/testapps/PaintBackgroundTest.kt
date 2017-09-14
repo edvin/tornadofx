@@ -5,10 +5,10 @@ import tornadofx.*
 
 class PaintBackgroundTestApp : App(PaintBackgroundTest::class)
 
-class PaintBackgroundTest : View() {
-    override val root = hbox {
+class PaintBackgroundTest : SimpleView({
+    hbox {
         label("Hello Background Color") {
             background = Color.LIGHTBLUE.asBackground()
         }
     }
-}
+})
