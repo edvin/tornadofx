@@ -384,6 +384,12 @@ fun <T> TreeView<T>.bindSelected(property: Property<T>) {
     }
 }
 
+fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it?.value
+    }
+}
+
 fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
 class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
