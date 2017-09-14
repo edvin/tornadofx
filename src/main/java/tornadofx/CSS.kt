@@ -539,7 +539,7 @@ open class PropertyHolder {
             is Effect -> when (value) { // JavaFX currently only supports DropShadow and InnerShadow in CSS
                 is DropShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
                         "${value.radius}, ${value.spread}, ${value.offsetX}, ${value.offsetY})"
-                is InnerShadow -> "dropshadow(${toCss(value.blurType)}, ${value.color.css}, " +
+                is InnerShadow -> "innershadow(${toCss(value.blurType)}, ${value.color.css}, " +
                         "${value.radius}, ${value.choke}, ${value.offsetX}, ${value.offsetY})"
                 else -> "none"
             }
