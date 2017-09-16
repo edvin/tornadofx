@@ -52,6 +52,11 @@ fun CheckBox.bind(property: ObservableValue<Boolean>, readonly: Boolean = false)
     if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
 }
 
+fun CheckMenuItem.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) {
+    ViewModel.register(selectedProperty(), property)
+    if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
+}
+
 fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
     ViewModel.register(valueProperty(), property)
     if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<Number>)
