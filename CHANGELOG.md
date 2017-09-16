@@ -23,6 +23,7 @@
 
 ### Additions
 
+- TreeTableView.bindSelected()
 - CheckMenuItem.bind()
 - Button builders with text property support
 - Collection Property Delegates (https://github.com/edvin/tornadofx/pull/454)

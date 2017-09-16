@@ -69,8 +69,9 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
     }
 
     fun string(key: String, defaultValue: String? = null) = getProperty(key, defaultValue)
-    fun boolean(key: String) = getProperty(key)?.toBoolean() ?: false
-    fun double(key: String) = getProperty(key)?.toDouble()
+    fun boolean(key: String, defaultValue: Boolean? = false) = getProperty(key)?.toBoolean() ?: defaultValue
+    fun double(key: String, defaultValue: Double? = null) = getProperty(key)?.toDouble() ?: defaultValue
+    fun int(key: String, defaultValue: Integer? = null) = getProperty(key)?.toInt() ?: defaultValue
     fun jsonObject(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
     fun jsonArray(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
     inline fun <reified M : JsonModel> jsonModel(key: String) = jsonObject(key)?.toModel<M>()
