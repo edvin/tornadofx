@@ -5,6 +5,7 @@
 ### Fixed
 
 - Accessing last item in DataGridFocusModel was not possible
+- Severe performance bug in SmartResize policy causing it to add exessive number of listeners (https://github.com/edvin/tornadofx/issues/460)
 
 ### Changes
 

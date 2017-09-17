@@ -97,14 +97,14 @@ class SmartResize private constructor() : TableViewResizeCallback {
         }
 
 
-        private fun isPolicyInstalled(table: TableView<*>) = table.properties[SMART_RESIZE] is SmartResize
+        private fun isPolicyInstalled(table: TableView<*>) = table.properties[SMART_RESIZE] == true
 
         private fun install(table: TableView<*>) {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
             table.itemsProperty().addListener(itemsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE] = this
+            table.properties[SMART_RESIZE] = true
         }
 
         private fun uninstall(table: TableView<*>) {
@@ -169,13 +169,13 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
         }
 
-        private fun isPolicyInstalled(table: TreeTableView<*>) = table.properties[SMART_RESIZE] is TreeTableSmartResize
+        private fun isPolicyInstalled(table: TreeTableView<*>) = table.properties[SMART_RESIZE] == true
 
         private fun install(table: TreeTableView<*>) {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
             table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
-            table.properties[SMART_RESIZE] = this
+            table.properties[SMART_RESIZE] = true
         }
 
         private fun uninstall(table: TreeTableView<*>) {
