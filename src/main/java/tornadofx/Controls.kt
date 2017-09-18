@@ -314,6 +314,12 @@ fun EventTarget.button(text: String = "", graphic: Node? = null, op: (Button.() 
     return opcr(this, button, op)
 }
 
+fun EventTarget.menubutton(text: String = "", graphic: Node? = null, op: (MenuButton.() -> Unit)? = null): MenuButton {
+    val button = MenuButton(text)
+    if (graphic != null) button.graphic = graphic
+    return opcr(this, button, op)
+}
+
 fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: (Button.() -> Unit)? = null): Button {
     val button = Button()
     button.textProperty().bind(text)

@@ -6,6 +6,9 @@
 ### Changes
 ### Additions
 
+- menubutton builder (https://github.com/edvin/tornadofx/issues/461)
+- MenuButton.item builder
+
 ## [1.7.11]
 
 ### Fixed

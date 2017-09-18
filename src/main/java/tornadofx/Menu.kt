@@ -154,6 +154,15 @@ fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Nod
     return menuItem
 }
 
+fun MenuButton.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
+    val menuItem = MenuItem(name, graphic)
+    keyCombination?.apply { menuItem.accelerator = this }
+    graphic?.apply { menuItem.graphic = graphic }
+    op?.invoke(menuItem)
+    items.add(menuItem)
+    return menuItem
+}
+
 /**
  * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action.
  */
