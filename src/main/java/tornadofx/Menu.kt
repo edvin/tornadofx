@@ -207,6 +207,25 @@ fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, gra
     return checkMenuItem
 }
 
+fun MenuButton.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (RadioMenuItem.() -> Unit)? = null): RadioMenuItem {
+    val radioMenuItem = RadioMenuItem(name, graphic)
+    toggleGroup?.apply { radioMenuItem.toggleGroup = this }
+    keyCombination?.apply { radioMenuItem.accelerator = this }
+    graphic?.apply { radioMenuItem.graphic = graphic }
+    op?.invoke(radioMenuItem)
+    items.add(radioMenuItem)
+    return radioMenuItem
+}
+
+fun MenuButton.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (CheckMenuItem.() -> Unit)? = null): CheckMenuItem {
+    val checkMenuItem = CheckMenuItem(name, graphic)
+    keyCombination?.apply { checkMenuItem.accelerator = this }
+    graphic?.apply { checkMenuItem.graphic = graphic }
+    op?.invoke(checkMenuItem)
+    items.add(checkMenuItem)
+    return checkMenuItem
+}
+
 fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
     val menu = if (this is Control && contextMenu != null) contextMenu else ContextMenu()
     op?.invoke(menu)
