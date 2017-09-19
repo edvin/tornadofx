@@ -300,10 +300,10 @@ fun EventTarget.progressbar(property: ObservableValue<Number>, op: (ProgressBar.
     op?.invoke(this)
 }
 
-fun EventTarget.slider(min: Double? = null, max: Double? = null, value: Double? = null, orientation: Orientation? = null, op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
-    if (min != null) this.min = min
-    if (max != null) this.max = max
-    if (value != null) this.value = value
+fun EventTarget.slider(min: Number? = null, max: Number? = null, value: Number? = null, orientation: Orientation? = null, op: (Slider.() -> Unit)? = null) = opcr(this, Slider().apply {
+    if (min != null) this.min = min.toDouble()
+    if (max != null) this.max = max.toDouble()
+    if (value != null) this.value = value.toDouble()
     if (orientation != null) this.orientation = orientation
 }, op)
 
