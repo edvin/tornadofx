@@ -784,6 +784,7 @@ open class PropertyHolder {
     // BarChar
     var barGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-bar-gap")
     var categoryGap: Dimension<Dimension.LinearUnits> by cssprop("-fx-category-group")
+    var barFill: Color by cssprop("-fx-bar-fill")
 
     // CategoryAxis
     var startMargin: Dimension<Dimension.LinearUnits> by cssprop("-fx-start-margin")

@@ -14,6 +14,7 @@ import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
 import tornadofx.Stylesheet.Companion.armed
+import tornadofx.Stylesheet.Companion.barChart
 import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.imageView
 import tornadofx.Stylesheet.Companion.label
@@ -525,6 +526,21 @@ class StylesheetTest {
             """
             .image-view {
                 -fx-effect: innershadow(gaussian, rgba(173, 255, 47, 1), 7.0, 1.0, 1.0, 1.0);
+            }
+            """
+        }
+    }
+
+    @Test
+    fun barFillTest() {
+        stylesheet {
+            s(barChart) {
+                barFill = Color.RED
+            }
+        } shouldEqual {
+            """
+            .bar-chart {
+                -fx-bar-fill: rgba(255, 0, 0, 1);
             }
             """
         }
