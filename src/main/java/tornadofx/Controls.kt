@@ -105,6 +105,9 @@ fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
 }
+fun Tab.closeableWhen(predicate: ObservableValue<Boolean>) {
+    closableProperty().bind(predicate)
+}
 
 fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     fun updateState() {
