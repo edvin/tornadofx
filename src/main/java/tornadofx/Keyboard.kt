@@ -18,8 +18,6 @@ fun EventTarget.keyboard(op: KeyboardLayout.() -> Unit) = opcr(this, KeyboardLay
 class KeyboardStyles : Stylesheet() {
     init {
         keyboard {
-            backgroundColor += c("#b3b3b3")
-
             keyboardKey {
                 borderWidth += box(1.px)
                 borderColor += box(Color.BLACK)
