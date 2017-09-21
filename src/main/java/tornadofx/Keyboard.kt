@@ -193,8 +193,8 @@ open class KeyboardKey(keyboard: KeyboardLayout, text: String?, svg: String?, co
 
     init {
         addClass(Stylesheet.keyboardKey)
-        prefWidthProperty().bind(keyWidthProperty * keyboard.unitSize)
-        prefHeightProperty().bind(keyHeightProperty * keyboard.unitSize)
+        prefWidthProperty().bind(keyWidthProperty * keyboard.unitSizeProperty)
+        prefHeightProperty().bind(keyHeightProperty * keyboard.unitSizeProperty)
         svgProperty.onChange { updateGraphic() }
         updateGraphic()
     }
