@@ -122,6 +122,10 @@ class HelloWorld : View() {
 Load the root node from `HelloWorld.fxml` and inject controls by `fx:id`
   
 ```kotlin
+import javafx.scene.control.Label
+import javafx.scene.layout.HBox
+import tornadofx.*
+
 class HelloWorld : View() {
     override val root: HBox by fxml()
     val myLabel: Label by fxid()
@@ -135,6 +139,9 @@ class HelloWorld : View() {
 Start your application and show the primary `View` and add a type safe stylesheet
     
 ```kotlin
+import javafx.scene.text.FontWeight
+import tornadofx.*
+
 class HelloWorldApp : App(HelloWorld::class, Styles::class)
 
 class Styles : Stylesheet() {
