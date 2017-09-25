@@ -8,6 +8,7 @@
 
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)
 - MenuButton.item builder
+- Added Fragment support for`TreeCell`
 
 ## [1.7.11]
 

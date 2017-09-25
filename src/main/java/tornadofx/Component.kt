@@ -680,6 +680,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) = cellFormat(scope, formatter)
 
     fun <S, T, F : TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
+
+    fun <T, F : TreeCellFragment<T>> TreeView<T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
     /**
      * Calculate a unique Node per item and set this Node as the graphic of the TableCell.
      *

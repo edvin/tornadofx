@@ -378,11 +378,6 @@ val <T> ComboBox<T>.selectedItem: T?
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-fun <T> TreeView<T>.bindSelected(property: Property<T>) {
-    selectionModel.selectedItemProperty().onChange {
-        property.value = it?.value
-    }
-}
 
 fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
     selectionModel.selectedItemProperty().onChange {
@@ -390,7 +385,6 @@ fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 fun <T> TreeTableView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
 class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
@@ -407,37 +401,6 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
             if (newValue != null) decorator(cell, newValue)
         }
         cell
-    }
-}
-
-fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
-    cellFactory = Callback {
-        object : TreeCell<S>() {
-            override fun updateItem(item: S?, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    textProperty().unbind()
-                    graphicProperty().unbind()
-                    text = null
-                    graphic = null
-                } else {
-                    formatter(this, item)
-                }
-            }
-        }
-    }
-}
-
-fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
-    val originalFactory = cellFactory
-
-    if (originalFactory == null) cellFormat(decorator) else {
-        cellFactory = Callback { treeView: TreeView<S> ->
-            val cell = originalFactory.call(treeView)
-            cell.itemProperty().onChange { decorator(cell, cell.item) }
-            cell
-        }
     }
 }
 
