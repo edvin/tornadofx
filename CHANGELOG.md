@@ -18,6 +18,7 @@
 
 ### Changes
 
+- lookup now stops searching immediately if a match is found
 - Parameters passed to Views will now be updated if you do another find() (https://github.com/edvin/tornadofx/issues/443)
 - SingleAssign now throws UninitializedPropertyAccessException instead of Exception
 - Removed inc() and dec() from properties

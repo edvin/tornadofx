@@ -14,6 +14,7 @@ import javafx.scene.control.TableView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.DataFormat
+import javafx.util.Callback
 import java.io.File
 import java.util.function.Predicate
 
@@ -368,6 +369,25 @@ fun <R> proxypropDouble(receiver: Property<R>, getter: Property<R>.() -> Double,
     }
 }
 
+internal fun Insets?.initBuilder() = InSetsBuilder(this?.top, this?.right, this?.bottom, this?.left)
+internal class InSetsBuilder(var top: Number? = null, var right: Number? = null, var bottom: Number? = null, var left: Number? = null){
+
+    fun toInSets() = Insets(
+            top?.toDouble()?: 0.0,
+            right?.toDouble() ?: 0.0,
+            bottom?.toDouble() ?: 0.0,
+            left?.toDouble()?:0.0
+    )
+}
+
+
 fun insets(all: Number) = Insets(all.toDouble(), all.toDouble(), all.toDouble(), all.toDouble())
 fun insets(horizontal: Number? = null, vertical: Number? = null) = Insets(vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0, vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0)
 fun insets(top: Number? = null, right: Number? = null, bottom: Number? = null, left: Number? = null) = Insets(top?.toDouble() ?: 0.0, right?.toDouble() ?: 0.0, bottom?.toDouble() ?: 0.0, left?.toDouble() ?: 0.0)
+
+internal operator fun <P, R> Callback<P, R>.invoke(param: P) = call(param)
+
+internal inline fun <T, R, C : MutableList<R>> Sequence<IndexedValue<T>>.mapValueIndexedTo(destination: C, transform: (T) -> R): C {
+    for ((index, item) in this) destination[index] = transform(item)
+    return destination
+}

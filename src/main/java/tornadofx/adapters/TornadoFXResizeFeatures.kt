@@ -11,23 +11,23 @@ typealias Properties = ObservableMap<Any?, Any?>
 typealias TableViewResizeCallback = Callback<TableView.ResizeFeatures<out Any>, Boolean>
 typealias TreeTableViewResizeCallback = Callback<TreeTableView.ResizeFeatures<out Any>, Boolean>
 
-fun TreeTableView.ResizeFeatures<*>.toTornadoFXResizeFeatures() = TornadoFXTreeTableResizeFeatures(this)
-fun TableView.ResizeFeatures<*>.toTornadoFXFeatures() = TornadoFxTableResizeFeatures(this)
+fun <T> TreeTableView.ResizeFeatures<T>.toTornadoFXResizeFeatures() = TornadoFXTreeTableResizeFeatures(this)
+fun <T> TableView.ResizeFeatures<T>.toTornadoFXFeatures() = TornadoFxTableResizeFeatures(this)
 
 interface TornadoFXResizeFeatures<COLUMN, out TABLE : Any> {
     val table: TornadoFXTable<COLUMN, TABLE>
     val delta: Double
-    val column: TornadoFXColumn<COLUMN>?
+    val column: TornadoFXColumn<out COLUMN>?
 }
 
-class TornadoFXTreeTableResizeFeatures(val param: TreeTableView.ResizeFeatures<out Any>) : TornadoFXResizeFeatures<TreeTableColumn<*, *>, TreeTableView<*>> {
-    override val column = param.column?.toTornadoFXColumn()
+class TornadoFXTreeTableResizeFeatures<T>(val param: TreeTableView.ResizeFeatures<T>) : TornadoFXResizeFeatures<TreeTableColumn<T, *>, TreeTableView<*>> {
+    override val column  = param.column?.toTornadoFXColumn()
     override val table = param.table.toTornadoFXTable()
     override val delta get() = param.delta!!
 }
 
-class TornadoFxTableResizeFeatures(val param: TableView.ResizeFeatures<out Any>) : TornadoFXResizeFeatures<TableColumn<*, *>, TableView<*>> {
-    override val table: TornadoFXTable<TableColumn<*, *>, TableView<*>> = TornadoFXNormalTable(param.table)
-    override val delta: Double = param.delta
-    override val column: TornadoFXColumn<TableColumn<*, *>>? = param.column?.let { TornadoFxNormalTableColumn(it) }
+class TornadoFxTableResizeFeatures<T>(val param: TableView.ResizeFeatures<T>) : TornadoFXResizeFeatures<TableColumn<T, *>, TableView<T>> {
+    override val table = param.table.toTornadoFXTable()
+    override val delta = param.delta
+    override val column = param.column?.toTornadoFXColumn()
 }

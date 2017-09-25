@@ -4,8 +4,8 @@ import javafx.beans.property.DoubleProperty
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TreeTableColumn
 
-fun TreeTableColumn<*,*>.toTornadoFXColumn() = TornadoFXTreeTableColumn(this)
-fun TableColumn<*,*>.toTornadoFXColumn() = TornadoFxNormalTableColumn(this)
+fun <S,T> TreeTableColumn<S,T>.toTornadoFXColumn() : TornadoFXColumn<TreeTableColumn<S,T>> = TornadoFXTreeTableColumn(this)
+fun <S,T> TableColumn<S,T>.toTornadoFXColumn() = TornadoFxNormalTableColumn(this)
 
 interface TornadoFXColumn<COLUMN> {
     val column: COLUMN
@@ -18,7 +18,7 @@ interface TornadoFXColumn<COLUMN> {
     val maxWidthProperty: DoubleProperty
 }
 
-class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : TornadoFXColumn<TreeTableColumn<*, *>> {
+class TornadoFXTreeTableColumn<S,T>(override val column: TreeTableColumn<S, T>) : TornadoFXColumn<TreeTableColumn<S, T>> {
     override val minWidthProperty get() = column.minWidthProperty()
     override val maxWidthProperty get() = column.maxWidthProperty()
     override var minWidth: Double
@@ -44,7 +44,7 @@ class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : Tor
         }
 }
 
-class TornadoFxNormalTableColumn(override val column: TableColumn<*, *>) : TornadoFXColumn<TableColumn<*, *>> {
+class TornadoFxNormalTableColumn<S,T>(override val column: TableColumn<S, T>) : TornadoFXColumn<TableColumn<S, T>> {
     override var minWidth: Double
         get() = column.minWidth
         set(value) {
