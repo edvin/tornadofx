@@ -363,12 +363,7 @@ val <T> TableView<T>.selectedItem: T?
 val <T> TreeTableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem?.value
 
-val <T> TreeView<T>.selectedValue: T?
-    get() = this.selectionModel.selectedItem?.value
-
 fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
-
-fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeTableView<T>.selectFirst() = selectionModel.selectFirst()
 
@@ -378,11 +373,6 @@ val <T> ComboBox<T>.selectedItem: T?
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
         selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
-fun <T> TreeView<T>.bindSelected(property: Property<T>) {
-    selectionModel.selectedItemProperty().onChange {
-        property.value = it?.value
-    }
-}
 
 fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
     selectionModel.selectedItemProperty().onChange {
@@ -390,7 +380,6 @@ fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 fun <T> TreeTableView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
 class TableColumnCellCache<T>(private val cacheProvider: (T) -> Node) {
@@ -407,37 +396,6 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
             if (newValue != null) decorator(cell, newValue)
         }
         cell
-    }
-}
-
-fun <S> TreeView<S>.cellFormat(formatter: (TreeCell<S>.(S) -> Unit)) {
-    cellFactory = Callback {
-        object : TreeCell<S>() {
-            override fun updateItem(item: S?, empty: Boolean) {
-                super.updateItem(item, empty)
-
-                if (item == null || empty) {
-                    textProperty().unbind()
-                    graphicProperty().unbind()
-                    text = null
-                    graphic = null
-                } else {
-                    formatter(this, item)
-                }
-            }
-        }
-    }
-}
-
-fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
-    val originalFactory = cellFactory
-
-    if (originalFactory == null) cellFormat(decorator) else {
-        cellFactory = Callback { treeView: TreeView<S> ->
-            val cell = originalFactory.call(treeView)
-            cell.itemProperty().onChange { decorator(cell, cell.item) }
-            cell
-        }
     }
 }
 
@@ -533,24 +491,10 @@ fun <T> TableView<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
 fun <T> ComboBox<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
         task(func = func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
-    selectionModel.selectedItemProperty().addListener { obs, old, new ->
-        if (new != null && new.value != null)
-            action(new.value)
-    }
-}
-
 fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem!!)
-    })
-}
-
-fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
-        if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
-            action(selectedValue!!)
     })
 }
 
@@ -823,9 +767,6 @@ fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>): 
 }
 
 fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
-        populateTree(root, itemFactory, childFactory)
-
-fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
         populateTree(root, itemFactory, childFactory)
 
 /**
