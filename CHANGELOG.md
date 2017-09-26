@@ -4,6 +4,11 @@
 
 ### Fixed
 ### Changes
+- Refactoring: Moved all extension functions and properties targeting `TreeView`
+  from `Nodes.kt` to `TreeView.kt`. 
+  
+  **Note:** This could break imports in your kt files, please reimport or use `no.tornadofx.*`!
+  
 ### Additions
 
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)

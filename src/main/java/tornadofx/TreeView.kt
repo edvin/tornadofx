@@ -1,12 +1,12 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.scene.Node
 import javafx.scene.control.TreeCell
+import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.util.Callback
 import tornadofx.FX.IgnoreParentBuilder.Once
 import kotlin.reflect.KClass
@@ -124,6 +124,45 @@ fun <T> TreeView<T>.bindSelected(property: Property<T>) {
  */
 fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
+
+fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
+    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
+        if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
+            action(selectedValue!!)
+    })
+}
+
+fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
+    selectionModel.selectedItemProperty().addListener { obs, old, new ->
+        if (new != null && new.value != null)
+            action(new.value)
+    }
+}
+
+
+/**
+ * <p>This method will attempt to select the first index in the control.
+ * If clearSelection is not called first, this method
+ * will have the result of selecting the first index, whilst retaining
+ * the selection of any other currently selected indices.</p>
+ *
+ * <p>If the first index is already selected, calling this method will have
+ * no result, and no selection event will take place.</p>
+ *
+ * This functions is the same as calling.
+ * ```
+ * selectionModel.selectFirst()
+ *
+ * ```
+ */
+fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
+
+fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
+        populateTree(root, itemFactory, childFactory)
+
+/**
+ * Registers a `Fragment` which should be used to represent a [TreeItem] for the given [TreeView].
+ */
 fun <T, F : TreeCellFragment<T>> TreeView<T>.cellFragment(scope: Scope = DefaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
@@ -148,3 +187,16 @@ fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
         }
     }
 }
+
+// -- Properties
+
+/**
+ * Returns the currently selected value of type [T] (which is currently the
+ * selected value represented by the current selection model). If there
+ * are multiple values selected, it will return the most recently selected
+ * value.
+ *
+ * <p>Note that the returned value is a snapshot in time.
+ */
+val <T> TreeView<T>.selectedValue: T?
+    get() = this.selectionModel.selectedItem?.value

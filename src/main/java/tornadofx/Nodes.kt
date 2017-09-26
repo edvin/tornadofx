@@ -363,12 +363,7 @@ val <T> TableView<T>.selectedItem: T?
 val <T> TreeTableView<T>.selectedItem: T?
     get() = this.selectionModel.selectedItem?.value
 
-val <T> TreeView<T>.selectedValue: T?
-    get() = this.selectionModel.selectedItem?.value
-
 fun <T> TableView<T>.selectFirst() = selectionModel.selectFirst()
-
-fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
 
 fun <T> TreeTableView<T>.selectFirst() = selectionModel.selectFirst()
 
@@ -496,24 +491,10 @@ fun <T> TableView<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
 fun <T> ComboBox<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
         task(func = func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
-fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
-    selectionModel.selectedItemProperty().addListener { obs, old, new ->
-        if (new != null && new.value != null)
-            action(new.value)
-    }
-}
-
 fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED, { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem!!)
-    })
-}
-
-fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
-        if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
-            action(selectedValue!!)
     })
 }
 
@@ -786,9 +767,6 @@ fun <T, S : Any> TableColumn<T, S>.makeEditable(converter: StringConverter<S>): 
 }
 
 fun <T> TreeTableView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
-        populateTree(root, itemFactory, childFactory)
-
-fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
         populateTree(root, itemFactory, childFactory)
 
 /**
