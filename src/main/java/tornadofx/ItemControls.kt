@@ -201,7 +201,7 @@ fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: (TreeTableView<
 }
 
 fun <T : Any> TreeView<T>.lazyPopulate(
-        leafCheck: (LazyTreeItem<T>) -> Boolean = { it.childFactoryReturnedNull() },
+        leafCheck: (LazyTreeItem<T>) -> Boolean = { it.hasChildren() },
         itemProcessor: ((LazyTreeItem<T>) -> Unit)? = null,
         childFactory: (TreeItem<T>) -> List<T>?
 ) {
@@ -235,12 +235,9 @@ class LazyTreeItem<T : Any>(
     override fun getChildren(): ObservableList<TreeItem<T>> {
         if (!childFactoryInvoked) {
             task {
-                invokeChildFactorySynchronously()
+                invokeAndSetChildFactorySynchronously()
             } success {
-                if (childFactoryResult != null) {
-                    super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
-                    listenForChanges()
-                }
+                if (childFactoryResult != null) listenForChanges()
             }
         }
         return super.getChildren()
@@ -267,12 +264,16 @@ class LazyTreeItem<T : Any>(
         })
     }
 
-    fun childFactoryReturnedNull() = invokeChildFactorySynchronously() == null
+    fun hasChildren(): Boolean {
+        val result = invokeAndSetChildFactorySynchronously()
+        return result == null || result.isEmpty()
+    }
 
-    private fun invokeChildFactorySynchronously(): List<T>? {
+    private fun invokeAndSetChildFactorySynchronously(): List<T>? {
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
             childFactoryResult = childFactory(this)
+            if (childFactoryResult != null) super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
         }
         return childFactoryResult
     }
