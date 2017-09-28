@@ -3,6 +3,8 @@
 ## [1.7.12-SNAPSHOT]
 
 ### Fixed
+ - Fixed #434 leaf nodes are now getting set as expected for `lazypopulate`.
+
 ### Changes
 - Refactoring: Moved all extension functions and properties targeting `TreeView`
   from `Nodes.kt` to `TreeView.kt`. 
@@ -10,7 +12,7 @@
   **Note:** This could break imports in your kt files, please reimport or use `no.tornadofx.*`!
   
 ### Additions
-
+- The default lefCheck for `lazypopulate` is now also recognizing an empty list as a leaf.
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)
 - MenuButton.item builder
 - Added Fragment support for`TreeCell`
