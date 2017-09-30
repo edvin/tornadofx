@@ -171,7 +171,7 @@ class JsonBuilder {
         }
     }
 
-    fun add(key: String, value: Number?): JsonBuilder {
+    fun add(key: String, value: Number?) = apply {
         when (value) {
             is Int -> delegate.add(key, value)
             is BigDecimal -> delegate.add(key, value)
@@ -180,91 +180,68 @@ class JsonBuilder {
             is Double -> delegate.add(key, value)
             is Long -> delegate.add(key, value)
         }
-
-        return this
     }
 
-    fun add(key: String, value: Boolean?): JsonBuilder {
+    fun add(key: String, value: Boolean?) = apply {
         if (value != null)
             delegate.add(key, value)
-
-        return this
     }
 
-    fun add(key: String, value: UUID?): JsonBuilder {
+    fun add(key: String, value: UUID?) = apply {
         if (value != null)
             delegate.add(key, value.toString())
-
-        return this
     }
 
-    fun add(key: String, value: LocalDate?): JsonBuilder {
+    fun add(key: String, value: LocalDate?) = apply {
         if (value != null)
             delegate.add(key, value.toString())
-
-        return this
     }
 
-    fun add(key: String, value: LocalDateTime?, millis: Boolean = JsonConfig.DefaultDateTimeMillis): JsonBuilder {
+    fun add(key: String, value: LocalDateTime?, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = apply {
         if (value != null)
             delegate.add(key, value.toEpochSecond(ZoneOffset.UTC) * (if (millis) 1000 else 1))
-
-        return this
     }
 
-    fun add(key: String, value: String?): JsonBuilder {
+    fun add(key: String, value: String?) = apply {
         if (value != null && value.isNotBlank())
             delegate.add(key, value)
-
-        return this
     }
 
-    fun add(key: String, value: JsonBuilder?): JsonBuilder {
+    fun add(key: String, value: JsonBuilder?) = apply {
         if (value != null)
             delegate.add(key, value.build())
-
-        return this
     }
 
-    fun add(key: String, value: JsonObjectBuilder?): JsonBuilder {
+    fun add(key: String, value: JsonObjectBuilder?) = apply {
         if (value != null)
             delegate.add(key, value.build())
-
-        return this
     }
 
-    fun add(key: String, value: JsonObject?): JsonBuilder {
+    fun add(key: String, value: JsonObject?) = apply {
         if (value != null)
             delegate.add(key, value)
-
-        return this
     }
 
-    fun add(key: String, value: JsonModel?): JsonBuilder {
+    fun add(key: String, value: JsonModel?) = apply {
         if (value != null)
             add(key, value.toJSON())
 
-        return this
     }
 
-    fun add(key: String, value: JsonArrayBuilder?): JsonBuilder {
+    fun add(key: String, value: JsonArrayBuilder?) = apply {
         if (value != null) {
             val built = value.build()
             if (built.isNotEmpty())
                 delegate.add(key, built)
         }
-
-        return this
     }
 
-    fun add(key: String, value: JsonArray?): JsonBuilder {
+    fun add(key: String, value: JsonArray?) = apply {
         if (value != null && value.isNotEmpty())
             delegate.add(key, value)
-
-        return this
     }
 
-    fun add(key: String, value: Iterable<JsonModel>?): JsonBuilder {
+    fun add(key: String, value: Iterable<JsonModel>?) = apply {
         if (value != null)
             delegate.add(key, value.toJSON())
 

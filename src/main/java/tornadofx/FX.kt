@@ -52,10 +52,7 @@ open class Scope() {
         set(*setInScope)
     }
 
-    fun workspace(workspace: Workspace): Scope {
-        workspaceInstance = workspace
-        return this
-    }
+    fun workspace(workspace: Workspace) = apply { workspaceInstance = workspace }
 
     val hasActiveWorkspace: Boolean get() = workspaceInstance != null
 
@@ -386,11 +383,10 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
-fun <T : ScopedInstance> Scope.set(vararg value: T): Scope {
+fun <T : ScopedInstance> Scope.set(vararg value: T) = apply {
     FX.getComponents(this).apply {
         for (v in value) put(v.javaClass.kotlin, v)
     }
-    return this
 }
 
 fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {

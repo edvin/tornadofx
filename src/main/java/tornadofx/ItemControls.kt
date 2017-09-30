@@ -301,7 +301,7 @@ fun <S> TableView<S>.makeIndexColumn(name: String = "#", startNumber: Int = 1): 
     }
 }
 
-fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
+fun <S, T> TableColumn<S, T>.enableTextWrap() = apply {
     setCellFactory {
         TableCell<S, T>().apply {
             val text = Text()
@@ -311,7 +311,6 @@ fun <S, T> TableColumn<S, T>.enableTextWrap(): TableColumn<S, T> {
             text.textProperty().bind(stringBinding(itemProperty()) { get()?.toString() ?: "" })
         }
     }
-    return this
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -392,17 +391,19 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: (Tre
     return this.column(title, propName)
 }
 
-fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null) = apply {
     cellFactory = ComboBoxTableCell.forTableColumn(items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
-    return this
 }
 
-inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConverter<T>? = null, noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+inline fun <S, reified T> TableColumn<S, T?>.useTextField(
+        converter: StringConverter<T>? = null,
+        noinline afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null
+) = apply {
     when (T::class) {
         String::class -> {
             @Suppress("UNCHECKED_CAST")
@@ -420,17 +421,15 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(converter: StringConve
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
-    return this
 }
 
-fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null): TableColumn<S, T?> {
+fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit: ((TableColumn.CellEditEvent<S, T?>) -> Unit)? = null) = apply {
     cellFactory = ChoiceBoxTableCell.forTableColumn(items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
         afterCommit?.invoke(it)
     }
-    return this
 }
 
 fun <S> TableColumn<S, out Number?>.useProgressBar(scope: Scope, afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = apply {
@@ -449,14 +448,13 @@ fun <S> TableColumn<S, out Number?>.useProgressBar(scope: Scope, afterCommit: ((
     }
 }
 
-fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true): TableColumn<S, Boolean?> {
+fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true) = apply {
     setCellFactory { CheckBoxCell(editable) }
     if (editable) {
         Platform.runLater {
             tableView?.isEditable = true
         }
     }
-    return this
 }
 
 fun <S> ListView<S>.useCheckbox(converter: StringConverter<S>? = null, getter: (S) -> ObservableValue<Boolean>) {
@@ -627,12 +625,11 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
  * wrapped in a SimpleObjectProperty for convenience.
  */
 @Suppress("UNCHECKED_CAST")
-infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any>) -> Any?): TableColumn<S, *> {
+infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any>) -> Any?) = apply {
     this.cellValueFactory = Callback {
         val createdValue = cellValueFactory(it as TableColumn.CellDataFeatures<S, Any>)
         if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any> else SimpleObjectProperty(createdValue)
     }
-    return this
 }
 
 @JvmName(name = "columnForObservableProperty")

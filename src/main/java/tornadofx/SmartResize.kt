@@ -249,94 +249,58 @@ internal fun TableColumn<*, *>.resizeTypeProperty() =
 internal fun TreeTableColumn<*, *>.resizeTypeProperty() =
         properties.getOrPut(TreeTableSmartResize.ResizeTypeKey) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
 
-fun <S, T> TableColumn<S, T>.fixedWidth(width: Number): TableColumn<S, T> {
+fun <S, T> TableColumn<S, T>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
     resizeType = ResizeType.Fixed(width.toDouble())
-    return this
 }
 
-fun <S, T> TreeTableColumn<S, T>.fixedWidth(width: Number): TreeTableColumn<S, T> {
+fun <S, T> TreeTableColumn<S, T>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
     resizeType = ResizeType.Fixed(width.toDouble())
-    return this
 }
 
-fun <S, T> TableColumn<S, T>.minWidth(width: Number): TableColumn<S, T> {
-    minWidth = width.toDouble()
-    return this
-}
+fun <S, T> TableColumn<S, T>.minWidth(width: Number) = apply { minWidth = width.toDouble() }
+fun <S, T> TreeTableColumn<S, T>.minWidth(width: Number) = apply { minWidth = width.toDouble() }
 
-fun <S, T> TreeTableColumn<S, T>.minWidth(width: Number): TreeTableColumn<S, T> {
-    minWidth = width.toDouble()
-    return this
-}
+fun <S, T> TableColumn<S, T>.maxWidth(width: Number) = apply { maxWidth = width.toDouble() }
+fun <S, T> TreeTableColumn<S, T>.maxWidth(width: Number) = apply { maxWidth = width.toDouble() }
 
-fun <S, T> TableColumn<S, T>.maxWidth(width: Number): TableColumn<S, T> {
-    maxWidth = width.toDouble()
-    return this
-}
+fun <S, T> TableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = width.toDouble() }
+fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = width.toDouble() }
 
-fun <S, T> TreeTableColumn<S, T>.maxWidth(width: Number): TreeTableColumn<S, T> {
-    maxWidth = width.toDouble()
-    return this
-}
+fun <S, T> TableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
+fun <S, T> TreeTableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
 
-fun <S, T> TableColumn<S, T>.prefWidth(width: Number): TableColumn<S, T> {
-    prefWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number): TreeTableColumn<S, T> {
-    prefWidth = width.toDouble()
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.remainingWidth(): TableColumn<S, T> {
-    resizeType = ResizeType.Remaining()
-    return this
-}
-
-fun <S, T> TreeTableColumn<S, T>.remainingWidth(): TreeTableColumn<S, T> {
-    resizeType = ResizeType.Remaining()
-    return this
-}
-
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false): TableColumn<S, T> {
+fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
-    return this
 }
 
-fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false): TreeTableColumn<S, T> {
+fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
-    return this
 }
 
-fun <S, T> TableColumn<S, T>.pctWidth(pct: Number): TableColumn<S, T> {
+fun <S, T> TableColumn<S, T>.pctWidth(pct: Number) = apply {
     resizeType = ResizeType.Pct(pct.toDouble())
-    return this
 }
 
-fun <S, T> TreeTableColumn<S, T>.pctWidth(pct: Number): TreeTableColumn<S, T> {
+fun <S, T> TreeTableColumn<S, T>.pctWidth(pct: Number) = apply {
     resizeType = ResizeType.Pct(pct.toDouble())
-    return this
 }
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
-fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TableColumn<S, T> {
+fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
-    return this
 }
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
-fun <S, T> TreeTableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false): TreeTableColumn<S, T> {
+fun <S, T> TreeTableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
-    return this
 }
 
 internal var TornadoFXColumn<*>.resizeType: ResizeType

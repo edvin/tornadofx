@@ -21,39 +21,31 @@ fun Parent.line(startX: Number = 0.0, startY: Number = 0.0, endX: Number = 0.0, 
 fun Parent.path(vararg elements: PathElement, op: (Path.() -> Unit)? = null) =
         opcr(this, Path(*elements), op)
 
-fun Path.moveTo(x: Number = 0.0, y: Number = 0.0): Path {
-    elements.add(MoveTo(x.toDouble(), y.toDouble())); return this
+fun Path.moveTo(x: Number = 0.0, y: Number = 0.0) = apply {
+    elements.add(MoveTo(x.toDouble(), y.toDouble()))
 }
 
-fun Path.hlineTo(x: Number): Path {
-    elements.add(HLineTo(x.toDouble()))
-    return this
-}
+fun Path.hlineTo(x: Number) = apply { elements.add(HLineTo(x.toDouble())) }
 
-fun Path.vlineTo(y: Number): Path {
-    elements.add(VLineTo(y.toDouble()))
-    return this
-}
+fun Path.vlineTo(y: Number) = apply { elements.add(VLineTo(y.toDouble())) }
 
-fun Path.quadqurveTo(controlX: Number = 0.0, controlY: Number = 0.0, x: Number = 0.0, y: Number = 0.0, op: (QuadCurveTo.() -> Unit)? = null): Path {
+fun Path.quadqurveTo(controlX: Number = 0.0, controlY: Number = 0.0, x: Number = 0.0, y: Number = 0.0, op: (QuadCurveTo.() -> Unit)? = null) = apply {
     elements.add(QuadCurveTo(controlX.toDouble(), controlY.toDouble(), x.toDouble(), y.toDouble()).apply { op?.invoke(this) })
-    return this
 }
 
-fun Path.lineTo(x: Number = 0.0, y: Number = 0.0): Path {
+fun Path.lineTo(x: Number = 0.0, y: Number = 0.0) = apply {
     elements.add(LineTo(x.toDouble(), y.toDouble()))
-    return this
 }
 
-fun Path.arcTo(radiusX: Number = 0.0, radiusY: Number = 0.0, xAxisRotation: Number = 0.0, x: Number = 0.0, y: Number = 0.0, largeArcFlag: Boolean = false, sweepFlag: Boolean = false, op: (ArcTo.() -> Unit)? = null): Path {
+fun Path.arcTo(
+        radiusX: Number = 0.0, radiusY: Number = 0.0,
+        xAxisRotation: Number = 0.0, x: Number = 0.0,
+        y: Number = 0.0, largeArcFlag: Boolean = false,
+        sweepFlag: Boolean = false, op: (ArcTo.() -> Unit)? = null) = apply{
     elements.add(ArcTo(radiusX.toDouble(), radiusY.toDouble(), xAxisRotation.toDouble(), x.toDouble(), y.toDouble(), largeArcFlag, sweepFlag).apply { op?.invoke(this) })
-    return this
 }
 
-fun Path.closepath(): Path {
-    elements.add(ClosePath())
-    return this
-}
+fun Path.closepath() = apply { elements.add(ClosePath()) }
 
 fun Parent.polygon(vararg points: Number, op: (Polygon.() -> Unit)? = null) =
         opcr(this, Polygon(*points.map(Number::toDouble).toTypedArray().toDoubleArray()), op)

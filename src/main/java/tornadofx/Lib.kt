@@ -171,10 +171,9 @@ class SortedFilteredList<T>(
      *
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
-    fun bindTo(tableView: TableView<T>): SortedFilteredList<T> {
+    fun bindTo(tableView: TableView<T>): SortedFilteredList<T> = apply{
         tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
-        return this
     }
 
     /**
@@ -183,10 +182,7 @@ class SortedFilteredList<T>(
      * The `listView.items` is set to the underlying sortedItems.
      *
      */
-    fun bindTo(listView: ListView<T>): SortedFilteredList<T> {
-        listView.items = this
-        return this
-    }
+    fun bindTo(listView: ListView<T>): SortedFilteredList<T> = apply{ listView.items = this }
 
     /**
      * Update the filter predicate whenever the given observable changes. The filter expression
@@ -270,18 +266,16 @@ fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> =
     Thread(this).start()
 }
 
-infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> {
+infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
     Platform.runLater {
         setOnSucceeded { func(value) }
     }
-    return this
 }
 
-infix fun <T> Task<T>.fail(func: (Throwable) -> Unit): Task<T> {
+infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
     Platform.runLater {
         setOnFailed { func(exception) }
     }
-    return this
 }
 
 fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
