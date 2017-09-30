@@ -1,7 +1,7 @@
 ![TornadoFX Logo](graphics/tornado-fx-logo.png?raw=true "TornadoFX")
 # TornadoFX
 
-Lightweight JavaFX Framework for Kotlin
+JavaFX Framework for Kotlin
 
 [![Travis CI](https://travis-ci.org/edvin/tornadofx.svg)](https://travis-ci.org/edvin/tornadofx)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
