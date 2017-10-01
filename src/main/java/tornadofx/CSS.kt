@@ -1103,7 +1103,7 @@ open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
     private fun safeMath(value: Dimension<T>, op: (Double, Double) -> Double) = if (units == value.units)
         Dimension(op(this.value, value.value), units)
     else
-        throw IllegalArgumentException("Cannot combine $this and $value: Units do not match")
+        throw IllegalArgumentException("Cannot combine $this and $value: The units do not match")
 
     override fun equals(other: Any?) = other != null && other is Dimension<*> && value == other.value && units == other.units
     override fun hashCode() = value.hashCode() * 31 + units.hashCode()

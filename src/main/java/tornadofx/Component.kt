@@ -7,7 +7,6 @@ import com.sun.javafx.application.HostServicesDelegate
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
-import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventHandler
@@ -713,11 +712,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
     @JvmName("addView")
-    fun <T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null): Unit = plusAssign(find(type, scope, params).root)
-    inline fun <reified T: View> EventTarget.add(vararg params: Pair<*, Any?>): Unit = add(T::class,params.toMap())
+    fun <T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null){ plusAssign(find(type, scope, params).root) }
+    inline fun <reified T: View> EventTarget.add(vararg params: Pair<*, Any?>) = add(T::class,params.toMap())
 
     @JvmName("addFragmentByClass")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): Unit {
+    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null) {
         val fragment: T = find(type, scope, params)
         plusAssign(fragment.root)
         op?.invoke(fragment)
@@ -732,7 +731,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun EventTarget.add(child: Node) = plusAssign(child)
 
     @JvmName("plusView")
-    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>): Unit = plusAssign(find(type, scope).root)
+    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
     @JvmName("plusFragment")
     operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
