@@ -110,6 +110,7 @@ var ButtonBase.commandProperty: ObjectProperty<Command<*>>
 var ButtonBase.command: Command<*>
     get() = commandProperty.value
     set(value) {
+
         if (value is CommandWithParameter) {
             commandProperty.value = value.command
             commandParameter = value.parameter

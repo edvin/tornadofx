@@ -477,7 +477,7 @@ val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
 
 fun <T> ListProperty<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { value = if (it is ObservableList<*>) it as ObservableList<T> else observableArrayList(it) }
+        task { func() } success { value = (it as? ObservableList<T>) ?: observableArrayList(it) }
 
 fun <T> ObservableList<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { setAll(it) }
@@ -858,11 +858,8 @@ fun EventTarget.removeFromParent() {
     } else if (this is Tab) {
         tabPane?.tabs?.remove(this)
     } else if (this is Node) {
-        if (parent?.parent is ToolBar) {
-            (parent.parent as ToolBar).items.remove(this)
-        } else {
-            parent?.getChildList()?.remove(this)
-        }
+        (parent?.parent as? ToolBar)?.items?.remove(this)
+                ?: parent?.getChildList()?.remove(this)
     }
 }
 
@@ -1001,9 +998,9 @@ inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
-    if (parentType.java.isAssignableFrom(parent.javaClass)) return parent as T
+    (parent as? T)?.also { return it }
     val uicmp = parent.uiComponent<UIComponent>()
-    if (uicmp != null && parentType.java.isAssignableFrom(uicmp.javaClass)) return uicmp as T
+    (uicmp as? T)?.also { return it }
     return parent?.findParentOfType(parentType)
 }
 

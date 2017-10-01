@@ -7,7 +7,6 @@ import com.sun.javafx.application.HostServicesDelegate
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
-import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
 import javafx.event.EventHandler
@@ -311,7 +310,7 @@ abstract class Component : Configurable {
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
         subscribedEvents.getOrPut(T::class) { ArrayList() }.add(registration)
-        val fireNow = if (this is UIComponent) isDocked else true
+        val fireNow = (this as? UIComponent)?.isDocked ?: true
         if (fireNow) FX.eventbus.subscribe<T>(scope, registration)
         return registration
     }
@@ -953,7 +952,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     private fun undockFromParent(replacement: UIComponent) {
-        if (replacement.root.parent is Pane) (replacement.root.parent as Pane).children.remove(replacement.root)
+        (replacement.root.parent as? Pane)?.children?.remove(replacement.root)
     }
 
 }

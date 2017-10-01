@@ -82,7 +82,7 @@ interface SelectionHolder {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
         if (ruleSets.size > 1) {
-            Stylesheet.log.warning ( "Selection has ${ruleSets.size} selectors, but only the first will be used" )
+            Stylesheet.log.warning("Selection has ${ruleSets.size} selectors, but only the first will be used")
         }
         val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
         addSelection(selection)
@@ -478,10 +478,11 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
     override fun render() = imports.map { "@import url(css://${it.java.name})" }.joinToString(separator = "\n", postfix = "\n") +
             selections.joinToString(separator = "") { it.render() }
 
-    val base64URL: URL get() {
-        val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
-        return URL("css://$content:64")
-    }
+    val base64URL: URL
+        get() {
+            val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
+            return URL("css://$content:64")
+        }
 
     val externalForm: String get() = base64URL.toExternalForm()
 }
@@ -943,16 +944,12 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
         mixin.properties.forEach { k, v ->
-            if (properties[k]?.first is MultiValue<*>)
-                (properties[k]?.first as MultiValue<Any>).addAll(v.first as MultiValue<Any>)
-            else
-                properties[k] = v
+            (properties[k]?.first as? MultiValue<Any>)?.addAll(v.first as MultiValue<Any>)
+                    ?: run { properties[k] = v }
         }
         mixin.unsafeProperties.forEach { k, v ->
-            if (unsafeProperties[k] is MultiValue<*>)
-                (unsafeProperties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
-            else
-                unsafeProperties[k] = v
+            (unsafeProperties[k] as? MultiValue<Any>)?.addAll(v as MultiValue<Any>)
+                    ?: run { unsafeProperties[k] = v }
         }
         selections.putAll(mixin.selections)
     }
@@ -1208,6 +1205,7 @@ fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
  * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
  */
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+
 /**
  * Toggle the given type safe css class based on the given predicate observable value.
  * Whenever the observable value changes, the class is added or removed.

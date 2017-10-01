@@ -279,14 +279,12 @@ class FX {
                 }
             }
 
-            if (obsolete.root.parent is Pane) {
-                (obsolete.root.parent as Pane).children.apply {
-                    val index = indexOf(obsolete.root)
-                    remove(obsolete.root)
-                    add(index, replacement.root)
-                }
+            (obsolete.root.parent as? Pane)?.children?.apply {
+                val index = indexOf(obsolete.root)
+                remove(obsolete.root)
+                add(index, replacement.root)
                 log.info("Reloaded [Parent] $obsolete")
-            } else {
+            } ?: run {
                 if (obsolete.properties.containsKey("tornadofx.scene")) {
                     val scene = obsolete.properties["tornadofx.scene"] as Scene
                     replacement.properties["tornadofx.scene"] = scene
@@ -616,7 +614,7 @@ fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
     is Group -> children
     is HBox -> children
     is VBox -> children
-    is Control -> if (skin is SkinBase<*>) (skin as SkinBase<*>).children else getChildrenReflectively()
+    is Control -> (skin as? SkinBase<*>)?.children ?: getChildrenReflectively()
     is Parent -> getChildrenReflectively()
     else -> null
 }

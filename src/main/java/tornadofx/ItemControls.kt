@@ -123,7 +123,7 @@ fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Bool
 }
 
 fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: (ComboBox<T>.() -> Unit)? = null) = opcr(this, ComboBox<T>().apply {
-    if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
+    if (values != null) items = values as? ObservableList<T> ?: values.observable()
     if (property != null) bind(property)
 }, op)
 
@@ -140,7 +140,7 @@ fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, f
 }
 
 fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
-    if (values != null) items = if (values is ObservableList<*>) values as ObservableList<T> else values.observable()
+    if (values != null) items = (values as? ObservableList<T>) ?: values.observable()
     if (property != null) bind(property)
 }, op)
 
@@ -630,7 +630,7 @@ fun <S, T> TableView<S>.column(title: String, valueProvider: (TableColumn.CellDa
 infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFeatures<S, Any>) -> Any?): TableColumn<S, *> {
     this.cellValueFactory = Callback {
         val createdValue = cellValueFactory(it as TableColumn.CellDataFeatures<S, Any>)
-        if (createdValue is ObservableValue<*>) createdValue as ObservableValue<Any> else SimpleObjectProperty(createdValue)
+        (createdValue as? ObservableValue<Any>) ?: SimpleObjectProperty(createdValue)
     }
     return this
 }

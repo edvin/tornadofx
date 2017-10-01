@@ -170,8 +170,7 @@ fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Propert
         override fun get() = currentNested?.value
 
         override fun set(v: N?) {
-            if (currentNested is WritableValue<*>)
-                (currentNested as WritableValue<N>).value = v
+            (currentNested as? WritableValue<N>)?.value = v
             super.set(v)
         }
 
