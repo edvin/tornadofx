@@ -88,10 +88,7 @@ fun EventTarget.toolbar(vararg nodes: Node, op: (ToolBar.() -> Unit)? = null): T
 
 
 @Deprecated("No need to wrap ToolBar children in children{} anymore. Remove the wrapper and all builder items will still be added as before.", ReplaceWith("no children{} wrapper"), DeprecationLevel.WARNING)
-fun ToolBar.children(op: ToolBar.() -> Unit): ToolBar {
-    op(this)
-    return this
-}
+fun ToolBar.children(op: ToolBar.() -> Unit) = apply { op() }
 
 fun EventTarget.hbox(spacing: Number? = null, alignment: Pos? = null, op: (HBox.() -> Unit)? = null): HBox {
     val hbox = HBox()
@@ -146,14 +143,12 @@ fun <T : Node> BorderPane.top(topNode: T, op: (T.() -> Unit)? = null): T {
     return opcr(this, topNode, op)
 }
 
-inline fun <reified C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>) : BorderPane {
+inline fun <reified C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>) = apply {
     region.invoke(this).value = find<C>(scope).root
-    return this
 }
 
-fun <C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) : BorderPane {
+fun <C: UIComponent> BorderPane.setRegion(scope: Scope, region: KFunction1<BorderPane, ObjectProperty<Node>>, nodeType: KClass<C>) = apply {
     region.invoke(this).value = find(nodeType, scope).root
-    return this
 }
 
 @Deprecated("Use bottom = node {} instead")

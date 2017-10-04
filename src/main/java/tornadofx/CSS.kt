@@ -1195,21 +1195,19 @@ fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClas
 /**
  * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
  */
-fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
+fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
     cssClass.forEach {
         if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
     }
-    return this
 }
 
 /**
  * Remove the given given type safe css class(es) from this node. Pseudo classes are also supported.
  */
-fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
+fun <T : Node> T.removeClass(vararg cssClass: CssRule) = apply {
     cssClass.forEach {
         if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
     }
-    return this
 }
 
 /**
@@ -1273,10 +1271,7 @@ fun <T : Node> Node.select(selector: Selectable) = lookup(selector.toSelection()
 @Suppress("UNCHECKED_CAST")
 fun <T : Node> Node.selectAll(selector: Selectable) = (lookupAll(selector.toSelection().simpleRender()) as Set<T>).toList()
 
-fun <T : Node> T.setId(cssId: CssRule): T {
-    id = cssId.name
-    return this
-}
+fun <T : Node> T.setId(cssId: CssRule) = apply { id = cssId.name }
 
 // Containers
 

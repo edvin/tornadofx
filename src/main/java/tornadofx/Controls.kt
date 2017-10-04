@@ -204,10 +204,7 @@ fun Tab.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
 }
 
-fun Tab.select(): Tab {
-    tabPane.selectionModel.select(this)
-    return this
-}
+fun Tab.select() = apply { tabPane.selectionModel.select(this) }
 
 @Deprecated("No need to use the content{} wrapper anymore, just use a builder directly inside the Tab", ReplaceWith("no content{} wrapper"), DeprecationLevel.WARNING)
 fun Tab.content(op: Pane.() -> Unit): Node {

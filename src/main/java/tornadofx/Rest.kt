@@ -329,7 +329,7 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
         consume()
     }
 
-    override fun consume(): Rest.Response {
+    override fun consume(): Rest.Response = apply{
         try {
             if (bytesRead == null) {
                 bytes()
@@ -343,7 +343,6 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
             ignored.printStackTrace()
         }
         Platform.runLater { Rest.ongoingRequests.remove(request) }
-        return this
     }
 
     override val reason: String get() = request.connection.responseMessage
@@ -487,11 +486,10 @@ class HttpClientResponse(override val request: HttpClientRequest, val response: 
     }
 
 
-    override fun consume(): Rest.Response {
+    override fun consume() = apply {
         EntityUtils.consumeQuietly(response.entity)
         try {
             (response as? CloseableHttpResponse)?.close()
-            return this
         } finally {
             Platform.runLater { Rest.ongoingRequests.remove(request) }
         }

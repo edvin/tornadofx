@@ -226,27 +226,26 @@ fun MenuButton.checkmenuitem(name: String, keyCombination: KeyCombination? = nul
     return checkMenuItem
 }
 
-fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
+fun EventTarget.contextmenu(op: (ContextMenu.() -> Unit)? = null) = apply {
     val menu = if (this is Control && contextMenu != null) contextMenu else ContextMenu()
     op?.invoke(menu)
     if (this is Control) {
         contextMenu = menu
     } else if (this is Node) {
-        this.setOnContextMenuRequested { event ->
-            menu.show(this@contextmenu, event.screenX, event.screenY)
+        setOnContextMenuRequested { event ->
+            menu.show(this, event.screenX, event.screenY)
             event.consume()
         }
     }
-    return this
 }
 
 /**
  * Add a context menu to the target which will be created on demand.
  */
-fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarget {
+fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null) = apply {
     var currentMenu: ContextMenu? = null
     if (this is Node) {
-        this.setOnContextMenuRequested { event ->
+        setOnContextMenuRequested { event ->
             currentMenu?.hide()
 
             currentMenu = ContextMenu()
@@ -256,5 +255,4 @@ fun EventTarget.lazyContextmenu(op: (ContextMenu.() -> Unit)? = null): EventTarg
             event.consume()
         }
     }
-    return this
 }

@@ -69,43 +69,34 @@ fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boole
 fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 
-fun <T : Node> T.addClass(vararg className: String): T {
-    styleClass.addAll(className)
-    return this
-}
+fun <T : Node> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
 
-fun <T : Node> T.addPseudoClass(className: String): T {
+fun <T : Node> T.addPseudoClass(className: String) = apply {
     val pseudoClass = PseudoClass.getPseudoClass(className)
     pseudoClassStateChanged(pseudoClass, true)
-    return this
 }
 
-fun <T : Node> T.removePseudoClass(className: String): T {
+fun <T : Node> T.removePseudoClass(className: String) = apply {
     val pseudoClass = PseudoClass.getPseudoClass(className)
     pseudoClassStateChanged(pseudoClass, false)
-    return this
 }
 
-fun <T : Node> T.removeClass(className: String): T {
-    styleClass.remove(className); return this
-}
+fun <T : Node> T.removeClass(className: String) = apply { styleClass.remove(className) }
 
-fun <T : Node> T.toggleClass(className: String, predicate: Boolean): T {
+fun <T : Node> T.toggleClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
     } else {
         removeClass(className)
     }
-    return this
 }
 
-fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean): T {
+fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
         if (!hasPseudoClass(className)) addPseudoClass(className)
     } else {
         removePseudoClass(className)
     }
-    return this
 }
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
@@ -726,7 +717,7 @@ abstract class MarginableConstraints {
 }
 
 @Suppress("CAST_NEVER_SUCCEEDS", "UNCHECKED_CAST")
-inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable(): TableColumn<T, S> {
+inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() = apply {
     tableView?.isEditable = true
     isEditable = true
     when (S::class.javaPrimitiveType ?: S::class) {
@@ -751,7 +742,6 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable(): TableColumn<T,
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
-    return this
 }
 
 fun <T> TableView<T>.regainFocusAfterEdit() = apply {
@@ -1075,11 +1065,10 @@ fun <T: Node> T.managedWhen(expr: () -> ObservableValue<Boolean>): T = managedWh
  * This extension function will automatically bind to the managedProperty of the given node
  * and will make sure that it is managed, if the given [predicate] an observable boolean value equals true.
  *
- * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty)
  */
-fun <T: Node> T.managedWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.managedWhen(predicate: ObservableValue<Boolean>) = apply {
     managedProperty().cleanBind(predicate)
-    return this
 }
 
 /**
@@ -1088,9 +1077,8 @@ fun <T: Node> T.managedWhen(predicate: ObservableValue<Boolean>): T {
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
  */
-fun <T: Node> T.visibleWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.visibleWhen(predicate: ObservableValue<Boolean>) = apply {
   visibleProperty().cleanBind(predicate)
-    return this
 }
 
 /**
@@ -1111,10 +1099,9 @@ fun <T: Node> T.hiddenWhen(expr: () -> ObservableValue<Boolean>): T = hiddenWhen
  * This extension function will make sure to hide the given node,
  * if the given [predicate] an observable boolean value equals true.
  */
-fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.hiddenWhen(predicate: ObservableValue<Boolean>) = apply {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     visibleProperty().cleanBind(binding)
-    return this
 }
 
 /**
@@ -1131,9 +1118,8 @@ fun <T: Node> T.disableWhen(expr: () -> ObservableValue<Boolean>): T = disableWh
  *
  * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disableProperty
  */
-fun <T: Node> T.disableWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.disableWhen(predicate: ObservableValue<Boolean>) = apply {
     disableProperty().cleanBind(predicate)
-    return this
 }
 
 /**
@@ -1146,10 +1132,9 @@ fun <T: Node> T.enableWhen(expr: () -> ObservableValue<Boolean>): T = enableWhen
  * This extension function will make sure that the given node is enabled when ever,
  * the given [predicate] observable boolean value equals true.
  */
-fun <T: Node> T.enableWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.enableWhen(predicate: ObservableValue<Boolean>) = apply {
     val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
     disableProperty().cleanBind(binding)
-    return this
 }
 
 /**
@@ -1162,20 +1147,18 @@ fun <T: Node> T.removeWhen(expr: () -> ObservableValue<Boolean>): T = removeWhen
  * This extension function will make sure that the given node will only be visible in the scene graph,
  * if the given [predicate] observable boolean value equals true.
  */
-fun <T: Node> T.removeWhen(predicate: ObservableValue<Boolean>): T {
+fun <T: Node> T.removeWhen(predicate: ObservableValue<Boolean>) = apply {
     val remove = booleanBinding(predicate) { predicate.value.not() }
     visibleProperty().cleanBind(remove)
     managedProperty().cleanBind(remove)
-    return this
 }
 
 /**
  * This extension function will make sure that the given [onHover] function will always be calles
  * when ever the hoverProperty of the given node changes.
  */
-fun <T: Node> T.onHover(onHover: (Boolean) -> Unit): T {
+fun <T: Node> T.onHover(onHover: (Boolean) -> Unit) = apply {
     hoverProperty().onChange { onHover(isHover) }
-    return this
 }
 
 // -- MenuItem helpers
@@ -1236,21 +1219,19 @@ internal val Node.shortLongPressHandler: ShortLongPressHandler get() = propertie
     ShortLongPressHandler(this)
 } as ShortLongPressHandler
 
-fun <T: Node> T.shortpress(consume: Boolean = false, action: (InputEvent) -> Unit): T {
+fun <T: Node> T.shortpress(consume: Boolean = false, action: (InputEvent) -> Unit) = apply {
     shortLongPressHandler.apply {
         this.consume = consume
         this.shortAction = action
     }
-    return this
 }
 
-fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = false, action: (MouseEvent) -> Unit): T {
+fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = false, action: (MouseEvent) -> Unit) = apply {
     shortLongPressHandler.apply {
         this.consume = consume
         this.holdTimer.duration = threshold
         this.longAction = action
     }
-    return this
 }
 
 /**

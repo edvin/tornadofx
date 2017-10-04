@@ -362,25 +362,22 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the ListCellFragment changes.
  */
-fun <V : ItemViewModel<T>, T> V.bindTo(cellFragment: ListCellFragment<T>): V {
+fun <V : ItemViewModel<T>, T> V.bindTo(cellFragment: ListCellFragment<T>) = apply {
     itemProperty.bind(cellFragment.itemProperty)
-    return this
 }
 
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the TableCellFragment changes.
  */
-fun <V : ItemViewModel<T>, S, T> V.bindToItem(cellFragment: TableCellFragment<S, T>): V {
+fun <V : ItemViewModel<T>, S, T> V.bindToItem(cellFragment: TableCellFragment<S, T>) = apply {
     itemProperty.bind(cellFragment.itemProperty)
-    return this
 }
 
 /**
  * Rebind the rowItemProperty of the ViewModel when the itemProperty in the TableCellFragment changes.
  */
-fun <V : ItemViewModel<S>, S, T> V.bindToRowItem(cellFragment: TableCellFragment<S, T>): V {
+fun <V : ItemViewModel<S>, S, T> V.bindToRowItem(cellFragment: TableCellFragment<S, T>) = apply {
     itemProperty.bind(cellFragment.rowItemProperty)
-    return this
 }
 
 fun <V : ViewModel, T : ObservableValue<X>, X> V.dirtyStateFor(modelField: KProperty1<V, T>): BooleanBinding {
