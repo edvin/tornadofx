@@ -8,15 +8,15 @@ import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
 
 //Menu-related operator functions
-operator fun <T : MenuItem> Menu.plusAssign(menuItem: T): Unit {
+operator fun <T : MenuItem> Menu.plusAssign(menuItem: T) {
     this.items += menuItem
 }
 
-operator fun MenuBar.plusAssign(menu: Menu): Unit {
+operator fun MenuBar.plusAssign(menu: Menu) {
     this.menus += menu
 }
 
-operator fun <T : MenuItem> ContextMenu.plusAssign(menuItem: T): Unit {
+operator fun <T : MenuItem> ContextMenu.plusAssign(menuItem: T) {
     this.items += menuItem
 }
 
