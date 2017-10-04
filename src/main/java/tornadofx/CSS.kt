@@ -1041,7 +1041,9 @@ fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     fun setter(value: String) = when (this) {
         is Node -> style = value
         is MenuItem -> style = value
-        is Tooltip -> style = value
+        is PopupControl -> style = value
+        is Tab -> style = value
+        is TableColumnBase -> style = value
         else -> throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
     }
 
