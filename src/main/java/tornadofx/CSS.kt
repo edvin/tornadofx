@@ -906,12 +906,20 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
 }
 
 class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), SelectionHolder {
+
+    val log = Logger.getLogger("ErrorHandler")
     val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
 
     init {
         val currentScope = PropertyHolder.selectionScope.get()
         PropertyHolder.selectionScope.set(this)
-        op(this)
+        try {
+            op(this)
+        } catch (e: Exception) {
+            // the CSS rule caused an error, do not let the error propagate to
+            // avoid an infinite loop in the error handler
+            log.log(Level.WARNING, "CSS rule caused an error", e)
+        }
         PropertyHolder.selectionScope.set(currentScope)
     }
 
