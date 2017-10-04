@@ -387,9 +387,9 @@ fun Node.togglegroup(op: (ToggleGroup.() -> Unit)? = null): ToggleGroup {
  * button will be selected when the value is changed. Likewise, if the selected toggle is changed,
  * the property value will be updated if it is writeable.
  */
-fun <T> ToggleGroup.bind(property: ObservableValue<T>) = with(selectedValueProperty<T>()) {
-    if (property is Property<*>) bindBidirectional(property as Property<T>)
-    else bind(property)
+fun <T> ToggleGroup.bind(property: ObservableValue<T>) = selectedValueProperty<T>().apply {
+    (property as? Property<T>)?.also{ bindBidirectional(it) }
+            ?: bind(property)
 }
 
 /**

@@ -79,7 +79,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
             val view = find(primaryViewType, scope)
 
             @Suppress("UNCHECKED_CAST")
-            if (view is Workspace) FX.defaultWorkspace = primaryViewType as KClass<Workspace>
+            (view as? Workspace)?.let { FX.defaultWorkspace = primaryViewType as KClass<Workspace> }
 
             stage.apply {
                 view.muteDocking = true

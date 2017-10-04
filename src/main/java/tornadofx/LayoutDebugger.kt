@@ -246,7 +246,7 @@ class LayoutDebugger : Fragment() {
             }
             if (node is Shape) {
                 field("Fill") {
-                    colorpicker(if (node.fill is Color) node.fill as Color else null) {
+                    colorpicker(node.fill as? Color) {
                         valueProperty().onChange { newValue ->
                             node.fillProperty().unbind()
                             node.fill = newValue
@@ -311,7 +311,7 @@ class LayoutDebugger : Fragment() {
                     field("Background fill") {
                         vbox(3.0) {
                             node.background.fills.forEachIndexed { i, backgroundFill ->
-                                val initialColor: Color? = if (backgroundFill.fill is Color) backgroundFill.fill as Color else null
+                                val initialColor: Color? = backgroundFill.fill as? Color
                                 colorpicker(initialColor) {
                                     isEditable = true
                                     valueProperty().onChange { newColor ->
