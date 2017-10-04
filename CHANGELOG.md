@@ -4,7 +4,7 @@
 
 ### Fixed
 - Fixed #434 leaf nodes are now getting set as expected for `lazypopulate`.
-- Style builder can be applied to Tooltip (https://github.com/edvin/tornadofx/issues/476)
+- Style builder can be applied to PopupControl, Tab, TableColumnBase (https://github.com/edvin/tornadofx/issues/476)
 
 ### Changes
 - Refactoring: Moved all extension functions and properties targeting `TreeView`
