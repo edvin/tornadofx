@@ -9,9 +9,8 @@
 ### Changes
 - Refactoring: Moved all extension functions and properties targeting `TreeView`
   from `Nodes.kt` to `TreeView.kt`. 
-  
-  **Note:** This could break imports in your kt files, please reimport or use `no.tornadofx.*`!
-  
+- `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
+
 ### Additions
 - The default lefCheck for `lazypopulate` is now also recognizing an empty list as a leaf.
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)

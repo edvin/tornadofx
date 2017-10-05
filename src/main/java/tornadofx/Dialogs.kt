@@ -25,15 +25,19 @@ fun confirm(header: String, content: String = "", confirmButton: ButtonType = Bu
  * You can override the default buttons for the alert type and supply an optional
  * function that will run when a button is clicked. The function runs in the scope
  * of the alert dialog and is passed the button that was clicked.
+ *
+ * You can optionally pass an owner window parameter.
  */
 fun alert(type: Alert.AlertType,
           header: String,
           content: String? = null,
           vararg buttons: ButtonType,
+          owner: Window? = null,
           actionFn: (Alert.(ButtonType) -> Unit)? = null): Alert {
 
     val alert = Alert(type, content ?: "", *buttons)
     alert.headerText = header
+    owner?.also { alert.initOwner(it) }
     val buttonClicked = alert.showAndWait()
     buttonClicked.ifPresent { actionFn?.invoke(alert, buttonClicked.get()) }
     return alert
