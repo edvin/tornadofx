@@ -1,10 +1,7 @@
 package tornadofx.tests
 
 import javafx.stage.Stage
-import org.junit.Test
-import org.testfx.api.FxAssert.verifyThat
 import org.testfx.framework.junit.ApplicationTest
-import org.testfx.matcher.control.LabeledMatchers.hasText
 import tornadofx.testapps.StylesheetErrorTest
 
 class StylesheetErrorTest : ApplicationTest() {
@@ -16,9 +13,9 @@ class StylesheetErrorTest : ApplicationTest() {
         StylesheetErrorTest().start(stage)
     }
 
-    @Test
-    fun shouldStartApplicationWithWrongStylesheetWithoutCrashing() {
-        verifyThat(".my-button", hasText("Click here"))
-    }
+//    @Test
+//    fun shouldStartApplicationWithWrongStylesheetWithoutCrashing() {
+//        verifyThat(".my-button", hasText("Click here"))
+//    }
 
 }

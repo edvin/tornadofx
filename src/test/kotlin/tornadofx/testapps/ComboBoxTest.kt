@@ -45,7 +45,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
         fieldset {
             field("Default") {
                 combobox(selectedItem, itemsGlobal) {
-                    makeAutocompletable()
+//                    makeAutocompletable()
                 }
                 textfield(selectedItem)
                 useMaxSize = true
@@ -55,7 +55,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("With automatic popup width") {
                 combobox(selectedItem2, itemsGlobal) {
-                    makeAutocompletable(automaticPopupWidth = true)
+//                    makeAutocompletable(automaticPopupWidth = true)
                 }
                 textfield(selectedItem2)
                 useMaxSize = true
@@ -65,9 +65,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
              */
             field("With custom Filter") {
                 combobox(selectedItem3, itemsGlobal) {
-                    makeAutocompletable {
-                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
+//                    }
                 }
                 textfield(selectedItem3)
                 useMaxSize = true
@@ -78,7 +78,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
             field("Default with custom converter") {
                 combobox(selectedItemObject, itemsGlobalObject) {
                     converter = LocaleStringConverter()
-                    makeAutocompletable()
+//                    makeAutocompletable()
                 }
                 label(selectedItemObject)
                 useMaxSize = true
@@ -89,9 +89,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
             field("With custom converter and filter") {
                 combobox(selectedItemObject2, itemsGlobalObject) {
                     converter = LocaleStringConverter()
-                    makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+//                    }
                 }
                 label(selectedItemObject2)
                 useMaxSize = true
@@ -105,9 +105,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     cellFormat {
                         text = "Locale: " + converter.toString(it)
                     }
-                    makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+//                    }
                 }
                 label(selectedItemObject3)
             }
@@ -116,7 +116,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     val tmpValue = value
                     isEditable = true
                     value = tmpValue
-                    makeAutocompletable()
+//                    makeAutocompletable()
                 }
                 textfield(selectedItemE)
             }
@@ -128,9 +128,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     val tmpValue = value
                     isEditable = true
                     value = tmpValue
-                    makeAutocompletable {
-                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobal.filter { current -> converter.toString(current).startsWith(it, true) }
+//                    }
                 }
                 textfield(selectedItem2E)
             }
@@ -143,7 +143,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     isEditable = true
                     value = tmpValue
                     converter = LocaleStringConverter()
-                    makeAutocompletable()
+//                    makeAutocompletable()
                 }
                 label(selectedItemObjectE)
             }
@@ -156,9 +156,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     isEditable = true
                     value = tmpValue
                     converter = LocaleStringConverter()
-                    makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+//                    }
                 }
                 label(selectedItemObject2E)
             }
@@ -174,9 +174,9 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     cellFormat {
                         text = "Locale: " + converter.toString(it)
                     }
-                    makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
-                    }
+//                    makeAutocompletable {
+//                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+//                    }
                 }
                 label(selectedItemObject3E)
             }
