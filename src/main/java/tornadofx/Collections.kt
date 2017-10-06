@@ -16,6 +16,7 @@ import java.util.*
  * Moves the given **T** item to the specified index
  */
 fun <T> MutableList<T>.move(item: T, newIndex: Int) {
+    check(newIndex in 0 until size)
     val currentIndex = indexOf(item)
     if (currentIndex < 0) return
     removeAt(currentIndex)
@@ -26,12 +27,11 @@ fun <T> MutableList<T>.move(item: T, newIndex: Int) {
  * Moves the given item at the `oldIndex` to the `newIndex`
  */
 fun <T> MutableList<T>.moveAt(oldIndex: Int, newIndex: Int) {
+    check(oldIndex in 0 until size)
+    check(newIndex in 0 until size)
     val item = this[oldIndex]
     removeAt(oldIndex)
-    if (oldIndex > newIndex)
-        add(newIndex, item)
-    else
-        add(newIndex - 1, item)
+    add(newIndex, item)
 }
 
 /**
