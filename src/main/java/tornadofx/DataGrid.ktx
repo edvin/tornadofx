@@ -22,8 +22,10 @@ import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SelectionMode.MULTIPLE
 import javafx.scene.control.SelectionMode.SINGLE
+import javafx.scene.control.skin.VirtualContainerBase
 import javafx.scene.input.*
 import javafx.scene.layout.StackPane
+import java.awt.SystemColor.control
 
 fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
     val datagrid = DataGrid<T>()
@@ -500,7 +502,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
 }
 
 @Suppress("UNCHECKED_CAST")
-class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, BehaviorBase<DataGrid<T>>, DataGridRow<T>>(control, BehaviorBase(control, emptyList())) {
+class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, IndexedCell<T>() {
     private val gridViewItemsListener = ListChangeListener<T> {
         updateRowCount()
         skinnable.requestLayout()

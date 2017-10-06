@@ -63,11 +63,11 @@ class LayoutDebugger : Fragment() {
 
     private fun hookListeners() {
         nodeTree.selectionModel.selectedItemProperty().onChange {
-            if (it?.value != null) setSelectedNode(it!!.value.node)
+            if (it?.value != null) setSelectedNode(it.value.node)
         }
 
         // Position overlay over hovered node
-        hoveredNode.addListener { observableValue, oldNode, newNode ->
+        hoveredNode.addListener { _, oldNode, newNode ->
             if (oldNode != newNode && newNode != null)
                 positionOverlayOver(newNode)
             else if (newNode == null && oldNode != null)
@@ -91,7 +91,7 @@ class LayoutDebugger : Fragment() {
             hoveredNode.value = newHover
     }
 
-    val sceneExitedHandler = EventHandler<MouseEvent> { event ->
+    val sceneExitedHandler = EventHandler<MouseEvent> {
         hoveredNode.value = null
     }
 
@@ -331,7 +331,7 @@ class LayoutDebugger : Fragment() {
                     field("Background fill") {
                         colorpicker() {
                             isEditable = true
-                            valueProperty().addListener { observableValue, oldColor, newColor ->
+                            valueProperty().addListener { _, _, newColor ->
                                 node.background = Background(BackgroundFill(newColor, null, null))
                             }
                         }
@@ -340,22 +340,22 @@ class LayoutDebugger : Fragment() {
 
                 // Padding
                 field("Padding") {
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.paddingProperty(), InsetsConverter())
                         prefColumnCount = 10
                     }
                 }
 
                 field("Pref/min/max width") {
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.prefWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.minWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.maxWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }

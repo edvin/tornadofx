@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TableRowSkin
 import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
@@ -24,8 +23,6 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
-import javafx.scene.paint.Color
-import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -38,7 +35,7 @@ import kotlin.reflect.KProperty1
 /**
  * Create a spinner for an arbitrary type. This spinner requires you to configure a value factory, or it will throw an exception.
  */
-fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
+inline fun <reified T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, noinline op: (Spinner<T>.() -> Unit)? = null): Spinner<T> {
     val spinner = Spinner<T>()
     spinner.isEditable = editable
     opcr(this, spinner, op)
@@ -672,13 +669,13 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueP
 fun <S> TableView<S>.rowExpander(expandOnDoubleClick: Boolean = false, expandedNodeCallback: RowExpanderPane.(S) -> Unit): ExpanderColumn<S> {
     val expander = ExpanderColumn(expandedNodeCallback)
     addColumnInternal(expander, 0)
-    setRowFactory {
-        object : TableRow<S>() {
-            override fun createDefaultSkin(): Skin<*> {
-                return ExpandableTableRowSkin(this, expander)
-            }
-        }
-    }
+//    setRowFactory {
+//        object : TableRow<S>() {
+//            override fun createDefaultSkin(): Skin<*> {
+//                return ExpandableTableRowSkin(this, expander)
+//            }
+//        }
+//    }
     if (expandOnDoubleClick) onUserSelect(2) {
         expander.toggleExpanded(selectionModel.selectedIndex)
     }
@@ -780,40 +777,40 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
     }
 }
 
-class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
-    var tableRowPrefHeight = -1.0
-
-    init {
-        tableRow.itemProperty().addListener { observable, oldValue, newValue ->
-            if (oldValue != null) {
-                val expandedNode = this.expander.getExpandedNode(oldValue)
-                if (expandedNode != null) children.remove(expandedNode)
-            }
-        }
-    }
-
-    val expanded: Boolean get() {
-        val item = skinnable.item
-        return (item != null && expander.getCellData(skinnable.index))
-    }
-
-    private fun getContent(): Node? {
-        val node = expander.getOrCreateExpandedNode(tableRow)
-        if (node !in children) children.add(node)
-        return node
-    }
-
-    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
-        return if (expanded) tableRowPrefHeight + (getContent()?.prefHeight(width) ?: 0.0) else tableRowPrefHeight
-    }
-
-    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
-        super.layoutChildren(x, y, w, h)
-        if (expanded) getContent()?.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
-    }
-
-}
+//class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+//    var tableRowPrefHeight = -1.0
+//
+//    init {
+//        tableRow.itemProperty().addListener { observable, oldValue, newValue ->
+//            if (oldValue != null) {
+//                val expandedNode = this.expander.getExpandedNode(oldValue)
+//                if (expandedNode != null) children.remove(expandedNode)
+//            }
+//        }
+//    }
+//
+//    val expanded: Boolean get() {
+//        val item = skinnable.item
+//        return (item != null && expander.getCellData(skinnable.index))
+//    }
+//
+//    private fun getContent(): Node? {
+//        val node = expander.getOrCreateExpandedNode(tableRow)
+//        if (node !in children) children.add(node)
+//        return node
+//    }
+//
+//    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
+//        tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+//        return if (expanded) tableRowPrefHeight + (getContent()?.prefHeight(width) ?: 0.0) else tableRowPrefHeight
+//    }
+//
+//    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
+//        super.layoutChildren(x, y, w, h)
+//        if (expanded) getContent()?.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
+//    }
+//
+//}
 
 fun <T> TableView<T>.enableCellEditing() {
     selectionModel.isCellSelectionEnabled = true
@@ -880,11 +877,11 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
 
     fun enableDirtyTracking(dirtyDecorator: Boolean = true) {
         if (dirtyDecorator) {
-            tableView.setRowFactory {
-                object : TableRow<S>() {
-                    override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
-                }
-            }
+//            tableView.setRowFactory {
+//                object : TableRow<S>() {
+//                    override fun createDefaultSkin() = DirtyDecoratingTableRowSkin(this, this@TableViewEditModel)
+//                }
+//            }
         }
 
         fun addEventHandlerForColumn(column: TableColumn<S, *>) {
@@ -928,7 +925,7 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
         tableView.items?.addListener(listenForRemovals)
 
         // Clear items if item list changes and track removals in new list
-        tableView.itemsProperty().addListener { observableValue, oldValue, newValue ->
+        tableView.itemsProperty().addListener { _, oldValue, newValue ->
             items.clear()
             oldValue?.removeListener(listenForRemovals)
             newValue?.addListener(listenForRemovals)
@@ -1046,30 +1043,30 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 
 }
 
-@Suppress("UNCHECKED_CAST")
-class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: TableViewEditModel<S>) : TableRowSkin<S>(tableRow) {
-    private fun getPolygon(cell: TableCell<S, *>) =
-            cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.BLUE } } as Polygon
-
-    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
-        super.layoutChildren(x, y, w, h)
-
-        cells.forEach { cell ->
-            val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
-            val polygon = getPolygon(cell)
-            val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
-            if (isDirty) {
-                if (polygon !in children)
-                    children.add(polygon)
-
-                polygon.relocate(cell.layoutX, y)
-            } else {
-                children.remove(polygon)
-            }
-        }
-
-    }
-}
+//@Suppress("UNCHECKED_CAST")
+//class DirtyDecoratingTableRowSkin<T>(tableRow: TableRow<T>, val editModel: TableViewEditModel<T>) : TableRowSkin<T>(tableRow) {
+//    private fun getPolygon(cell: TableCell<T, *>) =
+//            cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.BLUE } } as Polygon
+//
+//    override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
+//        super.layoutChildren(x, y, w, h)
+//
+//        cells.forEach { cell ->
+//            val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
+//            val polygon = getPolygon(cell)
+//            val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)
+//            if (isDirty) {
+//                if (polygon !in children)
+//                    children.add(polygon)
+//
+//                polygon.relocate(cell.layoutX, y)
+//            } else {
+//                children.remove(polygon)
+//            }
+//        }
+//
+//    }
+//}
 
 /**
  * Write a value into the property representing this TableColumn, provided

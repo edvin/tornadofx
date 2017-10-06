@@ -1,6 +1,11 @@
+@file:Suppress("unused")
+
 package tornadofx
 
-import javafx.beans.property.*
+import javafx.beans.property.ObjectProperty
+import javafx.beans.property.Property
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
 import javafx.scene.control.TreeCell
 import javafx.scene.control.TreeItem
@@ -31,6 +36,7 @@ abstract class TreeCellFragment<T> : ItemFragment<T>() {
     open fun onEdit(op: () -> Unit) { editingProperty.onChange { if (it) op() } }
 }
 
+@Suppress("UNCHECKED_CAST")
 open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<T>?): TreeCell<T>() {
 
     private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)? get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
@@ -133,7 +139,7 @@ fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
 }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
-    selectionModel.selectedItemProperty().addListener { obs, old, new ->
+    selectionModel.selectedItemProperty().addListener { _, _, new ->
         if (new != null && new.value != null)
             action(new.value)
     }

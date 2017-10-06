@@ -90,6 +90,7 @@ interface SelectionHolder {
     }
 }
 
+@Suppress("unused")
 open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHolder, Rendered {
     companion object {
         val log: Logger by lazy { Logger.getLogger("CSS") }
@@ -1106,7 +1107,7 @@ open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
     operator fun minus(value: Dimension<T>) = safeMath(value, Double::minus)
     operator fun times(value: Number) = Dimension(this.value * value.toDouble(), units)
     operator fun div(value: Number) = Dimension(this.value / value.toDouble(), units)
-    operator fun mod(value: Number) = Dimension(this.value % value.toDouble(), units)
+    operator fun rem(value: Number) = Dimension(this.value % value.toDouble(), units)
 
     private fun safeMath(value: Dimension<T>, op: (Double, Double) -> Double) = if (units == value.units)
         Dimension(op(this.value, value.value), units)
@@ -1254,7 +1255,7 @@ class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
         fun checkAdd(newValue: CssRule?) {
             if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
         }
-        listener = ChangeListener { observableValue, oldValue, newValue ->
+        listener = ChangeListener { _, oldValue, newValue ->
             if (oldValue != null) node.removeClass(oldValue)
             checkAdd(newValue)
         }

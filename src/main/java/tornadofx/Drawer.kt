@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tornadofx
 
 import javafx.beans.property.*
@@ -183,6 +185,8 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                 top = buttonArea
                 buttonArea.orientation = Orientation.HORIZONTAL
             }
+            else -> {
+            }
         }
 
         buttonArea.items.forEach {
@@ -238,6 +242,9 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                         contentArea.maxHeight = fixedContentSize.toDouble()
                         contentArea.minHeight = fixedContentSize.toDouble()
                     }
+                    else -> {
+
+                    }
                 }
             } else {
                 contentArea.maxWidth = USE_COMPUTED_SIZE
@@ -248,6 +255,9 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                     when (dockingSide) {
                         Side.LEFT, Side.RIGHT -> contentArea.maxWidth = maxContentSize.toDouble()
                         Side.TOP, Side.BOTTOM -> contentArea.maxHeight = maxContentSize.toDouble()
+                        else -> {
+
+                        }
                     }
                 }
             }

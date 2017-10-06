@@ -1,6 +1,5 @@
 package tornadofx.osgi.impl
 
-import com.sun.javafx.application.PlatformImpl
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.control.Label
@@ -13,7 +12,6 @@ import org.osgi.framework.ServiceListener
 import org.osgi.util.tracker.ServiceTracker
 import tornadofx.*
 import tornadofx.osgi.ApplicationProvider
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
@@ -36,11 +34,13 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
         var realPrimaryStage: Stage? = null
 
         private val fxRuntimeInitialized: Boolean
-            get() {
-                val initializedField = PlatformImpl::class.java.getDeclaredField("initialized")
-                initializedField.isAccessible = true
-                val initialized = initializedField.get(null) as AtomicBoolean
-                return initialized.get()
+            get() = try {
+                // runLater fails if JavaFX Runtime is not initialized. This
+                // is a better test than using reflection.
+                Platform.runLater { }
+                true
+            } catch (notInitialized: IllegalStateException) {
+                false
             }
 
         private fun ensureFxRuntimeInitialized() {
@@ -102,7 +102,7 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
 
     fun startDelegate(provider: ApplicationProvider) {
         ensureFxRuntimeInitialized()
-        delegate = provider.application.java.newInstance()
+        delegate = provider.application.java.getDeclaredConstructor().newInstance()
         if (realPrimaryStage == null) {
             print("Waiting for Primary Stage to be initialized")
             while (realPrimaryStage == null) {

@@ -59,7 +59,8 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
         val textarea = TextArea().apply {
             prefRowCount = 20
             prefColumnCount = 50
-            text = stringFromError(error)
+            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+            text = stringFromError(error as java.lang.Throwable)
         }
 
         Alert(ERROR).apply {
@@ -125,7 +126,8 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
 
 }
 
-private fun stringFromError(e: Throwable): String {
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+private fun stringFromError(e: java.lang.Throwable): String {
     val out = ByteArrayOutputStream()
     val writer = PrintWriter(out)
     e.printStackTrace(writer)

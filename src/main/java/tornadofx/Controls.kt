@@ -131,7 +131,7 @@ val TabPane.savable: BooleanExpression
         updateState()
 
         selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
             updateState()
             oldTab?.contentProperty()?.removeListener(contentChangeListener)
             newTab?.contentProperty()?.addListener(contentChangeListener)
@@ -148,12 +148,12 @@ val TabPane.deletable: BooleanExpression
             deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
         }
 
-        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+        val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
 
         updateState()
 
         selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
             updateState()
             oldTab?.contentProperty()?.removeListener(contentChangeListener)
             newTab?.contentProperty()?.addListener(contentChangeListener)
@@ -170,12 +170,12 @@ val TabPane.refreshable: BooleanExpression
             refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
         }
 
-        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
+        val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
 
         updateState()
 
         selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
+        selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
             updateState()
             oldTab?.contentProperty()?.removeListener(contentChangeListener)
             newTab?.contentProperty()?.addListener(contentChangeListener)

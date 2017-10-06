@@ -22,7 +22,7 @@ internal class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandler
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
             val owningBundle = fxBundleContext.getBundle(url.query.substringBefore("&").substringBefore("?").toLong())!!
-            val stylesheet = owningBundle.loadClass(url.host).newInstance() as Stylesheet
+            val stylesheet = owningBundle.loadClass(url.host).getDeclaredConstructor().newInstance() as Stylesheet
             val rendered = stylesheet.render()
             if (FX.dumpStylesheets) println(rendered)
             return rendered.byteInputStream(StandardCharsets.UTF_8)

@@ -256,7 +256,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 }
             }
         }
-        tabContainer.selectionModel.selectedItemProperty().addListener { observableValue, ov, nv ->
+        tabContainer.selectionModel.selectedItemProperty().addListener { _, ov, nv ->
             val newCmp = nv?.content?.uiComponent<UIComponent>()
             val oldCmp = ov?.content?.uiComponent<UIComponent>()
             if (newCmp != null && newCmp != dockedComponent) {

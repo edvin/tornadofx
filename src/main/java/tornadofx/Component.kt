@@ -1,9 +1,8 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "unused")
 
 package tornadofx
 
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
-import com.sun.javafx.application.HostServicesDelegate
+import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -96,7 +95,7 @@ abstract class Component : Configurable {
     override val config: ConfigProperties by lazy { loadConfig() }
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
-    val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
+    val hostServices: HostServices get() = FX.application.hostServices
 
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
@@ -537,7 +536,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     private fun enableAccelerators() {
         root.scene?.addEventFilter(KEY_PRESSED, acceleratorListener)
-        root.sceneProperty().addListener { obs, old, new ->
+        root.sceneProperty().addListener { _, old, new ->
             old?.removeEventFilter(KEY_PRESSED, acceleratorListener)
             new?.addEventFilter(KEY_PRESSED, acceleratorListener)
         }
@@ -763,7 +762,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
         if (modalStage == null) {
-            require(getRootWrapper() is Parent) { "Only Parent Fragments can be opened in a Modal" }
             modalStage = Stage(stageStyle)
             // modalStage needs to be set before this code to make close() work in blocking mode
             with(modalStage!!) {

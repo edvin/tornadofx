@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tornadofx
 
 import javafx.application.Platform
@@ -198,7 +200,7 @@ class SortedFilteredList<T>(
      * </pre>
      */
     fun <Q> filterWhen(observable: ObservableValue<Q>, filterExpr: (Q, T) -> Boolean) {
-        observable.addListener { observableValue, oldValue, newValue ->
+        observable.addListener { _, _, newValue ->
             predicate = { filterExpr(newValue, it) }
         }
     }
@@ -306,12 +308,12 @@ fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
 }
 fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit) = onChangeTimes(1, op)
 
-fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
-fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new ?: false) } }
-fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0).toInt()) } }
-fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0L).toLong()) } }
-fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0f).toFloat()) } }
-fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0.0).toDouble()) } }
+fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { _, _, newValue -> op(newValue) } }
+fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { _, _, new -> op(new ?: false) } }
+fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0).toInt()) } }
+fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0L).toLong()) } }
+fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0f).toFloat()) } }
+fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0.0).toDouble()) } }
 fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
     addListener(ListChangeListener { op(it) })
 }

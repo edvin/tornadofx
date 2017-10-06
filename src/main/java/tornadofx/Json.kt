@@ -84,7 +84,7 @@ interface JsonModel {
     @Suppress("UNCHECKED_CAST")
     fun <T : JsonModel> copy(): T {
         try {
-            val clone = javaClass.newInstance() as T
+            val clone = javaClass.getDeclaredConstructor().newInstance() as T
             val builder = JsonBuilder()
             toJSON(builder)
             clone.updateModel(builder.build())
@@ -150,7 +150,7 @@ fun JsonObject.int(vararg key: String): Int? = firstNonNull(*key) { getInt(it) }
 fun JsonObject.getInt(vararg key: String): Int = int(*key)!!
 
 fun JsonObject.jsonObject(vararg key: String): JsonObject? = firstNonNull(*key) { getJsonObject(it) }
-inline fun <reified T : JsonModel> JsonObject.jsonModel(vararg key: String) = firstNonNull(*key) { T::class.java.newInstance().apply { updateModel(getJsonObject(it)) } }
+inline fun <reified T : JsonModel> JsonObject.jsonModel(vararg key: String) = firstNonNull(*key) { T::class.java.getDeclaredConstructor().newInstance().apply { updateModel(getJsonObject(it)) } }
 
 fun JsonObject.jsonArray(vararg key: String): JsonArray? = firstNonNull(*key) { getJsonArray(it) }
 
@@ -298,7 +298,7 @@ interface JsonModelAuto : JsonModel {
                     val list = pr as MutableList<Any>
                     list.clear()
                     json.getJsonArray(it.name)?.forEach { jsonObj ->
-                        val entry = it.generic().newInstance()
+                        val entry = it.generic().getDeclaredConstructor().newInstance()
                         if (entry is JsonModel) {
                             list.add(entry.apply { updateModel(jsonObj as JsonObject) })
                         }

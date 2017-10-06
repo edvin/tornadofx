@@ -2,11 +2,9 @@
 
 package tornadofx
 
-import com.sun.javafx.tk.Toolkit
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.*
-import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
@@ -264,12 +262,13 @@ class FX {
             if (obsolete is View) {
                 getComponents(obsolete.scope).remove(obsolete.javaClass.kotlin)
             }
-            if (obsolete is UIComponent) {
-                replacement = find(obsolete.javaClass.kotlin, obsolete.scope)
+            if (obsolete is ScopedInstance) {
+                @Suppress("UNCHECKED_CAST")
+                replacement = find(obsolete.javaClass.kotlin as KClass<UIComponent>, obsolete.scope)
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.any { it.parameterCount == 0 }
                 if (noArgsConstructor) {
-                    replacement = obsolete.javaClass.newInstance()
+                    replacement = obsolete.javaClass.getDeclaredConstructor().newInstance()
                 } else {
                     log.warning("Unable to reload $obsolete because it's missing a no args constructor")
                     return
@@ -411,7 +410,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         if (!components.containsKey(type as KClass<out ScopedInstance>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
-                    val cmp = type.java.newInstance()
+                    val cmp = type.java.getDeclaredConstructor().newInstance()
                     (cmp as? UIComponent)?.init()
                     // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != useScope) {
@@ -426,7 +425,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         return cmp
     }
 
-    val cmp = type.java.newInstance()
+    val cmp = type.java.getDeclaredConstructor().newInstance()
     cmp.paramsProperty.value = stringKeyedMap
     (cmp as? Fragment)?.init()
 
@@ -551,8 +550,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             if (node is TitledPane)
                 addChild(node)
         }
-        is DataGrid<*> -> {
-        }
+        // TODO: Reenable when DataGrid is Java 9 compatible
+//        is DataGrid<*> -> {
+//        }
         is Field -> {
             inputContainer.add(node)
         }
@@ -678,24 +678,25 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
-        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
-    }
-
-    val changeListener = object : ChangeListener<T> {
-        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
-            if (condition(value)) {
-                runLater {
-                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
-                    removeListener(this)
-                }
-            }
-        }
-    }
-
-    changeListener.changed(this, value, value)
-    addListener(changeListener)
-    Toolkit.getToolkit().enterNestedEventLoop(this)
+    TODO("We need to figure out how to get at Toolkit in JDK9")
+//    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
+//        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
+//    }
+//
+//    val changeListener = object : ChangeListener<T> {
+//        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
+//            if (condition(value)) {
+//                runLater {
+//                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
+//                    removeListener(this)
+//                }
+//            }
+//        }
+//    }
+//
+//    changeListener.changed(this, value, value)
+//    addListener(changeListener)
+//    Toolkit.getToolkit().enterNestedEventLoop(this)
 }
 
 /**

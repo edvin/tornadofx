@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "CAST_NEVER_SUCCEEDS")
+@file:Suppress("UNCHECKED_CAST", "CAST_NEVER_SUCCEEDS", "unused")
 
 package tornadofx
 
@@ -90,21 +90,19 @@ inline fun <reified S : T, reified T : Any> bindStringProperty(stringProperty: S
         val effectiveConverter = if (format != null) null else converter ?: getDefaultConverter<S>()
         if (effectiveReadonly) {
             val toStringConverter = Callable {
-                if (converter != null)
-                    converter.toString(property.value)
-                else if (format != null)
-                    format.format(property.value)
-                else property.value?.toString()
+                when {
+                    converter != null -> converter.toString(property.value)
+                    format != null -> format.format(property.value)
+                    else -> property.value?.toString()
+                }
             }
             val stringBinding = Bindings.createStringBinding(toStringConverter, property)
             stringProperty.bind(stringBinding)
         } else {
-            if (effectiveConverter != null) {
-                stringProperty.bindBidirectional(property as Property<S>, effectiveConverter as StringConverter<S>)
-            } else if (format != null) {
-                stringProperty.bindBidirectional(property as Property<S>, format)
-            } else {
-                throw IllegalArgumentException("Cannot convert from ${S::class} to String without an explicit converter or format")
+            when {
+                effectiveConverter != null -> stringProperty.bindBidirectional(property as Property<S>, effectiveConverter as StringConverter<S>)
+                format != null -> stringProperty.bindBidirectional(property as Property<S>, format)
+                else -> throw IllegalArgumentException("Cannot convert from ${S::class} to String without an explicit converter or format")
             }
         }
     }
@@ -185,7 +183,7 @@ fun <T> ObservableValue<T>.selectBoolean(nested: (T) -> BooleanExpression): Bool
     var currentNested = extractNested()
 
     return object : SimpleBooleanProperty() {
-        val changeListener = ChangeListener<Boolean> { observableValue, oldValue, newValue ->
+        val changeListener = ChangeListener<Boolean> { _, _, _ ->
             currentNested = extractNested()
             fireValueChangedEvent()
         }

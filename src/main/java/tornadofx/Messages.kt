@@ -28,7 +28,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                 val bundleClass = loader.loadClass(bundleName) as Class<out ResourceBundle>
 
                 // If the class isn't a ResourceBundle subclass, throw a ClassCastException.
-                if (ResourceBundle::class.java.isAssignableFrom(bundleClass)) bundleClass.newInstance()
+                if (ResourceBundle::class.java.isAssignableFrom(bundleClass)) bundleClass.getDeclaredConstructor().newInstance()
                 else throw ClassCastException(bundleClass.name + " cannot be cast to ResourceBundle")
 
             } catch (e: ClassNotFoundException) {null}

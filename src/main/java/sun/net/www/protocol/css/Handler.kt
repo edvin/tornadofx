@@ -1,7 +1,6 @@
 package sun.net.www.protocol.css
 
-import tornadofx.FX
-import tornadofx.Stylesheet
+import tornadofx.*
 import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
@@ -17,7 +16,7 @@ open class Handler : URLStreamHandler() {
         override fun connect() { }
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
-            val stylesheet = Class.forName(url.host).newInstance() as Stylesheet
+            val stylesheet = Class.forName(url.host).getDeclaredConstructor().newInstance() as Stylesheet
             val rendered = stylesheet.render()
             if (FX.dumpStylesheets) println(rendered)
             return rendered.byteInputStream(StandardCharsets.UTF_8)

@@ -1,8 +1,7 @@
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "unused")
 
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Platform
@@ -23,6 +22,7 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.cell.CheckBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
+import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -362,7 +362,7 @@ val <T> ComboBox<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
-        selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
+        selectionModel.selectedItemProperty().addListener({ _, _, newValue -> func(newValue) })
 
 
 fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
@@ -391,7 +391,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 }
 
 fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
-    cellFactory = Callback { column: TreeTableColumn<S, T> ->
+    cellFactory = Callback {
         object : TreeTableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
@@ -960,10 +960,6 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
         return false
     }
 }
-
-@Deprecated("This will go away in the future. Use the version with centerOnScreen parameter", ReplaceWith("replaceWith(replacement, transition, sizeToScene, false)"))
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean, onTransit: (() -> Unit)? = null) =
-        replaceWith(replacement, transition, sizeToScene, false)
 
 fun Node.hide() {
     isVisible = false
