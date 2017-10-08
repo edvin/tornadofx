@@ -5,6 +5,7 @@ package tornadofx
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.beans.property.*
+import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
@@ -678,25 +679,20 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    TODO("We need to figure out how to get at Toolkit in JDK9")
-//    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
-//        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
-//    }
-//
-//    val changeListener = object : ChangeListener<T> {
-//        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
-//            if (condition(value)) {
-//                runLater {
-//                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
-//                    removeListener(this)
-//                }
-//            }
-//        }
-//    }
-//
-//    changeListener.changed(this, value, value)
-//    addListener(changeListener)
-//    Toolkit.getToolkit().enterNestedEventLoop(this)
+    val changeListener = object : ChangeListener<T> {
+        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
+            if (condition(value)) {
+                runLater {
+                    Platform.exitNestedEventLoop(this@awaitUntil, null)
+                    removeListener(this)
+                }
+            }
+        }
+    }
+
+    changeListener.changed(this, value, value)
+    addListener(changeListener)
+    Platform.enterNestedEventLoop(this)
 }
 
 /**
