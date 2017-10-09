@@ -23,7 +23,9 @@ class CommandTest : View("Command test") {
                     customitem {
                         vbox {
                             text("I'm custom!")
-                            button("I do nothing")
+                        }
+                        action {
+                            println("Custom item clicked!")
                         }
                     }
                 }
