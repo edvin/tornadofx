@@ -556,6 +556,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is Field -> {
             inputContainer.add(node)
         }
+        is CustomMenuItem -> {
+            content = node
+        }
         else -> getChildList()?.apply {
             if (!contains(node)) {
                 if (index != null && index < size)

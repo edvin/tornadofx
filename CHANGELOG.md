@@ -12,6 +12,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- Added `customitem` menu item builder (https://github.com/edvin/tornadofx/pull/488)
 - The default lefCheck for `lazypopulate` is now also recognizing an empty list as a leaf.
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)
 - MenuButton.item builder

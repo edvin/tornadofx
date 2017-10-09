@@ -20,6 +20,12 @@ class CommandTest : View("Command test") {
             menubar {
                 menu("Talk") {
                     item("Say hello").command = ctrl.helloCommand
+                    customitem {
+                        vbox {
+                            text("I'm custom!")
+                            button("I do nothing")
+                        }
+                    }
                 }
             }
         }
