@@ -154,6 +154,23 @@ fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Nod
     return menuItem
 }
 
+/**
+ * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action.
+ * Notice that this differs from the deprecated `menuitem` builder where the op
+ * is configured as the `setOnAction` directly.
+ * The `CustomMenuItem` is created with the `graphic` (`Node`) parameter if it is non-null.  Otherwise it is created with
+ * the `name` parameter as a `Label`.
+ */
+fun Menu.customitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (CustomMenuItem.() -> Unit)? = null): CustomMenuItem {
+    val internalItem = graphic ?: Label(name)
+    val menuItem = CustomMenuItem(internalItem)
+    keyCombination?.apply { menuItem.accelerator = this }
+    graphic?.apply { menuItem.graphic = graphic }
+    op?.invoke(menuItem)
+    this += menuItem
+    return menuItem
+}
+
 fun MenuButton.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: (MenuItem.() -> Unit)? = null): MenuItem {
     val menuItem = MenuItem(name, graphic)
     keyCombination?.apply { menuItem.accelerator = this }
