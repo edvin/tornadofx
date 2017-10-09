@@ -129,8 +129,8 @@ fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = n
 
 fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
     cellFactory = Callback {
-        it?.properties?.put("tornadofx.cellFormat", formatter)
-        SmartListCell(scope, it)
+        //ListView may be defined or not, so properties are set the safe way
+        SmartListCell(scope, it, mapOf<Any,Any>("tornadofx.cellFormat" to formatter))
     }
     if (formatButtonCell) {
         Platform.runLater {
