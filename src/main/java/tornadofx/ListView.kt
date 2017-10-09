@@ -5,6 +5,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
+import javafx.collections.ObservableMap
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
@@ -86,15 +87,22 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>?) : ListCell<T>() {
-    private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = listView.properties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
-    private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = listView.properties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
-    private val cellCache: ListCellCache<T>? get() = listView.properties["tornadofx.cellCache"] as ListCellCache<T>?
+open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>?, properties: Map<Any,Any>? = null) : ListCell<T>() {
+    /**
+     * A convenience constructor allowing to omit `listView` completely, if needed.
+     */
+    constructor(scope: Scope = DefaultScope, properties : Map<Any,Any>? = null) : this(scope, null, properties)
+
+    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
+    private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
+    private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = smartProperties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
+    private val cellCache: ListCellCache<T>? get() = smartProperties["tornadofx.cellCache"] as ListCellCache<T>?
     private var cellFragment: ListCellFragment<T>? = null
     private var fresh = true
 
     init {
         if (listView != null) {
+            properties?.let { listView.properties?.putAll(it) }
             listView.properties["tornadofx.cellFormatCapable"] = true
             listView.properties["tornadofx.cellCacheCapable"] = true
             listView.properties["tornadofx.editCapable"] = true
@@ -136,7 +144,7 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
                 FX.ignoreParentBuilder = No
             }
             if (fresh) {
-                val cellFragmentType = listView.properties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
+                val cellFragmentType = smartProperties["tornadofx.cellFragment"] as KClass<ListCellFragment<T>>?
                 cellFragment = if (cellFragmentType != null) find(cellFragmentType, scope) else null
                 fresh = false
             }
