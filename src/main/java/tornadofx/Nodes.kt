@@ -44,6 +44,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.full.safeCast
 
 fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contains(className)
 fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
@@ -988,9 +989,9 @@ inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
-    (parent as? T)?.also { return it }
+    parentType.safeCast(parent)?.also { return it }
     val uicmp = parent.uiComponent<UIComponent>()
-    (uicmp as? T)?.also { return it }
+    parentType.safeCast(uicmp)?.also { return it }
     return parent?.findParentOfType(parentType)
 }
 
