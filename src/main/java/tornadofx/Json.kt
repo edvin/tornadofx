@@ -241,9 +241,27 @@ class JsonBuilder {
             delegate.add(key, value)
     }
 
-    fun add(key: String, value: Iterable<JsonModel>?) = apply {
-        if (value != null)
-            delegate.add(key, value.toJSON())
+    fun add(key: String, value: Iterable<Any>?) = apply {
+        if (value != null) {
+            val builder = Json.createArrayBuilder()
+            value.forEach {
+                when (it) {
+                    is Int -> builder.add(it)
+                    is String -> builder.add(it)
+                    is Float -> builder.add(it.toDouble())
+                    is Long -> builder.add(it)
+                    is BigDecimal -> builder.add(it)
+                    is Boolean -> builder.add(it)
+                    is JsonModel -> builder.add(it.toJSON())
+                    is JsonArray -> builder.add(it)
+                    is JsonArrayBuilder -> builder.add(it)
+                    is JsonObject -> builder.add(it)
+                    is JsonObjectBuilder -> builder.add(it)
+                    is JsonValue -> builder.add(it)
+                }
+            }
+            delegate.add(key, builder.build())
+        }
 
         return this
     }
