@@ -533,6 +533,10 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
     inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.observable(property) }
 
+    @JvmName("bindMutableNullableField")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
+            = bind(autocommit, forceObjectProperty) { item?.observable(property) as Property<N> } //this may look quirky, but is de facto safe; a Java property is nullable anyway
+
     @JvmName("bindProperty")
     inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
