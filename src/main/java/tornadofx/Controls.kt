@@ -118,6 +118,8 @@ fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     predicate.onChange { updateState() }
 }
 
+fun Tab.close() = removeFromParent()
+
 val TabPane.savable: BooleanExpression
     get() {
         val savable = SimpleBooleanProperty(true)
