@@ -12,6 +12,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- Inline type safe stylesheet on Parent using the `stylesheet` builder
 - Tab.close()
 - JsonBuilder.add() supports Iterable<Any> (Turned into JsonArray)
 - Added `customitem` menu item builder (https://github.com/edvin/tornadofx/pull/488)

@@ -7,6 +7,7 @@ import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
@@ -1342,3 +1343,8 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
 }
 
 class BorderImageSlice(val widths: CssBox<Dimension<Dimension.LinearUnits>>, val filled: Boolean = false)
+
+fun Parent.stylesheet(op: Stylesheet.() -> Unit) {
+    val stylesheet = Stylesheet().apply(op)
+    stylesheets += stylesheet.base64URL.toExternalForm()
+}
