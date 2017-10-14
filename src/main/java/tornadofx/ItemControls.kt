@@ -43,7 +43,7 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     spinner.isEditable = editable
     opcr(this, spinner, op)
     if (property != null) {
-        requireNotNull(spinner.valueFactory){
+        requireNotNull(spinner.valueFactory) {
             "You must configure the value factory or use the Number based spinner builder " +
                     "which configures a default value factory along with min, max and initialValue!"
         }
@@ -53,8 +53,8 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
 
     if (enableScroll) {
         spinner.setOnScroll { event ->
-            if(event.deltaY > 0) spinner.increment()
-            if(event.deltaY < 0) spinner.decrement()
+            if (event.deltaY > 0) spinner.increment()
+            if (event.deltaY < 0) spinner.decrement()
         }
     }
 
@@ -78,8 +78,8 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
 
     if (enableScroll) {
         spinner.setOnScroll { event ->
-            if(event.deltaY > 0) spinner.increment()
-            if(event.deltaY < 0) spinner.decrement()
+            if (event.deltaY > 0) spinner.increment()
+            if (event.deltaY < 0) spinner.decrement()
         }
     }
 
@@ -96,8 +96,8 @@ fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false,
 
     if (enableScroll) {
         spinner.setOnScroll { event ->
-            if(event.deltaY > 0) spinner.increment()
-            if(event.deltaY < 0) spinner.decrement()
+            if (event.deltaY > 0) spinner.increment()
+            if (event.deltaY < 0) spinner.decrement()
         }
     }
 
@@ -114,8 +114,8 @@ fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Bool
 
     if (enableScroll) {
         spinner.setOnScroll { event ->
-            if(event.deltaY > 0) spinner.increment()
-            if(event.deltaY < 0) spinner.decrement()
+            if (event.deltaY > 0) spinner.increment()
+            if (event.deltaY < 0) spinner.decrement()
         }
     }
 
@@ -130,13 +130,9 @@ fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = n
 fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
     cellFactory = Callback {
         //ListView may be defined or not, so properties are set the safe way
-        SmartListCell(scope, it, mapOf<Any,Any>("tornadofx.cellFormat" to formatter))
+        SmartListCell(scope, it, mapOf<Any, Any>("tornadofx.cellFormat" to formatter))
     }
-    if (formatButtonCell) {
-        Platform.runLater {
-            buttonCell = cellFactory.call(null)
-        }
-    }
+    if (formatButtonCell) buttonCell = cellFactory.call(null)
 }
 
 fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: (ChoiceBox<T>.() -> Unit)? = null) = opcr(this, ChoiceBox<T>().apply {
@@ -207,7 +203,7 @@ fun <T : Any> TreeView<T>.lazyPopulate(
 ) {
     fun createItem(value: T) = LazyTreeItem(value, leafCheck, itemProcessor, childFactory).apply { itemProcessor?.invoke(this) }
 
-    requireNotNull(root){"You must set a root TreeItem before calling lazyPopulate"}
+    requireNotNull(root) { "You must set a root TreeItem before calling lazyPopulate" }
 
     task {
         childFactory.invoke(root)
@@ -367,7 +363,8 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: (TableCo
 /**
  * Create a column using the getter of the attribute you want shown.
  */
-@JvmName("pojoColumn") fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
+@JvmName("pojoColumn")
+fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
     return this.column(title, propName)
 }
@@ -386,7 +383,8 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: (Tre
 /**
  * Create a column using the getter of the attribute you want shown.
  */
-@JvmName("pojoColumn") fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
+@JvmName("pojoColumn")
+fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
     val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
     return this.column(title, propName)
 }
@@ -411,7 +409,7 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(
             stringColumn.cellFactory = TextFieldTableCell.forTableColumn()
         }
         else -> {
-            requireNotNull(converter){"You must supply a converter for non String columns"}
+            requireNotNull(converter) { "You must supply a converter for non String columns" }
             cellFactory = TextFieldTableCell.forTableColumn(converter)
         }
     }
@@ -695,9 +693,11 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
     }
 
     fun expandedProperty() = expanderColumn.getCellObservableValue(tableRow.index) as SimpleBooleanProperty
-    var expanded: Boolean get() = expandedProperty().value; set(value) {
-        expandedProperty().value = value
-    }
+    var expanded: Boolean
+        get() = expandedProperty().value;
+        set(value) {
+            expandedProperty().value = value
+        }
 
     override fun getUserAgentStylesheet() = RowExpanderPane::class.java.getResource("rowexpanderpane.css").toExternalForm()
 }
@@ -792,10 +792,11 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
         }
     }
 
-    val expanded: Boolean get() {
-        val item = skinnable.item
-        return (item != null && expander.getCellData(skinnable.index))
-    }
+    val expanded: Boolean
+        get() {
+            val item = skinnable.item
+            return (item != null && expander.getCellData(skinnable.index))
+        }
 
     private fun getContent(): Node? {
         val node = expander.getOrCreateExpandedNode(tableRow)
@@ -857,24 +858,27 @@ fun <T> TableView<T>.selectOnDrag() {
 fun <S> TableView<S>.enableDirtyTracking() = editModel.enableDirtyTracking()
 
 @Suppress("UNCHECKED_CAST")
-val <S> TableView<S>.editModel: TableViewEditModel<S> get() = properties.getOrPut("tornadofx.editModel") { TableViewEditModel(this) } as TableViewEditModel<S>
+val <S> TableView<S>.editModel: TableViewEditModel<S>
+    get() = properties.getOrPut("tornadofx.editModel") { TableViewEditModel(this) } as TableViewEditModel<S>
 
 class TableViewEditModel<S>(val tableView: TableView<S>) {
     val items = FXCollections.observableHashMap<S, TableColumnDirtyState<S>>()
 
     private var _selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?>? = null
-    val selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?> get() {
-        if (_selectedItemDirtyState == null)
-            _selectedItemDirtyState = objectBinding(tableView.selectionModel.selectedItemProperty()) { getDirtyState(value) }
-        return _selectedItemDirtyState!!
-    }
+    val selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?>
+        get() {
+            if (_selectedItemDirtyState == null)
+                _selectedItemDirtyState = objectBinding(tableView.selectionModel.selectedItemProperty()) { getDirtyState(value) }
+            return _selectedItemDirtyState!!
+        }
 
     private var _selectedItemDirty: BooleanBinding? = null
-    val selectedItemDirty: BooleanBinding get() {
-        if (_selectedItemDirty == null)
-            _selectedItemDirty = booleanBinding(selectedItemDirtyState) { value?.dirty?.value ?: false }
-        return _selectedItemDirty!!
-    }
+    val selectedItemDirty: BooleanBinding
+        get() {
+            if (_selectedItemDirty == null)
+                _selectedItemDirty = booleanBinding(selectedItemDirtyState) { value?.dirty?.value ?: false }
+            return _selectedItemDirty!!
+        }
 
     fun getDirtyState(item: S): TableColumnDirtyState<S> = items.getOrPut(item) { TableColumnDirtyState(this, item) }
 
@@ -977,18 +981,20 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 
     // Dirty columns and initial value
     private var _dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?>? = null
-    val dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?> get() {
-        if (_dirtyColumns == null)
-            _dirtyColumns = FXCollections.observableHashMap<TableColumn<S, Any?>, Any?>()
-        return _dirtyColumns!!
-    }
+    val dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?>
+        get() {
+            if (_dirtyColumns == null)
+                _dirtyColumns = FXCollections.observableHashMap<TableColumn<S, Any?>, Any?>()
+            return _dirtyColumns!!
+        }
 
     private var _dirty: BooleanBinding? = null
-    val dirty: BooleanBinding get() {
-        if (_dirty == null)
-            _dirty = booleanBinding(dirtyColumns) { isNotEmpty() }
-        return _dirty!!
-    }
+    val dirty: BooleanBinding
+        get() {
+            if (_dirty == null)
+                _dirty = booleanBinding(dirtyColumns) { isNotEmpty() }
+            return _dirty!!
+        }
     val isDirty: Boolean get() = dirty.value
 
     fun getDirtyColumnProperty(column: TableColumn<*, *>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
