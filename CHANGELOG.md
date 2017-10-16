@@ -12,6 +12,8 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- Node.`runAsyncWithOverlay`
+- `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability
 - Inline type safe stylesheet on Parent using the `stylesheet` builder
 - Tab.close()
 - JsonBuilder.add() supports Iterable<Any> (Turned into JsonArray)
