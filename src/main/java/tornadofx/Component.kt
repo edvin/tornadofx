@@ -262,7 +262,10 @@ abstract class Component : Configurable {
         return prop.set(injectable, value)
     }
 
-    fun <T> runAsync(func: FXTask<*>.() -> T) = runAsync(find(scope), func)
+    /**
+     * Runs task in background. If not set directly, looks for `TaskStatus` instance in current scope.
+     */
+    fun <T> runAsync(status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(status, func)
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
