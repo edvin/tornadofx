@@ -198,6 +198,9 @@ abstract class Component : Configurable {
 
     val primaryStage: Stage get() = FX.getPrimaryStage(scope)!!
 
+    // This is here for backwards compatibility. Removing it would require an import for the tornadofx.ui version
+    infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: FXTask<*>.() -> T) = task(func = func)
 
