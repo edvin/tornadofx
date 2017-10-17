@@ -26,7 +26,6 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Region
 import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -260,51 +259,7 @@ abstract class Component : Configurable {
         return prop.set(injectable, value)
     }
 
-    fun <T> runAsync(status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(status, func)
-
-    /**
-     * Replace this node with a progress node while a long running task
-     * is running and swap it back when complete.
-     *
-     * If this node is Labeled, the graphic property will contain the progress bar instead while the task is running.
-     *
-     * The default progress node is a ProgressIndicator that fills the same
-     * client area as the parent. You can swap the progress node for any Node you like.
-     */
-    fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
-        if (this is Labeled) {
-            val oldGraphic = graphic
-            (progress as? Region)?.setPrefSize(16.0, 16.0)
-            graphic = progress
-            return task {
-                try {
-                    op()
-                } finally {
-                    runLater {
-                        this@runAsyncWithProgress.graphic = oldGraphic
-                    }
-                }
-            }
-        } else {
-            val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
-            val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
-            (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
-            val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
-            val index = children.indexOf(this)
-            children.add(index, progress)
-            removeFromParent()
-            return task {
-                val result = op()
-                runLater {
-                    children.add(index, this@runAsyncWithProgress)
-                    progress.removeFromParent()
-                }
-                result
-            }
-        }
-    }
-
-    infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+    fun <T> runAsync(func: FXTask<*>.() -> T) = runAsync(find(scope), func)
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {

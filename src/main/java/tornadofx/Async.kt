@@ -1,13 +1,169 @@
 package tornadofx
 
-import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.beans.property.ReadOnlyBooleanWrapper
+import com.sun.javafx.tk.Toolkit
+import javafx.application.Platform
+import javafx.beans.property.*
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.concurrent.Task
 import javafx.scene.Node
+import javafx.scene.control.Labeled
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Region
 import javafx.util.Duration
+import java.util.*
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+
+internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
+    private val threadCounter = AtomicLong(0L)
+    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}")
+})
+
+fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
+    setOnFailed({ Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception) })
+    tfxThreadPool.execute(this)
+}
+
+fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(status, func)
+
+infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
+infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
+    Platform.runLater {
+        setOnSucceeded { func(value) }
+    }
+}
+
+infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
+    Platform.runLater {
+        setOnFailed { func(exception) }
+    }
+}
+
+/**
+ * Run the specified Runnable on the JavaFX Application Thread at some
+ * unspecified time in the future.
+ */
+fun runLater(op: () -> Unit) = Platform.runLater(op)
+
+/**
+ * Run the specified Runnable on the JavaFX Application Thread after a
+ * specified delay.
+ *
+ * runLater(10.seconds) {
+ *     // Do something on the application thread
+ * }
+ *
+ * This function returns a TimerTask which includes a runningProperty as well as the owning timer.
+ * You can cancel the task before the time is up to abort the execution.
+ */
+fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
+    val timer = Timer(true)
+    val task = FXTimerTask(op, timer)
+    timer.schedule(task, delay.toMillis().toLong())
+    return task
+}
+
+/**
+ * Wait on the UI thread until a certain value is available on this observable.
+ *
+ * This method does not block the UI thread even though it halts further execution until the condition is met.
+ */
+fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
+    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
+        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
+    }
+
+    val changeListener = object : ChangeListener<T> {
+        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
+            if (condition(value)) {
+                runLater {
+                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
+                    removeListener(this)
+                }
+            }
+        }
+    }
+
+    changeListener.changed(this, value, value)
+    addListener(changeListener)
+    Toolkit.getToolkit().enterNestedEventLoop(this)
+}
+
+/**
+ * Wait on the UI thread until this observable value is true.
+ *
+ * This method does not block the UI thread even though it halts further execution until the condition is met.
+ */
+fun ObservableValue<Boolean>.awaitUntil() {
+    this.awaitUntil { it }
+}
+
+/**
+ * Replace this node with a progress node while a long running task
+ * is running and swap it back when complete.
+ *
+ * If this node is Labeled, the graphic property will contain the progress bar instead while the task is running.
+ *
+ * The default progress node is a ProgressIndicator that fills the same
+ * client area as the parent. You can swap the progress node for any Node you like.
+ *
+ * For latch usage see [runAsyncWithOverlay]
+ */
+fun Node.runAsyncWithProgress(latch: CountDownLatch, timeout: Duration? = null, progress: Node = ProgressIndicator()): Task<Boolean> {
+    return if(timeout == null) {
+        runAsyncWithProgress(progress) { latch.await(); true }
+    } else {
+        runAsyncWithOverlay(progress) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
+    }
+}
+
+/**
+ * Replace this node with a progress node while a long running task
+ * is running and swap it back when complete.
+ *
+ * If this node is Labeled, the graphic property will contain the progress bar instead while the task is running.
+ *
+ * The default progress node is a ProgressIndicator that fills the same
+ * client area as the parent. You can swap the progress node for any Node you like.
+ */
+fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
+    if (this is Labeled) {
+        val oldGraphic = graphic
+        (progress as? Region)?.setPrefSize(16.0, 16.0)
+        graphic = progress
+        return task {
+            try {
+                op()
+            } finally {
+                runLater {
+                    this@runAsyncWithProgress.graphic = oldGraphic
+                }
+            }
+        }
+    } else {
+        val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
+        val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
+        (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
+        val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
+        val index = children.indexOf(this)
+        children.add(index, progress)
+        removeFromParent()
+        return task {
+            val result = op()
+            runLater {
+                children.add(index, this@runAsyncWithProgress)
+                progress.removeFromParent()
+            }
+            result
+        }
+    }
+}
 
 /**
  * Covers node with overlay (by default - an instance of [MaskPane]) until [latch] is released by another thread.
@@ -16,6 +172,7 @@ import java.util.concurrent.TimeUnit
  * [CountDownLatch.countDown] or [Latch.release]) in order to unlock UI. Keep in mind that if [latch] is not released
  * and [timeout] is not set, overlay may never get removed.
  * * An overlay should be removed after some time, even if task is getting unresponsive (use [timeout] for this).
+ * Keep in mind that this timeout applies to overlay only, not the latch itself.
  * * In addition to masking UI, you need an access to property indicating if background process is running;
  * [Latch.lockedProperty] serves exactly that purpose.
  * * More threads are involved in task execution. You can create a [CountDownLatch] for number of workers, call
@@ -26,7 +183,9 @@ import java.util.concurrent.TimeUnit
  * @param timeout timeout after which overlay will be removed anyway. Can be `null` (which means no timeout).
  * @param overlayNode optional custom overlay node. For best effect set transparency.
  *
- * # Example
+ * # Example 1
+ * The simplest case: overlay is visible for two seconds - until latch release. Replace [Thread.sleep] with any
+ * blocking action. Manual thread creation is for the sake of the example only.
  *
  * ```kotlin
  * val latch = Latch()
@@ -39,6 +198,17 @@ import java.util.concurrent.TimeUnit
  *   latch.release()
  * }).start()
  * ```
+ *
+ * # Example 2
+ * The latch won't be released until both workers are done. In addition, until workers are done, button will stay
+ * disabled. New latch has to be created and rebound every time.
+ *
+ * ```kotlin
+ * val latch = Latch(2)
+ * root.runAsyncWithOverlay(latch)
+ * button.disableWhen(latch.lockedProperty())
+ * runAsync(worker1.work(); latch.countDown())
+ * runAsync(worker2.work(); latch.countDown())
  */
 @JvmOverloads
 fun Node.runAsyncWithOverlay(latch: CountDownLatch, timeout: Duration? = null, overlayNode: Node = MaskPane()): Task<Boolean> {
@@ -117,12 +287,14 @@ class Latch(count: Int) : CountDownLatch(count) {
     private val lockedProperty by lazy { ReadOnlyBooleanWrapper(locked) }
 
     /**
-     * Locked state of this latch exposed as a property.
+     * Locked state of this latch exposed as a property. Keep in mind that latch instance can be used only once, so
+     * this property has to rebound every time.
      */
     fun lockedProperty() : ReadOnlyBooleanProperty = lockedProperty.readOnlyProperty
 
     /**
-     * Locked state of this latch.
+     * Locked state of this latch. `true` if and only if [CountDownLatch.getCount] is greater than `0`.
+     * Once latch is released it changes to `false` permanently.
      */
     val locked get() = count > 0L
 
@@ -137,4 +309,79 @@ class Latch(count: Int) : CountDownLatch(count) {
         super.countDown()
         lockedProperty.set(locked)
     }
+}
+
+class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
+    private val internalRunning = ReadOnlyBooleanWrapper(false)
+    val runningProperty: ReadOnlyBooleanProperty get() = internalRunning.readOnlyProperty
+    val running: Boolean get() = runningProperty.value
+
+    private val internalCompleted = ReadOnlyBooleanWrapper(false)
+    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
+    val completed: Boolean get() = completedProperty.value
+
+    override fun run() {
+        internalRunning.value = true
+        Platform.runLater {
+            try {
+                op()
+            } finally {
+                internalRunning.value = false
+                internalCompleted.value = true
+            }
+        }
+    }
+}
+
+class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
+    val completedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)
+    val completed by completedProperty
+
+    override fun call() = func(this)
+
+    init {
+        status?.item = this
+    }
+
+    override fun succeeded() {
+        (completedProperty as BooleanProperty).value = true
+    }
+
+    override fun failed() {
+        (completedProperty as BooleanProperty).value = true
+    }
+
+    override fun cancelled() {
+        (completedProperty as BooleanProperty).value = true
+    }
+
+    override public fun updateProgress(workDone: Long, max: Long) {
+        super.updateProgress(workDone, max)
+    }
+
+    override public fun updateProgress(workDone: Double, max: Double) {
+        super.updateProgress(workDone, max)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun value(v: Any) {
+        super.updateValue(v as T)
+    }
+
+    override public fun updateTitle(t: String?) {
+        super.updateTitle(t)
+    }
+
+    override public fun updateMessage(m: String?) {
+        super.updateMessage(m)
+    }
+
+}
+
+open class TaskStatus : ItemViewModel<FXTask<*>>() {
+    val running: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.runningProperty()) } }
+    val completed: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.completedProperty) } }
+    val message: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.messageProperty()) } }
+    val title: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.titleProperty()) } }
+    val progress: ReadOnlyDoubleProperty = bind { SimpleDoubleProperty().apply { if (item != null) bind(item.progressProperty()) } }
 }
