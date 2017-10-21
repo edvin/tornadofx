@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed #434 leaf nodes are now getting set as expected for `lazypopulate`.
 - Style builder can be applied to PopupControl, Tab, TableColumnBase (https://github.com/edvin/tornadofx/issues/476)
+- Better handling of Column.makeEditable() for properties that implement Property<Number>
 
 ### Changes
 - Refactoring: Moved all extension functions and properties targeting `TreeView`
