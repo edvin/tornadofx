@@ -87,30 +87,4 @@ class AsyncTest {
         assertFalse(button.disabledProperty().value)
         assertFalse(latch.locked)
     }
-
-    @Test
-    fun taskCancel() {
-        val latch = Latch()
-        val holder = object { var v = false }
-
-        val task = runAsync {
-            while(!this.isCancelled) {
-                try {
-                    Thread.sleep(500)
-                }
-                catch(ie: InterruptedException) {
-                    //may happen or not, doesn't matter
-                    break
-                }
-            }
-            holder.v = true
-            latch.release()
-        }
-
-        assertFalse(task.isCancelled)
-        task.cancel(true)
-        assertTrue(task.isCancelled)
-        latch.await()
-        assertTrue(holder.v)
-    }
 }
