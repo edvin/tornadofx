@@ -19,9 +19,15 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+object ThreadPoolConfig {
+    var daemonThreads = false
+}
+
 internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
     private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}")
+    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}").apply {
+        isDaemon = ThreadPoolConfig.daemonThreads
+    }
 })
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
