@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableValue
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Insets
 import javafx.geometry.Orientation
@@ -14,6 +15,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
+import kotlin.reflect.full.createInstance
 
 private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
 private val GridPaneParentObjectKey = "TornadoFX.GridPaneParentObject"
@@ -33,11 +35,15 @@ fun GridPane.row(title: String? = null, op: (Pane.() -> Unit)? = null) {
     addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
 }
 
-fun GridPane.constraintsForColumn(columnIndex: Int): ColumnConstraints {
-    val constraints = columnConstraints
-    while (constraints.size <= columnIndex)
-        constraints.add(ColumnConstraints())
-    return constraints[columnIndex]
+fun GridPane.constraintsForColumn(columnIndex: Int) = constraintsFor(columnConstraints, columnIndex)
+
+fun GridPane.constraintsForRow(rowIndex: Int) = constraintsFor(rowConstraints, rowIndex)
+
+//constraints for row and column can be handled the same way
+internal inline fun <reified T: ConstraintsBase> constraintsFor(constraints: ObservableList<T>, index: Int): T {
+    while(constraints.size <= index)
+        constraints.add(T::class.createInstance())
+    return constraints[index]
 }
 
 val Parent.gridpaneColumnConstraints: ColumnConstraints? get() {

@@ -18,6 +18,11 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
+import java.util.logging.Level
+import java.util.logging.Logger
+
+internal val log = Logger.getLogger("tornadofx.async")
+internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
 object ThreadPoolConfig {
     var daemonThreads = false
@@ -31,7 +36,7 @@ internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactor
 })
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
-    setOnFailed({ Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception) })
+    setOnFailed({ (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) })
     tfxThreadPool.execute(this)
 }
 
@@ -340,8 +345,9 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
 }
 
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
-    val completedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty(false)
-    val completed by completedProperty
+    private var internalCompleted = ReadOnlyBooleanWrapper(false)
+    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
+    val completed: Boolean get() = completedProperty.value
 
     override fun call() = func(this)
 
@@ -350,15 +356,15 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
     }
 
     override fun succeeded() {
-        (completedProperty as BooleanProperty).value = true
+        internalCompleted.value = true
     }
 
     override fun failed() {
-        (completedProperty as BooleanProperty).value = true
+        internalCompleted.value = true
     }
 
     override fun cancelled() {
-        (completedProperty as BooleanProperty).value = true
+        internalCompleted.value = true
     }
 
     override public fun updateProgress(workDone: Long, max: Long) {
