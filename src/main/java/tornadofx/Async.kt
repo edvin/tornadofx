@@ -24,23 +24,32 @@ import java.util.logging.Logger
 internal val log = Logger.getLogger("tornadofx.async")
 internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
-object ThreadPoolConfig {
-    var daemonThreads = false
+internal val tfxThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = false))
+internal val tfxDaemonThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = true))
+
+private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
+    private val threadCounter = AtomicLong(0L)
+    override fun newThread(runnable: Runnable?) = Thread(runnable, threadName()).apply {
+        isDaemon = daemon
+    }
+
+    private fun threadName() = "tornadofx-thread-${threadCounter.incrementAndGet()}" + if (daemon) "-daemon" else ""
 }
 
-internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
-    private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}").apply {
-        isDaemon = ThreadPoolConfig.daemonThreads
-    }
-})
+fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)
 
-fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
+fun <T> task(daemon: Boolean = false, taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
     setOnFailed({ (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) })
-    tfxThreadPool.execute(this)
+    if (daemon) {
+        tfxDaemonThreadPool.execute(this)
+    } else {
+        tfxThreadPool.execute(this)
+    }
 }
 
 fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(status, func)
+
+fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(daemon, status, func)
 
 infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
