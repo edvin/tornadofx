@@ -1042,30 +1042,17 @@ class InlineCss : PropertyHolder(), Rendered {
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
-    val block = InlineCss().apply(op)
+    val setStyleMethod = this.javaClass.methods.firstOrNull { method -> method.name == "setStyle" }
 
-    fun setter(value: String) = when (this) {
-        is Node -> style = value
-        is MenuItem -> style = value
-        is PopupControl -> style = value
-        is Tab -> style = value
-        is TableColumnBase<*, *> -> this.style = value
-        else -> throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
-    }
-
-    if (append && style.isNotBlank())
-        setter(style + block.render())
-    else
-        setter(block.render().trim())
-}
-
-fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
-    val block = InlineCss().apply(op)
-
-    if (append && style.isNotBlank())
-        style += block.render()
-    else
-        style = block.render().trim()
+    if (setStyleMethod != null) {
+        val block = InlineCss().apply(op)
+        val newStyle = when (append && style.isNotBlank()) {
+            true -> (style + block.render())
+            else -> block.render().trim()
+        }
+        setStyleMethod.invoke(this, newStyle)
+    } else
+        throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
 }
 
 // Delegates
