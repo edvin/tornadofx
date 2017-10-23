@@ -1,9 +1,7 @@
 package tornadofx.tests
 
 import org.junit.Test
-import tornadofx.move
-import tornadofx.moveAll
-import tornadofx.moveAt
+import tornadofx.*
 import kotlin.test.assertEquals
 
 class CollectionsTest {
@@ -90,5 +88,43 @@ class CollectionsTest {
         }
     }
 
+    @Test
+    fun testMoveUpAtValidIndex() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
 
+        list.moveUpAt(2)
+
+        assertEquals(listOf(0, 2, 1, 3, 4), list)
+    }
+
+    @Test
+    fun testMoveUpAtInvalidIndex() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        try {
+            list.moveUpAt(10)
+        } catch (e: Exception) {
+            assert(e is IllegalStateException)
+        }
+    }
+
+    @Test
+    fun testMoveDownAtValidIndex() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        list.moveDownAt(2)
+
+        assertEquals(listOf(0, 1, 3, 2, 4), list)
+    }
+
+    @Test
+    fun testMoveDownAtInvalidIndex() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        try {
+            list.moveDownAt(10)
+        } catch (e: Exception) {
+            assert(e is IllegalStateException)
+        }
+    }
 }
