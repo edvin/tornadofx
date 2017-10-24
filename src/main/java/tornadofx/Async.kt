@@ -24,25 +24,30 @@ import java.util.logging.Logger
 internal val log = Logger.getLogger("tornadofx.async")
 internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
-internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
-    private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}")
-})
+internal val tfxThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = false))
+internal val tfxDaemonThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = true))
 
-internal val tfxDaemonThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
+private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
     private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-daemon-thread-${threadCounter.incrementAndGet()}").apply {
-        isDaemon = true
+    override fun newThread(runnable: Runnable?) = Thread(runnable, threadName()).apply {
+        isDaemon = daemon
     }
-})
 
-fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(false, taskStatus, func)
+    private fun threadName() = "tornadofx-thread-${threadCounter.incrementAndGet()}" + if (daemon) "-daemon" else ""
+}
+
+fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)
 
 fun <T> task(daemon: Boolean = false, taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
     setOnFailed({ (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) })
-    if(daemon) tfxDaemonThreadPool.execute(this)
-    else tfxThreadPool.execute(this)
+    if (daemon) {
+        tfxDaemonThreadPool.execute(this)
+    } else {
+        tfxThreadPool.execute(this)
+    }
 }
+
+fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(status, func)
 
 fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(daemon, status, func)
 

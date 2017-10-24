@@ -90,11 +90,12 @@ class AsyncTest {
 
     @Test
     fun runAsync() {
-        tornadofx.runAsync (daemon = true) {
+        tornadofx.runAsync(daemon = true) {
             assertTrue { Thread.currentThread().isDaemon }
         }
-        tornadofx.runAsync  {
+        tornadofx.runAsync {
             assertFalse { Thread.currentThread().isDaemon }
         }
     }
+
 }

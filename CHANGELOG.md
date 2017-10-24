@@ -13,7 +13,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
-- `ThreadPoolConfig.daemonThreads = true` yields creation of daemon threads (https://github.com/edvin/tornadofx/issues/507)
+- runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)
 - Node.`runAsyncWithOverlay`
 - `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability
 - Inline type safe stylesheet on Parent using the `stylesheet` builder
