@@ -13,10 +13,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Region
 import javafx.util.Duration
 import java.util.*
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -34,6 +31,39 @@ private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
     }
 
     private fun threadName() = "tornadofx-thread-${threadCounter.incrementAndGet()}" + if (daemon) "-daemon" else ""
+}
+
+private fun awaitTermination(pool: ExecutorService, timeout: Long) {
+    synchronized(pool) {
+        // Disable new tasks from being submitted
+        pool.shutdown()
+    }
+    try {
+        // Wait a while for existing tasks to terminate
+        if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
+            synchronized(pool) {
+                pool.shutdownNow() // Cancel currently executing tasks
+            }
+            // Wait a while for tasks to respond to being cancelled
+            if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
+                log.log(Level.SEVERE, "Executor did not terminate")
+            }
+        }
+    } catch (ie: InterruptedException) {
+        // (Re-)Cancel if current thread also interrupted
+        synchronized(pool) {
+            pool.shutdownNow()
+        }
+        // Preserve interrupt status
+        Thread.currentThread().interrupt()
+    }
+}
+
+fun terminateExecutorsBeforeShutdown(timeoutMillis: Long) {
+    beforeShutdown {
+        awaitTermination(tfxThreadPool, timeoutMillis)
+        awaitTermination(tfxDaemonThreadPool, timeoutMillis)
+    }
 }
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)
