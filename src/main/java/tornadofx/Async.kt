@@ -24,23 +24,27 @@ import java.util.logging.Logger
 internal val log = Logger.getLogger("tornadofx.async")
 internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
-object ThreadPoolConfig {
-    var daemonThreads = false
-}
-
 internal val tfxThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
     private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}").apply {
-        isDaemon = ThreadPoolConfig.daemonThreads
+    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-thread-${threadCounter.incrementAndGet()}")
+})
+
+internal val tfxDaemonThreadPool = Executors.newCachedThreadPool(object : ThreadFactory {
+    private val threadCounter = AtomicLong(0L)
+    override fun newThread(runnable: Runnable?) = Thread(runnable, "tornadofx-daemon-thread-${threadCounter.incrementAndGet()}").apply {
+        isDaemon = true
     }
 })
 
-fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
+fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(false, taskStatus, func)
+
+fun <T> task(daemon: Boolean = false, taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
     setOnFailed({ (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) })
-    tfxThreadPool.execute(this)
+    if(daemon) tfxDaemonThreadPool.execute(this)
+    else tfxThreadPool.execute(this)
 }
 
-fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(status, func)
+fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(daemon, status, func)
 
 infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
