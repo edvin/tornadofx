@@ -87,4 +87,15 @@ class AsyncTest {
         assertFalse(button.disabledProperty().value)
         assertFalse(latch.locked)
     }
+
+    @Test
+    fun runAsync() {
+        tornadofx.runAsync(daemon = true) {
+            assertTrue { Thread.currentThread().isDaemon }
+        }
+        tornadofx.runAsync {
+            assertFalse { Thread.currentThread().isDaemon }
+        }
+    }
+
 }
