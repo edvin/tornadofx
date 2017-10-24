@@ -13,6 +13,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- `beforeShutdown` allows you to register shutdown hooks
 - runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)
 - Node.`runAsyncWithOverlay`
 - `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability
