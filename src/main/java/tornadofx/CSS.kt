@@ -36,7 +36,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 interface Rendered {
-    fun render(): String
+    fun render() = buildString { render(this) }
+
+    fun render(builder: StringBuilder)
 }
 
 interface Scoped {
@@ -476,12 +478,22 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         selections -= selection
     }
 
-    override fun render() = imports.map { "@import url(css://${it.java.name})" }.joinToString(separator = "\n", postfix = "\n") +
-            selections.joinToString(separator = "") { it.render() }
+    override fun render(builder: StringBuilder) {
+        builder.apply {
+            imports.forEach { import ->
+                append("@import url(css://").append(import.java.name).append("\n")
+            }
+            selections.forEach { selection ->
+                selection.render(builder)
+            }
+        }
+    }
 
     val base64URL: URL
         get() {
-            val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
+            val builder = StringBuilder(512)
+            render(builder)
+            val content = Base64.getEncoder().encodeToString(builder.toString().toByteArray(StandardCharsets.UTF_8))
             return URL("css://$content:64")
         }
 
@@ -874,22 +886,22 @@ open class PropertyHolder {
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
     val block = CssSelectionBlock(op)
 
-    override fun render() = render(emptyList(), false)
+    override fun render(builder: StringBuilder) = render(builder, emptyList(), false)
 
-    fun render(parents: List<String>, refine: Boolean): String = buildString {
+    fun render(builder: StringBuilder, parents: List<String>, refine: Boolean) {
         val ruleStrings = selector.strings(parents, refine)
         block.mergedProperties.let {
             // TODO: Handle custom renderer
             if (it.isNotEmpty()) {
-                append("${ruleStrings.joinToString()} {\n")
+                builder.append(ruleStrings.joinToString()).append(" {\n")
                 for ((name, value) in it) {
-                    append("    $name: ${value.second?.invoke(value.first) ?: PropertyHolder.toCss(value.first)};\n")
+                    builder.append("    $name: ${value.second?.invoke(value.first) ?: PropertyHolder.toCss(value.first)};\n")
                 }
-                append("}\n")
+                builder.append("}\n")
             }
         }
         for ((selection, refine) in block.selections) {
-            append(selection.render(ruleStrings, refine))
+            selection.render(builder, ruleStrings, refine)
         }
     }
 }
@@ -902,7 +914,12 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     }
 
     override fun toSelection() = this
-    fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
+
+    fun strings(parents: List<String>,
+                refine: Boolean): List<String> {
+        return rule.map { it.render() }
+                .cartesian(parents, refine)
+    }
 
     fun simpleRender() = rule.map { it.render() }.joinToString()
 }
@@ -967,9 +984,11 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
 fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock(op)
 
 class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Selectable, Scoped, Rendered {
-    override fun render() = buildString {
-        append(rootRule.render())
-        subRule.forEach { append(it.render()) }
+    override fun render(builder: StringBuilder) {
+        builder.apply {
+            rootRule.render(builder)
+            subRule.forEach { it.render(builder) }
+        }
     }
 
     override fun toRuleSet() = this
@@ -999,14 +1018,20 @@ class CssRule(val prefix: String, name: String, snakeCase: Boolean = true) : Sel
 
     val name = if (snakeCase) name.camelToSnake() else name
 
-    override fun render() = "$prefix$name"
+    override fun render(builder: StringBuilder) {
+        builder.append(prefix).append(name)
+    }
+
     override fun toRuleSet() = CssRuleSet(this)
     override fun toSelection() = toRuleSet().toSelection()
     override fun append(rule: CssSubRule) = CssRuleSet(this, rule)
 }
 
 class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
-    override fun render() = "${relation.render()}${rule.render()}"
+    override fun render(builder: StringBuilder) {
+        relation.render(builder)
+        rule.render(builder)
+    }
 
     enum class Relation(val symbol: String) : Rendered {
         REFINE(""),
@@ -1026,7 +1051,9 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
             }
         }
 
-        override fun render() = symbol
+        override fun render(builder: StringBuilder) {
+            builder.append(symbol)
+        }
     }
 }
 
@@ -1034,8 +1061,12 @@ class CssSubRule(val rule: CssRule, val relation: Relation) : Rendered {
 
 class InlineCss : PropertyHolder(), Rendered {
     // TODO: Handle custom renderer
-    override fun render() = mergedProperties.entries.joinToString(separator = "") {
-        " ${it.key}: ${it.value.second?.invoke(it.value.first) ?: toCss(it.value.first)};"
+    override fun render(builder: StringBuilder) {
+        mergedProperties.entries.forEach {
+            builder.append(' ').append(it.key).append(": ")
+                    .append(it.value.second?.invoke(it.value.first) ?: toCss(it.value.first))
+                    .append(';')
+        }
     }
 }
 
