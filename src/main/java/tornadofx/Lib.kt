@@ -204,6 +204,17 @@ class SortedFilteredList<T>(
 
 fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
+
+/**
+ * For Observable<T>, Sometimes we are ONLY interested in listening to the specified property of the instance of T.
+ * This extension function is convenient for
+ * <pre>
+ * public static <E> ObservableList<E> observableArrayList(Callback<E, Observable[]> extractor)
+ * </pre>
+ */
+fun <T> List<T>.observableOn(extractor: (T) -> ObjectProperty<*>): ObservableList<T> =
+    FXCollections.observableList(this, { arrayOf(extractor(it)) })
+
 fun <K, V> Map<K, V>.observable(): ObservableMap<K, V> = FXCollections.observableMap(this)
 
 fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
