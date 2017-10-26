@@ -512,7 +512,7 @@ fun EventTarget.isInsideRow(): Boolean {
 /**
  * Access BorderPane constraints to manipulate and apply on this control
  */
-fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
     val bpc = BorderPaneConstraint(this)
     bpc.op()
     return bpc.applyToNode(this)
@@ -532,7 +532,7 @@ class BorderPaneConstraint(node: Node,
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
-fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
     val gpc = GridPaneConstraint(this)
     gpc.op()
     return gpc.applyToNode(this)
@@ -592,13 +592,13 @@ class GridPaneConstraint(node: Node,
     }
 }
 
-fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
+inline fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
     val c = VBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
     val c = StackpaneConstraint(this)
     c.op()
     return c.applyToNode(this)
@@ -628,7 +628,7 @@ class StackpaneConstraint(node: Node,
     }
 }
 
-fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
+inline fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
     val c = HBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
@@ -659,7 +659,7 @@ var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) {
     }
 }
 
-fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
+inline fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()
     c.op()
     return c.applyToNode(this)
