@@ -1044,15 +1044,25 @@ fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = fo
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val setStyleMethod = this.javaClass.methods.firstOrNull { method -> method.name == "setStyle" }
 
-    if (setStyleMethod != null) {
-        val block = InlineCss().apply(op)
-        val newStyle = when (append && style.isNotBlank()) {
-            true -> (style + block.render())
-            else -> block.render().trim()
-        }
+    setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+
+    val block = InlineCss().apply(op)
+    val newStyle = when (append && style.isNotBlank()) {
+        true -> (style + block.render())
+        else -> block.render().trim()
+    }
+
+    try {
+        // in Java 9 setStyleMethod.canAccess(this) can be used for checking instead of wrapping this invocation in a try-catch clause
         setStyleMethod.invoke(this, newStyle)
-    } else
-        throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    } catch (exception: Exception) {
+        when (exception) {
+            is IllegalAccessException,
+            is IllegalArgumentException -> println("Cannot access ${this@style.javaClass}.setStyle(...) through reflection due to insufficient priviledge.")
+            else -> println("Invocation of ${this@style.javaClass}.setStyle(...) through reflection failed.")
+        }
+        throw exception
+    }
 }
 
 // Delegates
