@@ -32,6 +32,7 @@ class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
 class DataGridTest : View("DataGrid") {
     var datagrid: DataGrid<String> by singleAssign()
     val list = FXCollections.observableArrayList<String>()
+    var paginator = DataGridPaginator(list, itemsPerPage = 5)
 
     override val root = borderpane {
         left {
@@ -50,12 +51,10 @@ class DataGridTest : View("DataGrid") {
             }
         }
         center {
-            datagrid = datagrid(list) {
+            datagrid = datagrid(paginator.items) {
                 setPrefSize(550.0, 550.0)
 
                 selectionModel.selectionMode = SelectionMode.SINGLE
-                //maxCellsInRow = 3
-                //maxRows = 3
                 cellWidth = 164.0
                 cellHeight = 164.0
 
@@ -69,9 +68,14 @@ class DataGridTest : View("DataGrid") {
             }
         }
         bottom {
-            label(stringBinding(datagrid.selectionModel.selectedItems) { joinToString(", ") })
-            button("Remove from index 2").action {
-                list.removeAt(2)
+            vbox {
+                add(paginator)
+                hbox {
+                    label(stringBinding(datagrid.selectionModel.selectedItems) { joinToString(", ") })
+                    button("Remove from index 2").action {
+                        if (list.size > 2) list.removeAt(2)
+                    }
+                }
             }
         }
     }

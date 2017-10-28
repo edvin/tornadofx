@@ -37,38 +37,46 @@ fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit
     return datagrid
 }
 
-class DataGridPaginator<T>(private val internalItemsList: ObservableList<T>, itemsPerPage: Int = 20): HBox() {
+class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerPage: Int = 20): HBox() {
     val itemsPerPageProperty = SimpleIntegerProperty(itemsPerPage)
     var itemsPerPage by  itemsPerPageProperty
 
-    private val itemListChangeTrigger = SimpleObjectProperty(UUID.randomUUID())
+    val items = FXCollections.observableArrayList<T>()
 
-    val pageCountProperty = integerBinding(itemsPerPageProperty, internalItemsList, itemListChangeTrigger) {
-        Math.max(1, internalItemsList.size / itemsPerPageProperty.value)
+    private val listChangeTrigger = SimpleObjectProperty(UUID.randomUUID())
+
+    val pageCountProperty = integerBinding(itemsPerPageProperty, sourceItems) {
+        Math.max(1, Math.ceil(sourceItems.size.toDouble() / itemsPerPageProperty.value.toDouble()).toInt())
     }
     val pageCount by pageCountProperty
 
     val currentPageProperty = SimpleIntegerProperty(1)
     var currentPage by currentPageProperty
 
-    val items = FXCollections.observableArrayList<T>()
+    private val listChangeListener = ListChangeListener<T> {
+        listChangeTrigger.value = UUID.randomUUID()
+        setItemsForPage()
+
+        // Check that the current page is still valid, or regenerate buttons
+        while (currentPage > pageCount)
+            currentPage -= 1
+    }
+
+    private val currentFromIndex: Int get() = itemsPerPage * (currentPage - 1)
+    private val currentToIndex: Int get() = Math.min(currentFromIndex + itemsPerPage, sourceItems.size)
 
     init {
-        // HBox spacing between children
         spacing = 5.0
         alignment = Pos.CENTER
         currentPageProperty.onChange { setItemsForPage() }
         pageCountProperty.onChange { generatePageButtons() }
-        setItemsForPage()
+        sourceItems.addListener(listChangeListener)
         generatePageButtons()
-
-        internalItemsList.onChange { itemListChangeTrigger.value = UUID.randomUUID() }
+        setItemsForPage()
     }
 
     private fun setItemsForPage() {
-        val fromIndex = itemsPerPage * (currentPage - 1)
-        val toIndex = Math.min(fromIndex + itemsPerPage, internalItemsList.size)
-        items.setAll(internalItemsList.subList(fromIndex, toIndex))
+        items.setAll(sourceItems.subList(currentFromIndex, currentToIndex))
     }
 
     private fun generatePageButtons() {
