@@ -13,6 +13,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- `DataGridPaginator` component to help with pagination for `DataGrid`
 - runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)
 - Node.`runAsyncWithOverlay`
 - `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability

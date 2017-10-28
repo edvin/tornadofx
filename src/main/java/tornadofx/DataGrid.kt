@@ -8,6 +8,7 @@ import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -18,12 +19,15 @@ import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
 import javafx.css.*
 import javafx.event.EventTarget
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SelectionMode.MULTIPLE
 import javafx.scene.control.SelectionMode.SINGLE
 import javafx.scene.input.*
+import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
+import java.util.*
 
 fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
     val datagrid = DataGrid<T>()
@@ -31,6 +35,54 @@ fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit
     else if (items is List<T>) datagrid.items.setAll(items)
     opcr(this, datagrid, op)
     return datagrid
+}
+
+class DataGridPaginator<T>(private val internalItemsList: ObservableList<T>, itemsPerPage: Int = 20): HBox() {
+    val itemsPerPageProperty = SimpleIntegerProperty(itemsPerPage)
+    var itemsPerPage by  itemsPerPageProperty
+
+    private val itemListChangeTrigger = SimpleObjectProperty(UUID.randomUUID())
+
+    val pageCountProperty = integerBinding(itemsPerPageProperty, internalItemsList, itemListChangeTrigger) {
+        Math.max(1, internalItemsList.size / itemsPerPageProperty.value)
+    }
+    val pageCount by pageCountProperty
+
+    val currentPageProperty = SimpleIntegerProperty(1)
+    var currentPage by currentPageProperty
+
+    val items = FXCollections.observableArrayList<T>()
+
+    init {
+        // HBox spacing between children
+        spacing = 5.0
+        alignment = Pos.CENTER
+        currentPageProperty.onChange { setItemsForPage() }
+        pageCountProperty.onChange { generatePageButtons() }
+        setItemsForPage()
+        generatePageButtons()
+
+        internalItemsList.onChange { itemListChangeTrigger.value = UUID.randomUUID() }
+    }
+
+    private fun setItemsForPage() {
+        val fromIndex = itemsPerPage * (currentPage - 1)
+        val toIndex = Math.min(fromIndex + itemsPerPage, internalItemsList.size)
+        items.setAll(internalItemsList.subList(fromIndex, toIndex))
+    }
+
+    private fun generatePageButtons() {
+        children.clear()
+        togglegroup {
+            // TODO: Support pagination for pages
+            IntRange(1, pageCount).forEach { pageNo ->
+                // TODO: Allow customization of togglebutton graphic/text
+                togglebutton(pageNo.toString()) {
+                    whenSelected { currentPage = pageNo }
+                }
+            }
+        }
+    }
 }
 
 @Suppress("unused")
