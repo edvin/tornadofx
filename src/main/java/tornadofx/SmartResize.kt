@@ -273,11 +273,11 @@ fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = 
 fun <S, T> TableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
 fun <S, T> TreeTableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S, T> TableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 
-fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S, T> TreeTableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 
@@ -343,7 +343,7 @@ fun <S> TornadoFXColumn<S>.remainingWidth() = apply {
     resizeType = ResizeType.Remaining()
 }
 
-fun <S> TornadoFXColumn<S>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S> TornadoFXColumn<S>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 

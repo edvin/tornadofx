@@ -26,9 +26,9 @@ class ExpandableTableTest : View("Smart Resize Demo") {
         prefWidth = 600.0
 
         column("#", Room::id).contentWidth(10.0, true, true)
-        column("Number", Room::number).weigthedWidth(1.0)
+        column("Number", Room::number).weightedWidth(1.0)
         column("Bed", Room::bed).apply {
-            weigthedWidth(2.0)
+            weightedWidth(2.0)
             cellFormat {
                 graphic = cache {
                     textfield(itemProperty()) {
@@ -39,7 +39,7 @@ class ExpandableTableTest : View("Smart Resize Demo") {
                 }
             }
         }
-        column("Type", Room::type).weigthedWidth(2.0)
+        column("Type", Room::type).weightedWidth(2.0)
 
         smartResize()
 
