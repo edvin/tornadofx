@@ -13,6 +13,7 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- `fitToParentHeight/Width/Size` as well as `fitToHeight/Width/Size(region)` helpers (https://github.com/edvin/tornadofx/pull/519)
 - `beforeShutdown` allows you to register shutdown hooks
 - `DataGridPaginator` component to help with pagination for `DataGrid`
 - runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)

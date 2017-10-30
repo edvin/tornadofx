@@ -83,7 +83,15 @@ infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
 infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
     Platform.runLater {
-        setOnSucceeded { func(value) }
+        setOnSucceeded {
+            if (Platform.isFxApplicationThread()) {
+                func(value)
+            } else {
+                runLater {
+                    func(value)
+                }
+            }
+        }
     }
 }
 
