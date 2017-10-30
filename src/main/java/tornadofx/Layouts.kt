@@ -329,3 +329,22 @@ fun Region.paddingAll(p: Double) {
 var Region.paddingAll: Number get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0; set(value) {
     padding = Insets(value.toDouble(), value.toDouble(), value.toDouble(), value.toDouble())
 }
+
+fun Region.fitToParentHeight() {
+    val parent = this.parent
+    if (parent != null && parent is Region) {
+        minHeightProperty().bind(parent.heightProperty())
+    }
+}
+
+fun Region.fitToParentWidth() {
+    val parent = this.parent
+    if (parent != null && parent is Region) {
+        minWidthProperty().bind(parent.widthProperty())
+    }
+}
+
+fun Region.fitToParentSize() {
+    fitToParentHeight()
+    fitToParentWidth()
+}
