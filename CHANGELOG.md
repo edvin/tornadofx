@@ -1,6 +1,15 @@
 # Change Log
 
-## [1.7.12-SNAPSHOT]
+## [1.7.13-SNAPSHOT]
+
+### Fixed
+
+### Changes
+
+### Additions
+
+
+## [1.7.12]
 
 ### Fixed
 - Fixed #434 leaf nodes are now getting set as expected for `lazypopulate`.
