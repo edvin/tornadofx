@@ -14,6 +14,7 @@
 
 ### Additions
 - `beforeShutdown` allows you to register shutdown hooks
+- `DataGridPaginator` component to help with pagination for `DataGrid`
 - runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)
 - Node.`runAsyncWithOverlay`
 - `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability

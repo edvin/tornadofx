@@ -3,6 +3,8 @@ package tornadofx.tests
 import org.junit.Test
 import tornadofx.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class CollectionsTest {
 
@@ -126,5 +128,45 @@ class CollectionsTest {
         } catch (e: Exception) {
             assert(e is IllegalStateException)
         }
+    }
+
+    @Test
+    fun testMoveUpWithValidItem() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        val result = list.moveUp(2)
+
+        assertTrue(result)
+        assertEquals(listOf(0, 2, 1, 3, 4), list)
+    }
+
+    @Test
+    fun testMoveUpWithInvalidItem() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        val result = list.moveUp(10)
+
+        assertFalse(result)
+        assertEquals(listOf(0, 1, 2, 3, 4), list)
+    }
+
+    @Test
+    fun testMoveDownWithValidItem() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        val result = list.moveDown(2)
+
+        assertTrue(result)
+        assertEquals(listOf(0, 1, 3, 2, 4), list)
+    }
+
+    @Test
+    fun testMoveDownWithInvalidItem() {
+        val list = mutableListOf(0, 1, 2, 3, 4)
+
+        val result = list.moveDown(10)
+
+        assertFalse(result)
+        assertEquals(listOf(0, 1, 2, 3, 4), list)
     }
 }

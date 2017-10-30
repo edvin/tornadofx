@@ -8,6 +8,7 @@ import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
 import javafx.beans.property.Property
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -18,12 +19,15 @@ import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
 import javafx.css.*
 import javafx.event.EventTarget
+import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.SelectionMode.MULTIPLE
 import javafx.scene.control.SelectionMode.SINGLE
 import javafx.scene.input.*
+import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
+import java.util.*
 
 fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
     val datagrid = DataGrid<T>()
@@ -31,6 +35,62 @@ fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit
     else if (items is List<T>) datagrid.items.setAll(items)
     opcr(this, datagrid, op)
     return datagrid
+}
+
+class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerPage: Int = 20): HBox() {
+    val itemsPerPageProperty = SimpleIntegerProperty(itemsPerPage)
+    var itemsPerPage by  itemsPerPageProperty
+
+    val items = FXCollections.observableArrayList<T>()
+
+    private val listChangeTrigger = SimpleObjectProperty(UUID.randomUUID())
+
+    val pageCountProperty = integerBinding(itemsPerPageProperty, sourceItems) {
+        Math.max(1, Math.ceil(sourceItems.size.toDouble() / itemsPerPageProperty.value.toDouble()).toInt())
+    }
+    val pageCount by pageCountProperty
+
+    val currentPageProperty = SimpleIntegerProperty(1)
+    var currentPage by currentPageProperty
+
+    private val listChangeListener = ListChangeListener<T> {
+        listChangeTrigger.value = UUID.randomUUID()
+        setItemsForPage()
+
+        // Check that the current page is still valid, or regenerate buttons
+        while (currentPage > pageCount)
+            currentPage -= 1
+    }
+
+    private val currentFromIndex: Int get() = itemsPerPage * (currentPage - 1)
+    private val currentToIndex: Int get() = Math.min(currentFromIndex + itemsPerPage, sourceItems.size)
+
+    init {
+        spacing = 5.0
+        alignment = Pos.CENTER
+        currentPageProperty.onChange { setItemsForPage() }
+        pageCountProperty.onChange { generatePageButtons() }
+        sourceItems.addListener(listChangeListener)
+        generatePageButtons()
+        setItemsForPage()
+    }
+
+    private fun setItemsForPage() {
+        items.setAll(sourceItems.subList(currentFromIndex, currentToIndex))
+    }
+
+    private fun generatePageButtons() {
+        children.clear()
+        togglegroup {
+            // TODO: Support pagination for pages
+            IntRange(1, pageCount).forEach { pageNo ->
+                // TODO: Allow customization of togglebutton graphic/text
+                togglebutton(pageNo.toString()) {
+                    whenSelected { currentPage = pageNo }
+                }
+            }
+        }
+    }
 }
 
 @Suppress("unused")
