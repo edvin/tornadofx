@@ -7,10 +7,7 @@ import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleIntegerProperty
-import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -28,9 +25,11 @@ import javafx.scene.input.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
 import java.util.*
+import kotlin.reflect.KClass
 
-fun <T> EventTarget.datagrid(items: List<T>? = null, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
+fun <T> EventTarget.datagrid(items: List<T>? = null, scope: Scope = DefaultScope, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
     val datagrid = DataGrid<T>()
+    datagrid.scope = scope
     if (items is ObservableList<T>) datagrid.items = items
     else if (items is List<T>) datagrid.items.setAll(items)
     opcr(this, datagrid, op)
@@ -114,10 +113,22 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         this.cellFormat = cellFormat
     }
 
+    val scopeProperty = SimpleObjectProperty<Scope>()
+    var scope: Scope? by scopeProperty
+
     val cellCacheProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
     var cellCache: ((T) -> Node)? get() = cellCacheProperty.get(); set(value) = cellCacheProperty.set(value)
     fun cellCache(cachedGraphic: (T) -> Node) {
         this.cellCache = cachedGraphic
+    }
+
+    val cellFragmentProperty by lazy { SimpleObjectProperty<KClass<DataGridCellFragment<T>>>() }
+    var cellFragment by cellFragmentProperty
+    fun cellFragment(fragment: KClass<DataGridCellFragment<T>>) {
+        properties["tornadofx.cellFragment"] = fragment
+    }
+    inline fun <reified C : DataGridCellFragment<T>> cellFragment() {
+        properties["tornadofx.cellFragment"] = C::class
     }
 
     val cellWidthProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0) as StyleableObjectProperty<Number>
@@ -214,14 +225,17 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     var cache: Node? = null
     var updating = false
+    private var fresh = true
+    private var cellFragment: DataGridCellFragment<T>? = null
 
     init {
         addClass(Stylesheet.datagridCell)
 
         // Update cell content when index changes
-        indexProperty().addListener(InvalidationListener {
+        indexProperty().onChange {
+            if (it == -1) clearCellFragment()
             if (!updating) doUpdateItem()
-        })
+        }
     }
 
     internal fun doUpdateItem() {
@@ -244,9 +258,69 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         else if (isSelected && !isActuallySelected) updateSelected(false)
     }
 
+    override fun updateItem(item: T?, empty: Boolean) {
+        super.updateItem(item, empty)
+        if (item == null || empty) {
+            graphic = null
+            text = null
+            clearCellFragment()
+        } else {
+            val formatter = dataGrid.cellFormat
+            if (fresh) {
+                val cellFragmentType = dataGrid.properties["tornadofx.cellFragment"] as KClass<DataGridCellFragment<T>>?
+                cellFragment = if (cellFragmentType != null) find(cellFragmentType, dataGrid.scope ?: DefaultScope) else null
+                fresh = false
+            }
+            cellFragment?.apply {
+                editingProperty.cleanBind(editingProperty())
+                itemProperty.value = item
+                cellProperty.value = this@DataGridCell
+                graphic = root
+            }
+            if (cache != null) {
+                graphic = StackPane(cache)
+                formatter?.invoke(this, item)
+            } else {
+                if (formatter != null) formatter.invoke(this, item)
+                else if (graphic == null) graphic = StackPane(Label(item.toString()))
+            }
+        }
+    }
+
+    private fun clearCellFragment() {
+        cellFragment?.apply {
+            cellProperty.value = null
+            itemProperty.value = null
+            editingProperty.unbind()
+            editingProperty.value = false
+        }
+    }
+
     override fun createDefaultSkin() = DataGridCellSkin(this)
 }
 
+abstract class DataGridCellFragment<T> : ItemFragment<T>() {
+    val cellProperty: ObjectProperty<DataGridCell<T>?> = SimpleObjectProperty()
+    var cell by cellProperty
+    val editingProperty = SimpleBooleanProperty(false)
+    val editing by editingProperty
+
+    open fun startEdit() {
+        cell?.startEdit()
+    }
+
+    open fun commitEdit(newValue: T) {
+        cell?.commitEdit(newValue)
+    }
+
+    open fun cancelEdit() {
+        cell?.cancelEdit()
+    }
+
+    open fun onEdit(op: () -> Unit) {
+        editingProperty.onChange { if (it) op() }
+    }
+}
 
 class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataGridCell<T>>(control, emptyList()) {
     override fun getFocusModel() = control.dataGrid.focusModel
@@ -346,29 +420,10 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
             // this one, we need to remove the extra cells that remain
             children.remove(cacheIndex, children.size)
         }
-
     }
 
-    private fun createCell() = skinnable.dataGrid.cellFactory?.invoke(skinnable.dataGrid) ?: createDefaultCell()
+    private fun createCell() = skinnable.dataGrid.cellFactory?.invoke(skinnable.dataGrid) ?: DataGridCell<T>(skinnable.dataGrid)
 
-    private fun createDefaultCell() = object : DataGridCell<T>(skinnable.dataGrid) {
-        override fun updateItem(item: T?, empty: Boolean) {
-            super.updateItem(item, empty)
-            if (item == null || empty) {
-                graphic = null
-                text = null
-            } else {
-                val formatter = skinnable.dataGrid.cellFormat
-                if (cache != null) {
-                    graphic = StackPane(cache)
-                    formatter?.invoke(this, item)
-                } else {
-                    if (formatter != null) formatter.invoke(this, item)
-                    else graphic = StackPane(Label(item.toString()))
-                }
-            }
-        }
-    }
 
     @Suppress("UNCHECKED_CAST")
     fun getCellAtIndex(index: Int): DataGridCell<T>? {

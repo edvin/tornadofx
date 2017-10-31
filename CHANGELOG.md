@@ -7,7 +7,7 @@
 ### Changes
 
 ### Additions
-
+- `cellFragment` support for DataGrid
 
 ## [1.7.12]
 

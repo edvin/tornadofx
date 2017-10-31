@@ -1,6 +1,7 @@
 package tornadofx.testapps
 
 import javafx.collections.FXCollections
+import javafx.scene.Parent
 import javafx.scene.control.SelectionMode
 import tornadofx.*
 import tornadofx.testapps.DataGridTestApp.Companion.images
@@ -58,6 +59,8 @@ class DataGridTest : View("DataGrid") {
                 cellWidth = 164.0
                 cellHeight = 164.0
 
+//                cellFragment<DataGridTestFragment>()
+
                 cellCache {
                     imageview(it, true)
                 }
@@ -79,7 +82,10 @@ class DataGridTest : View("DataGrid") {
             }
         }
     }
+}
 
+class DataGridTestFragment : DataGridCellFragment<String>() {
+    override val root = stackpane { imageview(itemProperty, true) }
 }
 
 class DataGridStyles : Stylesheet() {
