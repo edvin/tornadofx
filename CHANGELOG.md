@@ -8,6 +8,7 @@
 
 ### Additions
 - `cellFragment` support for DataGrid
+- ObservableValue<String>.isBlank() and ObservableValue<String>.isNotBlank() which returns BooleanBinding. Useful for binding to TextField enabled/visible state
 
 ## [1.7.12]
 

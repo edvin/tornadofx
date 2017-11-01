@@ -160,6 +160,7 @@ private class SynchronizedSingleAssign<T> : UnsynchronizedSingleAssign<T>() {
 private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
     protected object UNINITIALIZED_VALUE
+
     protected open var _value: Any? = UNINITIALIZED_VALUE
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
@@ -634,6 +635,8 @@ infix fun StringExpression.le(other: ObservableStringValue): BooleanBinding = le
 
 infix fun StringExpression.lt(other: String): BooleanBinding = lessThan(other)
 infix fun StringExpression.lt(other: ObservableStringValue): BooleanBinding = lessThan(other)
+fun ObservableValue<String>.isBlank(): BooleanBinding = booleanBinding { it?.isBlank() ?: true }
+fun ObservableValue<String>.isNotBlank(): BooleanBinding = booleanBinding { it?.isNotBlank() ?: false }
 
 infix fun StringExpression.eqIgnoreCase(other: String): BooleanBinding = isEqualToIgnoreCase(other)
 infix fun StringExpression.eqIgnoreCase(other: ObservableStringValue): BooleanBinding = isEqualToIgnoreCase(other)
