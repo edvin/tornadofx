@@ -59,8 +59,6 @@ class DataGridTest : View("DataGrid") {
                 cellWidth = 164.0
                 cellHeight = 164.0
 
-//                cellFragment<DataGridTestFragment>()
-
                 cellCache {
                     imageview(it, true)
                 }
@@ -82,10 +80,6 @@ class DataGridTest : View("DataGrid") {
             }
         }
     }
-}
-
-class DataGridTestFragment : DataGridCellFragment<String>() {
-    override val root = stackpane { imageview(itemProperty, true) }
 }
 
 class DataGridStyles : Stylesheet() {
