@@ -5,6 +5,7 @@
 ### Fixed
 
 ### Changes
+- ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
 
 ### Additions
 - `cellFragment` support for DataGrid

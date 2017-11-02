@@ -362,12 +362,13 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the ListCellFragment changes.
  */
-fun <V : ItemViewModel<T>, T> V.bindTo(cellFragment: ListCellFragment<T>) = apply {
-    itemProperty.bind(cellFragment.itemProperty)
+fun <V : ItemViewModel<T>, T> V.bindTo(itemFragment: ItemFragment<T>) = apply {
+    itemProperty.bind(itemFragment.itemProperty)
 }
 
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the TableCellFragment changes.
+ * TODO: Do we need this, or can we just use the one above?
  */
 fun <V : ItemViewModel<T>, S, T> V.bindToItem(cellFragment: TableCellFragment<S, T>) = apply {
     itemProperty.bind(cellFragment.itemProperty)
