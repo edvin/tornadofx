@@ -266,6 +266,7 @@ abstract class Component : Configurable {
      * Runs task in background. If not set directly, looks for `TaskStatus` instance in current scope.
      */
     fun <T> runAsync(status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(status, func)
+
     fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(daemon, status, func)
 
     @Suppress("UNCHECKED_CAST")
@@ -627,15 +628,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
-    inline fun <reified C: UIComponent> BorderPane.top() = top(C::class)
+    inline fun <reified C : UIComponent> BorderPane.top() = top(C::class)
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.right() = right(C::class)
+    inline fun <reified C : UIComponent> BorderPane.right() = right(C::class)
     fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.bottom() = bottom(C::class)
+    inline fun <reified C : UIComponent> BorderPane.bottom() = bottom(C::class)
     fun <C : UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.left() = left(C::class)
+    inline fun <reified C : UIComponent> BorderPane.left() = left(C::class)
     fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.center() = center(C::class)
+    inline fun <reified C : UIComponent> BorderPane.center() = center(C::class)
     fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
 
     fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) = cellFormat(scope, formatter)
@@ -667,38 +668,28 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
-    inline fun <reified T: UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: (DrawerItem.() -> Unit)? = null)
-            =  item(T::class, scope, params, expanded, showHeader, op)
+    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: (DrawerItem.() -> Unit)? = null)
+            = item(T::class, scope, params, expanded, showHeader, op)
 
     fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
-    @JvmName("addView")
-    fun <T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null){ plusAssign(find(type, scope, params).root) }
-    inline fun <reified T: View> EventTarget.add(vararg params: Pair<*, Any?>) = add(T::class,params.toMap())
-
-    @JvmName("addFragmentByClass")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null) {
-        val fragment: T = find(type, scope, params)
-        plusAssign(fragment.root)
-        op?.invoke(fragment)
+    fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) {
+        val view = find(type, scope, params)
+        plusAssign(view.root)
+        op?.invoke(view)
     }
-    inline fun <reified T: Fragment> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: (T.() -> Unit)) = add(T::class,params.toMap(),op)
 
+    inline fun <reified T : UIComponent> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: (T.() -> Unit)? = null) = add(T::class, params.toMap(), op)
 
     fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
-    inline fun <reified T : UIComponent> EventTarget.add() = add(find(T::class))
 
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
     fun EventTarget.add(child: Node) = plusAssign(child)
 
-    @JvmName("plusView")
-    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
+    operator fun <T : UIComponent> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    @JvmName("plusFragment")
-    operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
-
-    protected inline fun <reified T: UIComponent> openInternalWindow(
+    protected inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
@@ -707,7 +698,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             closeButton: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             params: Map<*, Any?>? = null
-    ) = openInternalWindow(T::class, scope, icon, modal,owner,escapeClosesWindow, closeButton, overlayPaint, params)
+    ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params)
 
     protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
@@ -836,7 +827,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
         val componentType = this@UIComponent.javaClass
         val targetLocation = location ?: componentType.simpleName + ".fxml"
-        val fxml = requireNotNull(componentType.getResource(targetLocation)){"FXML not found for $componentType in $targetLocation"}
+        val fxml = requireNotNull(componentType.getResource(targetLocation)) { "FXML not found for $componentType in $targetLocation" }
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
@@ -895,8 +886,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fieldset.stage
     }
 
-    inline fun <reified T: UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false)
+    inline fun <reified T : UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false)
             = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) =
             replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
 
