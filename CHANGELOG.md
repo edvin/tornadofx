@@ -10,6 +10,7 @@
 ### Additions
 - `cellFragment` support for DataGrid
 - ObservableValue<String>.isBlank() and ObservableValue<String>.isNotBlank() which returns BooleanBinding. Useful for binding to TextField enabled/visible state
+- Added `owner` and `title` parameters to `alert` and other dialog builders (https://github.com/edvin/tornadofx/issues/522)
 
 ## [1.7.12]
 
