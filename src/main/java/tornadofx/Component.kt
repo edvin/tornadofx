@@ -166,6 +166,8 @@ abstract class Component : Configurable {
         }
     }
 
+    fun <T : ScopedInstance> setInScope(value: T, scope: Scope = this.scope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
+
     @Deprecated("No need to use the nullableParam anymore, use param instead", ReplaceWith("param(defaultValue)"))
     inline fun <reified T> nullableParam(defaultValue: T? = null) = param(defaultValue)
 
