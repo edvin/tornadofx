@@ -15,6 +15,7 @@ import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 import kotlin.properties.ReadOnlyProperty
@@ -105,6 +106,8 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     override fun stop() {
         scope.deregister()
+        tfxThreadPool.shutdown()
+        tfxDaemonThreadPool.shutdown()
         trayIcons.forEach {
             SwingUtilities.invokeLater { SystemTray.getSystemTray().remove(it) }
         }

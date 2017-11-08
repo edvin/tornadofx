@@ -5,6 +5,7 @@
 ### Fixed
 
 - Navigation button issue when already docked view was docked again (https://github.com/edvin/tornadofx/issues/526)
+- Internal thread pools are shutdown on app exit. Running threads in the default thread pool will still block application stop.
 
 ### Changes
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
