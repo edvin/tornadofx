@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Navigation button issue when already docked view was docked again (https://github.com/edvin/tornadofx/issues/526)
+
 ### Changes
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
 

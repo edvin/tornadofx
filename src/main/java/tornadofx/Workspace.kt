@@ -341,6 +341,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find<T>(scope, params))
 
     fun dock(child: UIComponent, forward: Boolean = true) {
+        if (child == dockedComponent) return
+
         // Remove everything after viewpos if moving forward
         if (forward) while (viewPos.get() < viewStack.size -1) viewStack.removeAt(viewPos.get() + 1)
 
