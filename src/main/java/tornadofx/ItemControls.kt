@@ -59,7 +59,7 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { observable, oldValue, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
     }
 
     return spinner
@@ -88,7 +88,7 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { observable, oldValue, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
     }
 
     return opcr(this, spinner, op)
@@ -110,7 +110,7 @@ fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false,
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { observable, oldValue, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
     }
 
     return opcr(this, spinner, op)
@@ -132,7 +132,7 @@ fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Bool
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { observable, oldValue, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
     }
 
     return opcr(this, spinner, op)
