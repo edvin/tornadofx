@@ -71,6 +71,7 @@ fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 
 fun <T : Node> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
+fun Iterable<Node>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 
 fun <T : Node> T.addPseudoClass(className: String) = apply {
     val pseudoClass = PseudoClass.getPseudoClass(className)
