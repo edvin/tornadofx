@@ -34,8 +34,6 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-import kotlin.reflect.KType
-import kotlin.reflect.full.companionObject
 
 interface Rendered {
     fun render(): String
