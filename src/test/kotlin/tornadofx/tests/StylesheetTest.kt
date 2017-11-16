@@ -506,7 +506,7 @@ class StylesheetTest {
 
     @Test
     fun inlineStyle() {
-        val arrayOfStyleables = arrayOf<Styleable>(Pane(), MenuItem("Click Me"), Tooltip("Click Me"), Tab("This Tab"), TableColumn<Int, String>())
+        val arrayOfStyleables = arrayOf<Styleable>(Pane(), MenuItem("Click Me"), Tooltip("Click"), Tab("This Tab"), TableColumn<Int, String>())
         for (node in arrayOfStyleables) {
             node.style {
                 backgroundColor += Color.RED
