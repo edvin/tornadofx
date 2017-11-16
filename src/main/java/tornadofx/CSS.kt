@@ -34,6 +34,8 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
+import kotlin.reflect.full.companionObject
 
 interface Rendered {
     fun render(): String
@@ -1042,7 +1044,10 @@ class InlineCss : PropertyHolder(), Rendered {
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
-    val setStyleMethod = this.javaClass.methods.firstOrNull { method -> method.name == "setStyle" }
+
+    val setStyleMethod = this.javaClass.methods.firstOrNull { method ->
+        method.name == "setStyle" && method.returnType == Void.TYPE && method.parameterCount == 1 && method.parameters[0].type == String::class.java
+    }
 
     setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
 
@@ -1054,7 +1059,7 @@ fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
     try {
         // in Java 9 setStyleMethod.canAccess(this) can be used for checking instead of wrapping this invocation in a try-catch clause
-        setStyleMethod.invoke(this, newStyle)
+        setStyleMethod!!.invoke(this, newStyle)
     } catch (exception: Exception) {
         when (exception) {
             is IllegalAccessException,
