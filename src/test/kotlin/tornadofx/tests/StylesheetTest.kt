@@ -1,7 +1,8 @@
 package tornadofx.tests
 
 import javafx.css.PseudoClass
-import javafx.scene.control.Label
+import javafx.css.Styleable
+import javafx.scene.control.*
 import javafx.scene.effect.BlurType
 import javafx.scene.effect.InnerShadow
 import javafx.scene.layout.Pane
@@ -505,15 +506,17 @@ class StylesheetTest {
 
     @Test
     fun inlineStyle() {
-        val node = Pane()
-        node.style {
-            backgroundColor += Color.RED
+        val arrayOfStyleables = arrayOf<Styleable>(Pane(), MenuItem("Click Me"), Tooltip("Click Me"), Tab("This Tab"), TableColumn<Int, String>())
+        for (node in arrayOfStyleables) {
+            node.style {
+                backgroundColor += Color.RED
+            }
+            assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
+            node.style(append = true) {
+                padding = box(10.px)
+            }
+            assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
         }
-        assertEquals("-fx-background-color: rgba(255, 0, 0, 1);", node.style)
-        node.style(append = true) {
-            padding = box(10.px)
-        }
-        assertEquals("-fx-background-color: rgba(255, 0, 0, 1); -fx-padding: 10px 10px 10px 10px;", node.style)
     }
 
     @Test
