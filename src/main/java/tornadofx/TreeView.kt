@@ -199,18 +199,10 @@ fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
 val <T> TreeView<T>.selectedValue: T?
     get() = this.selectionModel.selectedItem?.value
 
-var <T> TreeView<T>.multiSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
-    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+fun <T> TreeView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}
 
-var <T> TreeView<T>.singleSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.SINGLE
-    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
-
-var <T> TreeTableView<T>.multiSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
-    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
-
-var <T> TreeTableView<T>.singleSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.SINGLE
-    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
+fun <T> TreeTableView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}

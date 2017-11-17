@@ -16,7 +16,7 @@
 - ObservableValue<String>.isBlank() and ObservableValue<String>.isNotBlank() which returns BooleanBinding. Useful for binding to TextField enabled/visible state
 - Added `owner` and `title` parameters to `alert` and other dialog builders (https://github.com/edvin/tornadofx/issues/522)
 - TextInputControl.editableWhen
-- `singleSelect` and `multiSelect` property for TreeView, TreeTableView, TableView and ListView
+- `multiSelect()` for TreeView, TreeTableView, TableView and ListView
 
 ## [1.7.12]
 

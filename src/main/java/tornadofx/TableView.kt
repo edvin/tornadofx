@@ -142,10 +142,6 @@ fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): Table
     cellFormat(DefaultScope) { text = converter.toString(it) }
 }
 
-var <T> TableView<T>.multiSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
-    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
-
-var <T> TableView<T>.singleSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.SINGLE
-    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
+fun <T> TableView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}

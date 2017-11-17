@@ -214,10 +214,6 @@ fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider
     }
 }
 
-var <T> ListView<T>.multiSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
-    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
-
-var <T> ListView<T>.singleSelect: Boolean
-    get() = selectionModel.selectionMode == SelectionMode.SINGLE
-    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
+fun <T> ListView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}
