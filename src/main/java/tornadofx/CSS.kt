@@ -1042,30 +1042,30 @@ class InlineCss : PropertyHolder(), Rendered {
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
-    val block = InlineCss().apply(op)
 
-    fun setter(value: String) = when (this) {
-        is Node -> style = value
-        is MenuItem -> style = value
-        is PopupControl -> style = value
-        is Tab -> style = value
-        is TableColumnBase<*, *> -> this.style = value
-        else -> throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    val setStyleMethod = this.javaClass.methods.firstOrNull { method ->
+        method.name == "setStyle" && method.returnType == Void.TYPE && method.parameterCount == 1 && method.parameters[0].type == String::class.java
     }
 
-    if (append && style.isNotBlank())
-        setter(style + block.render())
-    else
-        setter(block.render().trim())
-}
+    setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
 
-fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
+    val newStyle = when (append && style.isNotBlank()) {
+        true -> (style + block.render())
+        else -> block.render().trim()
+    }
 
-    if (append && style.isNotBlank())
-        style += block.render()
-    else
-        style = block.render().trim()
+    try {
+        // in Java 9 setStyleMethod.canAccess(this) can be used for checking instead of wrapping this invocation in a try-catch clause
+        setStyleMethod!!.invoke(this, newStyle)
+    } catch (exception: Exception) {
+        when (exception) {
+            is IllegalAccessException,
+            is IllegalArgumentException -> println("Cannot access ${this@style.javaClass}.setStyle(...) through reflection due to insufficient priviledge.")
+            else -> println("Invocation of ${this@style.javaClass}.setStyle(...) through reflection failed.")
+        }
+        throw exception
+    }
 }
 
 // Delegates
