@@ -2,9 +2,7 @@ package tornadofx
 
 import javafx.beans.property.*
 import javafx.scene.Node
-import javafx.scene.control.TreeCell
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.util.Callback
@@ -200,3 +198,19 @@ fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
  */
 val <T> TreeView<T>.selectedValue: T?
     get() = this.selectionModel.selectedItem?.value
+
+var <T> TreeView<T>.multiSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
+    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+
+var <T> TreeView<T>.singleSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.SINGLE
+    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
+
+var <T> TreeTableView<T>.multiSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
+    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+
+var <T> TreeTableView<T>.singleSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.SINGLE
+    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }

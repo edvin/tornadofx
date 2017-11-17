@@ -9,6 +9,8 @@ import javafx.collections.ObservableMap
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.TableView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
@@ -211,3 +213,11 @@ fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider
         cellFormat(scope) { }
     }
 }
+
+var <T> ListView<T>.multiSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.MULTIPLE
+    set(value) { selectionModel.selectionMode = SelectionMode.MULTIPLE }
+
+var <T> ListView<T>.singleSelect: Boolean
+    get() = selectionModel.selectionMode == SelectionMode.SINGLE
+    set(value) { selectionModel.selectionMode = SelectionMode.SINGLE }
