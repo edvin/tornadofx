@@ -358,13 +358,13 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
 }
 
-fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
         val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
         resizer.isAccessible = true
         resizeColumns.forEach { resizer.invoke(skin, it.column, maxRows) }
-        afterResize?.invoke()
+        afterResize()
     }
     if (skin == null) {
         skinProperty.onChangeOnce {
