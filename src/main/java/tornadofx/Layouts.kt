@@ -13,12 +13,9 @@ import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.*
 import javafx.scene.layout.*
-import tornadofx.Stylesheet.Companion.bottom
-import tornadofx.Stylesheet.Companion.left
-import tornadofx.Stylesheet.Companion.right
-import tornadofx.Stylesheet.Companion.title
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
+import kotlin.reflect.full.createInstance
 
 private val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
 private val GridPaneParentObjectKey = "TornadoFX.GridPaneParentObject"
@@ -214,7 +211,7 @@ fun EventTarget.scrollpane(fitToWidth: Boolean = false, fitToHeight: Boolean = f
 }
 
 var ScrollPane.edgeToEdge: Boolean
-    get() = hasClass("edge-to-edge");
+    get() = hasClass("edge-to-edge")
     set(value) {
         if (value) addClass("edge-to-edge") else removeClass("edge-to-edge")
     }
@@ -272,7 +269,7 @@ fun Region.paddingRight(p: Double) {
 }
 
 var Region.paddingRight: Number
-    get() = padding.right;
+    get() = padding.right
     set(value) {
         padding = Insets(padding.top, value.toDouble(), padding.bottom, padding.left)
     }
@@ -283,7 +280,7 @@ fun Region.paddingLeft(p: Double) {
 }
 
 var Region.paddingLeft: Number
-    get() = padding.left;
+    get() = padding.left
     set(value) {
         padding = Insets(padding.top, padding.right, padding.bottom, value.toDouble())
     }
@@ -294,7 +291,7 @@ fun Region.paddingTop(p: Double) {
 }
 
 var Region.paddingTop: Number
-    get() = padding.top;
+    get() = padding.top
     set(value) {
         padding = Insets(value.toDouble(), padding.right, padding.bottom, padding.left)
     }
@@ -305,7 +302,7 @@ fun Region.paddingBottom(p: Double) {
 }
 
 var Region.paddingBottom: Number
-    get() = padding.bottom;
+    get() = padding.bottom
     set(value) {
         padding = Insets(padding.top, padding.right, value.toDouble(), padding.left)
     }
@@ -317,7 +314,7 @@ fun Region.paddingVertical(p: Double) {
 }
 
 var Region.paddingVertical: Number
-    get() = (padding.top + padding.bottom) / 2.0;
+    get() = (padding.top + padding.bottom) / 2.0
     set(value) {
         val half = value.toDouble() / 2.0
         padding = Insets(half, padding.right, half, padding.left)
@@ -330,7 +327,7 @@ fun Region.paddingHorizontal(p: Double) {
 }
 
 var Region.paddingHorizontal: Number
-    get() = (padding.left + padding.right) / 2.0;
+    get() = (padding.left + padding.right) / 2.0
     set(value) {
         val half = value.toDouble() / 2.0
         padding = Insets(padding.top, half, padding.bottom, half)
@@ -342,7 +339,7 @@ fun Region.paddingAll(p: Double) {
 }
 
 var Region.paddingAll: Number
-    get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0;
+    get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0
     set(value) {
         padding = Insets(value.toDouble(), value.toDouble(), value.toDouble(), value.toDouble())
     }
