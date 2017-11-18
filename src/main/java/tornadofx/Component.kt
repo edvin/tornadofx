@@ -97,8 +97,8 @@ abstract class Component : Configurable {
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
 
-    inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
-    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
+    inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params).apply(op)
+    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) = find(type, scope, params).apply(op)
     @JvmOverloads
     fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
 
@@ -218,33 +218,30 @@ abstract class Component : Configurable {
      *
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
-            where InjectableType : Component, InjectableType : ScopedInstance {
-        val t = task { invoke(find(scope)) }
-        if (doOnUi != null) t.ui(doOnUi)
-        return t
-    }
+    inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: (ReturnType) -> Unit = {}): Task<ReturnType>
+            where InjectableType : Component, InjectableType : ScopedInstance
+     = task { invoke(find(scope)) }.apply { ui(doOnUi) }
 
     /**
      * Perform the given operation on an ScopedInstance class function member asynchronousyly.
      *
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+    inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: (ReturnType) -> Unit = {})
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+    inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: (ReturnType) -> Unit = {})
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: (ReturnType) -> Unit = {})
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2, p3) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: (ReturnType) -> Unit = {})
             where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+            = task { invoke(find(scope), p1, p2, p3, p4) }.apply { ui(doOnUi) }
 
     /**
      * Find the given property inside the given ScopedInstance. Useful for assigning a property from a View or Controller
@@ -666,23 +663,23 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) = cellCache(scope, cachedGraphicProvider)
 
-    fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = useProgressBar(scope, afterCommit)
+    fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: (TableColumn.CellEditEvent<S, Number?>) -> Unit = {}) = useProgressBar(scope, afterCommit)
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
-    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: (DrawerItem.() -> Unit)? = null)
+    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {})
             = item(T::class, scope, params, expanded, showHeader, op)
 
-    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
+    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: DrawerItem.() -> Unit = {}) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
-    fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) {
+    fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) {
         val view = find(type, scope, params)
         plusAssign(view.root)
-        op?.invoke(view)
+        op(view)
     }
 
-    inline fun <reified T : UIComponent> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: (T.() -> Unit)? = null) = add(T::class, params.toMap(), op)
+    inline fun <reified T : UIComponent> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: T.() -> Unit = {}) = add(T::class, params.toMap(), op)
 
     fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
 

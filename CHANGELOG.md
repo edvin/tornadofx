@@ -10,6 +10,7 @@
 
 ### Changes
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
+- lambda's that return unit are no longer nullable. use the default-lambda instead
 
 ### Additions
 - `cellFragment` support for DataGrid

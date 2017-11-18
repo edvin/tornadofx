@@ -103,10 +103,10 @@ fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = appl
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
-fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null): Tooltip {
+fun Node.tooltip(text: String? = null, graphic: Node? = null, op: Tooltip.() -> Unit = {}): Tooltip {
     val newToolTip = Tooltip(text)
     graphic?.apply { newToolTip.graphic = this }
-    if (op != null) newToolTip.op()
+    newToolTip.op()
     if (this is Control) tooltip = newToolTip else Tooltip.install(this, newToolTip)
     return newToolTip
 }
@@ -282,13 +282,13 @@ fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
 fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
 infix fun Number.xy(y: Number) = Point2D(toDouble(), y.toDouble())
 
-fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         try {
             val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
             resizer.isAccessible = true
             resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-            afterResize?.invoke()
+            afterResize()
         } catch (ex: Exception) {
             // Silent for now, it is usually run multiple times
             //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
@@ -297,7 +297,7 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
-fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
@@ -828,20 +828,12 @@ inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findA
 /**
  * Find the first UIComponent of the specified type that owns any of this node's children
  */
-inline fun <reified T : UIComponent> Parent.lookup(noinline op: (T.() -> Unit)? = null): T? {
-    val result = findAll<T>().getOrNull(0)
-    if (result != null) op?.invoke(result)
-    return result
-}
+inline fun <reified T : UIComponent> Parent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
 /**
  * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
  */
-inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Unit)? = null): T? {
-    val result = findAll<T>().getOrNull(0)
-    if (result != null) op?.invoke(result)
-    return result
-}
+inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
 fun EventTarget.removeFromParent() {
     if (this is UIComponent) {
@@ -893,11 +885,11 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: () -> Unit = {}): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
-    onTransit?.invoke()
+    onTransit()
     if (this == scene?.root) {
         val scene = scene!!
 
@@ -965,7 +957,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
 }
 
 @Deprecated("This will go away in the future. Use the version with centerOnScreen parameter", ReplaceWith("replaceWith(replacement, transition, sizeToScene, false)"))
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean, onTransit: (() -> Unit)? = null) =
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean, onTransit: () -> Unit = {}) =
         replaceWith(replacement, transition, sizeToScene, false)
 
 fun Node.hide() {
@@ -1179,7 +1171,7 @@ fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
-fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: (SVGIcon.() -> Unit)? = null) = opcr(this, SVGIcon(shape, size, color), op)
+fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: SVGIcon.() -> Unit = {}) = opcr(this, SVGIcon(shape, size, color), op)
 
 class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) : Pane() {
     init {

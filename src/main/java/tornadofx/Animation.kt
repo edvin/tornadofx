@@ -15,6 +15,7 @@ import javafx.scene.paint.Paint
 import javafx.scene.shape.Shape
 import javafx.scene.transform.Rotate
 import javafx.util.Duration
+import tornadofx.Stylesheet.Companion.axis
 import java.util.*
 
 operator fun Timeline.plusAssign(keyFrame: KeyFrame) {
@@ -67,7 +68,7 @@ fun timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
  */
 fun UIComponent.move(time: Duration, destination: Point2D,
                      easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                     op: (TranslateTransition.() -> Unit)? = null)
+                     op: TranslateTransition.() -> Unit = {})
         = root.move(time, destination, easing, reversed, play, op)
 
 /**
@@ -83,7 +84,7 @@ fun UIComponent.move(time: Duration, destination: Point2D,
  */
 fun Node.move(time: Duration, destination: Point2D,
               easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-              op: (TranslateTransition.() -> Unit)? = null): TranslateTransition {
+              op: TranslateTransition.() -> Unit = {}): TranslateTransition {
     val target: Point2D
     if (reversed) {
         target = point(translateX, translateY)
@@ -94,7 +95,7 @@ fun Node.move(time: Duration, destination: Point2D,
     }
     return TranslateTransition(time, this).apply {
         interpolator = easing
-        op?.invoke(this)
+        op(this)
         toX = target.x
         toY = target.y
         if (play) play()
@@ -114,7 +115,7 @@ fun Node.move(time: Duration, destination: Point2D,
  */
 fun UIComponent.rotate(time: Duration, angle: Number,
                        easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                       op: (RotateTransition.() -> Unit)? = null)
+                       op: RotateTransition.() -> Unit = {})
         = root.rotate(time, angle, easing, reversed, play, op)
 
 /**
@@ -130,7 +131,7 @@ fun UIComponent.rotate(time: Duration, angle: Number,
  */
 fun Node.rotate(time: Duration, angle: Number,
                 easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                op: (RotateTransition.() -> Unit)? = null): RotateTransition {
+                op: RotateTransition.() -> Unit = {}): RotateTransition {
     val target: Double
     if (reversed) {
         target = rotate
@@ -140,7 +141,7 @@ fun Node.rotate(time: Duration, angle: Number,
     }
     return RotateTransition(time, this).apply {
         interpolator = easing
-        op?.invoke(this)
+        op(this)
         toAngle = target
         if (play) play()
     }
@@ -159,7 +160,7 @@ fun Node.rotate(time: Duration, angle: Number,
  */
 fun UIComponent.scale(time: Duration, scale: Point2D,
                       easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                      op: (ScaleTransition.() -> Unit)? = null)
+                      op: ScaleTransition.() -> Unit  = {})
         = root.scale(time, scale, easing, reversed, play, op)
 
 /**
@@ -175,7 +176,7 @@ fun UIComponent.scale(time: Duration, scale: Point2D,
  */
 fun Node.scale(time: Duration, scale: Point2D,
                easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-               op: (ScaleTransition.() -> Unit)? = null): ScaleTransition {
+               op: ScaleTransition.() -> Unit = {}): ScaleTransition {
     val target: Point2D
     if (reversed) {
         target = point(scaleX, scaleY)
@@ -186,7 +187,7 @@ fun Node.scale(time: Duration, scale: Point2D,
     }
     return ScaleTransition(time, this).apply {
         interpolator = easing
-        op?.invoke(this)
+        op(this)
         toX = target.x
         toY = target.y
         if (play) play()
@@ -206,7 +207,7 @@ fun Node.scale(time: Duration, scale: Point2D,
  */
 fun UIComponent.fade(time: Duration, opacity: Number,
                      easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                     op: (FadeTransition.() -> Unit)? = null)
+                     op: FadeTransition.() -> Unit = {})
         = root.fade(time, opacity, easing, reversed, play, op)
 
 /**
@@ -222,7 +223,7 @@ fun UIComponent.fade(time: Duration, opacity: Number,
  */
 fun Node.fade(time: Duration, opacity: Number,
               easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-              op: (FadeTransition.() -> Unit)? = null): FadeTransition {
+              op: FadeTransition.() -> Unit = {}): FadeTransition {
     val target: Double
     if (reversed) {
         target = this.opacity
@@ -232,7 +233,7 @@ fun Node.fade(time: Duration, opacity: Number,
     }
     return FadeTransition(time, this).apply {
         interpolator = easing
-        op?.invoke(this)
+        op(this)
         toValue = target
         if (play) play()
     }
@@ -255,7 +256,7 @@ fun Node.fade(time: Duration, opacity: Number,
  */
 fun UIComponent.transform(time: Duration, destination: Point2D, angle: Number, scale: Point2D, opacity: Number,
                           easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                          op: (ParallelTransition.() -> Unit)? = null)
+                          op: ParallelTransition.() -> Unit = {})
         = root.transform(time, destination, angle, scale, opacity, easing, reversed, play, op)
 
 /**
@@ -275,14 +276,14 @@ fun UIComponent.transform(time: Duration, destination: Point2D, angle: Number, s
  */
 fun Node.transform(time: Duration, destination: Point2D, angle: Number, scale: Point2D, opacity: Number,
                    easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                   op: (ParallelTransition.() -> Unit)? = null)
+                   op: ParallelTransition.() -> Unit = {})
         = move(time, destination, easing, reversed, play)
         .and(rotate(time, angle, easing, reversed, play))
         .and(scale(time, scale, easing, reversed, play))
         .and(fade(time, opacity, easing, reversed, play))
         .apply {
             interpolator = easing
-            op?.invoke(this)
+            op(this)
             if (play) play()
         }
 
@@ -294,15 +295,12 @@ fun Node.transform(time: Duration, destination: Point2D, angle: Number, scale: P
  * @param op Modify the animation after it is created
  * @return A ParallelTransition
  */
-fun Animation.and(vararg animation: Animation, op: (ParallelTransition.() -> Unit)? = null) : ParallelTransition {
+fun Animation.and(vararg animation: Animation, op: ParallelTransition.() -> Unit = {}) : ParallelTransition {
     if (this is ParallelTransition) {
         children += animation
-        op?.invoke(this)
-        return this
+        return this.also(op)
     } else {
-        val transition = ParallelTransition(this, *animation)
-        op?.invoke(transition)
-        return transition
+        return ParallelTransition(this, *animation).also(op)
     }
 }
 
@@ -323,9 +321,9 @@ infix fun Animation.and(animation: Animation): ParallelTransition {
  * @param op Modify the animation before playing
  * @return A ParallelTransition
  */
-fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransition.() -> Unit)? = null) = ParallelTransition().apply {
+fun Iterable<Animation>.playParallel(play: Boolean = true, op: ParallelTransition.() -> Unit = {}) = ParallelTransition().apply {
     children.setAll(toList())
-    op?.invoke(this)
+    op(this)
     if (play) play()
 }
 
@@ -337,15 +335,12 @@ fun Iterable<Animation>.playParallel(play: Boolean = true, op: (ParallelTransiti
  * @param op Modify the animation after it is created
  * @return A SequentialTransition
  */
-fun Animation.then(vararg animation: Animation, op: (SequentialTransition.() -> Unit)? = null): SequentialTransition {
+fun Animation.then(vararg animation: Animation, op: SequentialTransition.() -> Unit = {}): SequentialTransition {
     if (this is SequentialTransition) {
         children += animation
-        op?.invoke(this)
-        return this
+        return this.also(op)
     } else {
-        val transition = SequentialTransition(this, *animation)
-        op?.invoke(transition)
-        return transition
+        return SequentialTransition(this, *animation).also(op)
     }
 }
 
@@ -366,53 +361,53 @@ infix fun Animation.then(animation: Animation): SequentialTransition {
  * @param op Modify the animation before playing
  * @return A SequentialTransition
  */
-fun Iterable<Animation>.playSequential(play: Boolean = true, op: (SequentialTransition.() -> Unit)? = null) = SequentialTransition().apply {
+fun Iterable<Animation>.playSequential(play: Boolean = true, op: SequentialTransition.() -> Unit = {}) = SequentialTransition().apply {
     children.setAll(toList())
-    op?.invoke(this)
+    op(this)
     if (play) play()
 }
 
 fun Shape.animateFill(time: Duration, from: Color, to: Color,
                       easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                      op: (FillTransition.() -> Unit)? = null): FillTransition {
+                      op: FillTransition.() -> Unit = {}): FillTransition {
     return FillTransition(time, this, from, to).apply {
         interpolator = easing
         if (reversed) {
             fromValue = to
             toValue = from
         }
-        op?.invoke(this)
+        op(this)
         if (play) play()
     }
 }
 
 fun Shape.animateStroke(time: Duration, from: Color, to: Color,
                         easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                        op: (StrokeTransition.() -> Unit)? = null): StrokeTransition {
+                        op: StrokeTransition.() -> Unit = {}): StrokeTransition {
     return StrokeTransition(time, this, from, to).apply {
         interpolator = easing
         if (reversed) {
             fromValue = to
             toValue = from
         }
-        op?.invoke(this)
+        op(this)
         if (play) play()
     }
 }
 
 fun Node.follow(time: Duration, path: Shape,
                 easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                op: (PathTransition.() -> Unit)? = null): PathTransition {
+                op: PathTransition.() -> Unit = {}): PathTransition {
     return PathTransition(time, path, this).apply {
         interpolator = easing
-        op?.invoke(this)
+        op(this)
         if (reversed && rate > 0.0) rate = -rate
         if (play) play()
     }
 }
 
-fun pause(time: Duration, play: Boolean = true, op: (PauseTransition.() -> Unit)? = null) = PauseTransition(time).apply {
-    op?.invoke(this)
+fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit = {}) = PauseTransition(time).apply {
+    op(this)
     if (play) play()
 }
 
@@ -449,7 +444,7 @@ class KeyFrameBuilder(val duration: Duration) {
 
 }
 
-fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: (Timeline.() -> Unit)? = null) {
+fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: Timeline.() -> Unit = {}) {
     val writableValue = this
     val timeline = Timeline()
 
@@ -457,12 +452,9 @@ fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: 
         keyframe(duration) {
             keyvalue(writableValue, endValue, interpolator)
         }
+        op()
+        play()
     }
-
-    op?.apply { this.invoke(timeline) }
-
-    timeline.play()
-
 }
 
 val Number.millis: Duration get() = Duration.millis(this.toDouble())
@@ -677,11 +669,7 @@ abstract class ViewTransition {
          */
         protected abstract fun reversed(): T
 
-        fun reversed(op: (T.() -> Unit)? = null): T {
-            val reversed = reversed()
-            op?.invoke(reversed)
-            return reversed
-        }
+        fun reversed(op: T.() -> Unit = {}): T = reversed().also(op)
     }
 
     /**
