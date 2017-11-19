@@ -18,6 +18,7 @@
 - Added `owner` and `title` parameters to `alert` and other dialog builders (https://github.com/edvin/tornadofx/issues/522)
 - TextInputControl.editableWhen
 - `multiSelect()` for TreeView, TreeTableView, TableView and ListView
+- Stylesheets can now be added specificly to a `Parent`- Node with `addStylesheet`
 
 ## [1.7.12]
 

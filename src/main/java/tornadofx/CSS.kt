@@ -1349,3 +1349,8 @@ fun Parent.stylesheet(op: Stylesheet.() -> Unit) {
     val stylesheet = Stylesheet().apply(op)
     stylesheets += stylesheet.base64URL.toExternalForm()
 }
+
+/**
+ * Adds the [stylesheet] to the given parent.
+ */
+inline fun <T: Stylesheet> Parent.addStylesheet(stylesheet: KClass<T>) = this.stylesheets.add("css://${stylesheet.java.name}")
