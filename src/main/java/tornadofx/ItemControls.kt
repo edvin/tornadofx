@@ -386,7 +386,7 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: TableCol
  */
 @JvmName("pojoColumn")
 fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
-    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    val propName = getter.name.substring(3).decapitalize()
     return this.column(title, propName)
 }
 
@@ -405,7 +405,7 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: Tree
  */
 @JvmName("pojoColumn")
 fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
-    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    val propName = getter.name.substring(3).decapitalize()
     return this.column(title, propName)
 }
 
@@ -462,7 +462,7 @@ fun <S> TableColumn<S, out Number?>.useProgressBar(scope: Scope, afterCommit: (T
     (this as TableColumn<S, Number?>).setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<Number?>
         property.value = it.newValue?.toDouble()
-        afterCommit?.invoke(it as TableColumn.CellEditEvent<S, Number?>)
+        afterCommit(it as TableColumn.CellEditEvent<S, Number?>)
     }
 }
 
@@ -708,7 +708,7 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
 
     fun expandedProperty() = expanderColumn.getCellObservableValue(tableRow.index) as SimpleBooleanProperty
     var expanded: Boolean
-        get() = expandedProperty().value;
+        get() = expandedProperty().value
         set(value) {
             expandedProperty().value = value
         }
@@ -957,7 +957,7 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
      * Commit the current item, or just the given column for this item if a column is supplied
      */
     fun commit(item: S, column: TableColumn<*, *>? = null) {
-        val dirtyState = getDirtyState(item);
+        val dirtyState = getDirtyState(item)
         if (column == null) dirtyState.commit() else dirtyState.commit(column)
     }
 
@@ -973,7 +973,7 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
      * Rollback the current item, or just the given column for this item if a column is supplied
      */
     fun rollback(item: S, column: TableColumn<*, *>? = null) {
-        val dirtyState = getDirtyState(item);
+        val dirtyState = getDirtyState(item)
         if (column == null) dirtyState.rollback() else dirtyState.rollback(column)
     }
 
