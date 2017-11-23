@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
+import tornadofx.FX.Companion.childInterceptors
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -143,7 +144,7 @@ class FX {
          *
          * FX.addChildInterceptor = { parent, node, index -> if (parent is MigPane) { parent.add(node, CC()); true } else false }
          */
-        var addChildInterceptor: (parent: EventTarget, node: Node, index: Int?) -> Boolean = { _, _, _ -> false }
+        val childInterceptors = mutableListOf<ChildInterceptor>()
 
         @JvmStatic
         var dicontainer: DIContainer? = null
@@ -457,7 +458,8 @@ fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}): T {
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
-    if (FX.addChildInterceptor(this, node, index)) return
+    if (FX.childInterceptors.dropWhile { !it(this, node, index) }.isNotEmpty()) return
+
     if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     if (this is Node) {
         val target = builderTarget
@@ -575,7 +577,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
  * in the children list of this layout node.
  */
 fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -> Node): ListConversionListener<T, Node>
-        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
+        = requireNotNull(getChildList()?.bind(sourceList, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the items of the given ListPropery by converting
@@ -583,7 +585,7 @@ fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -
  * will be reflected in the children list of this layout node.
  */
 fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node>
-        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
+        = requireNotNull(getChildList()?.bind(sourceList, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the given observable set of items by converting
@@ -591,7 +593,7 @@ fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> 
  * in the children list of this layout node.
  */
 inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node>
-    = requireNotNull(getChildList()?.bind(sourceSet, converter)){"Unable to extract child nodes from $this"}
+        = requireNotNull(getChildList()?.bind(sourceSet, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the given observable list of items by converting
@@ -599,7 +601,7 @@ inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noi
  * in the children list of this layout node.
  */
 inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node>
-         = requireNotNull(getChildList()?.bind(sourceList){ converter(it).root }) { "Unable to extract child nodes from $this" }
+        = requireNotNull(getChildList()?.bind(sourceList) { converter(it).root }) { "Unable to extract child nodes from $this" }
 
 
 /**
