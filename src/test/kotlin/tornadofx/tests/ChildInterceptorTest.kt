@@ -10,12 +10,19 @@ import org.testfx.api.FxToolkit
 import tornadofx.*
 import kotlin.test.assertEquals
 
-abstract class BaseInterceptor:ChildInterceptor{
+abstract class BaseInterceptor : ChildInterceptor {
     var intercepted: Boolean = false
 }
+
+class DummyPane : Pane()
+
+fun EventTarget.dummyPane(op: DummyPane.() -> Unit = {}): DummyPane {
+    return opcr(this,DummyPane(),op)
+}
+
 class FirstInterceptor : BaseInterceptor() {
     override fun invoke(parent: EventTarget, node: Node, index: Int?): Boolean = when (parent) {
-        is Pane -> {
+        is DummyPane -> {
             intercepted = true
             true
         }
@@ -25,7 +32,7 @@ class FirstInterceptor : BaseInterceptor() {
 
 class SecondInterceptor : BaseInterceptor() {
     override fun invoke(parent: EventTarget, node: Node, index: Int?): Boolean = when (parent) {
-        is Pane -> {
+        is DummyPane -> {
             intercepted = true
             true
         }
@@ -34,13 +41,12 @@ class SecondInterceptor : BaseInterceptor() {
 }
 
 class MyTestView : View("TestView") {
-    override val root = pane {
+    override val root = dummyPane {
         button {}
     }
 }
 
 class ChildInterceptorTest {
-
 
     companion object {
 
@@ -63,6 +69,6 @@ class ChildInterceptorTest {
 
     @Test
     fun onlyOneInterceptorShouldWork() {
-        assertEquals(FX.childInterceptors.map { it as BaseInterceptor }.filter { it.intercepted }.size,1)
+        assertEquals(FX.childInterceptors.map { it as BaseInterceptor }.filter { it.intercepted }.size, 1)
     }
 }
