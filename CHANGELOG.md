@@ -6,14 +6,19 @@
 
 - Navigation button issue when already docked view was docked again (https://github.com/edvin/tornadofx/issues/526)
 - Internal thread pools are shutdown on app exit. Running threads in the default thread pool will still block application stop.
+- ComboBox.makeAutoCompletable() inspects listView.prefWidth for being bound before attemting to set it (https://github.com/edvin/tornadofx/issues/530y)
 
 ### Changes
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
+- lambda's that return unit are no longer nullable. use the default-lambda instead
 
 ### Additions
 - `cellFragment` support for DataGrid
 - ObservableValue<String>.isBlank() and ObservableValue<String>.isNotBlank() which returns BooleanBinding. Useful for binding to TextField enabled/visible state
 - Added `owner` and `title` parameters to `alert` and other dialog builders (https://github.com/edvin/tornadofx/issues/522)
+- TextInputControl.editableWhen
+- `multiSelect()` for TreeView, TreeTableView, TableView and ListView
+- Stylesheets can now be added specificly to a `Parent`- Node with `addStylesheet`
 
 ## [1.7.12]
 

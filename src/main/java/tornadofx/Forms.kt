@@ -20,9 +20,9 @@ import javafx.stage.Stage
 import java.util.*
 import java.util.concurrent.Callable
 
-fun EventTarget.form(op: (Form.() -> Unit)? = null) = opcr(this, Form(), op)
+fun EventTarget.form(op: Form.() -> Unit = {}) = opcr(this, Form(), op)
 
-fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: (Fieldset.() -> Unit)? = null): Fieldset {
+fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition: Orientation? = null, wrapWidth: Double? = null, op: Fieldset.() -> Unit = {}): Fieldset {
     val fieldset = Fieldset(text ?: "")
     if (wrapWidth != null) fieldset.wrapWidth = wrapWidth
     if (labelPosition != null) fieldset.labelPosition = labelPosition
@@ -34,10 +34,10 @@ fun EventTarget.fieldset(text: String? = null, icon: Node? = null, labelPosition
 /**
  *  Creates a ButtonBarFiled with the given button order (refer to [javafx.scene.control.ButtonBar#buttonOrderProperty()] for more information about buttonOrder).
  */
-fun EventTarget.buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean = true, op: (ButtonBar.() -> Unit)? = null): ButtonBarField {
+fun EventTarget.buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean = true, op: ButtonBar.() -> Unit = {}): ButtonBarField {
     val field = ButtonBarField(buttonOrder, forceLabelIndent)
-    opcr(this, field, null)
-    op?.invoke(field.inputContainer)
+    opcr(this, field){}
+    op(field.inputContainer)
     return field
 }
 
@@ -50,10 +50,10 @@ fun EventTarget.buttonbar(buttonOrder: String? = null, forceLabelIndent: Boolean
  *
  * @see buttonbar
  */
-fun EventTarget.field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: (Field.() -> Unit)? = null): Field {
+fun EventTarget.field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLabelIndent: Boolean = false, op: Field.() -> Unit = {}): Field {
     val field = Field(text ?: "", orientation, forceLabelIndent)
-    opcr(this, field, null)
-    op?.invoke(field)
+    opcr(this, field){}
+    op(field)
     return field
 }
 

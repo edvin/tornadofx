@@ -136,9 +136,9 @@ class KeyboardRow(val keyboard: KeyboardLayout) {
         keys.add(this)
     }
 
-    fun key(text: String? = null, svg: String? = null, code: Int? = null, width: Number = 1.0, height: Number = 1.0, op: (KeyboardKey.() -> Unit)? = null): KeyboardKey {
+    fun key(text: String? = null, svg: String? = null, code: Int? = null, width: Number = 1.0, height: Number = 1.0, op: KeyboardKey.() -> Unit = {}): KeyboardKey {
         val key = KeyboardKey(keyboard, text, svg, code, width, height)
-        op?.invoke(key)
+        op(key)
         keys.add(key)
         return key
     }

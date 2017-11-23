@@ -9,6 +9,8 @@ import javafx.collections.ObservableMap
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.TableView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
@@ -210,4 +212,8 @@ fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider
     if (properties["tornadofx.cellCacheCapable"] != true) {
         cellFormat(scope) { }
     }
+}
+
+fun <T> ListView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
 }

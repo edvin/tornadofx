@@ -299,17 +299,17 @@ class FX {
     }
 }
 
-fun <T> weak(referent: T, deinit: (() -> Unit)? = null): WeakDelegate<T> = WeakDelegate(referent, deinit)
+fun <T> weak(referent: T, deinit: () -> Unit = {}): WeakDelegate<T> = WeakDelegate(referent, deinit)
 
-class WeakDelegate<T>(referent: T, deinit: (() -> Unit)? = null) : ReadOnlyProperty<Any, DeregisteringWeakReference<T>> {
+class WeakDelegate<T>(referent: T, deinit: () -> Unit = {}) : ReadOnlyProperty<Any, DeregisteringWeakReference<T>> {
     private val weakRef = DeregisteringWeakReference(referent, deinit)
     override fun getValue(thisRef: Any, property: KProperty<*>) = weakRef
 }
 
-class DeregisteringWeakReference<T>(referent: T, val deinit: (() -> Unit)? = null) : WeakReference<T>(referent) {
+class DeregisteringWeakReference<T>(referent: T, val deinit: () -> Unit = {}) : WeakReference<T>(referent) {
     fun ifActive(op: T.() -> Unit) {
         val ref = get()
-        if (ref != null) op(ref) else deinit?.invoke()
+        if (ref != null) op(ref) else deinit()
     }
 }
 
@@ -449,9 +449,9 @@ inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T {
+fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}): T {
     parent.addChildIfPossible(node)
-    op?.invoke(node)
+    op(node)
     return node
 }
 

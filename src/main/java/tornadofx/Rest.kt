@@ -61,23 +61,23 @@ open class Rest : Controller() {
 
     fun reset() = engine.reset()
 
-    fun get(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(GET, path, data, processor)
-    fun get(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = get(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun get(path: String, data: JsonValue? = null, processor: (Request) -> Unit = {}) = execute(GET, path, data, processor)
+    fun get(path: String, data: JsonModel, processor: (Request) -> Unit = {}) = get(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
 
-    fun put(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(PUT, path, data, processor)
-    fun put(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = put(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
-    fun put(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(PUT, path, data, processor)
+    fun put(path: String, data: JsonValue? = null, processor: (Request) -> Unit = {}) = execute(PUT, path, data, processor)
+    fun put(path: String, data: JsonModel, processor: (Request) -> Unit = {}) = put(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun put(path: String, data: InputStream, processor: (Request) -> Unit = {}) = execute(PUT, path, data, processor)
 
-    fun patch(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(PATCH, path, data, processor)
-    fun patch(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = patch(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
-    fun patch(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(PATCH, path, data, processor)
+    fun patch(path: String, data: JsonValue? = null, processor: (Request) -> Unit = {}) = execute(PATCH, path, data, processor)
+    fun patch(path: String, data: JsonModel, processor: (Request) -> Unit = {}) = patch(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun patch(path: String, data: InputStream, processor: (Request) -> Unit = {}) = execute(PATCH, path, data, processor)
 
-    fun post(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
-    fun post(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = post(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
-    fun post(path: String, data: InputStream, processor: ((Request) -> Unit)? = null) = execute(POST, path, data, processor)
+    fun post(path: String, data: JsonValue? = null, processor: (Request) -> Unit = {}) = execute(POST, path, data, processor)
+    fun post(path: String, data: JsonModel, processor: (Request) -> Unit = {}) = post(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun post(path: String, data: InputStream, processor: (Request) -> Unit = {}) = execute(POST, path, data, processor)
 
-    fun delete(path: String, data: JsonValue? = null, processor: ((Request) -> Unit)? = null) = execute(DELETE, path, data, processor)
-    fun delete(path: String, data: JsonModel, processor: ((Request) -> Unit)? = null) = delete(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
+    fun delete(path: String, data: JsonValue? = null, processor: (Request) -> Unit = {}) = execute(DELETE, path, data, processor)
+    fun delete(path: String, data: JsonModel, processor: (Request) -> Unit = {}) = delete(path, JsonBuilder().apply { data.toJSON(this) }.build(), processor)
 
     fun getURI(path: String): URI {
         try {
@@ -103,13 +103,12 @@ open class Rest : Controller() {
 
     }
 
-    fun execute(method: Request.Method, target: String, data: Any? = null, processor: ((Request) -> Unit)? = null): Response {
+    fun execute(method: Request.Method, target: String, data: Any? = null, processor: (Request) -> Unit = {}): Response {
         var request: Rest.Request? = null
         try {
             request = engine.request(atomicseq.addAndGet(1), method, getURI(target), data)
 
-            if (processor != null)
-                processor(request)
+            processor(request)
 
             Platform.runLater { ongoingRequests.add(request) }
             return request.execute()

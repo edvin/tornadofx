@@ -27,7 +27,7 @@ import javafx.scene.layout.StackPane
 import java.util.*
 import kotlin.reflect.KClass
 
-fun <T> EventTarget.datagrid(items: List<T>? = null, scope: Scope = DefaultScope, op: (DataGrid<T>.() -> Unit)? = null): DataGrid<T> {
+fun <T> EventTarget.datagrid(items: List<T>? = null, scope: Scope = DefaultScope, op: DataGrid<T>.() -> Unit = {}): DataGrid<T> {
     val datagrid = DataGrid<T>()
     datagrid.scope = scope
     if (items is ObservableList<T>) datagrid.items = items
