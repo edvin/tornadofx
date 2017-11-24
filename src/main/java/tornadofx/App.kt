@@ -15,7 +15,6 @@ import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 import kotlin.properties.ReadOnlyProperty
@@ -70,6 +69,13 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     init {
         Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }
+        importChildInterceptors()
+    }
+
+    private fun importChildInterceptors() {
+        ServiceLoader.load(ChildInterceptor::class.java).forEach {
+            FX.childInterceptors.add(it)
+        }
     }
 
     override fun start(stage: Stage) {
@@ -120,10 +126,10 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
     @Suppress("UNCHECKED_CAST")
     private fun determinePrimaryView(): KClass<out UIComponent> {
         if (primaryView == DeterminedByParameter::class) {
-            val viewClassName = requireNotNull(parameters.named?.get("view-class")){"No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View"}
+            val viewClassName = requireNotNull(parameters.named?.get("view-class")) { "No provided --view-class parameter and primaryView was not overridden. Choose one strategy to specify the primary View" }
             val viewClass = Class.forName(viewClassName)
 
-            require(UIComponent::class.java.isAssignableFrom(viewClass)){"Class specified by --class-name is not a subclass of tornadofx.View"}
+            require(UIComponent::class.java.isAssignableFrom(viewClass)) { "Class specified by --class-name is not a subclass of tornadofx.View" }
             return viewClass.kotlin as KClass<out UIComponent>
         } else {
             return primaryView
