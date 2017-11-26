@@ -74,7 +74,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     private fun importChildInterceptors() {
         ServiceLoader.load(ChildInterceptor::class.java).forEach {
-            FX.childInterceptors.add(it)
+            FX.addChildInterceptor(it)
         }
     }
 

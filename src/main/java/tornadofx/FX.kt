@@ -130,7 +130,15 @@ class FX {
 
         val lock = Any()
 
-        internal val childInterceptors = mutableListOf<ChildInterceptor>()
+        internal val childInterceptors = mutableSetOf<ChildInterceptor>()
+        fun addChildInterceptor(interceptor: ChildInterceptor) {
+
+            childInterceptors.add(interceptor)
+        }
+
+        fun removeChildInterceptor(interceptor: ChildInterceptor) {
+            childInterceptors.remove(interceptor)
+        }
 
         @JvmStatic
         var dicontainer: DIContainer? = null
