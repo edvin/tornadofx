@@ -11,7 +11,8 @@
 ### Changes
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
 - lambda's that return unit are no longer nullable. use the default-lambda instead
-- ChildInterceptor is now an Interface. 
+- ChildInterceptor is now an Interface.
+- Component.messages are fetched using the classloader that defined the Component subclass (https://github.com/edvin/tornadofx/issues/553)
 
 ### Additions
 
