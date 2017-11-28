@@ -9,6 +9,7 @@
 - ComboBox.makeAutoCompletable() inspects listView.prefWidth for being bound before attemting to set it (https://github.com/edvin/tornadofx/issues/530)
 
 ### Changes
+- Kotlin 1.2.0
 - ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
 - lambda's that return unit are no longer nullable. use the default-lambda instead
 - ChildInterceptor is now an Interface.
