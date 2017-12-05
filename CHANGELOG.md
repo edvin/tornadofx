@@ -7,6 +7,7 @@
 - Navigation button issue when already docked view was docked again (https://github.com/edvin/tornadofx/issues/526)
 - Internal thread pools are shutdown on app exit. Running threads in the default thread pool will still block application stop.
 - ComboBox.makeAutoCompletable() inspects listView.prefWidth for being bound before attemting to set it (https://github.com/edvin/tornadofx/issues/530)
+- Wizard.canGoBack override caused NPE (https://github.com/edvin/tornadofx/issues/211)
 
 ### Changes
 - Kotlin 1.2.0
