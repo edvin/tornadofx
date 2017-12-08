@@ -3,6 +3,7 @@
 ## [1.7.14-SNAPSHOT]
 
 ### Fixed
+- TableView Pojo Column references support boolean "is" style properties (https://github.com/edvin/tornadofx/issues/560)
 
 ### Changes
 
@@ -19,7 +20,7 @@
 
 ### Changes
 - Kotlin 1.2.0
-- ItemViewModel.bindTo(itemFragment) supports all item fragments now, not just ListCellFragment
+- ItemViewModel.bindTo(itemFragment) supports all itemb fragments now, not just ListCellFragment
 - lambda's that return unit are no longer nullable. use the default-lambda instead
 - ChildInterceptor is now an Interface.
 - Component.messages are fetched using the classloader that defined the Component subclass (https://github.com/edvin/tornadofx/issues/553)

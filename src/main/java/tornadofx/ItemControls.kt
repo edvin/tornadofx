@@ -65,7 +65,11 @@ fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = 
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) {
+                spinner.increment(0)
+            }
+        }
     }
 
     return spinner
@@ -94,7 +98,11 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) {
+                spinner.increment(0)
+            }
+        }
     }
 
     return opcr(this, spinner, op)
@@ -116,7 +124,11 @@ fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false,
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) {
+                spinner.increment(0)
+            }
+        }
     }
 
     return opcr(this, spinner, op)
@@ -138,7 +150,11 @@ fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Bool
     }
 
     if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue -> if(!newValue) {spinner.increment(0) }}
+        spinner.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) {
+                spinner.increment(0)
+            }
+        }
     }
 
     return opcr(this, spinner, op)
@@ -386,7 +402,8 @@ fun <S, T> TableView<S>.column(title: String, propertyName: String, op: TableCol
  */
 @JvmName("pojoColumn")
 fun <S, T> TableView<S>.column(title: String, getter: KFunction<T>): TableColumn<S, T> {
-    val propName = getter.name.substring(3).decapitalize()
+    val startIndex = if (getter.name.startsWith("is") && getter.name[2].isUpperCase()) 2 else 3
+    val propName = getter.name.substring(startIndex).decapitalize()
     return this.column(title, propName)
 }
 
@@ -405,7 +422,8 @@ fun <S, T> TreeTableView<S>.column(title: String, propertyName: String, op: Tree
  */
 @JvmName("pojoColumn")
 fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTableColumn<S, T> {
-    val propName = getter.name.substring(3).decapitalize()
+    val startIndex = if (getter.name.startsWith("is") && getter.name[2].isUpperCase()) 2 else 3
+    val propName = getter.name.substring(startIndex).decapitalize()
     return this.column(title, propName)
 }
 
