@@ -2,6 +2,8 @@ package tornadofx
 
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 import java.security.AccessController
 import java.security.PrivilegedActionException
 import java.security.PrivilegedExceptionAction
@@ -39,7 +41,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                     else loader.getResource(resourceName)?.openConnection()?.apply {
                         useCaches = false // Disable caches to get fresh data for reloading.
                     } ?.inputStream
-                }?.use { FXPropertyResourceBundle(it) }
+                }?.use { FXPropertyResourceBundle(InputStreamReader(it, StandardCharsets.UTF_8)) }
             }
             else -> throw IllegalArgumentException("unknown format: $format")
         }!!
@@ -51,7 +53,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
  */
 operator fun ResourceBundle.get(key: String) = getString(key)
 
-class FXPropertyResourceBundle(input: InputStream): PropertyResourceBundle(input) {
+class FXPropertyResourceBundle(input: InputStreamReader): PropertyResourceBundle(input) {
     fun inheritFromGlobal() {
         parent = FX.messages
     }
