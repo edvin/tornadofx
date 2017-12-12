@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- `runAsync` would skip the success/fail steps if no work was done in the op block 
 - TableView Pojo Column references support boolean "is" style properties (https://github.com/edvin/tornadofx/issues/560)
 - TabPane.tab<UIComponent> inside of an UIComponent is now scope aware
 - TreeView.lazyPopulate should never assign null list if filter results in no items

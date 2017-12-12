@@ -6,6 +6,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.concurrent.Task
+import javafx.concurrent.Worker
 import javafx.scene.Node
 import javafx.scene.control.Labeled
 import javafx.scene.control.ProgressIndicator
@@ -82,22 +83,26 @@ fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTa
 infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
 infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
-    Platform.runLater {
-        setOnSucceeded {
-            if (Platform.isFxApplicationThread()) {
+    runLater {
+        if (state == Worker.State.SUCCEEDED) {
+            func(value)
+        } else if (isRunning) {
+            setOnSucceeded {
                 func(value)
-            } else {
-                runLater {
-                    func(value)
-                }
             }
         }
     }
 }
 
 infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
-    Platform.runLater {
-        setOnFailed { func(exception) }
+    runLater {
+        if (state == Worker.State.FAILED) {
+            func(exception)
+        } else if (isRunning) {
+            setOnFailed {
+                func(exception)
+            }
+        }
     }
 }
 
@@ -172,7 +177,7 @@ fun ObservableValue<Boolean>.awaitUntil() {
  * For latch usage see [runAsyncWithOverlay]
  */
 fun Node.runAsyncWithProgress(latch: CountDownLatch, timeout: Duration? = null, progress: Node = ProgressIndicator()): Task<Boolean> {
-    return if(timeout == null) {
+    return if (timeout == null) {
         runAsyncWithProgress(progress) { latch.await(); true }
     } else {
         runAsyncWithOverlay(progress) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
@@ -206,7 +211,7 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
         val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
         val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
         (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
-        val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
+        val children = requireNotNull(parent.getChildList()) { "This node has no child list, and cannot contain the progress node" }
         val index = children.indexOf(this)
         children.add(index, progress)
         removeFromParent()
@@ -268,7 +273,7 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
  */
 @JvmOverloads
 fun Node.runAsyncWithOverlay(latch: CountDownLatch, timeout: Duration? = null, overlayNode: Node = MaskPane()): Task<Boolean> {
-    return if(timeout == null) {
+    return if (timeout == null) {
         runAsyncWithOverlay(overlayNode) { latch.await(); true }
     } else {
         runAsyncWithOverlay(overlayNode) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
@@ -295,11 +300,14 @@ fun <T : Any> Node.runAsyncWithOverlay(overlayNode: Node = MaskPane(), op: () ->
     val overlayContainer = stackpane { add(overlayNode) }
 
     replaceWith(overlayContainer)
-    overlayContainer.children.add(0,this)
+    overlayContainer.children.add(0, this)
 
     return task {
-        try { op() }
-        finally { runLater { overlayContainer.replaceWith(this@runAsyncWithOverlay) } }
+        try {
+            op()
+        } finally {
+            runLater { overlayContainer.replaceWith(this@runAsyncWithOverlay) }
+        }
     }
 }
 
@@ -346,7 +354,7 @@ class Latch(count: Int) : CountDownLatch(count) {
      * Locked state of this latch exposed as a property. Keep in mind that latch instance can be used only once, so
      * this property has to rebound every time.
      */
-    fun lockedProperty() : ReadOnlyBooleanProperty = lockedProperty.readOnlyProperty
+    fun lockedProperty(): ReadOnlyBooleanProperty = lockedProperty.readOnlyProperty
 
     /**
      * Locked state of this latch. `true` if and only if [CountDownLatch.getCount] is greater than `0`.
