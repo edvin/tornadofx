@@ -1,5 +1,6 @@
 package tornadofx
 
+import com.sun.glass.ui.Application
 import com.sun.javafx.tk.Toolkit
 import javafx.application.Platform
 import javafx.beans.property.*
@@ -83,27 +84,37 @@ fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTa
 infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
 
 infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
-    runLater {
+    fun attachSuccessHandler() {
         if (state == Worker.State.SUCCEEDED) {
             func(value)
-        } else if (isRunning) {
+        } else {
             setOnSucceeded {
                 func(value)
             }
         }
     }
+
+    if (Application.isEventThread())
+        attachSuccessHandler()
+    else
+        runLater { attachSuccessHandler() }
 }
 
 infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
-    runLater {
+    fun attachFailHandler() {
         if (state == Worker.State.FAILED) {
             func(exception)
-        } else if (isRunning) {
+        } else {
             setOnFailed {
                 func(exception)
             }
         }
     }
+
+    if (Application.isEventThread())
+        attachFailHandler()
+    else
+        runLater { attachFailHandler() }
 }
 
 /**
