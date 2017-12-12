@@ -11,6 +11,7 @@
 ### Changes
 
 ### Additions
+- ConfigProperties (`config`) is now `Closable` so it can be used with `use`
 
 ## [1.7.13]
 

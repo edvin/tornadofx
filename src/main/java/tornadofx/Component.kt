@@ -31,6 +31,7 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
+import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
 import java.net.URL
@@ -58,7 +59,7 @@ interface Configurable {
     }
 }
 
-class ConfigProperties(val configurable: Configurable) : Properties() {
+class ConfigProperties(val configurable: Configurable) : Properties(), Closeable {
     fun set(pair: Pair<String, Any?>) {
         val value = pair.second?.let {
             (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
@@ -77,6 +78,10 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
     fun save() {
         val path = configurable.configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
         Files.newOutputStream(path).use { output -> store(output, "") }
+    }
+
+    override fun close() {
+        save()
     }
 }
 
