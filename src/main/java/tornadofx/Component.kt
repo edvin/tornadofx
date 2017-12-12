@@ -627,6 +627,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
+    inline fun <reified  T: UIComponent> TabPane.tab(scope: Scope = this@UIComponent.scope, noinline op: Tab.() -> Unit = {}) = tab(find<T>(scope), op)
+
     inline fun <reified C : UIComponent> BorderPane.top() = top(C::class)
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
     inline fun <reified C : UIComponent> BorderPane.right() = right(C::class)

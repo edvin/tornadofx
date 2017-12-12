@@ -3,7 +3,9 @@
 ## [1.7.14-SNAPSHOT]
 
 ### Fixed
+
 - TableView Pojo Column references support boolean "is" style properties (https://github.com/edvin/tornadofx/issues/560)
+- TabPane.tab<UIComponent> inside of an UIComponent is now scope aware
 
 ### Changes
 

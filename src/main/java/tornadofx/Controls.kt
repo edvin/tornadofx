@@ -49,7 +49,7 @@ fun EventTarget.text(op: Text.() -> Unit = {}) = opcr(this, Text(), op)
 fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab {
     val tab = Tab(text, content)
     tabs.add(tab)
-    if (op != null) op(content)
+    op(content)
     return tab
 }
 
