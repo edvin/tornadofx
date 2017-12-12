@@ -246,7 +246,7 @@ fun <T : Any> TreeView<T>.lazyPopulate(
     task {
         childFactory.invoke(root)
     } success {
-        root.children.setAll(it?.map(::createItem))
+        root.children.setAll(it?.map(::createItem) ?: emptyList())
     }
 }
 
