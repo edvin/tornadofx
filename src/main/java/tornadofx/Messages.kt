@@ -21,7 +21,7 @@ private fun <EXCEPTION: Throwable, RETURN> doPrivileged(privilegedAction: ()->RE
 
 object FXResourceBundleControl : ResourceBundle.Control() {
 
-    override fun newBundle(baseName: String, locale: Locale, format: String, loader: ClassLoader, reload: Boolean): ResourceBundle {
+    override fun newBundle(baseName: String, locale: Locale, format: String, loader: ClassLoader, reload: Boolean): ResourceBundle? {
         val bundleName = toBundleName(baseName, locale)
         return when (format) {
 
@@ -33,7 +33,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                 if (ResourceBundle::class.java.isAssignableFrom(bundleClass)) bundleClass.newInstance()
                 else throw ClassCastException(bundleClass.name + " cannot be cast to ResourceBundle")
 
-            } catch (e: ClassNotFoundException) {null}
+            } catch (e: ClassNotFoundException) { null}
             "java.properties" -> {
                 val resourceName = toResourceName(bundleName, "properties")!!
                 doPrivileged<IOException, InputStream?> {
