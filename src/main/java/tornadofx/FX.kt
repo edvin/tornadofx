@@ -557,6 +557,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is CustomMenuItem -> {
             content = node
         }
+        is MenuItem -> {
+            graphic = node
+        }
         else -> getChildList()?.apply {
             if (!contains(node)) {
                 if (index != null && index < size)

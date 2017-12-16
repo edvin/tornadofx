@@ -5,6 +5,7 @@
 ### Fixed
 
 ### Changes
+- Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
 
 ### Additions
 
