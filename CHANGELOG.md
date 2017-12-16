@@ -1,6 +1,14 @@
 # Change Log
 
-## [1.7.14-SNAPSHOT]
+## [1.7.15-SNAPSHOT]
+
+### Fixed
+
+### Changes
+
+### Additions
+
+## [1.7.14]
 
 ### Fixed
 
@@ -10,6 +18,7 @@
 - TreeView.lazyPopulate should never assign null list if filter results in no items
 
 ### Changes
+- Kotlin 1.2.10
 - Node builders inside of `ButtonBase` will automatically assign the node to the `graphic` property of the Button
 
 ### Additions
