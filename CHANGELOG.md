@@ -10,6 +10,7 @@
 - TreeView.lazyPopulate should never assign null list if filter results in no items
 
 ### Changes
+- Node builders inside of `ButtonBase` will automatically assign the node to the `graphic` property of the Button
 
 ### Additions
 - ConfigProperties (`config`) is now `Closable` so it can be used with `use`
