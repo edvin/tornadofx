@@ -86,14 +86,12 @@ class SmartResize private constructor() : TableViewResizeCallback {
             val column = (observable as ReadOnlyProperty<*>).bean as TableColumn<*, *>
             val table: TableView<out Any>? = column.tableView
 
-
             if (table?.isSmartResizing == false) {
                 val rt = column.resizeType
                 val diff = oldValue.toDouble() - newValue.toDouble()
                 rt.delta -= diff
                 POLICY.call(TableView.ResizeFeatures<Any>(table as TableView<Any>?, null, 0.0))
             }
-
         }
 
 
@@ -413,7 +411,7 @@ fun <TABLE : Any> resizeCall(
                 contentColumns.forEach {
                     val rt = it.resizeType as ResizeType.Content
 
-                    it.prefWidth = it.width + rt.delta.toDouble() + rt.padding.toDouble()
+                    it.prefWidth = it.width + rt.delta + rt.padding.toDouble()
 
                     // Save minWidth if different from default
                     if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
@@ -456,7 +454,7 @@ fun <TABLE : Any> resizeCall(
                     if (rt is ResizeType.Weight) {
                         if (rt.minContentWidth && !rt.minRecorded) {
                             rt.minRecorded = true
-                            it.minWidth = it.width.toDouble() + rt.padding.toDouble()
+                            it.minWidth = it.width + rt.padding.toDouble()
                         }
                         it.prefWidth = Math.max(it.minWidth, (perWeight * rt.weight.toDouble()) + rt.delta + rt.padding.toDouble())
                     } else {

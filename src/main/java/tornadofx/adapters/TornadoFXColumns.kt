@@ -13,7 +13,7 @@ interface TornadoFXColumn<COLUMN> {
     var prefWidth: Double
     var maxWidth: Double
     var minWidth: Double
-    var width: Double
+    val width: Double
     val minWidthProperty: DoubleProperty
     val maxWidthProperty: DoubleProperty
 }
@@ -37,11 +37,24 @@ class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : Tor
         set(value) {
             column.maxWidth = value
         }
-    override var width: Double
+    override val width: Double
         get() = column.width
-        set(value) {
-            column.maxWidth = value
-        }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TornadoFXTreeTableColumn
+
+        if (column != other.column) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return column.hashCode()
+    }
+
 }
 
 class TornadoFxNormalTableColumn(override val column: TableColumn<*, *>) : TornadoFXColumn<TableColumn<*, *>> {
@@ -61,11 +74,23 @@ class TornadoFxNormalTableColumn(override val column: TableColumn<*, *>) : Torna
             column.prefWidth = value
         }
     override val properties = column.properties
-    override var width: Double
+    override val width: Double
         get() = column.width
-        set(value) {
-            column.prefWidth = value
-        }
     override val minWidthProperty get() = column.minWidthProperty()
     override val maxWidthProperty get() = column.maxWidthProperty()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TornadoFxNormalTableColumn
+
+        if (column != other.column) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return column.hashCode()
+    }
 }

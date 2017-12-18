@@ -3,6 +3,7 @@
 ## [1.7.15-SNAPSHOT]
 
 ### Fixed
+- SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 
 ### Changes
 - Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
