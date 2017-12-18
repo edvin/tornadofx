@@ -7,6 +7,7 @@
 
 ### Changes
 - Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
+- The App class (main application entrypoint) no longer requires a primary view parameter, in case you want to show a tray icon or determinine what view to show some other way
 
 ### Additions
 
