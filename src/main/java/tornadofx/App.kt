@@ -24,6 +24,8 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     var scope: Scope = DefaultScope
     val workspace: Workspace get() = scope.workspace
 
+    constructor() : this(NoPrimaryViewSpecified::class)
+
     /**
      * Path to app/global configuration settings. Defaults to app.properties inside
      * the configured configBasePath (By default conf in the current directory).
@@ -93,7 +95,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 onBeforeShow(view)
                 view.muteDocking = false
                 view.callOnDock()
-                if (shouldShowPrimaryStage()) show()
+                if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage()) show()
             }
             FX.initialized.value = true
         } catch (ex: Exception) {
@@ -114,7 +116,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         }
     }
 
-    open fun shouldShowPrimaryStage() = primaryView != NoPrimaryViewSpecified::class
+    open fun shouldShowPrimaryStage() = true
 
     open fun createPrimaryScene(view: UIComponent) = Scene(view.getRootWrapper())
 
