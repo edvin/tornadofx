@@ -49,6 +49,11 @@ open class ViewModelTest {
         assertEquals(person.name, "Jay")
     }
 
+    @Test fun default_value() {
+        val model = PersonAutoModel()
+        assertEquals(model.name.value, "Yoyo")
+    }
+
     @Test fun external_change() {
         val person = Person("John", 37)
         val model = PersonModel(person)
@@ -215,7 +220,7 @@ open class ViewModelTest {
 }
 
 class PersonAutoModel(var person: Person? = null) : ViewModel() {
-    val name = bind(true) { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
+    val name = bind(true, defaultValue = "Yoyo") { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
 }
 
 // JavaFX Property
