@@ -1271,7 +1271,7 @@ fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() 
  *
  * To only allow digits for example, do:
  *
- * filterInput { it.text.isLong() }
+ * filterInput { it.text.isInt() }
  *
  */
 fun TextInputControl.filterInput(discriminator: (TextFormatter.Change) -> Boolean) {
