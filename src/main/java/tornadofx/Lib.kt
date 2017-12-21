@@ -293,3 +293,8 @@ fun <R> proxypropDouble(receiver: Property<R>, getter: Property<R>.() -> Double,
 fun insets(all: Number) = Insets(all.toDouble(), all.toDouble(), all.toDouble(), all.toDouble())
 fun insets(horizontal: Number? = null, vertical: Number? = null) = Insets(vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0, vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0)
 fun insets(top: Number? = null, right: Number? = null, bottom: Number? = null, left: Number? = null) = Insets(top?.toDouble() ?: 0.0, right?.toDouble() ?: 0.0, bottom?.toDouble() ?: 0.0, left?.toDouble() ?: 0.0)
+
+fun String.isLong() = toLongOrNull() != null
+fun String.isInt() = toIntOrNull() != null
+fun String.isDouble() = toDoubleOrNull() != null
+fun String.isFloat() = toFloatOrNull() != null

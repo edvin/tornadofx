@@ -13,6 +13,7 @@
 
 ### Additions
 - TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
+- String.isLong(), isInt(), isDouble() and isFloat()
 
 ## [1.7.14]
 
