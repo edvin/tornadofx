@@ -6,11 +6,13 @@
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 
 ### Changes
+- AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter
 - Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
 - The App class (main application entrypoint) no longer requires a primary view parameter, in case you want to show a tray icon or determinine what view to show some other way
 
 ### Additions
+- TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
 
 ## [1.7.14]
 

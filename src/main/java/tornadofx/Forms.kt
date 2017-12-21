@@ -245,10 +245,9 @@ class Field(text: String? = null, orientation: Orientation = HORIZONTAL, forceLa
 
 @DefaultProperty("inputs")
 abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean = false) : Pane() {
-    val textProperty = SimpleStringProperty(text)
-    var text by textProperty
+    val labelProperty = SimpleStringProperty(text)
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("textProperty"), DeprecationLevel.WARNING)
-    fun textProperty() = textProperty
+    fun textProperty() = labelProperty
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
@@ -260,14 +259,14 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
     init {
         isFocusTraversable = false
         addClass(Stylesheet.field)
-        label.textProperty().bind(textProperty)
+        label.textProperty().bind(labelProperty)
         children.add(labelContainer)
     }
 
     val fieldset: Fieldset get() = findParent()!!
 
     override fun computePrefHeight(width: Double): Double {
-        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
+        val labelHasContent = forceLabelIndent || !labelProperty.value.isNullOrBlank()
 
         val labelHeight = if (labelHasContent) labelContainer.prefHeight(width) else 0.0
         val inputHeight = inputContainer.prefHeight(width)
@@ -282,7 +281,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
 
     override fun computePrefWidth(height: Double): Double {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
+        val labelHasContent = forceLabelIndent || !labelProperty.value.isNullOrBlank()
 
         val labelWidth = if (labelHasContent) fieldset.form.labelContainerWidth(height) else 0.0
         val inputWidth = inputContainer.prefWidth(height)
@@ -299,7 +298,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
 
     override fun layoutChildren() {
         val fieldset = fieldset
-        val labelHasContent = forceLabelIndent || !text.isNullOrBlank()
+        val labelHasContent = forceLabelIndent || !labelProperty.value.isNullOrBlank()
 
         val insets = insets
         val contentX = insets.left
