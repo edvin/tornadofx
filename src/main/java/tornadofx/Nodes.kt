@@ -43,6 +43,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
+import java.util.function.UnaryOperator
 import kotlin.reflect.KClass
 import kotlin.reflect.full.safeCast
 
@@ -1262,3 +1263,26 @@ fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = f
 fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
     op(this)
 } as T
+
+
+/**
+ * Filter the input of the text field by passing each change to the discriminator
+ * function and only applying the change if the discriminator returns true
+ *
+ * To only allow digits for example, do:
+ *
+ * filterInput { it.text.toLongOrNull() != null }
+ *
+ */
+fun TextInputControl.filterInput(discriminator: (TextFormatter.Change) -> Boolean) {
+    textFormatter = TextFormatter<Any>(CustomTextFilter(discriminator))
+}
+
+/**
+ * Custom text filter used to supress input values, for example to
+ * only allow numbers in a textfield. Used via the filterInput {} builder
+ */
+class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Boolean) : UnaryOperator<TextFormatter.Change> {
+    override fun apply(c: TextFormatter.Change): TextFormatter.Change =
+            if (discriminator(c)) c else c.clone().apply { text = "" }
+}
