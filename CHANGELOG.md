@@ -14,6 +14,7 @@
 ### Additions
 - TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
 - String.isLong(), isInt(), isDouble() and isFloat()
+- checkmenuitem builder accepts string for keycombination and selected property
 
 ## [1.7.14]
 

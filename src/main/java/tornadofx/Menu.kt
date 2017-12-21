@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.Property
 import javafx.beans.value.ObservableValue
 import javafx.event.ActionEvent
 import javafx.event.EventTarget
@@ -236,10 +237,14 @@ fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombin
     return radioMenuItem
 }
 
-fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}): CheckMenuItem {
+fun Menu.checkmenuitem(name: String, keyCombination: String, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}) =
+        checkmenuitem(name, KeyCombination.valueOf(keyCombination), graphic, selected, op)
+
+fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}): CheckMenuItem {
     val checkMenuItem = CheckMenuItem(name, graphic)
     keyCombination?.apply { checkMenuItem.accelerator = this }
     graphic?.apply { checkMenuItem.graphic = graphic }
+    selected?.apply { checkMenuItem.selectedProperty().bindBidirectional(this) }
     op(checkMenuItem)
     this += checkMenuItem
     return checkMenuItem
