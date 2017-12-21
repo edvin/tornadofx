@@ -1271,7 +1271,9 @@ fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() 
  *
  * To only allow digits for example, do:
  *
- * filterInput { it.text.isInt() }
+ * filterInput { it.controlNewText.isInt() }
+ *
+ * You can also access just the changed text in `it.text` to validate just the new input.
  *
  */
 fun TextInputControl.filterInput(discriminator: (TextFormatter.Change) -> Boolean) {
