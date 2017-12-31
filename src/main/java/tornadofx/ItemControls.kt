@@ -571,7 +571,7 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KMutablePrope
 inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableProperty1<S, T>, noinline op: TreeTableColumn<S, T>.() -> Unit = {}): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column.also(op)
 }
 
@@ -589,7 +589,7 @@ inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S,
 inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, T>, noinline op: TreeTableColumn<S, T>.() -> Unit = {}): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value.value, prop) }
-    columns.add(column)
+    addColumnInternal(column)
     return column.also(op)
 }
 
@@ -666,7 +666,7 @@ infix fun <S> TableColumn<S, *>.value(cellValueFactory: (TableColumn.CellDataFea
 inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -684,7 +684,7 @@ inline fun <S, reified T> TableView<S>.column(title: String, observableFn: KFunc
 inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: KFunction<ObservableValue<T>>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { observableFn.call(it.value) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
@@ -694,7 +694,7 @@ inline fun <S, reified T> TreeTableView<S>.column(title: String, observableFn: K
 inline fun <reified S, T> TreeTableView<S>.column(title: String, noinline valueProvider: (TreeTableColumn.CellDataFeatures<S, T>) -> ObservableValue<T>): TreeTableColumn<S, T> {
     val column = TreeTableColumn<S, T>(title)
     column.cellValueFactory = Callback { valueProvider(it) }
-    columns.add(column)
+    addColumnInternal(column)
     return column
 }
 
