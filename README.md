@@ -56,8 +56,6 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 - [KDocs](https://tornadofx.io/dokka/tornadofx/tornadofx/index.html)
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
-- [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
-- [Dev Forum](https://groups.google.com/forum/#!forum/tornadofx-dev)
 - [Stack Overflow](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
 - [IntelliJ IDEA Plugin](https://github.com/edvin/tornadofx-idea-plugin) 
