@@ -248,6 +248,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
     val labelProperty = SimpleStringProperty(text)
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("textProperty"), DeprecationLevel.WARNING)
     fun textProperty() = labelProperty
+    var text by labelProperty
 
     val label = Label()
     val labelContainer = HBox(label).apply { addClass(Stylesheet.labelContainer) }
