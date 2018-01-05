@@ -7,6 +7,7 @@
 - TableView bound to ListProperty should rebind when value changes
 
 ### Changes
+- AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter
 - Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item

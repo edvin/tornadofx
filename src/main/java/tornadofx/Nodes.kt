@@ -668,16 +668,16 @@ inline fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Uni
 }
 
 class AnchorPaneConstraint(
-        var topAnchor: Double? = null,
-        var rightAnchor: Double? = null,
-        var bottomAnchor: Double? = null,
-        var leftAnchor: Double? = null
+        var topAnchor: Number? = null,
+        var rightAnchor: Number? = null,
+        var bottomAnchor: Number? = null,
+        var leftAnchor: Number? = null
 ) {
     fun <T : Node> applyToNode(node: T): T {
-        topAnchor?.let { AnchorPane.setTopAnchor(node, it) }
-        rightAnchor?.let { AnchorPane.setRightAnchor(node, it) }
-        bottomAnchor?.let { AnchorPane.setBottomAnchor(node, it) }
-        leftAnchor?.let { AnchorPane.setLeftAnchor(node, it) }
+        topAnchor?.let { AnchorPane.setTopAnchor(node, it.toDouble()) }
+        rightAnchor?.let { AnchorPane.setRightAnchor(node, it.toDouble()) }
+        bottomAnchor?.let { AnchorPane.setBottomAnchor(node, it.toDouble()) }
+        leftAnchor?.let { AnchorPane.setLeftAnchor(node, it.toDouble()) }
         return node
     }
 }
