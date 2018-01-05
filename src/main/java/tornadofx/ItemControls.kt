@@ -219,6 +219,9 @@ fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: Tab
     tableview.itemsProperty().onChange {
         rebinder()
     }
+    items.onChange {
+        rebinder()
+    }
     return opcr(this, tableview, op)
 }
 

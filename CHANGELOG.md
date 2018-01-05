@@ -4,6 +4,7 @@
 
 ### Fixed
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
+- TableView bound to ListProperty should rebind when value changes
 
 ### Changes
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
