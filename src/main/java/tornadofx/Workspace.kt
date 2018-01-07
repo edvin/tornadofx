@@ -353,7 +353,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         setAsCurrentlyDocked(child)
 
         // Ensure max stack size
-        while (viewStack.size >= maxViewStackDepth)
+        while (viewStack.size >= maxViewStackDepth && viewStack.isNotEmpty())
             viewStack.removeAt(0)
     }
 
