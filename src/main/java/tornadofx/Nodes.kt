@@ -1288,3 +1288,5 @@ class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Bool
     override fun apply(c: TextFormatter.Change): TextFormatter.Change =
             if (discriminator(c)) c else c.clone().apply { text = "" }
 }
+
+val Node.index: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1
