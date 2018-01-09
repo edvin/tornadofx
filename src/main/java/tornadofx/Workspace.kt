@@ -216,6 +216,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         }
     }
 
+    val header: ToolBar get() = root.header
+
     private fun navigateForward(): Boolean {
         if (!forwardButton.isDisabled) {
             dock(viewStack[viewPos.get() + 1], false)
