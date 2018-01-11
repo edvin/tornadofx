@@ -19,6 +19,7 @@
 - String.isLong(), isInt(), isDouble() and isFloat()
 - checkmenuitem builder accepts string for keycombination and selected property
 - Node.index will tell you the Node's index in the parent container
+- placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
 
 ## [1.7.14]
 

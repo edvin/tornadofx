@@ -677,6 +677,18 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {})
             = item(T::class, scope, params, expanded, showHeader, op)
 
+    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
+    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
+    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
     fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: DrawerItem.() -> Unit = {}) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
