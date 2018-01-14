@@ -511,7 +511,7 @@ val ObservableValue<*>.viewModelFacade: Property<*>? get() = ViewModel.getFacade
 
 @Suppress("UNCHECKED_CAST")
 open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, val itemProperty: ObjectProperty<T> = SimpleObjectProperty(initialValue)) : ViewModel() {
-    var item by itemProperty
+    var item: T? by itemProperty
 
     val empty = itemProperty.isNull
     val isEmpty: Boolean get() = empty.value
