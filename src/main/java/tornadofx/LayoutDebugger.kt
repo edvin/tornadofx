@@ -214,6 +214,9 @@ class LayoutDebugger : Fragment() {
             field("StyleClass") {
                 text(node.styleClass.joinToString(", ") { ".$it" })
             }
+            field("Id") {
+                text(node.id ?: "")
+            }
         }
         fieldset("Dimensions") {
             fun Bounds.describe() = "(${minX.toInt()}, ${width.toInt()}), (${minY.toInt()}, ${height.toInt()})"
