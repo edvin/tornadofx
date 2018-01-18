@@ -8,9 +8,9 @@ import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import javafx.util.converter.NumberStringConverter
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxToolkit
-import org.testfx.toolkit.ToolkitService
 import tornadofx.*
 import java.text.NumberFormat
 import java.util.*
@@ -24,6 +24,11 @@ class TestView : View() {
 }
 
 class ControlsTest {
+
+    @Before
+    fun setupFX() {
+        FxToolkit.registerPrimaryStage()
+    }
 
     @Test
     fun testTextfield() {
@@ -61,6 +66,7 @@ class ControlsTest {
 
     @Test
     fun testLabelWithStringObservable() {
+
         val view = TestView()
         val property = SimpleStringProperty("Daan")
         val label = view.label(property)
@@ -75,7 +81,6 @@ class ControlsTest {
 
     @Test
     fun testLabelWithIntegerObservable() {
-        FxToolkit.registerPrimaryStage()
 
         val view = TestView()
         val property = SimpleIntegerProperty(12718)
