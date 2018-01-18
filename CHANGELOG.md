@@ -8,6 +8,7 @@
 - Allow calling Workspace.disableNavigation() when workspace is empty
 
 ### Changes
+- Kotlin 1.2.20
 - AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter
