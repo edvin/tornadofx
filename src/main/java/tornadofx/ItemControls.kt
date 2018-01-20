@@ -581,8 +581,11 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KMutableP
 /**
  * Create a column with a value factory that extracts the value from the given property and
  * converts the property to an observable value.
+ *
+ * ATTENTION: This function was renamed to `readonlyColumn` to avoid shadowing the version for
+ * observable properties.
  */
-inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, T>, noinline op: TableColumn<S, T>.() -> Unit = {}): TableColumn<S, T> {
+inline fun <reified S, T> TableView<S>.readonlyColumn(title: String, prop: KProperty1<S, T>, noinline op: TableColumn<S, T>.() -> Unit = {}): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { observable(it.value, prop) }
     addColumnInternal(column)
@@ -599,7 +602,6 @@ inline fun <reified S, T> TreeTableView<S>.column(title: String, prop: KProperty
 /**
  * Create a column with a value factory that extracts the value from the given ObservableValue property.
  */
-@JvmName(name = "columnForObservableProperty")
 inline fun <reified S, T> TableView<S>.column(title: String, prop: KProperty1<S, ObservableValue<T>>, noinline op: TableColumn<S, T>.() -> Unit = {}): TableColumn<S, T> {
     val column = TableColumn<S, T>(title)
     column.cellValueFactory = Callback { prop.call(it.value) }
