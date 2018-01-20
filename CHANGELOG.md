@@ -3,11 +3,13 @@
 ## [1.7.15-SNAPSHOT]
 
 ### Fixed
+
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
 - Allow calling Workspace.disableNavigation() when workspace is empty
 
 ### Changes
+
 - Kotlin 1.2.20
 - AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
@@ -17,6 +19,7 @@
 - Renamed tableview column builder for readonly non-observable properties to `readonlyColumn` (https://github.com/edvin/tornadofx/issues/599)
 
 ### Additions
+
 - TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
 - String.isLong(), isInt(), isDouble() and isFloat()
 - checkmenuitem builder accepts string for keycombination and selected property
@@ -33,10 +36,12 @@
 - TreeView.lazyPopulate should never assign null list if filter results in no items
 
 ### Changes
+
 - Kotlin 1.2.10
 - Node builders inside of `ButtonBase` will automatically assign the node to the `graphic` property of the Button
 
 ### Additions
+
 - ConfigProperties (`config`) is now `Closable` so it can be used with `use`
 
 ## [1.7.13]

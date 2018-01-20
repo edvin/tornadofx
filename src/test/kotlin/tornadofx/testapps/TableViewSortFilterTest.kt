@@ -30,11 +30,11 @@ class TableViewSortFilterTest : View("Table Sort and Filter") {
 		textfield = textfield()
 
 		table = tableview {
-			column("ID", Person::id)
+			readonlyColumn("ID", Person::id)
 			column("Name", Person::name)
 			nestedColumn("DOB") {
-				column("Birthday", Person::birthday)
-				column("Age", Person::age).contentWidth()
+				readonlyColumn("Birthday", Person::birthday)
+				readonlyColumn("Age", Person::age).contentWidth()
 			}
             columnResizePolicy = SmartResize.POLICY
 		}
