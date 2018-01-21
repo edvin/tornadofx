@@ -741,8 +741,7 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() = apply {
         LocalTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>)
         LocalDateTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>)
         Boolean::class.javaPrimitiveType -> {
-            this as TableColumn<T, Boolean>
-            setCellFactory(CheckBoxTableCell.forTableColumn(this))
+            (this as TableColumn<T, Boolean?>).useCheckbox(true)
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
@@ -1289,4 +1288,4 @@ class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Bool
             if (discriminator(c)) c else c.clone().apply { text = "" }
 }
 
-val Node.index: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1
+val Node.indexInParent: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1

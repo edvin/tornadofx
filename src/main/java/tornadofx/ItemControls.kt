@@ -80,9 +80,11 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
     val isInt = (property is IntegerProperty && property !is DoubleProperty && property !is FloatProperty) || min is Int || max is Int || initialValue is Int ||
             T::class == Int::class || T::class == Integer::class || T::class.javaPrimitiveType == Integer::class.java
     if (isInt) {
-        spinner = Spinner(min?.toInt() ?: 0, max?.toInt() ?: 100, initialValue?.toInt() ?: 0, amountToStepBy?.toInt() ?: 1)
+        spinner = Spinner(min?.toInt() ?: 0, max?.toInt() ?: 100, initialValue?.toInt() ?: 0, amountToStepBy?.toInt()
+                ?: 1)
     } else {
-        spinner = Spinner(min?.toDouble() ?: 0.0, max?.toDouble() ?: 100.0, initialValue?.toDouble() ?: 0.0, amountToStepBy?.toDouble() ?: 1.0)
+        spinner = Spinner(min?.toDouble() ?: 0.0, max?.toDouble() ?: 100.0, initialValue?.toDouble()
+                ?: 0.0, amountToStepBy?.toDouble() ?: 1.0)
     }
     if (property != null) {
         spinner.valueFactory.valueProperty().bindBidirectional(property)
@@ -488,46 +490,64 @@ fun <S> TableColumn<S, out Number?>.useProgressBar(scope: Scope, afterCommit: (T
 }
 
 fun <S> TableColumn<S, Boolean?>.useCheckbox(editable: Boolean = true) = apply {
-    setCellFactory { CheckBoxCell(editable) }
-    if (editable) {
-        Platform.runLater {
-            tableView?.isEditable = true
-        }
-    }
-}
+    cellFormat {
+        graphic = cache {
+            alignment = Pos.CENTER
+            checkbox {
+                if (editable) {
+                    selectedProperty().bindBidirectional(itemProperty())
 
-fun <S> ListView<S>.useCheckbox(converter: StringConverter<S>? = null, getter: (S) -> ObservableValue<Boolean>) {
-    setCellFactory { CheckBoxListCell(getter, converter) }
-}
-
-class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
-    val checkbox: CheckBox by lazy {
-        CheckBox().apply {
-            if (makeEditable) {
-                selectedProperty().bindBidirectional(itemProperty())
-                setOnAction {
-                    tableView.edit(index, tableColumn)
-                    commitEdit(!isSelected)
+                    setOnAction {
+                        tableView.edit(index, tableColumn)
+                        commitEdit(!isSelected)
+                    }
+                } else {
+                    selectedProperty().bind(itemProperty())
                 }
-            } else {
-                isDisable = true
-                selectedProperty().bind(itemProperty())
             }
         }
     }
-
-    init {
-        if (makeEditable) {
-            isEditable = true
+    if (editable) {
+        runLater {
             tableView?.isEditable = true
         }
     }
+}
 
-    override fun updateItem(item: Boolean?, empty: Boolean) {
-        super.updateItem(item, empty)
-        style { alignment = Pos.CENTER }
-        graphic = if (empty || item == null) null else checkbox
-    }
+// This was used earlier, but was changed to using cellFormat with cache, see above
+//class CheckBoxCell<S>(val makeEditable: Boolean) : TableCell<S, Boolean?>() {
+//    val checkbox: CheckBox by lazy {
+//        CheckBox().apply {
+//            if (makeEditable) {
+//                selectedProperty().bindBidirectional(itemProperty())
+//                setOnAction {
+//                    tableView.edit(index, tableColumn)
+//                    commitEdit(!isSelected)
+//                }
+//            } else {
+//                isDisable = true
+//                selectedProperty().bind(itemProperty())
+//            }
+//        }
+//    }
+//
+//    init {
+//        if (makeEditable) {
+//            isEditable = true
+//            tableView?.isEditable = true
+//        }
+//    }
+//
+//    override fun updateItem(item: Boolean?, empty: Boolean) {
+//        super.updateItem(item, empty)
+//        style { alignment = Pos.CENTER }
+//        graphic = if (empty || item == null) null else checkbox
+//    }
+//}
+
+
+fun <S> ListView<S>.useCheckbox(converter: StringConverter<S>? = null, getter: (S) -> ObservableValue<Boolean>) {
+    setCellFactory { CheckBoxListCell(getter, converter) }
 }
 
 fun <T> TableView<T>.bindSelected(property: Property<T>) {

@@ -17,6 +17,8 @@
 - Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
 - The App class (main application entrypoint) no longer requires a primary view parameter, in case you want to show a tray icon or determinine what view to show some other way
 - Renamed tableview column builder for readonly non-observable properties to `readonlyColumn` (https://github.com/edvin/tornadofx/issues/599)
+- Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
+- Removed CheckBoxCell in favor of inline cellFormat
 
 ### Additions
 
