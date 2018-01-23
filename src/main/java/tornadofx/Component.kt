@@ -26,6 +26,7 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
+import javafx.scene.layout.StackPane
 import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -383,6 +384,25 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * by the currently active Tab.
      */
     fun TabPane.connectWorkspaceActions() {
+        savableWhen { savable }
+        whenSaved { onSave() }
+
+        creatableWhen { creatable }
+        whenCreated { onCreate() }
+
+        deletableWhen { deletable }
+        whenDeleted { onDelete() }
+
+        refreshableWhen { refreshable }
+        whenRefreshed { onRefresh() }
+    }
+
+    /**
+     * Forward the Workspace button states and actions to the TabPane, which
+     * in turn will forward these states and actions to whatever View is represented
+     * by the currently active Tab.
+     */
+    fun StackPane.connectWorkspaceActions() {
         savableWhen { savable }
         whenSaved { onSave() }
 

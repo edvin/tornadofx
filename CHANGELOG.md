@@ -22,6 +22,7 @@
 
 ### Additions
 
+- StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
 - TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
 - String.isLong(), isInt(), isDouble() and isFloat()
 - checkmenuitem builder accepts string for keycombination and selected property

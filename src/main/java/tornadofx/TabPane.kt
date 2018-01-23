@@ -87,6 +87,28 @@ val TabPane.savable: BooleanExpression
         return savable
     }
 
+val TabPane.creatable: BooleanExpression
+    get() {
+        val creatable = SimpleBooleanProperty(true)
+
+        fun updateState() {
+            creatable.cleanBind(contentUiComponent<UIComponent>()?.creatable ?: SimpleBooleanProperty(Workspace.defaultCreatable))
+        }
+
+        val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
+
+        updateState()
+
+        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
+        selectionModel.selectedItemProperty().addListener { _, oldTab, newTab ->
+            updateState()
+            oldTab?.contentProperty()?.removeListener(contentChangeListener)
+            newTab?.contentProperty()?.addListener(contentChangeListener)
+        }
+
+        return savable
+    }
+
 val TabPane.deletable: BooleanExpression
     get() {
         val deletable = SimpleBooleanProperty(true)
@@ -132,7 +154,7 @@ val TabPane.refreshable: BooleanExpression
         return refreshable
     }
 
-inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent<T>()
+inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent()
 fun TabPane.onDelete() = contentUiComponent<UIComponent>()?.onDelete()
 fun TabPane.onSave() = contentUiComponent<UIComponent>()?.onSave()
 fun TabPane.onCreate() = contentUiComponent<UIComponent>()?.onCreate()
