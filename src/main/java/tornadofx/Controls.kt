@@ -2,13 +2,9 @@
 
 package tornadofx
 
-import javafx.beans.binding.BooleanBinding
-import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableMap
 import javafx.event.EventTarget
@@ -18,7 +14,6 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.Pane
-import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
@@ -26,7 +21,6 @@ import javafx.scene.web.HTMLEditor
 import javafx.scene.web.WebView
 import javafx.util.StringConverter
 import java.time.LocalDate
-import kotlin.reflect.KClass
 
 fun EventTarget.webview(op: WebView.() -> Unit = {}) = opcr(this, WebView(), op)
 
@@ -40,18 +34,9 @@ fun EventTarget.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorP
     return opcr(this, picker, op)
 }
 
-fun EventTarget.tabpane(op: TabPane.() -> Unit = {}) = opcr(this, TabPane(), op)
-
 fun EventTarget.textflow(op: TextFlow.() -> Unit = {}) = opcr(this, TextFlow(), op)
 
 fun EventTarget.text(op: Text.() -> Unit = {}) = opcr(this, Text(), op)
-
-fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab {
-    val tab = Tab(text, content)
-    tabs.add(tab)
-    op(content)
-    return tab
-}
 
 internal val EventTarget.properties: ObservableMap<Any, Any>
     get() = when (this) {
@@ -74,144 +59,6 @@ var EventTarget.tag: Any?
     set(value) {
         tagProperty.value = value
     }
-
-@Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
-fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: Tab.() -> Unit = {}): Tab {
-    val tab = Tab()
-    tab.isClosable = closable
-    tab.textProperty().bind(uiComponent.titleProperty)
-    tab.content = uiComponent.root
-    tabs.add(tab)
-    op(tab)
-    return tab
-}
-
-inline fun <reified  T: UIComponent> TabPane.tab(noinline op: Tab.() -> Unit = {}) = tab(T::class, op)
-fun TabPane.tab(uiComponent: KClass<out UIComponent>, op: Tab.() -> Unit = {}) = tab(find(uiComponent), op)
-
-fun TabPane.tab(uiComponent: UIComponent, op: Tab.() -> Unit = {}): Tab {
-    add(uiComponent.root)
-    return tabs.last().also(op)
-}
-
-fun <T : Node> Iterable<T>.contains(cmp: UIComponent) = any { it == cmp.root }
-
-fun TabPane.contains(cmp: UIComponent) = tabs.map { it.content }.contains(cmp)
-
-fun Tab.disableWhen(predicate: ObservableValue<Boolean>) = disableProperty().cleanBind(predicate)
-fun Tab.enableWhen(predicate: ObservableValue<Boolean>) {
-    val binding = if (predicate is BooleanBinding) predicate.not() else predicate.toBinding().not()
-    disableProperty().cleanBind(binding)
-}
-fun Tab.closeableWhen(predicate: ObservableValue<Boolean>) {
-    closableProperty().bind(predicate)
-}
-
-fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
-    fun updateState() {
-        if (predicate.value.not()) tabPane.tabs.remove(this)
-        else if (this !in tabPane.tabs) tabPane.tabs.add(this)
-    }
-    updateState()
-    predicate.onChange { updateState() }
-}
-
-fun Tab.close() = removeFromParent()
-
-val TabPane.savable: BooleanExpression
-    get() {
-        val savable = SimpleBooleanProperty(true)
-
-        fun updateState() {
-            savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
-        }
-
-        val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
-
-        updateState()
-
-        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
-            updateState()
-            oldTab?.contentProperty()?.removeListener(contentChangeListener)
-            newTab?.contentProperty()?.addListener(contentChangeListener)
-        }
-
-        return savable
-    }
-
-val TabPane.deletable: BooleanExpression
-    get() {
-        val deletable = SimpleBooleanProperty(true)
-
-        fun updateState() {
-            deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
-        }
-
-        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
-
-        updateState()
-
-        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
-            updateState()
-            oldTab?.contentProperty()?.removeListener(contentChangeListener)
-            newTab?.contentProperty()?.addListener(contentChangeListener)
-        }
-
-        return deletable
-    }
-
-val TabPane.refreshable: BooleanExpression
-    get() {
-        val refreshable = SimpleBooleanProperty(true)
-
-        fun updateState() {
-            refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
-        }
-
-        val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
-
-        updateState()
-
-        selectionModel.selectedItem?.contentProperty()?.addListener(contentChangeListener)
-        selectionModel.selectedItemProperty().addListener { observable, oldTab, newTab ->
-            updateState()
-            oldTab?.contentProperty()?.removeListener(contentChangeListener)
-            newTab?.contentProperty()?.addListener(contentChangeListener)
-        }
-
-        return refreshable
-    }
-
-inline fun <reified T : UIComponent> TabPane.contentUiComponent(): T? = selectionModel.selectedItem?.content?.uiComponent<T>()
-fun TabPane.onDelete() = contentUiComponent<UIComponent>()?.onDelete()
-fun TabPane.onSave() = contentUiComponent<UIComponent>()?.onSave()
-fun TabPane.onCreate() = contentUiComponent<UIComponent>()?.onCreate()
-fun TabPane.onRefresh() = contentUiComponent<UIComponent>()?.onRefresh()
-fun TabPane.onNavigateBack() = contentUiComponent<UIComponent>()?.onNavigateBack() ?: true
-fun TabPane.onNavigateForward() = contentUiComponent<UIComponent>()?.onNavigateForward() ?: true
-
-fun TabPane.tab(text: String? = null, tag: Any? = null, op: Tab.() -> Unit = {}): Tab {
-    val tab = Tab(text ?: tag?.toString())
-    tab.tag = tag
-    tabs.add(tab)
-    return tab.also(op)
-}
-
-fun Tab.whenSelected(op: () -> Unit) {
-    selectedProperty().onChange { if (it) op() }
-}
-
-fun Tab.select() = apply { tabPane.selectionModel.select(this) }
-
-@Deprecated("No need to use the content{} wrapper anymore, just use a builder directly inside the Tab", ReplaceWith("no content{} wrapper"), DeprecationLevel.WARNING)
-fun Tab.content(op: Pane.() -> Unit): Node {
-    val fake = VBox()
-    op(fake)
-    content = if (fake.children.size == 1) fake.children.first() else fake
-    return content
-}
 
 @Deprecated("Properties set on the fake node would be lost. Do not use this function.", ReplaceWith("Manually adding children"), DeprecationLevel.WARNING)
 fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
