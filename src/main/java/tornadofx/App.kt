@@ -5,6 +5,8 @@ import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import tornadofx.FX.Companion.inheritParamHolder
+import tornadofx.FX.Companion.inheritScopeHolder
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -111,6 +113,8 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         scope.deregister()
         tfxThreadPool.shutdown()
         tfxDaemonThreadPool.shutdown()
+        inheritParamHolder.remove()
+        inheritScopeHolder.remove()
         trayIcons.forEach {
             SwingUtilities.invokeLater { SystemTray.getSystemTray().remove(it) }
         }

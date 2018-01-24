@@ -7,6 +7,7 @@
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
 - Allow calling Workspace.disableNavigation() when workspace is empty
+- inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
 
 ### Changes
 
