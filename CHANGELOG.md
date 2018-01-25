@@ -30,6 +30,7 @@
 - checkmenuitem builder accepts string for keycombination and selected property
 - Node.index will tell you the Node's index in the parent container
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
+- obserableList<T>() creates FXCollections.observableArrayList<T>
 
 ## [1.7.14]
 
