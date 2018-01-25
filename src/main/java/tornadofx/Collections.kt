@@ -3,10 +3,7 @@
 package tornadofx
 
 import javafx.beans.WeakListener
-import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
-import javafx.collections.ObservableSet
-import javafx.collections.SetChangeListener
+import javafx.collections.*
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import java.lang.ref.WeakReference
@@ -302,3 +299,6 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
 fun <T> ObservableList<T>.invalidate() {
     if (isNotEmpty()) this[0] = this[0]
 }
+
+
+fun <T> observableList() = FXCollections.observableArrayList<T>()
