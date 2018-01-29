@@ -363,7 +363,7 @@ fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: L
         resizer.isAccessible = true
         resizeColumns.forEach {
             if ((it.column as? TreeTableColumn<*, *>)?.isVisible == true)
-                resizer.invoke(skin, it.column, maxRows)
+                try { resizer.invoke(skin, it.column, maxRows) } catch (ignored: Exception) {}
         }
         afterResize()
     }

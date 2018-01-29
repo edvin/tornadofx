@@ -289,7 +289,7 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
             resizer.isAccessible = true
             resizeColumns.forEach {
                 if (it.isVisible)
-                    resizer.invoke(skin, it, maxRows)
+                    try { resizer.invoke(skin, it, maxRows) } catch (ignored: Exception) {}
             }
             afterResize()
         } catch (ex: Exception) {
@@ -306,7 +306,7 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
         resizer.isAccessible = true
         resizeColumns.forEach {
             if (it.isVisible)
-                resizer.invoke(skin, it, maxRows)
+                try { resizer.invoke(skin, it, maxRows)  } catch (ignored: Exception) {}
         }
         afterResize.invoke()
     }
