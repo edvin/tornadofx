@@ -78,7 +78,6 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     override fun start(stage: Stage) {
-        initThreadPools()
         FX.registerApplication(scope, this, stage)
 
         try {
@@ -112,8 +111,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
 
     override fun stop() {
         scope.deregister()
-        tfxThreadPool.shutdown()
-        tfxDaemonThreadPool.shutdown()
+        shutdownThreadPools()
         inheritParamHolder.remove()
         inheritScopeHolder.remove()
         trayIcons.forEach {

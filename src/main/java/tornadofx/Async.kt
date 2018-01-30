@@ -23,12 +23,23 @@ import java.util.logging.Logger
 internal val log = Logger.getLogger("tornadofx.async")
 internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
-internal lateinit var tfxThreadPool: ExecutorService
-internal lateinit var tfxDaemonThreadPool: ExecutorService
+private enum class ThreadPoolType { NoDaemon, Daemon }
+private val threadPools = mutableMapOf<ThreadPoolType, ExecutorService>()
 
-internal fun initThreadPools() {
-    tfxThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = false))
-    tfxDaemonThreadPool = Executors.newCachedThreadPool(TFXThreadFactory(daemon = true))
+internal val tfxThreadPool: ExecutorService
+    get() = threadPools.getOrPut(ThreadPoolType.NoDaemon) {
+        Executors.newCachedThreadPool(TFXThreadFactory(daemon = false))
+    }
+
+internal val tfxDaemonThreadPool: ExecutorService
+    get() = threadPools.getOrPut(ThreadPoolType.Daemon) {
+        Executors.newCachedThreadPool(TFXThreadFactory(daemon = true))
+    }
+
+
+internal fun shutdownThreadPools() {
+    threadPools.values.forEach { it.shutdown() }
+    threadPools.clear()
 }
 
 private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
