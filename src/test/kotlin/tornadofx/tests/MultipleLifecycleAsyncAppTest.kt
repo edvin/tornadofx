@@ -14,8 +14,8 @@ import org.junit.runners.Parameterized
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
 import tornadofx.*
-import tornadofx.testapps.MainController
 import tornadofx.testapps.MultipleLifecycleAsyncApp
+import tornadofx.testapps.MultipleLifecycleAsyncController
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -35,7 +35,7 @@ class AsyncBugAppTest(val rounds: Int) {
     lateinit var app: App
 
     @RelaxedMockK
-    lateinit var controller: MainController
+    lateinit var controller: MultipleLifecycleAsyncController
 
     @Rule
     @JvmField

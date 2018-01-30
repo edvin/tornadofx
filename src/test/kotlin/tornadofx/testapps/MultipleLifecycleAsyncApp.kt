@@ -2,10 +2,10 @@ package tornadofx.testapps
 
 import tornadofx.*
 
-class MultipleLifecycleAsyncApp : App(MainView::class)
+class MultipleLifecycleAsyncApp : App(MultipleLifecycleAsyncView::class)
 
-class MainView : View("Multiple Lifecycle Async") {
-    val controller: MainController by inject()
+class MultipleLifecycleAsyncView : View("Multiple Lifecycle Async") {
+    val controller: MultipleLifecycleAsyncController by inject()
     override val root = pane {
         button("Robot-click to repeat bug") {
             id = "bug"
@@ -18,7 +18,7 @@ class MainView : View("Multiple Lifecycle Async") {
     }
 }
 
-class MainController : Controller() {
+class MultipleLifecycleAsyncController : Controller() {
     fun onAction(message: String) {
         println(message)
     }
