@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.security.AccessController
 import java.security.PrivilegedActionException
 import java.security.PrivilegedExceptionAction
+import java.text.MessageFormat
 import java.util.*
 
 private fun <EXCEPTION: Throwable, RETURN> doPrivileged(privilegedAction: ()->RETURN) : RETURN = try {
@@ -52,6 +53,12 @@ object FXResourceBundleControl : ResourceBundle.Control() {
  * Convenience function to support lookup via messages["key"]
  */
 operator fun ResourceBundle.get(key: String) = getString(key)
+
+/**
+ * Convenience function to retrieve a translation and format it with values.
+ */
+fun ResourceBundle.format(key: String, vararg fields: Any) =
+        MessageFormat(this[key], locale).format(fields)
 
 class FXPropertyResourceBundle(input: InputStreamReader): PropertyResourceBundle(input) {
     fun inheritFromGlobal() {

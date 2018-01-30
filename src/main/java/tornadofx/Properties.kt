@@ -188,6 +188,12 @@ fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
 operator fun <T> ObservableValue<T>.getValue(thisRef: Any, property: KProperty<*>) = value
 operator fun <T> Property<T>.setValue(thisRef: Any, property: KProperty<*>, value: T?) = setValue(value)
 
+fun ObservableValue<String>.matches(pattern: Regex): BooleanBinding {
+    return booleanBinding {
+        it?.matches(pattern) ?: false
+    }
+}
+
 operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) = set(value)
 

@@ -9,9 +9,12 @@
 - Allow calling Workspace.disableNavigation() when workspace is empty
 - Thread pools are reinitialized on App.start() to support stop/start multiple times within the same JVM
  
+- inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
+- smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
+
 ### Changes
 
-- Kotlin 1.2.20
+- Kotlin 1.2.21
 - AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter
@@ -29,6 +32,8 @@
 - checkmenuitem builder accepts string for keycombination and selected property
 - Node.index will tell you the Node's index in the parent container
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
+- obserableList<T>() creates FXCollections.observableArrayList<T>
+- ResourceBundle.format() provides a short way to insert translations with variables in them
 
 ## [1.7.14]
 

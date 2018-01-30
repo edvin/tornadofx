@@ -21,7 +21,6 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.control.cell.CheckBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
@@ -288,7 +287,10 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
         try {
             val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
             resizer.isAccessible = true
-            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+            resizeColumns.forEach {
+                if (it.isVisible)
+                    try { resizer.invoke(skin, it, maxRows) } catch (ignored: Exception) {}
+            }
             afterResize()
         } catch (ex: Exception) {
             // Silent for now, it is usually run multiple times
@@ -302,8 +304,11 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
+        resizeColumns.forEach {
+            if (it.isVisible)
+                try { resizer.invoke(skin, it, maxRows)  } catch (ignored: Exception) {}
+        }
+        afterResize.invoke()
     }
     if (skin == null) {
         skinProperty().onChangeOnce {

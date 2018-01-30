@@ -361,7 +361,10 @@ fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: L
         val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
         val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it.column, maxRows) }
+        resizeColumns.forEach {
+            if ((it.column as? TreeTableColumn<*, *>)?.isVisible == true)
+                try { resizer.invoke(skin, it.column, maxRows) } catch (ignored: Exception) {}
+        }
         afterResize()
     }
     if (skin == null) {
