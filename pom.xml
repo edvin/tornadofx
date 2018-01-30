@@ -70,6 +70,12 @@
             <version>${de.jensd.fontawesomefx.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+            <version>1.7</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <distributionManagement>
