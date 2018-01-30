@@ -7,7 +7,8 @@
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
 - Allow calling Workspace.disableNavigation() when workspace is empty
-
+- Thread pools are reinitialized on App.start() to support stop/start multiple times within the same JVM
+ 
 ### Changes
 
 - Kotlin 1.2.20

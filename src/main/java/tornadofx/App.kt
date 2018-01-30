@@ -76,6 +76,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     override fun start(stage: Stage) {
+        initThreadPools()
         FX.registerApplication(scope, this, stage)
 
         try {
