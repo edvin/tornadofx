@@ -80,6 +80,7 @@ private fun awaitTermination(pool: ExecutorService, timeout: Long) {
 fun terminateAsyncExecutors(timeoutMillis: Long) {
     awaitTermination(tfxThreadPool, timeoutMillis)
     awaitTermination(tfxDaemonThreadPool, timeoutMillis)
+    threadPools.clear()
 }
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)
