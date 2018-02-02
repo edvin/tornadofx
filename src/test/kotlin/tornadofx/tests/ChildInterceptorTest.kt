@@ -76,7 +76,6 @@ class ChildInterceptorTest {
 
 	@Test
 	fun onlyOneInterceptorShouldWork() {
-		assertEquals(FX.childInterceptors.map { it as BaseInterceptor }.filter { it.intercepted }.size,
-				1)
+		assertEquals(1, FX.childInterceptors.map { it as BaseInterceptor }.filter { it.intercepted }.size)
 	}
 }

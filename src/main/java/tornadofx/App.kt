@@ -68,13 +68,6 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     init {
         Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }
-        importChildInterceptors()
-    }
-
-    private fun importChildInterceptors() {
-        ServiceLoader.load(ChildInterceptor::class.java).forEach {
-            FX.addChildInterceptor(it)
-        }
     }
 
     override fun start(stage: Stage) {
