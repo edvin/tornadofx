@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- UIComponent.close() should be able to close primary stage as well (https://github.com/edvin/tornadofx/issues/622)
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
 - Allow calling Workspace.disableNavigation() when workspace is empty
