@@ -1,10 +1,6 @@
 package tornadofx.testapps
 
-import javafx.collections.FXCollections
-import javafx.scene.Parent
-import javafx.scene.control.SelectionMode
 import tornadofx.*
-import tornadofx.testapps.DataGridTestApp.Companion.images
 
 class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
     companion object {
@@ -31,54 +27,55 @@ class DataGridTestApp : App(DataGridTest::class, DataGridStyles::class) {
 }
 
 class DataGridTest : View("DataGrid") {
-    var datagrid: DataGrid<String> by singleAssign()
-    val list = FXCollections.observableArrayList<String>()
-    var paginator = DataGridPaginator(list, itemsPerPage = 5)
+//    var datagrid: DataGrid<String> by singleAssign()
+//    val list = FXCollections.observableArrayList<String>()
+//    var paginator = DataGridPaginator(list, itemsPerPage = 5)
 
     override val root = borderpane {
-        left {
-            vbox {
-                combobox(values = images.keys.toList()) {
-                    promptText = "Select images"
-                    valueProperty().onChange {
-                        list.setAll(images[it])
-                    }
-                    shortcut("k") { value = "kittens" }
-                    shortcut("p") { value = "puppies" }
-                }
-                button("Add").action {
-                    list.add("http://i.imgur.com/bvqTBT0b.jpg")
-                }
-            }
-        }
-        center {
-            datagrid = datagrid(paginator.items) {
-                setPrefSize(550.0, 550.0)
-
-                selectionModel.selectionMode = SelectionMode.SINGLE
-                cellWidth = 164.0
-                cellHeight = 164.0
-
-                cellCache {
-                    imageview(it, true)
-                }
-
-                onUserSelect(1) {
-                    println("Selected $it")
-                }
-            }
-        }
-        bottom {
-            vbox {
-                add(paginator)
-                hbox {
-                    label(stringBinding(datagrid.selectionModel.selectedItems) { joinToString(", ") })
-                    button("Remove from index 2").action {
-                        if (list.size > 2) list.removeAt(2)
+        /*        left {
+                    vbox {
+                        combobox(values = images.keys.toList()) {
+                            promptText = "Select images"
+                            valueProperty().onChange {
+                                list.setAll(images[it])
+                            }
+                            shortcut("k") { value = "kittens" }
+                            shortcut("p") { value = "puppies" }
+                        }
+                        button("Add").action {
+                            list.add("http://i.imgur.com/bvqTBT0b.jpg")
+                        }
                     }
                 }
-            }
-        }
+                center {
+                    datagrid = datagrid(paginator.items) {
+                        setPrefSize(550.0, 550.0)
+
+                        selectionModel.selectionMode = SelectionMode.SINGLE
+                        cellWidth = 164.0
+                        cellHeight = 164.0
+
+                        cellCache {
+                            imageview(it, true)
+                        }
+
+                        onUserSelect(1) {
+                            println("Selected $it")
+                        }
+                    }
+                }
+                bottom {
+                    vbox {
+                        add(paginator)
+                        hbox {
+                            label(stringBinding(datagrid.selectionModel.selectedItems) { joinToString(", ") })
+                            button("Remove from index 2").action {
+                                if (list.size > 2) list.removeAt(2)
+                            }
+                        }
+                    }
+                }
+                */
     }
 }
 
