@@ -83,14 +83,12 @@ class SmartResize private constructor() : TableViewResizeCallback {
             val column = (observable as ReadOnlyProperty<*>).bean as TableColumn<*, *>
             val table: TableView<out Any>? = column.tableView
 
-
             if (table?.isSmartResizing == false) {
                 val rt = column.resizeType
                 val diff = oldValue.toDouble() - newValue.toDouble()
                 rt.delta -= diff
                 POLICY.call(TableView.ResizeFeatures<Any>(table as TableView<Any>?, null, 0.0))
             }
-
         }
 
 
@@ -270,11 +268,11 @@ fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = 
 fun <S, T> TableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
 fun <S, T> TreeTableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
 
-fun <S, T> TableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S, T> TableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 
-fun <S, T> TreeTableColumn<S, T>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S, T> TreeTableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 
@@ -340,7 +338,7 @@ fun <S> TornadoFXColumn<S>.remainingWidth() = apply {
     resizeType = ResizeType.Remaining()
 }
 
-fun <S> TornadoFXColumn<S>.weigthedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
+fun <S> TornadoFXColumn<S>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
     resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
 }
 
@@ -355,13 +353,16 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
     resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
 }
 
-fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
         val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it.column, maxRows) }
-        afterResize?.invoke()
+        resizeColumns.forEach {
+            if ((it.column as? TreeTableColumn<*, *>)?.isVisible == true)
+                try { resizer.invoke(skin, it.column, maxRows) } catch (ignored: Exception) {}
+        }
+        afterResize()
     }
     if (skin == null) {
         skinProperty.onChangeOnce {
@@ -410,7 +411,7 @@ fun <TABLE : Any> resizeCall(
                 contentColumns.forEach {
                     val rt = it.resizeType as ResizeType.Content
 
-                    it.prefWidth = it.width + rt.delta.toDouble() + rt.padding.toDouble()
+                    it.prefWidth = it.width + rt.delta + rt.padding.toDouble()
 
                     // Save minWidth if different from default
                     if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
@@ -453,7 +454,7 @@ fun <TABLE : Any> resizeCall(
                     if (rt is ResizeType.Weight) {
                         if (rt.minContentWidth && !rt.minRecorded) {
                             rt.minRecorded = true
-                            it.minWidth = it.width.toDouble() + rt.padding.toDouble()
+                            it.minWidth = it.width + rt.padding.toDouble()
                         }
                         it.prefWidth = Math.max(it.minWidth, (perWeight * rt.weight.toDouble()) + rt.delta + rt.padding.toDouble())
                     } else {

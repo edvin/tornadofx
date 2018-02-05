@@ -56,8 +56,6 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 - [KDocs](https://tornadofx.io/dokka/tornadofx/tornadofx/index.html)
 - [Wiki](https://github.com/edvin/tornadofx/wiki)
 - [Slack](https://kotlinlang.slack.com/messages/tornadofx/details/)
-- [User Forum](https://groups.google.com/forum/#!forum/tornadofx)
-- [Dev Forum](https://groups.google.com/forum/#!forum/tornadofx-dev)
 - [Stack Overflow](http://stackoverflow.com/questions/ask?tags=tornadofx)
 - [Documentation](https://github.com/edvin/tornadofx/wiki/Documentation) 
 - [IntelliJ IDEA Plugin](https://github.com/edvin/tornadofx-idea-plugin) 
@@ -70,7 +68,7 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.11
+  -DarchetypeVersion=1.7.14
 ```
 
 ### Add TornadoFX to your project
@@ -81,14 +79,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.11</version>
+    <version>1.7.14</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.11'
+compile 'no.tornado:tornadofx:1.7.14'
 ```
 
 ### Snapshots are published to Sonatype

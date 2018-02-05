@@ -1,10 +1,90 @@
 # Change Log
 
-## [1.7.12-SNAPSHOT]
+## [1.7.15-SNAPSHOT]
+
+### Fixed
+
+- UIComponent.close() should be able to close primary stage as well (https://github.com/edvin/tornadofx/issues/622)
+- SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
+- TableView bound to ListProperty should rebind when value changes
+- Allow calling Workspace.disableNavigation() when workspace is empty
+- Thread pools are reinitialized on App.start() to support stop/start multiple times within the same JVM
+- ServiceLoader provided interceptors were added every time an App class was initialized 
+- inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
+- smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
+
+### Changes
+
+- Kotlin 1.2.21
+- AnchorPaneConstraint properties now accept any Number, not just Double
+- AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
+- ItemViewModel.bind `defaultValue` parameter
+- Node builders inside of `MenuItem` will automatically assign the node to the `graphic` property of the menu item
+- The App class (main application entrypoint) no longer requires a primary view parameter, in case you want to show a tray icon or determinine what view to show some other way
+- Renamed tableview column builder for readonly non-observable properties to `readonlyColumn` (https://github.com/edvin/tornadofx/issues/599)
+- Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
+- Removed CheckBoxCell in favor of inline cellFormat
+
+### Additions
+
+- StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
+- TextInputControl.filterInput allows you to discriminate what kind of input should be accepted for a text input control
+- String.isLong(), isInt(), isDouble() and isFloat()
+- checkmenuitem builder accepts string for keycombination and selected property
+- Node.index will tell you the Node's index in the parent container
+- placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
+- obserableList<T>() creates FXCollections.observableArrayList<T>
+- ResourceBundle.format() provides a short way to insert translations with variables in them
+
+## [1.7.14]
+
+### Fixed
+
+- `runAsync` would skip the success/fail steps if no work was done in the op block 
+- TableView Pojo Column references support boolean "is" style properties (https://github.com/edvin/tornadofx/issues/560)
+- TabPane.tab<UIComponent> inside of an UIComponent is now scope aware
+- TreeView.lazyPopulate should never assign null list if filter results in no items
+
+### Changes
+
+- Kotlin 1.2.10
+- Node builders inside of `ButtonBase` will automatically assign the node to the `graphic` property of the Button
+
+### Additions
+
+- ConfigProperties (`config`) is now `Closable` so it can be used with `use`
+
+## [1.7.13]
+
+### Fixed
+
+- Navigation button issue when already docked view was docked again (https://github.com/edvin/tornadofx/issues/526)
+- Internal thread pools are shutdown on app exit. Running threads in the default thread pool will still block application stop.
+- ComboBox.makeAutoCompletable() inspects listView.prefWidth for being bound before attemting to set it (https://github.com/edvin/tornadofx/issues/530)
+- Wizard.canGoBack override caused NPE (https://github.com/edvin/tornadofx/issues/211)
+
+### Changes
+- Kotlin 1.2.0
+- ItemViewModel.bindTo(itemFragment) supports all itemb fragments now, not just ListCellFragment
+- lambda's that return unit are no longer nullable. use the default-lambda instead
+- ChildInterceptor is now an Interface.
+- Component.messages are fetched using the classloader that defined the Component subclass (https://github.com/edvin/tornadofx/issues/553)
+
+### Additions
+
+- `cellFragment` support for DataGrid
+- ObservableValue<String>.isBlank() and ObservableValue<String>.isNotBlank() which returns BooleanBinding. Useful for binding to TextField enabled/visible state
+- Added `owner` and `title` parameters to `alert` and other dialog builders (https://github.com/edvin/tornadofx/issues/522)
+- TextInputControl.editableWhen
+- `multiSelect()` for TreeView, TreeTableView, TableView and ListView
+- Stylesheets can now be added specificly to a `Parent`- Node with `addStylesheet`
+
+## [1.7.12]
 
 ### Fixed
 - Fixed #434 leaf nodes are now getting set as expected for `lazypopulate`.
 - Style builder can be applied to PopupControl, Tab, TableColumnBase (https://github.com/edvin/tornadofx/issues/476)
+- Better handling of Column.makeEditable() for properties that implement Property<Number>
 
 ### Changes
 - Refactoring: Moved all extension functions and properties targeting `TreeView`
@@ -12,6 +92,16 @@
 - `alert` builder accepts optional owner parameter (https://github.com/edvin/tornadofx/issues/483)
 
 ### Additions
+- `fitToParentHeight/Width/Size` as well as `fitToHeight/Width/Size(region)` helpers (https://github.com/edvin/tornadofx/pull/519)
+- `beforeShutdown` allows you to register shutdown hooks
+- `DataGridPaginator` component to help with pagination for `DataGrid`
+- runAsync supports `daemon` parameter to control thread characteristics (https://github.com/edvin/tornadofx/pull/508)
+- Node.`runAsyncWithOverlay`
+- `Latch`, a subclass of CountdownLatch that exposes a `lockedProperty` and provides immediate release ability
+- Inline type safe stylesheet on Parent using the `stylesheet` builder
+- Tab.close()
+- JsonBuilder.add() supports Iterable<Any> (Turned into JsonArray)
+- Added `customitem` menu item builder (https://github.com/edvin/tornadofx/pull/488)
 - The default lefCheck for `lazypopulate` is now also recognizing an empty list as a leaf.
 - menubutton builder (https://github.com/edvin/tornadofx/issues/461)
 - MenuButton.item builder

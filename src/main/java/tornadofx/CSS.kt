@@ -7,6 +7,7 @@ import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.*
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
@@ -1042,30 +1043,31 @@ class InlineCss : PropertyHolder(), Rendered {
 fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
 
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
-    val block = InlineCss().apply(op)
 
-    fun setter(value: String) = when (this) {
-        is Node -> style = value
-        is MenuItem -> style = value
-        is PopupControl -> style = value
-        is Tab -> style = value
-        is TableColumnBase<*, *> -> this.style = value
-        else -> throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    val setStyleMethod = this.javaClass.methods.firstOrNull { method ->
+        method.name == "setStyle" && method.returnType == Void.TYPE && method.parameterCount == 1 && method.parameters[0].type == String::class.java
     }
 
-    if (append && style.isNotBlank())
-        setter(style + block.render())
-    else
-        setter(block.render().trim())
-}
+    setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
 
-fun TableColumnBase<*, *>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
-    if (append && style.isNotBlank())
-        style += block.render()
+    val newStyle = if (append && style.isNotBlank())
+        style + block.render()
     else
-        style = block.render().trim()
+        block.render().trim()
+
+    try {
+        // in Java 9 setStyleMethod.canAccess(this) can be used for checking instead of wrapping this invocation in a try-catch clause
+        setStyleMethod.invoke(this, newStyle)
+    } catch (exception: Exception) {
+        when (exception) {
+            is IllegalAccessException,
+            is IllegalArgumentException -> println("Cannot access ${this@style.javaClass}.setStyle(...) through reflection due to insufficient priviledge.")
+            else -> FX.log.warning("Invocation of ${this@style.javaClass}.setStyle(...) through reflection failed.")
+        }
+        throw exception
+    }
 }
 
 // Delegates
@@ -1343,3 +1345,13 @@ class MultiValue<T>(initialElements: Array<out T>? = null) {
 }
 
 class BorderImageSlice(val widths: CssBox<Dimension<Dimension.LinearUnits>>, val filled: Boolean = false)
+
+fun Parent.stylesheet(op: Stylesheet.() -> Unit) {
+    val stylesheet = Stylesheet().apply(op)
+    stylesheets += stylesheet.base64URL.toExternalForm()
+}
+
+/**
+ * Adds the [stylesheet] to the given parent.
+ */
+inline fun <T: Stylesheet> Parent.addStylesheet(stylesheet: KClass<T>) = this.stylesheets.add("css://${stylesheet.java.name}")

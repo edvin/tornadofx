@@ -2,9 +2,12 @@ package tornadofx
 
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 import java.security.AccessController
 import java.security.PrivilegedActionException
 import java.security.PrivilegedExceptionAction
+import java.text.MessageFormat
 import java.util.*
 
 private fun <EXCEPTION: Throwable, RETURN> doPrivileged(privilegedAction: ()->RETURN) : RETURN = try {
@@ -19,7 +22,7 @@ private fun <EXCEPTION: Throwable, RETURN> doPrivileged(privilegedAction: ()->RE
 
 object FXResourceBundleControl : ResourceBundle.Control() {
 
-    override fun newBundle(baseName: String, locale: Locale, format: String, loader: ClassLoader, reload: Boolean): ResourceBundle {
+    override fun newBundle(baseName: String, locale: Locale, format: String, loader: ClassLoader, reload: Boolean): ResourceBundle? {
         val bundleName = toBundleName(baseName, locale)
         return when (format) {
 
@@ -31,7 +34,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                 if (ResourceBundle::class.java.isAssignableFrom(bundleClass)) bundleClass.getDeclaredConstructor().newInstance()
                 else throw ClassCastException(bundleClass.name + " cannot be cast to ResourceBundle")
 
-            } catch (e: ClassNotFoundException) {null}
+            } catch (e: ClassNotFoundException) { null}
             "java.properties" -> {
                 val resourceName = toResourceName(bundleName, "properties")!!
                 doPrivileged<IOException, InputStream?> {
@@ -39,7 +42,7 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                     else loader.getResource(resourceName)?.openConnection()?.apply {
                         useCaches = false // Disable caches to get fresh data for reloading.
                     } ?.inputStream
-                }?.use { FXPropertyResourceBundle(it) }
+                }?.use { FXPropertyResourceBundle(InputStreamReader(it, StandardCharsets.UTF_8)) }
             }
             else -> throw IllegalArgumentException("unknown format: $format")
         }!!
@@ -51,7 +54,13 @@ object FXResourceBundleControl : ResourceBundle.Control() {
  */
 operator fun ResourceBundle.get(key: String) = getString(key)
 
-class FXPropertyResourceBundle(input: InputStream): PropertyResourceBundle(input) {
+/**
+ * Convenience function to retrieve a translation and format it with values.
+ */
+fun ResourceBundle.format(key: String, vararg fields: Any) =
+        MessageFormat(this[key], locale).format(fields)
+
+class FXPropertyResourceBundle(input: InputStreamReader): PropertyResourceBundle(input) {
     fun inheritFromGlobal() {
         parent = FX.messages
     }

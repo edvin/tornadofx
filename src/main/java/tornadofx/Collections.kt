@@ -3,10 +3,7 @@
 package tornadofx
 
 import javafx.beans.WeakListener
-import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
-import javafx.collections.ObservableSet
-import javafx.collections.SetChangeListener
+import javafx.collections.*
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import java.lang.ref.WeakReference
@@ -16,6 +13,7 @@ import java.util.*
  * Moves the given **T** item to the specified index
  */
 fun <T> MutableList<T>.move(item: T, newIndex: Int) {
+    check(newIndex in 0 until size)
     val currentIndex = indexOf(item)
     if (currentIndex < 0) return
     removeAt(currentIndex)
@@ -26,12 +24,11 @@ fun <T> MutableList<T>.move(item: T, newIndex: Int) {
  * Moves the given item at the `oldIndex` to the `newIndex`
  */
 fun <T> MutableList<T>.moveAt(oldIndex: Int, newIndex: Int) {
+    check(oldIndex in 0 until size)
+    check(newIndex in 0 until size)
     val item = this[oldIndex]
     removeAt(oldIndex)
-    if (oldIndex > newIndex)
-        add(newIndex, item)
-    else
-        add(newIndex - 1, item)
+    add(newIndex, item)
 }
 
 /**
@@ -51,8 +48,8 @@ fun <T> MutableList<T>.moveAll(newIndex: Int, predicate: (T) -> Boolean) {
  */
 fun <T> MutableList<T>.moveUpAt(index: Int) {
     if (index == 0) return
-    if (index !in 0 until size) throw Exception("Invalid index $index for MutableList of size $size")
-    val newIndex = index + 1
+    check(index in indices, { "Invalid index $index for MutableList of size $size" })
+    val newIndex = index - 1
     val item = this[index]
     removeAt(index)
     add(newIndex, item)
@@ -64,8 +61,8 @@ fun <T> MutableList<T>.moveUpAt(index: Int) {
  */
 fun <T> MutableList<T>.moveDownAt(index: Int) {
     if (index == size - 1) return
-    if (index !in indices) throw Exception("Invalid index $index for MutableList of size $size")
-    val newIndex = index - 1
+    check(index in indices, { "Invalid index $index for MutableList of size $size" })
+    val newIndex = index + 1
     val item = this[index]
     removeAt(index)
     add(newIndex, item)
@@ -302,3 +299,6 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
 fun <T> ObservableList<T>.invalidate() {
     if (isNotEmpty()) this[0] = this[0]
 }
+
+
+fun <T> observableList(vararg entries: T) = FXCollections.observableArrayList<T>(entries.toList())

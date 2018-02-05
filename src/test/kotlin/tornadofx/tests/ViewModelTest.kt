@@ -1,5 +1,6 @@
 package tornadofx.tests
 
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -11,6 +12,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
+import kotlin.reflect.KMutableProperty1
 
 open class ViewModelTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
@@ -45,6 +47,11 @@ open class ViewModelTest {
         assertEquals(person.name, "John")
         model.name.value = "Jay"
         assertEquals(person.name, "Jay")
+    }
+
+    @Test fun default_value() {
+        val model = PersonAutoModel()
+        assertEquals(model.name.value, "Yoyo")
     }
 
     @Test fun external_change() {
@@ -87,9 +94,60 @@ open class ViewModelTest {
         val model = JavaPersonModel(person)
 
         model.name.value = "Jay"
+        assertEquals(model.name.value, "Jay")
         assertEquals(person.name, "John")
         model.commit()
+        assertEquals(model.name.value, "Jay")
         assertEquals(person.name, "Jay")
+
+        model.name.value = null
+        assertNull(model.name.value)
+        assertNotNull(person.name)
+
+        model.commit()
+        assertNull(model.name.value)
+        assertNull(person.name)
+    }
+
+    @Test fun poko_commit() {
+        val person = PersonPoko()
+        person.name = "John"
+        person.phone = "777"
+        val model = PersonPokoModel(person)
+
+        //testing non-nullable field
+        model.name.value = "Jay"
+        assertEquals("Jay", model.name.value)
+        assertEquals("John", person.name)
+        model.commit()
+        assertEquals("Jay", model.name.value)
+        assertEquals("Jay", person.name)
+
+        model.name.value = null
+        assertNull(model.name.value)
+        assertNotNull(person.name)
+
+        /*model.commit() //IllegalArgumentException @ JavaFX Thread
+        assertNull(model.name.value) //null, assertion passes
+        assertNull(person.name) //not null, assertion fails*/
+
+        model.rollback() //next commit would cause IllegalArgumentException, we don't want that
+
+        //testing nullable field
+        model.phone.value = "555"
+        assertEquals("555", model.phone.value)
+        assertEquals("777", person.phone)
+        model.commit()
+        assertEquals("555", model.phone.value)
+        assertEquals("555", person.phone)
+
+        model.phone.value = null
+        assertNull(model.phone.value)
+        assertNotNull(person.phone)
+
+        model.commit()
+        assertNull(model.phone.value)
+        assertNull(person.phone)
     }
 
     @Test fun var_commit_check_dirty_state() {
@@ -162,7 +220,7 @@ open class ViewModelTest {
 }
 
 class PersonAutoModel(var person: Person? = null) : ViewModel() {
-    val name = bind(true) { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
+    val name = bind(true, defaultValue = "Yoyo") { person?.nameProperty() ?: SimpleStringProperty() as Property<String> }
 }
 
 // JavaFX Property
@@ -181,4 +239,10 @@ class JavaPersonModel(person: JavaPerson) : ViewModel() {
 // Kotlin var property
 class PersonVarModel(person: Person) : ViewModel() {
     val name = bind { person.observable(Person::name) }
+}
+
+//Kotlin nullable and non-nullable property in ItemViewModel
+class PersonPokoModel(item : PersonPoko): ItemViewModel<PersonPoko>(item) {
+    val name = bind(PersonPoko::name)
+    val phone = bind(PersonPoko::phone)
 }

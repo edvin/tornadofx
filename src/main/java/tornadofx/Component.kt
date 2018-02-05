@@ -25,12 +25,13 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
-import javafx.scene.layout.Region
+import javafx.scene.layout.StackPane
 import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
+import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
 import java.net.URL
@@ -58,7 +59,7 @@ interface Configurable {
     }
 }
 
-class ConfigProperties(val configurable: Configurable) : Properties() {
+class ConfigProperties(val configurable: Configurable) : Properties(), Closeable {
     fun set(pair: Pair<String, Any?>) {
         val value = pair.second?.let {
             (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
@@ -77,6 +78,10 @@ class ConfigProperties(val configurable: Configurable) : Properties() {
     fun save() {
         val path = configurable.configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
         Files.newOutputStream(path).use { output -> store(output, "") }
+    }
+
+    override fun close() {
+        save()
     }
 }
 
@@ -97,8 +102,8 @@ abstract class Component : Configurable {
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServices get() = FX.application.hostServices
 
-    inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null): T = find(T::class, scope, params).apply { op?.invoke(this) }
-    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: (T.() -> Unit)? = null) = find(type, scope, params).apply { op?.invoke(this) }
+    inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params).apply(op)
+    fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) = find(type, scope, params).apply(op)
     @JvmOverloads
     fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
 
@@ -128,7 +133,7 @@ abstract class Component : Configurable {
         override fun get(): ResourceBundle? {
             if (super.get() == null) {
                 try {
-                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, FXResourceBundleControl)
+                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, this@Component.javaClass.classLoader, FXResourceBundleControl)
                     (bundle as? FXPropertyResourceBundle)?.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
@@ -166,6 +171,8 @@ abstract class Component : Configurable {
         }
     }
 
+    fun <T : ScopedInstance> setInScope(value: T, scope: Scope = this.scope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
+
     @Deprecated("No need to use the nullableParam anymore, use param instead", ReplaceWith("param(defaultValue)"))
     inline fun <reified T> nullableParam(defaultValue: T? = null) = param(defaultValue)
 
@@ -198,6 +205,9 @@ abstract class Component : Configurable {
 
     val primaryStage: Stage get() = FX.getPrimaryStage(scope)!!
 
+    // This is here for backwards compatibility. Removing it would require an import for the tornadofx.ui version
+    infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+
     @Deprecated("Clashes with Region.background, so runAsync is a better name", ReplaceWith("runAsync"), DeprecationLevel.WARNING)
     fun <T> background(func: FXTask<*>.() -> T) = task(func = func)
 
@@ -213,33 +223,25 @@ abstract class Component : Configurable {
      *
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: ((ReturnType) -> Unit)? = null): Task<ReturnType>
-            where InjectableType : Component, InjectableType : ScopedInstance {
-        val t = task { invoke(find(scope)) }
-        if (doOnUi != null) t.ui(doOnUi)
-        return t
-    }
+    inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: (ReturnType) -> Unit = {}): Task<ReturnType>
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope)) }.apply { ui(doOnUi) }
 
     /**
      * Perform the given operation on an ScopedInstance class function member asynchronousyly.
      *
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
-    inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: (ReturnType) -> Unit = {})
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: (ReturnType) -> Unit = {})
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: (ReturnType) -> Unit = {})
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2, p3) }.apply { ui(doOnUi) }
 
-    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: ((ReturnType) -> Unit)? = null)
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3, p4) }.apply { if (doOnUi != null) ui(doOnUi) }
+    inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: (ReturnType) -> Unit = {})
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2, p3, p4) }.apply { ui(doOnUi) }
 
     /**
      * Find the given property inside the given ScopedInstance. Useful for assigning a property from a View or Controller
@@ -259,51 +261,12 @@ abstract class Component : Configurable {
         return prop.set(injectable, value)
     }
 
+    /**
+     * Runs task in background. If not set directly, looks for `TaskStatus` instance in current scope.
+     */
     fun <T> runAsync(status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(status, func)
 
-    /**
-     * Replace this node with a progress node while a long running task
-     * is running and swap it back when complete.
-     *
-     * If this node is Labeled, the graphic property will contain the progress bar instead while the task is running.
-     *
-     * The default progress node is a ProgressIndicator that fills the same
-     * client area as the parent. You can swap the progress node for any Node you like.
-     */
-    fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
-        if (this is Labeled) {
-            val oldGraphic = graphic
-            (progress as? Region)?.setPrefSize(16.0, 16.0)
-            graphic = progress
-            return task {
-                try {
-                    op()
-                } finally {
-                    runLater {
-                        this@runAsyncWithProgress.graphic = oldGraphic
-                    }
-                }
-            }
-        } else {
-            val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
-            val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
-            (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
-            val children = requireNotNull(parent.getChildList()){"This node has no child list, and cannot contain the progress node"}
-            val index = children.indexOf(this)
-            children.add(index, progress)
-            removeFromParent()
-            return task {
-                val result = op()
-                runLater {
-                    children.add(index, this@runAsyncWithProgress)
-                    progress.removeFromParent()
-                }
-                result
-            }
-        }
-    }
-
-    infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
+    fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(daemon, status, func)
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
@@ -415,6 +378,25 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * by the currently active Tab.
      */
     fun TabPane.connectWorkspaceActions() {
+        savableWhen { savable }
+        whenSaved { onSave() }
+
+        creatableWhen { creatable }
+        whenCreated { onCreate() }
+
+        deletableWhen { deletable }
+        whenDeleted { onDelete() }
+
+        refreshableWhen { refreshable }
+        whenRefreshed { onRefresh() }
+    }
+
+    /**
+     * Forward the Workspace button states and actions to the TabPane, which
+     * in turn will forward these states and actions to whatever View is represented
+     * by the currently active Tab.
+     */
+    fun StackPane.connectWorkspaceActions() {
         savableWhen { savable }
         whenSaved { onSave() }
 
@@ -664,15 +646,17 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
-    inline fun <reified C: UIComponent> BorderPane.top() = top(C::class)
+    inline fun <reified T : UIComponent> TabPane.tab(scope: Scope = this@UIComponent.scope, noinline op: Tab.() -> Unit = {}) = tab(find<T>(scope), op)
+
+    inline fun <reified C : UIComponent> BorderPane.top() = top(C::class)
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.right() = right(C::class)
+    inline fun <reified C : UIComponent> BorderPane.right() = right(C::class)
     fun <C : UIComponent> BorderPane.right(nodeType: KClass<C>) = setRegion(scope, BorderPane::rightProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.bottom() = bottom(C::class)
+    inline fun <reified C : UIComponent> BorderPane.bottom() = bottom(C::class)
     fun <C : UIComponent> BorderPane.bottom(nodeType: KClass<C>) = setRegion(scope, BorderPane::bottomProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.left() = left(C::class)
+    inline fun <reified C : UIComponent> BorderPane.left() = left(C::class)
     fun <C : UIComponent> BorderPane.left(nodeType: KClass<C>) = setRegion(scope, BorderPane::leftProperty, nodeType)
-    inline fun <reified C: UIComponent> BorderPane.center() = center(C::class)
+    inline fun <reified C : UIComponent> BorderPane.center() = center(C::class)
     fun <C : UIComponent> BorderPane.center(nodeType: KClass<C>) = setRegion(scope, BorderPane::centerProperty, nodeType)
 
     fun <S, T> TableColumn<S, T>.cellFormat(formatter: TableCell<S, T>.(T) -> Unit) = cellFormat(scope, formatter)
@@ -700,42 +684,43 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ListView<T>.cellCache(cachedGraphicProvider: (T) -> Node) = cellCache(scope, cachedGraphicProvider)
 
-    fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: ((TableColumn.CellEditEvent<S, Number?>) -> Unit)? = null) = useProgressBar(scope, afterCommit)
+    fun <S> TableColumn<S, out Number?>.useProgressBar(afterCommit: (TableColumn.CellEditEvent<S, Number?>) -> Unit = {}) = useProgressBar(scope, afterCommit)
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
-    inline fun <reified T: UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: (DrawerItem.() -> Unit)? = null)
-            =  item(T::class, scope, params, expanded, showHeader, op)
+    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {}) = item(T::class, scope, params, expanded, showHeader, op)
 
-    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: (DrawerItem.() -> Unit)? = null) =
+    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
+    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
+    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+        placeholder = find(T::class, scope, params).apply(op).root
+    }
+
+    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: DrawerItem.() -> Unit = {}) =
             item(find(uiComponent, scope, params), expanded, showHeader, op)
 
-    @JvmName("addView")
-    fun <T : View> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null){ plusAssign(find(type, scope, params).root) }
-    inline fun <reified T: View> EventTarget.add(vararg params: Pair<*, Any?>) = add(T::class,params.toMap())
-
-    @JvmName("addFragmentByClass")
-    inline fun <reified T : Fragment> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, noinline op: (T.() -> Unit)? = null) {
-        val fragment: T = find(type, scope, params)
-        plusAssign(fragment.root)
-        op?.invoke(fragment)
+    fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) {
+        val view = find(type, scope, params)
+        plusAssign(view.root)
+        op(view)
     }
-    inline fun <reified T: Fragment> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: (T.() -> Unit)) = add(T::class,params.toMap(),op)
 
+    inline fun <reified T : UIComponent> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: T.() -> Unit = {}) = add(T::class, params.toMap(), op)
 
     fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
-    inline fun <reified T : UIComponent> EventTarget.add() = add(find(T::class))
 
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
     fun EventTarget.add(child: Node) = plusAssign(child)
 
-    @JvmName("plusView")
-    operator fun <T : View> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
+    operator fun <T : UIComponent> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    @JvmName("plusFragment")
-    operator fun <T : Fragment> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
-
-    protected inline fun <reified T: UIComponent> openInternalWindow(
+    protected inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
@@ -744,7 +729,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             closeButton: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             params: Map<*, Any?>? = null
-    ) = openInternalWindow(T::class, scope, icon, modal,owner,escapeClosesWindow, closeButton, overlayPaint, params)
+    ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params)
 
     protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
@@ -756,8 +741,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     @JvmOverloads
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
-            = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
@@ -827,7 +811,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun closeModal() = close()
 
     fun close() {
-        modalStage?.apply {
+        (modalStage ?: currentStage)?.apply {
             close()
             modalStage = null
         }
@@ -871,8 +855,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
         val componentType = this@UIComponent.javaClass
-        val targetLocation = location ?: componentType.simpleName + ".fxml"
-        val fxml = requireNotNull(componentType.getResource(targetLocation)){"FXML not found for $componentType in $targetLocation"}
+        val targetLocation = location ?: componentType.simpleName+".fxml"
+        val fxml = requireNotNull(componentType.getResource(targetLocation)) { "FXML not found for $componentType in $targetLocation" }
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
@@ -931,8 +915,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fieldset.stage
     }
 
-    inline fun <reified T: UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false)
-            = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+    inline fun <reified T : UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) =
             replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
 

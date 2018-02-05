@@ -59,7 +59,6 @@ class ScopeTest {
 
         val f3 = find<F>(scope2)
 
-        assertTrue(f1.scope.model is PersonModel)
         assertNotEquals(f1.c, f3.c)
         assertNotEquals(f1.vm, f3.vm)
     }

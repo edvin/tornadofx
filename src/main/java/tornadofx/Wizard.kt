@@ -149,13 +149,15 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
                 addClass(WizardStyles.buttons)
                 button(type = ButtonBar.ButtonData.BACK_PREVIOUS) {
                     textProperty().bind(backButtonTextProperty)
-                    enableWhen { canGoBack }
+                    runLater {
+                        enableWhen(canGoBack)
+                    }
                     action { back() }
                 }
                 button(type = ButtonBar.ButtonData.NEXT_FORWARD) {
                     textProperty().bind(nextButtonTextProperty)
-                    Platform.runLater {
-                        enableWhen { canGoNext.and(hasNext) }
+                    runLater {
+                        enableWhen(canGoNext.and(hasNext))
                     }
                     action { next() }
                 }
@@ -165,8 +167,8 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
                 }
                 button(type = ButtonBar.ButtonData.FINISH) {
                     textProperty().bind(finishButtonTextProperty)
-                    Platform.runLater {
-                        enableWhen { canFinish }
+                    runLater {
+                        enableWhen(canFinish)
                     }
                     action {
                         currentPage.onSave()

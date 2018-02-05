@@ -14,10 +14,10 @@ class NestedTableColumns : View("Nested Table Columns") {
     )
 
     override val root = tableview(people) {
-        column("Name", Person::name)
+        readonlyColumn("Name", Person::name)
         nestedColumn("Email addresses") {
-            column("Primary Email", Person::primaryEmail)
-            column("Secondary Email", Person::secondaryEmail)
+            readonlyColumn("Primary Email", Person::primaryEmail)
+            readonlyColumn("Secondary Email", Person::secondaryEmail)
         }
     }
 }

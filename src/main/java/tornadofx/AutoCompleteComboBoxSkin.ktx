@@ -19,9 +19,9 @@ import javafx.util.Callback
  * Extension function to combobox to add autocomplete capabilities
  * Accept in parameter a callback to create the autocomplete list based on input text
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
- * @param automaticPopupWidth Use the width required to display all content. Default: false
+ * @param automaticPopupWidth Use the width required to display all content. Default: true
  */
-fun <T> ComboBox<T>.makeAutocompletable(automaticPopupWidth: Boolean = false, autoCompleteFilter: ((String) -> List<T>)? = null) {
+fun <T> ComboBox<T>.makeAutocompletable(automaticPopupWidth: Boolean = true, autoCompleteFilter: ((String) -> List<T>)? = null) {
     skin = AutoCompleteComboBoxSkin(this, autoCompleteFilter, automaticPopupWidth)
 }
 
@@ -225,7 +225,9 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
         if (!automaticPopupWidth) {
             // Note that we cannot bind prefWidthProperty because JavaFX sets
             // the preferred width upon reconfiguration. (ComboBoxPopupControl.java:322)
-            comboBox.widthProperty().onChange { listView.prefWidth = it }
+            comboBox.widthProperty().onChange {
+                if (!listView.prefWidthProperty().isBound) listView.prefWidth = it
+            }
         }
         updateCellFactory()
         updateButtonCell()

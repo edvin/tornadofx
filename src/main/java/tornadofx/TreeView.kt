@@ -7,9 +7,7 @@ import javafx.beans.property.Property
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
-import javafx.scene.control.TreeCell
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.util.Callback
@@ -206,3 +204,11 @@ fun <S> TreeView<S>.cellDecorator(decorator: (TreeCell<S>.(S) -> Unit)) {
  */
 val <T> TreeView<T>.selectedValue: T?
     get() = this.selectionModel.selectedItem?.value
+
+fun <T> TreeView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}
+
+fun <T> TreeTableView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
+}

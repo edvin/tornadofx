@@ -22,6 +22,10 @@
     -fx-color: -fx-hover-base;
 }
 
+.list-menu .list-item:disabled {
+    -fx-opacity: 0.4;
+}
+
 .list-menu.blue {
     -fx-graphic-fixed-size: 2.5em;
     -fx-background-color: #1e88cf;

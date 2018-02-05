@@ -84,7 +84,7 @@ fun <S, T> observable(owner: S, prop: KProperty1<S, T>): ReadOnlyObjectProperty<
  * Example: val observableName = observable(myPojo, MyPojo::getName, MyPojo::setName)
  */
 fun <S : Any, T> observable(bean: S, getter: KFunction<T>, setter: KFunction2<S, T, Unit>): PojoProperty<T> {
-    val propName = getter.name.substring(3).let { it.first().toLowerCase() + it.substring(1) }
+    val propName = getter.name.substring(3).decapitalize()
 
     return object : PojoProperty<T>(bean, propName) {
         override fun get() = getter.call(bean)
@@ -123,7 +123,7 @@ fun <S : Any, T : Any> S.observable(
 ): ObjectProperty<T> {
     if (getter == null && propertyName == null) throw AssertionError("Either getter or propertyName must be provided")
     val propName = propertyName
-            ?: getter?.name?.substring(3)?.let { it.first().toLowerCase() + it.substring(1) }
+            ?: getter?.name?.substring(3)?.decapitalize()
 
     return JavaBeanObjectPropertyBuilder.create().apply {
         bean(this@observable)
@@ -160,6 +160,7 @@ private class SynchronizedSingleAssign<T> : UnsynchronizedSingleAssign<T>() {
 private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
 
     protected object UNINITIALIZED_VALUE
+
     protected open var _value: Any? = UNINITIALIZED_VALUE
 
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
@@ -187,6 +188,12 @@ fun <T> Property<T>.cleanBind(observable: ObservableValue<T>) {
 operator fun <T> ObservableValue<T>.getValue(thisRef: Any, property: KProperty<*>) = value
 operator fun <T> Property<T>.setValue(thisRef: Any, property: KProperty<*>, value: T?) = setValue(value)
 
+fun ObservableValue<String>.matches(pattern: Regex): BooleanBinding {
+    return booleanBinding {
+        it?.matches(pattern) ?: false
+    }
+}
+
 operator fun ObservableDoubleValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun DoubleProperty.setValue(thisRef: Any, property: KProperty<*>, value: Double) = set(value)
 
@@ -202,15 +209,14 @@ operator fun IntegerProperty.setValue(thisRef: Any, property: KProperty<*>, valu
 operator fun ObservableBooleanValue.getValue(thisRef: Any, property: KProperty<*>) = get()
 operator fun BooleanProperty.setValue(thisRef: Any, property: KProperty<*>, value: Boolean) = set(value)
 
-//operator fun <E> ObservableListValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableList<E> = value
-//operator fun <E> ListProperty<E>.setValue(thisRef: Any, property: KProperty<*>, list: List<E>) = set(FXCollections.observableList(list))
-//
-//operator fun <E> ObservableSetValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableSet<E> = value
-//operator fun <E> SetProperty<E>.setValue(thisRef: Any, property: KProperty<*>, set: Set<E>) = set(FXCollections.observableSet(set))
-//
-//operator fun <K, V> ObservableMapValue<K, V>.getValue(thisRef: Any, property: KProperty<*>): MutableMap<K, V> = value
-//operator fun <K, V> MapProperty<K, V>.setValue(thisRef: Any, property: KProperty<*>, map: Map<K, V>) = set(FXCollections.observableMap(map))
+operator fun <E> ObservableListValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableList<E> = value
+operator fun <E> ListProperty<E>.setValue(thisRef: Any, property: KProperty<*>, list: List<E>) = set(FXCollections.observableList(list))
 
+operator fun <E> ObservableSetValue<E>.getValue(thisRef: Any, property: KProperty<*>): MutableSet<E> = value
+operator fun <E> SetProperty<E>.setValue(thisRef: Any, property: KProperty<*>, set: Set<E>) = set(FXCollections.observableSet(set))
+
+operator fun <K, V> ObservableMapValue<K, V>.getValue(thisRef: Any, property: KProperty<*>): MutableMap<K, V> = value
+operator fun <K, V> MapProperty<K, V>.setValue(thisRef: Any, property: KProperty<*>, map: Map<K, V>) = set(FXCollections.observableMap(map))
 
 operator fun DoubleExpression.plus(other: Number): DoubleBinding = add(other.toDouble())
 operator fun DoubleExpression.plus(other: ObservableNumberValue): DoubleBinding = add(other)
@@ -634,6 +640,8 @@ infix fun StringExpression.le(other: ObservableStringValue): BooleanBinding = le
 
 infix fun StringExpression.lt(other: String): BooleanBinding = lessThan(other)
 infix fun StringExpression.lt(other: ObservableStringValue): BooleanBinding = lessThan(other)
+fun ObservableValue<String>.isBlank(): BooleanBinding = booleanBinding { it?.isBlank() ?: true }
+fun ObservableValue<String>.isNotBlank(): BooleanBinding = booleanBinding { it?.isNotBlank() ?: false }
 
 infix fun StringExpression.eqIgnoreCase(other: String): BooleanBinding = isEqualToIgnoreCase(other)
 infix fun StringExpression.eqIgnoreCase(other: ObservableStringValue): BooleanBinding = isEqualToIgnoreCase(other)

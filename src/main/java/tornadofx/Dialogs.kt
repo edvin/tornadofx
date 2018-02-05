@@ -8,14 +8,16 @@ import javafx.stage.FileChooser
 import javafx.stage.Stage
 import javafx.stage.Window
 import tornadofx.FileChooserMode.*
+import tornadofx.Stylesheet.Companion.title
+import tornadofx.WizardStyles.Companion.buttons
 import java.io.File
 
 /**
  * Show a confirmation dialog and execute the given action if confirmButton is clicked. The button types
  * of the confirmButton and cancelButton are configurable.
  */
-fun confirm(header: String, content: String = "", confirmButton: ButtonType = ButtonType.OK, cancelButton: ButtonType = ButtonType.CANCEL, actionFn: () -> Unit) {
-    alert(Alert.AlertType.CONFIRMATION, header, content, *arrayOf(confirmButton, cancelButton)) {
+fun confirm(header: String, content: String = "", confirmButton: ButtonType = ButtonType.OK, cancelButton: ButtonType = ButtonType.CANCEL, owner: Window? = null, title: String? = null, actionFn: () -> Unit) {
+    alert(Alert.AlertType.CONFIRMATION, header, content, confirmButton, cancelButton, owner = owner, title = title) {
         if (it == confirmButton) actionFn()
     }
 }
@@ -33,27 +35,29 @@ fun alert(type: Alert.AlertType,
           content: String? = null,
           vararg buttons: ButtonType,
           owner: Window? = null,
-          actionFn: (Alert.(ButtonType) -> Unit)? = null): Alert {
+          title: String? = null,
+          actionFn: Alert.(ButtonType) -> Unit = {}): Alert {
 
     val alert = Alert(type, content ?: "", *buttons)
+    title?.let { alert.title = it }
     alert.headerText = header
     owner?.also { alert.initOwner(it) }
     val buttonClicked = alert.showAndWait()
-    buttonClicked.ifPresent { actionFn?.invoke(alert, buttonClicked.get()) }
+    buttonClicked.ifPresent { actionFn(alert, buttonClicked.get()) }
     return alert
 }
 
-fun warning(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
-        alert(Alert.AlertType.WARNING, header, content, *buttons, actionFn = actionFn)
+fun warning(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+        alert(Alert.AlertType.WARNING, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun error(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
-        alert(Alert.AlertType.ERROR, header, content, *buttons, actionFn = actionFn)
+fun error(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+        alert(Alert.AlertType.ERROR, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun information(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
-        alert(Alert.AlertType.INFORMATION, header, content, *buttons, actionFn = actionFn)
+fun information(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+        alert(Alert.AlertType.INFORMATION, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun confirmation(header: String, content: String? = null, vararg buttons: ButtonType, actionFn: (Alert.(ButtonType) -> Unit)? = null) =
-        alert(Alert.AlertType.CONFIRMATION, header, content, *buttons, actionFn = actionFn)
+fun confirmation(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+        alert(Alert.AlertType.CONFIRMATION, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
 enum class FileChooserMode { None, Single, Multi, Save }
 
@@ -66,11 +70,11 @@ enum class FileChooserMode { None, Single, Multi, Save }
  *
  * If the user cancels, the returnedfile list will be empty.
  */
-fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter>, mode: FileChooserMode = Single, owner: Window? = null, op: (FileChooser.() -> Unit)? = null): List<File> {
+fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter>, mode: FileChooserMode = Single, owner: Window? = null, op: FileChooser.() -> Unit = {}): List<File> {
     val chooser = FileChooser()
     if (title != null) chooser.title = title
     chooser.extensionFilters.addAll(filters)
-    op?.invoke(chooser)
+    op(chooser)
     return when (mode) {
         Single -> {
             val result = chooser.showOpenDialog(owner)
@@ -85,11 +89,11 @@ fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter
     }
 }
 
-fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner: Window? = null, op: (DirectoryChooser.() -> Unit)? = null): File? {
+fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner: Window? = null, op: DirectoryChooser.() -> Unit = {}): File? {
     val chooser = DirectoryChooser()
     if (title != null) chooser.title = title
     if (initialDirectory != null) chooser.initialDirectory = initialDirectory
-    op?.invoke(chooser)
+    op(chooser)
     return chooser.showDialog(owner)
 }
 

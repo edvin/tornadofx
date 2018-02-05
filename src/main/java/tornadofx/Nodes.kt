@@ -1,7 +1,8 @@
-@file:Suppress("UNCHECKED_CAST", "unused")
+@file:Suppress("UNCHECKED_CAST")
 
 package tornadofx
 
+import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Platform
@@ -20,9 +21,7 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.control.cell.CheckBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
-import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -43,7 +42,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
+import java.util.function.UnaryOperator
 import kotlin.reflect.KClass
+import kotlin.reflect.full.safeCast
 
 fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contains(className)
 fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
@@ -70,6 +71,7 @@ fun Node.hasClass(className: String) = styleClass.contains(className)
 fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 
 fun <T : Node> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
+fun Iterable<Node>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 
 fun <T : Node> T.addPseudoClass(className: String) = apply {
     val pseudoClass = PseudoClass.getPseudoClass(className)
@@ -101,10 +103,10 @@ fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = appl
 
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
-fun Node.tooltip(text: String? = null, graphic: Node? = null, op: (Tooltip.() -> Unit)? = null): Tooltip {
+fun Node.tooltip(text: String? = null, graphic: Node? = null, op: Tooltip.() -> Unit = {}): Tooltip {
     val newToolTip = Tooltip(text)
     graphic?.apply { newToolTip.graphic = this }
-    if (op != null) newToolTip.op()
+    newToolTip.op()
     if (this is Control) tooltip = newToolTip else Tooltip.install(this, newToolTip)
     return newToolTip
 }
@@ -280,13 +282,16 @@ fun point(x: Number, y: Number) = Point2D(x.toDouble(), y.toDouble())
 fun point(x: Number, y: Number, z: Number) = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
 infix fun Number.xy(y: Number) = Point2D(toDouble(), y.toDouble())
 
-fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         try {
             val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
             resizer.isAccessible = true
-            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-            afterResize?.invoke()
+            resizeColumns.forEach {
+                if (it.isVisible)
+                    try { resizer.invoke(skin, it, maxRows) } catch (ignored: Exception) {}
+            }
+            afterResize()
         } catch (ex: Exception) {
             // Silent for now, it is usually run multiple times
             //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
@@ -295,12 +300,15 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
     if (skin == null) Platform.runLater { doResize() } else doResize()
 }
 
-fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: (() -> Unit)? = null) {
+fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
-        afterResize?.invoke()
+        resizeColumns.forEach {
+            if (it.isVisible)
+                try { resizer.invoke(skin, it, maxRows)  } catch (ignored: Exception) {}
+        }
+        afterResize.invoke()
     }
     if (skin == null) {
         skinProperty().onChangeOnce {
@@ -362,7 +370,7 @@ val <T> ComboBox<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
 fun <S> TableView<S>.onSelectionChange(func: (S?) -> Unit) =
-        selectionModel.selectedItemProperty().addListener({ _, _, newValue -> func(newValue) })
+        selectionModel.selectedItemProperty().addListener({ observable, oldValue, newValue -> func(newValue) })
 
 
 fun <T> TreeTableView<T>.bindSelected(property: Property<T>) {
@@ -391,7 +399,7 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 }
 
 fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
-    cellFactory = Callback {
+    cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
@@ -511,7 +519,7 @@ fun EventTarget.isInsideRow(): Boolean {
 /**
  * Access BorderPane constraints to manipulate and apply on this control
  */
-fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.borderpaneConstraints(op: (BorderPaneConstraint.() -> Unit)): T {
     val bpc = BorderPaneConstraint(this)
     bpc.op()
     return bpc.applyToNode(this)
@@ -531,7 +539,7 @@ class BorderPaneConstraint(node: Node,
 /**
  * Access GridPane constraints to manipulate and apply on this control
  */
-fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.gridpaneConstraints(op: (GridPaneConstraint.() -> Unit)): T {
     val gpc = GridPaneConstraint(this)
     gpc.op()
     return gpc.applyToNode(this)
@@ -591,13 +599,13 @@ class GridPaneConstraint(node: Node,
     }
 }
 
-fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
+inline fun <T : Node> T.vboxConstraints(op: (VBoxConstraint.() -> Unit)): T {
     val c = VBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
 }
 
-fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
+inline fun <T : Node> T.stackpaneConstraints(op: (StackpaneConstraint.() -> Unit)): T {
     val c = StackpaneConstraint(this)
     c.op()
     return c.applyToNode(this)
@@ -627,7 +635,7 @@ class StackpaneConstraint(node: Node,
     }
 }
 
-fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
+inline fun <T : Node> T.hboxConstraints(op: (HBoxConstraint.() -> Unit)): T {
     val c = HBoxConstraint(this)
     c.op()
     return c.applyToNode(this)
@@ -658,23 +666,23 @@ var Node.vgrow: Priority? get() = VBox.getVgrow(this); set(value) {
     }
 }
 
-fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
+inline fun <T : Node> T.anchorpaneConstraints(op: AnchorPaneConstraint.() -> Unit): T {
     val c = AnchorPaneConstraint()
     c.op()
     return c.applyToNode(this)
 }
 
 class AnchorPaneConstraint(
-        var topAnchor: Double? = null,
-        var rightAnchor: Double? = null,
-        var bottomAnchor: Double? = null,
-        var leftAnchor: Double? = null
+        var topAnchor: Number? = null,
+        var rightAnchor: Number? = null,
+        var bottomAnchor: Number? = null,
+        var leftAnchor: Number? = null
 ) {
     fun <T : Node> applyToNode(node: T): T {
-        topAnchor?.let { AnchorPane.setTopAnchor(node, it) }
-        rightAnchor?.let { AnchorPane.setRightAnchor(node, it) }
-        bottomAnchor?.let { AnchorPane.setBottomAnchor(node, it) }
-        leftAnchor?.let { AnchorPane.setLeftAnchor(node, it) }
+        topAnchor?.let { AnchorPane.setTopAnchor(node, it.toDouble()) }
+        rightAnchor?.let { AnchorPane.setRightAnchor(node, it.toDouble()) }
+        bottomAnchor?.let { AnchorPane.setBottomAnchor(node, it.toDouble()) }
+        leftAnchor?.let { AnchorPane.setLeftAnchor(node, it.toDouble()) }
         return node
     }
 }
@@ -730,6 +738,7 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() = apply {
         Float::class.javaPrimitiveType -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(FloatStringConverter() as StringConverter<S>)
         Long::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LongStringConverter() as StringConverter<S>)
         Long::class.javaPrimitiveType -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LongStringConverter() as StringConverter<S>)
+        Number::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(NumberStringConverter() as StringConverter<S>)
         BigDecimal::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(BigDecimalStringConverter() as StringConverter<S>)
         BigInteger::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(BigIntegerStringConverter() as StringConverter<S>)
         String::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(DefaultStringConverter() as StringConverter<S>)
@@ -737,8 +746,7 @@ inline fun <T, reified S : Any> TableColumn<T, S>.makeEditable() = apply {
         LocalTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalTimeStringConverter() as StringConverter<S>)
         LocalDateTime::class -> cellFactory = TextFieldTableCell.forTableColumn<T, S>(LocalDateTimeStringConverter() as StringConverter<S>)
         Boolean::class.javaPrimitiveType -> {
-            this as TableColumn<T, Boolean>
-            setCellFactory(CheckBoxTableCell.forTableColumn(this))
+            (this as TableColumn<T, Boolean?>).useCheckbox(true)
         }
         else -> throw RuntimeException("makeEditable() is not implemented for specified class type:" + S::class.qualifiedName)
     }
@@ -825,20 +833,12 @@ inline fun <reified T : UIComponent> UIComponent.findAll(): List<T> = root.findA
 /**
  * Find the first UIComponent of the specified type that owns any of this node's children
  */
-inline fun <reified T : UIComponent> Parent.lookup(noinline op: (T.() -> Unit)? = null): T? {
-    val result = findAll<T>().getOrNull(0)
-    if (result != null) op?.invoke(result)
-    return result
-}
+inline fun <reified T : UIComponent> Parent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
 /**
  * Find the first UIComponent of the specified type that owns any of this UIComponent's root node's children
  */
-inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: (T.() -> Unit)? = null): T? {
-    val result = findAll<T>().getOrNull(0)
-    if (result != null) op?.invoke(result)
-    return result
-}
+inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
 fun EventTarget.removeFromParent() {
     if (this is UIComponent) {
@@ -890,11 +890,11 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: (() -> Unit)? = null): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: () -> Unit = {}): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
-    onTransit?.invoke()
+    onTransit()
     if (this == scene?.root) {
         val scene = scene!!
 
@@ -961,6 +961,10 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     }
 }
 
+@Deprecated("This will go away in the future. Use the version with centerOnScreen parameter", ReplaceWith("replaceWith(replacement, transition, sizeToScene, false)"))
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean, onTransit: () -> Unit = {}) =
+        replaceWith(replacement, transition, sizeToScene, false)
+
 fun Node.hide() {
     isVisible = false
     isManaged = false
@@ -984,9 +988,9 @@ inline fun <reified T:Any> Node.findParent(): T? = findParentOfType(T::class)
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Node.findParentOfType(parentType: KClass<T>): T? {
     if (parent == null) return null
-    (parent as? T)?.also { return it }
+    parentType.safeCast(parent)?.also { return it }
     val uicmp = parent.uiComponent<UIComponent>()
-    (uicmp as? T)?.also { return it }
+    parentType.safeCast(uicmp)?.also { return it }
     return parent?.findParentOfType(parentType)
 }
 
@@ -1149,6 +1153,10 @@ fun <T: Node> T.removeWhen(predicate: ObservableValue<Boolean>) = apply {
     managedProperty().cleanBind(remove)
 }
 
+fun TextInputControl.editableWhen(predicate: ObservableValue<Boolean>) = apply {
+    editableProperty().bind(predicate)
+}
+
 /**
  * This extension function will make sure that the given [onHover] function will always be calles
  * when ever the hoverProperty of the given node changes.
@@ -1168,7 +1176,7 @@ fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
-fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: (SVGIcon.() -> Unit)? = null) = opcr(this, SVGIcon(shape, size, color), op)
+fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: SVGIcon.() -> Unit = {}) = opcr(this, SVGIcon(shape, size, color), op)
 
 class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) : Pane() {
     init {
@@ -1259,3 +1267,30 @@ fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = f
 fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
     op(this)
 } as T
+
+
+/**
+ * Filter the input of the text field by passing each change to the discriminator
+ * function and only applying the change if the discriminator returns true
+ *
+ * To only allow digits for example, do:
+ *
+ * filterInput { it.controlNewText.isInt() }
+ *
+ * You can also access just the changed text in `it.text` to validate just the new input.
+ *
+ */
+fun TextInputControl.filterInput(discriminator: (TextFormatter.Change) -> Boolean) {
+    textFormatter = TextFormatter<Any>(CustomTextFilter(discriminator))
+}
+
+/**
+ * Custom text filter used to supress input values, for example to
+ * only allow numbers in a textfield. Used via the filterInput {} builder
+ */
+class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Boolean) : UnaryOperator<TextFormatter.Change> {
+    override fun apply(c: TextFormatter.Change): TextFormatter.Change =
+            if (discriminator(c)) c else c.clone().apply { text = "" }
+}
+
+val Node.indexInParent: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1

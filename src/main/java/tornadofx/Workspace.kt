@@ -216,6 +216,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         }
     }
 
+    val header: ToolBar get() = root.header
+
     private fun navigateForward(): Boolean {
         if (!forwardButton.isDisabled) {
             dock(viewStack[viewPos.get() + 1], false)
@@ -341,6 +343,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find<T>(scope, params))
 
     fun dock(child: UIComponent, forward: Boolean = true) {
+        if (child == dockedComponent) return
+
         // Remove everything after viewpos if moving forward
         if (forward) while (viewPos.get() < viewStack.size -1) viewStack.removeAt(viewPos.get() + 1)
 
@@ -351,7 +355,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         setAsCurrentlyDocked(child)
 
         // Ensure max stack size
-        while (viewStack.size >= maxViewStackDepth)
+        while (viewStack.size >= maxViewStackDepth && viewStack.isNotEmpty())
             viewStack.removeAt(0)
     }
 
