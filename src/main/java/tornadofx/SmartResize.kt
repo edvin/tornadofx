@@ -354,7 +354,9 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
 }
 
 fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
-    val doResize = {
+    //fixme Java 9: resizeColumnToFitContent is not available in JDK9. TableSkinUtils contains it but it not made available to
+    //other modules
+    /*val doResize = {
         val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
         val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
         resizer.isAccessible = true
@@ -370,7 +372,7 @@ fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: L
         }
     } else {
         doResize()
-    }
+    }*/
 }
 
 fun <TABLE : Any> resizeCall(

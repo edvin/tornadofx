@@ -2,9 +2,6 @@
 
 package tornadofx
 
-import com.sun.corba.se.impl.util.RepositoryId.cache
-import com.sun.javafx.scene.control.skin.TableRowSkin
-import com.sun.org.apache.bcel.internal.Repository.addClass
 import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
@@ -24,6 +21,7 @@ import javafx.geometry.Pos
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.control.cell.*
+import javafx.scene.control.skin.TableRowSkinBase
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
@@ -31,10 +29,6 @@ import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import tornadofx.Stylesheet.Companion.editable
-import tornadofx.Stylesheet.Companion.root
-import tornadofx.Stylesheet.Companion.title
-import tornadofx.WizardStyles.Companion.graphic
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -837,7 +831,23 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
     }
 }
 
-class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: ExpanderColumn<S>) : TableRowSkin<S>(tableRow) {
+class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: ExpanderColumn<S>) : TableRowSkinBase<S, TableRow<S>, TableCell<S,*>>(tableRow) {
+    override fun getVisibleLeafColumns(): ObservableList<out TableColumnBase<Any, Any>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun createCell(tc: TableColumnBase<S, *>?): TableCell<S, *> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun updateCell(cell: TableCell<S, *>?, row: TableRow<S>?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getTableColumn(cell: TableCell<S, *>?): TableColumnBase<S, *> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     var tableRowPrefHeight = -1.0
 
     init {
@@ -1110,10 +1120,27 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 }
 
 @Suppress("UNCHECKED_CAST")
-class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: TableViewEditModel<S>) : TableRowSkin<S>(tableRow) {
-    private fun getPolygon(cell: TableCell<S, *>) =
+class DirtyDecoratingTableRowSkin<T>(tableRow: TableRow<T>, val editModel: TableViewEditModel<T>) : TableRowSkinBase<T, TableRow<T>, TableCell<T,*>>(tableRow) {
+    override fun getVisibleLeafColumns(): ObservableList<out TableColumnBase<Any, Any>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun updateCell(cell: TableCell<T, *>?, row: TableRow<T>?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getTableColumn(cell: TableCell<T, *>?): TableColumnBase<T, *> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun createCell(tc: TableColumnBase<T, *>?): TableCell<T, *> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun getPolygon(cell: TableCell<T, *>) =
             cell.properties.getOrPut("tornadofx.dirtyStatePolygon") { Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0).apply { fill = Color.BLUE } } as Polygon
 
+    /*
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         super.layoutChildren(x, y, w, h)
 
@@ -1131,7 +1158,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
             }
         }
 
-    }
+    }*/
 }
 
 /**
