@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TableColumnHeader
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Platform
@@ -22,6 +21,7 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
+import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
