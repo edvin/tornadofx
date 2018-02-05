@@ -223,45 +223,6 @@ fun Menu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = n
     return menuItem
 }
 
-/**
- * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
- * of the item. The item action is configured with the `action` builder.
- */
-fun Menu.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: (CustomMenuItem.() -> Unit)? = null): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op?.invoke(menuItem)
-    this += menuItem
-    return menuItem
-}
-
-/**
- * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
- * of the item. The item action is configured with the `action` builder.
- */
-fun MenuButton.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: (CustomMenuItem.() -> Unit)? = null): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op?.invoke(menuItem)
-    items.add(menuItem)
-    return menuItem
-}
-
-/**
- * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
- * of the item. The item action is configured with the `action` builder.
- */
-fun ContextMenu.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: (CustomMenuItem.() -> Unit)? = null): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op?.invoke(menuItem)
-    this += menuItem
-    return menuItem
-}
-
 fun Menu.separator() {
     this += SeparatorMenuItem()
 }
