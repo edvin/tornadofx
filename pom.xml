@@ -14,8 +14,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
             <version>${javax.json.version}</version>
         </dependency>
         <dependency>
@@ -298,7 +298,7 @@
 
         <javax.json.version>1.1.2</javax.json.version>
         <httpclient.version>4.5.3</httpclient.version>
-        <felix.framework.version>5.6.8</felix.framework.version>
+        <felix.framework.version>5.6.10</felix.framework.version>
         <junit.version>4.12</junit.version>
         <testfx-core.version>4.0.4-alpha</testfx-core.version>
         <testfx-junit.version>4.0.4-alpha</testfx-junit.version>
@@ -308,8 +308,8 @@
         <maven.compiler.version>3.7.0</maven.compiler.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.jar.version>3.0.2</maven.jar.version>
-        <maven.javadoc.version>2.10.4</maven.javadoc.version>
-        <maven.bundle.version>3.3.0</maven.bundle.version>
+        <maven.javadoc.version>3.0.0</maven.javadoc.version>
+        <maven.bundle.version>3.5.0</maven.bundle.version>
         <maven.gpg.version>1.4</maven.gpg.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

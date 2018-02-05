@@ -3,6 +3,7 @@ module tornadofx {
 
     requires java.prefs;
     requires java.desktop;
+    requires java.json;
 
     requires javafx.deploy;
     requires javafx.controls;
@@ -17,9 +18,9 @@ module tornadofx {
     requires static org.apache.felix.framework;
     requires static httpcore;
     requires static httpclient;
-    requires static javax.json;
+    requires kotlin.reflect;
 
     exports tornadofx;
-    exports tornadofx.osgi;
-    exports sun.net.www.protocol.css;
+    //exports tornadofx.osgi;
+    //exports sun.net.www.protocol.css;
 }
