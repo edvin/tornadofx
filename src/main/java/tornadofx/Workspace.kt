@@ -403,12 +403,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * }
      * </pre>
      */
-    fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit) {
-        this.op(Scope().also {
-            it.workspaceInstance = this
-            it.set(*setInScope)
-        })
-    }
+    fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit) = op(this, Scope(this, *setInScope))
 
     /**
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
