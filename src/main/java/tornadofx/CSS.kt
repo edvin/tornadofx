@@ -289,7 +289,6 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val previousMonth by cssclass()
         val progress by cssclass()
         val progressBar by cssclass()
-        val progressColor by cssclass()
         val progressBarTableCell by cssclass()
         val progressIndicator by cssclass()
         val radio by cssclass()
