@@ -24,6 +24,7 @@ private const val SMART_RESIZE = "tornadofx.smartResize"
 private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
 const val RESIZE_TYPE_KEY = "tornadofx.smartColumnResizeType"
 
+private typealias GroupedColumns = Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>
 
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Number) : ResizeType(true)
@@ -447,12 +448,12 @@ private fun <COLUMN, TABLE : Any> resizeAllColumns(table: TornadoFXTable<COLUMN,
 fun <K> Map<K,Collection<*>>.countValues(key: K) = this[key]?.size ?: 0
 
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.totalWeightOfWeightedColumns() = this[Weight::class]?.run {
+private fun GroupedColumns.totalWeightOfWeightedColumns() = this[Weight::class]?.run {
     map { it.resizeType as ResizeType.Weight }.sumByDouble { it.weight as Double }
 } ?: 0.0
 
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeWeightedColumns(widthPerWeight: Double): Double {
+private fun GroupedColumns.resizeWeightedColumns(widthPerWeight: Double): Double {
     var spaceNeeded = 0.0
     this[Weight::class]?.forEach {
         val rt = it.resizeType as ResizeType.Weight
@@ -466,7 +467,7 @@ private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeW
     return spaceNeeded
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeRemainingColumns(widthPerWeight: Double): Double {
+private fun GroupedColumns.resizeRemainingColumns(widthPerWeight: Double): Double {
     var spaceNeeded = 0.0
     this[Remaining::class]?.withEach{
         prefWidth = maxOf(minWidth, widthPerWeight + resizeType.delta)
@@ -499,7 +500,7 @@ private fun <TABLE : Any> TornadoFXTable<out Any?, TABLE>.divideRemainingWith(re
     }
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizePctColumns(contentWidth: Double): Double {
+private fun GroupedColumns.resizePctColumns(contentWidth: Double): Double {
     var spaceNeeded = 0.0
     this[Pct::class]?.also { pctColumn ->
         val widthPerPct = contentWidth / 100.0
@@ -512,7 +513,7 @@ private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeP
     return spaceNeeded
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeContentColumns(): Double {
+private fun GroupedColumns.resizeContentColumns(): Double {
     // Content columns are resized to their content and adjusted for resize-delta that affected them
     var spaceNeeded = 0.0
     this[Content::class]?.also { contentColumns ->
@@ -547,7 +548,7 @@ private fun TornadoFXColumn<*>.recordMaxFrom(content: ResizeType.Content) {
     }
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizePreferredColumns(): Double {
+private fun GroupedColumns.resizePreferredColumns(): Double {
     var spaceNeeded = 0.0
     this[Pref::class]?.forEach {
         val rt = it.resizeType as ResizeType.Pref
@@ -557,7 +558,9 @@ private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeP
     return spaceNeeded
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizeFixedColumns(): Double {
+
+
+private fun GroupedColumns.resizeFixedColumns(): Double {
     var spaceNeeded = 0.0
     this[Fixed::class]?.forEach {
         val rt = it.resizeType as Fixed
