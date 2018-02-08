@@ -1,6 +1,5 @@
 package tornadofx
 
-import com.sun.javafx.scene.control.skin.TreeTableViewSkin
 import javafx.application.Platform
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyProperty
@@ -16,6 +15,7 @@ import javafx.util.Callback
 import tornadofx.adapters.*
 
 import kotlin.collections.set
+import kotlin.math.abs
 
 //private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
 private const val SMART_RESIZE = "tornadofx.smartResize"
@@ -479,21 +479,17 @@ fun <TABLE : Any> resizeCall(
             } else if (remainingWidth < 0.0) {
                 // Reduce from resizable columns, for now we reduce the column with largest reduction potential
                 // We should consider reducing based on the resize type of the column as well
-                var canReduceMore = true
-                while (canReduceMore && remainingWidth < 0.0) {
-                    // Choose the column with largest reduction potential (largest gap betweeen size and minSize)
-                    val reduceableCandidate = param.table.contentColumns
-                            .filter { it.resizeType.isResizable && it.minWidth < it.width }
-                            .sortedBy { (it.width - it.minWidth) * -1 }
-                            .firstOrNull()
+                param.table.contentColumns.filter { it.resizeType.isResizable }.reduceSorted(
+                        // sort the column by the largest reduction potential: the gap between size and minSize
+                        sorter = { minWidth - width },
+                        filter = { minWidth < width }
+                ) {
+                    val reduceBy = minOf(1.0, abs(remainingWidth))
+                    val toWidth = it.width - reduceBy
+                    it.prefWidth = toWidth
+                    remainingWidth += reduceBy
 
-                    canReduceMore = reduceableCandidate != null
-                    if (reduceableCandidate != null && remainingWidth < 0.0) {
-                        val reduceBy = Math.min(1.0, Math.abs(remainingWidth))
-                        val toWidth = reduceableCandidate.width - reduceBy
-                        reduceableCandidate.prefWidth = toWidth
-                        remainingWidth += reduceBy
-                    }
+                    return remainingWidth < 0.0
                 }
             }
         } else {
@@ -534,4 +530,29 @@ fun <TABLE : Any> resizeCall(
     } finally {
         param.table.isSmartResizing = false
     }
+}
+
+/**
+ * Removes elements from the list in a sorted way with a cycle:
+ *
+ * 1. removes elements that fail the [filter]
+ * 2. find the first sorted element with the [sorter]
+ * 3. change the state of the element with the [iteration]
+ * 4. if [iteration] returns true, start again.
+ *
+ * @return the reduced list
+ */
+private inline fun <T, R : Comparable<R>> List<T>.reduceSorted(
+        crossinline sorter: T.() -> R,
+        noinline filter: T.() -> Boolean,
+        iteration: (T) -> Boolean
+): List<T> {
+    val removingList = asSequence().filter(filter).sortedBy(sorter).toMutableList()
+    while (removingList.any()) {
+        val element = removingList.first()
+        if (!iteration(element)) break
+        if (!element.filter()) removingList.remove(element)
+        removingList.sortBy(sorter)
+    }
+    return removingList
 }
