@@ -108,7 +108,7 @@ class ValidationContext {
         }?.node
 
         if (focusFirstError) firstFailingNode?.requestFocus()
-        return firstFailingNode != null
+        return firstFailingNode == null
     }
 
     /**
