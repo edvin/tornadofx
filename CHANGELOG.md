@@ -4,11 +4,12 @@
 
 ### Fixed
 
+- UIComponent.close() should be able to close primary stage as well (https://github.com/edvin/tornadofx/issues/622)
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
 - Allow calling Workspace.disableNavigation() when workspace is empty
 - Thread pools are reinitialized on App.start() to support stop/start multiple times within the same JVM
- 
+- ServiceLoader provided interceptors were added every time an App class was initialized 
 - inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
 - smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
 

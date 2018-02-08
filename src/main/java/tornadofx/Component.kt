@@ -225,8 +225,7 @@ abstract class Component : Configurable {
      * CustomerController::listContacts.runAsync(customerId) { processResultOnUiThread(it) }
      */
     inline fun <reified InjectableType, reified ReturnType> KFunction1<InjectableType, ReturnType>.runAsync(noinline doOnUi: (ReturnType) -> Unit = {}): Task<ReturnType>
-            where InjectableType : Component, InjectableType : ScopedInstance
-     = task { invoke(find(scope)) }.apply { ui(doOnUi) }
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope)) }.apply { ui(doOnUi) }
 
     /**
      * Perform the given operation on an ScopedInstance class function member asynchronousyly.
@@ -234,20 +233,16 @@ abstract class Component : Configurable {
      * CustomerController::listCustomers.runAsync { processResultOnUiThread(it) }
      */
     inline fun <reified InjectableType, reified P1, reified ReturnType> KFunction2<InjectableType, P1, ReturnType>.runAsync(p1: P1, noinline doOnUi: (ReturnType) -> Unit = {})
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1) }.apply { ui(doOnUi) }
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1) }.apply { ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified ReturnType> KFunction3<InjectableType, P1, P2, ReturnType>.runAsync(p1: P1, p2: P2, noinline doOnUi: (ReturnType) -> Unit = {})
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2) }.apply { ui(doOnUi) }
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2) }.apply { ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified ReturnType> KFunction4<InjectableType, P1, P2, P3, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, noinline doOnUi: (ReturnType) -> Unit = {})
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3) }.apply { ui(doOnUi) }
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2, p3) }.apply { ui(doOnUi) }
 
     inline fun <reified InjectableType, reified P1, reified P2, reified P3, reified P4, reified ReturnType> KFunction5<InjectableType, P1, P2, P3, P4, ReturnType>.runAsync(p1: P1, p2: P2, p3: P3, p4: P4, noinline doOnUi: (ReturnType) -> Unit = {})
-            where InjectableType : Component, InjectableType : ScopedInstance
-            = task { invoke(find(scope), p1, p2, p3, p4) }.apply { ui(doOnUi) }
+            where InjectableType : Component, InjectableType : ScopedInstance = task { invoke(find(scope), p1, p2, p3, p4) }.apply { ui(doOnUi) }
 
     /**
      * Find the given property inside the given ScopedInstance. Useful for assigning a property from a View or Controller
@@ -652,7 +647,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      */
     fun shortcut(combo: String, action: () -> Unit) = shortcut(KeyCombination.valueOf(combo), action)
 
-    inline fun <reified  T: UIComponent> TabPane.tab(scope: Scope = this@UIComponent.scope, noinline op: Tab.() -> Unit = {}) = tab(find<T>(scope), op)
+    inline fun <reified T : UIComponent> TabPane.tab(scope: Scope = this@UIComponent.scope, noinline op: Tab.() -> Unit = {}) = tab(find<T>(scope), op)
 
     inline fun <reified C : UIComponent> BorderPane.top() = top(C::class)
     fun <C : UIComponent> BorderPane.top(nodeType: KClass<C>) = setRegion(scope, BorderPane::topProperty, nodeType)
@@ -694,8 +689,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
-    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {})
-            = item(T::class, scope, params, expanded, showHeader, op)
+    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {}) = item(T::class, scope, params, expanded, showHeader, op)
 
     inline fun <S, reified T : UIComponent> TableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
         placeholder = find(T::class, scope, params).apply(op).root
@@ -748,8 +742,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     @JvmOverloads
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null)
-            = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
+    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
@@ -820,7 +813,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun closeModal() = close()
 
     fun close() {
-        modalStage?.apply {
+        (modalStage ?: currentStage)?.apply {
             close()
             modalStage = null
         }
@@ -864,7 +857,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     @JvmOverloads
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
         val componentType = this@UIComponent.javaClass
-        val targetLocation = location ?: componentType.simpleName + ".fxml"
+        val targetLocation = location ?: componentType.simpleName+".fxml"
         val fxml = requireNotNull(componentType.getResource(targetLocation)) { "FXML not found for $componentType in $targetLocation" }
 
         fxmlLoader = FXMLLoader(fxml).apply {
@@ -924,8 +917,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fieldset.stage
     }
 
-    inline fun <reified T : UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false)
-            = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+    inline fun <reified T : UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
 
     fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) =
             replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)

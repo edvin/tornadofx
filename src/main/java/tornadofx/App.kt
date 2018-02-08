@@ -8,8 +8,7 @@ import javafx.stage.Stage
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import java.awt.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.event.*
 import java.awt.event.MouseEvent.BUTTON1
 import java.awt.image.BufferedImage
 import java.io.InputStream
@@ -68,13 +67,6 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     init {
         Stylesheet.importServiceLoadedStylesheets()
         stylesheet.forEach { importStylesheet(it) }
-        importChildInterceptors()
-    }
-
-    private fun importChildInterceptors() {
-        ServiceLoader.load(ChildInterceptor::class.java).forEach {
-            FX.addChildInterceptor(it)
-        }
     }
 
     override fun start(stage: Stage) {
@@ -185,6 +177,13 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         return item
     }
 
+    fun PopupMenu.checkboxItem(label: String, state: Boolean = false, op: CheckboxMenuItem.() -> Unit): CheckboxMenuItem {
+        val item = CheckboxMenuItem(label, state)
+        op(item)
+        add(item)
+        return item
+    }
+
     fun MenuItem.setOnAction(fxThread: Boolean = false, action: () -> Unit) {
         addActionListener {
             if (fxThread) {
@@ -193,6 +192,19 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 }
             } else {
                 action()
+            }
+        }
+    }
+
+    fun CheckboxMenuItem.setOnItem(fxThread: Boolean = false, action: (state: Boolean) -> Unit) {
+        addItemListener {
+            val state = it.stateChange == ItemEvent.SELECTED
+            if (fxThread) {
+                Platform.runLater {
+                    action(state)
+                }
+            } else {
+                action(state)
             }
         }
     }
