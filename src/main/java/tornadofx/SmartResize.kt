@@ -499,17 +499,6 @@ private fun <TABLE : Any> TornadoFXTable<out Any?, TABLE>.divideRemainingWith(re
     }
 }
 
-private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.divideSpaceUnderRemainingColumns(remainingWidth: Double) {
-    this[Remaining::class]?.also { remainingColumns ->
-        if (remainingWidth > 0) {
-            val perColumn = remainingWidth / remainingColumns.size.toDouble()
-            remainingColumns.forEach {
-                it.prefWidth = perColumn + it.resizeType.delta
-            }
-        }
-    }
-}
-
 private fun Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>.resizePctColumns(contentWidth: Double): Double {
     var spaceNeeded = 0.0
     this[Pct::class]?.also { pctColumn ->
