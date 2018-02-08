@@ -100,7 +100,7 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
                                             tab("Stacktrace") {
                                                 add(textarea)
                                             }
-                                            tabs.forEach { it.isClosable = false }
+                                            tabs.withEach { isClosable = false }
                                         }
                                     } else {
                                         add(textarea)

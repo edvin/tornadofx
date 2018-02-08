@@ -182,7 +182,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
         }
     }
 
-    private val completeListeners = arrayListOf<() -> Unit>()
+    private val completeListeners = mutableListOf<() -> Unit>()
 
     fun onComplete(resultListener: () -> Unit) {
         completeListeners.add(resultListener)
@@ -214,7 +214,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
 
     override fun onDock() {
         complete.onChange {
-            if (it) completeListeners.forEach { it() }
+            if (it) completeListeners.withEach { this() }
         }
 
         // Enter completes current page and goes to next, finishes on last

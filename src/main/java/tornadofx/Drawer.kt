@@ -111,9 +111,9 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         items.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
-                        configureRotation(it.button)
-                        buttonArea.add(Group(it.button))
+                    change.addedSubList.asSequence().mapEach { button }.forEach {
+                        configureRotation(it)
+                        buttonArea+= Group(it)
                     }
                 }
                 if (change.wasRemoved()) {
@@ -131,7 +131,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     private fun enforceMultiSelect() {
         multiselectProperty.onChange {
             if (!multiselect) {
-                contentArea.children.toTypedArray().drop(1).forEach {
+                contentArea.children.drop(1).forEach {
                     (it as DrawerItem).button.isSelected = false
                 }
             }
@@ -283,11 +283,9 @@ class ExpandedDrawerContentArea : VBox() {
         children.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
-                        if (VBox.getVgrow(it) == null) {
-                            VBox.setVgrow(it, Priority.ALWAYS)
-                        }
-                    }
+                    change.addedSubList.asSequence()
+                            .filter { VBox.getVgrow(it) == null }
+                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
                 }
             }
         }
@@ -318,15 +316,12 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
         children.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
-                        if (VBox.getVgrow(it) == null) {
-                            VBox.setVgrow(it, Priority.ALWAYS)
-                        }
-                    }
+                    change.addedSubList.asSequence()
+                            .filter { VBox.getVgrow(it) == null }
+                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
                 }
             }
         }
-
     }
 }
 

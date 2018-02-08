@@ -16,7 +16,6 @@ import javafx.scene.paint.Paint
 import javafx.scene.shape.Shape
 import javafx.scene.transform.Rotate
 import javafx.util.Duration
-import java.util.*
 
 operator fun Timeline.plusAssign(keyFrame: KeyFrame) {
     keyFrames.add(keyFrame)

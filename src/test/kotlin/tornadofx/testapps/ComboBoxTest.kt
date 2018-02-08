@@ -25,8 +25,8 @@ class ComboboxTest : View("Combobox test") {
 class AutoCompleteComboBoxExtensionTestApp : App(AutoCompleteComboBoxExtensionTest::class)
 
 class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension test") {
-    val itemsGlobalObject = Locale.getISOCountries().asList().map { Locale("", it) }
-    val itemsGlobal = itemsGlobalObject.map { it.displayCountry }
+    val itemsGlobalObject = Locale.getISOCountries().map { Locale("", it) }
+    val itemsGlobal = itemsGlobalObject.mapEach { displayCountry }
     val selectedItem = SimpleStringProperty(itemsGlobal.first())
     val selectedItem2 = SimpleStringProperty(itemsGlobal.first())
     val selectedItem3 = SimpleStringProperty(itemsGlobal.first())
@@ -185,14 +185,12 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
 }
 
 class LocaleStringConverter : StringConverter<Locale>() {
-    val mapLocale = hashMapOf<String, Locale>()
-    override fun fromString(string: String?): Locale? {
-        return if (string == null) null else mapLocale[string]
-    }
+    val mapLocale = mutableMapOf<String, Locale>()
+    override fun fromString(string: String?): Locale? = string?.let { mapLocale[it] }
 
     override fun toString(locale: Locale?): String? {
         val output = locale?.displayCountry + ", " + locale?.isO3Country
-        if (locale != null && !mapLocale.containsKey(output)) mapLocale.put(output, locale)
+        if (locale != null && !mapLocale.containsKey(output)) mapLocale[output] = locale
         return output
     }
 }

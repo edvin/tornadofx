@@ -24,22 +24,14 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
         addClass(SqueezeBoxStyles.squeezeBox)
         children.onChange { change ->
             while (change.next()) {
-                if (change.wasAdded()) {
-                    change.addedSubList.forEach {
-                        if (it is TitledPane) panes.add(it)
-                    }
-                }
-                if (change.wasRemoved()) {
-                    change.removed.forEach {
-                        if (it is TitledPane) panes.remove(it)
-                    }
-                }
+                if (change.wasAdded()) change.addedSubList.filterIsInstanceTo(panes)
+                if (change.wasRemoved()) panes -= change.removed.filterIsInstance<TitledPane>()
             }
         }
 
         multiselectProperty.onChange {
             if (!multiselect) {
-                panes.filter { it.isExpanded }.drop(1).forEach { it.isExpanded = false }
+                panes.filter { it.isExpanded }.drop(1).withEach { isExpanded = false }
             }
         }
     }
@@ -54,7 +46,10 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
 
     internal fun updateExpanded(pane: TitledPane) {
         if (!multiselect && pane.isExpanded) {
-            panes.filter { it != pane && it.isExpanded }.forEach { it.isExpanded = false }
+            panes.asSequence()
+                    .filterNot { it == pane }
+                    .filter {  it.isExpanded }
+                    .withEach{ isExpanded = false }
         }
     }
 }
@@ -74,11 +69,12 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 
     override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.minWidth(height) }.max() ?: 0.0 + leftInset + rightInset
+        return children.mapEach { minWidth(height) }.max() ?: 0.0 + leftInset + rightInset
     }
 
+
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.map { it.prefWidth(height) }.max() ?: 0.0 + leftInset + rightInset
+        return children.mapEach { prefWidth(height) }.max() ?: 0.0 + leftInset + rightInset
     }
 
     override fun layoutChildren(contentX: Double, contentY: Double, contentWidth: Double, contentHeight: Double) {

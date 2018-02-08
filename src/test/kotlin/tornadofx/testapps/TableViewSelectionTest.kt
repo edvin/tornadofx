@@ -57,7 +57,7 @@ class TableViewSelectionTest : View("Table Selection Test") {
 
                 selectionModel.isCellSelectionEnabled = true
                 root.isExpanded = true
-                root.children.forEach { it.isExpanded = true }
+                root.children.withEach { isExpanded = true }
                 smartResize()
 
                 contextmenu {

@@ -24,7 +24,7 @@ internal object ShutdownExecutor {
 
     private fun runBeforeShutdown() {
         // run the task from list before shutdown
-        taskList.forEach { it.invoke() }
+        taskList.forEach { it() }
     }
 }
 
