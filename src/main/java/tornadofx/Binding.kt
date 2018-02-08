@@ -27,112 +27,119 @@ import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Callable
 
-fun <T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
-    ViewModel.register(valueProperty(), property)
-    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
+
+private fun <T> Property<T>.internalBind(property: ObservableValue<T>, readonly: Boolean) {
+    ViewModel.register(this, property)
+
+    if (readonly || (property !is Property<*>)) bind(property) else bindBidirectional(property as Property<T>)
 }
 
-fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) {
-    ViewModel.register(valueProperty(), property)
-    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<LocalDate>)
-}
 
-fun ProgressIndicator.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
-    ViewModel.register(progressProperty(), property)
-    if (readonly || (property !is Property<*>)) progressProperty().bind(property) else progressProperty().bindBidirectional(property as Property<Number>)
-}
+fun <T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
+        valueProperty().internalBind(property, readonly)
 
-fun <T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
-    ViewModel.register(valueProperty(), property)
-    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<T>)
-}
+fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) =
+        valueProperty().internalBind(property, readonly)
 
-fun CheckBox.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) {
-    ViewModel.register(selectedProperty(), property)
-    if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
-}
+fun ProgressIndicator.bind(property: ObservableValue<Number>, readonly: Boolean = false) =
+        progressProperty().internalBind(property, readonly)
 
-fun CheckMenuItem.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) {
-    ViewModel.register(selectedProperty(), property)
-    if (readonly || (property !is Property<*>)) selectedProperty().bind(property) else selectedProperty().bindBidirectional(property as Property<Boolean>)
-}
+fun <T> ChoiceBox<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
+        valueProperty().internalBind(property, readonly)
 
-fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
-    ViewModel.register(valueProperty(), property)
-    if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<Number>)
-}
+fun CheckBox.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) =
+        selectedProperty().internalBind(property, readonly)
 
-fun <T> Spinner<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
-    ViewModel.register(valueFactory.valueProperty(), property)
-    if (readonly || (property !is Property<*>)) valueFactory.valueProperty().bind(property) else valueFactory.valueProperty().bindBidirectional(property as Property<T>)
-}
+fun CheckMenuItem.bind(property: ObservableValue<Boolean>, readonly: Boolean = false) =
+        selectedProperty().internalBind(property, readonly)
 
-inline fun <reified S : T, reified T : Any> Labeled.bind(property: ObservableValue<S>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) {
+fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) =
+        valueProperty().internalBind(property, readonly)
+
+fun <T> Spinner<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
+        valueFactory.valueProperty().internalBind(property, readonly)
+
+
+inline fun <reified S : T, reified T : Any> Labeled.bind(
+        property: ObservableValue<S>,
+        readonly: Boolean = false,
+        converter: StringConverter<T>? = null,
+        format: Format? = null
+) {
     bindStringProperty(textProperty(), converter, format, property, readonly)
 }
 
-inline fun <reified S : T, reified T : Any> TitledPane.bind(property: ObservableValue<S>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
-        bindStringProperty(textProperty(), converter, format, property, readonly)
+inline fun <reified S : T, reified T : Any> TitledPane.bind(
+        property: ObservableValue<S>,
+        readonly: Boolean = false,
+        converter: StringConverter<T>? = null,
+        format: Format? = null
+) = bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified S : T, reified T : Any> Text.bind(property: ObservableValue<S>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
-        bindStringProperty(textProperty(), converter, format, property, readonly)
+inline fun <reified S : T, reified T : Any> Text.bind(
+        property: ObservableValue<S>,
+        readonly: Boolean = false,
+        converter: StringConverter<T>? = null,
+        format: Format? = null
+) = bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified S : T, reified T : Any> TextInputControl.bind(property: ObservableValue<S>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) =
-        bindStringProperty(textProperty(), converter, format, property, readonly)
+inline fun <reified S : T, reified T : Any> TextInputControl.bind(
+        property: ObservableValue<S>,
+        readonly: Boolean = false,
+        converter: StringConverter<T>? = null,
+        format: Format? = null
+) = bindStringProperty(textProperty(), converter, format, property, readonly)
 
-inline fun <reified S : T, reified T : Any> bindStringProperty(stringProperty: StringProperty, converter: StringConverter<T>?, format: Format?, property: ObservableValue<S>, readonly: Boolean) {
+inline fun <reified S : T, reified T : Any> bindStringProperty(
+        stringProperty: StringProperty,
+        converter: StringConverter<T>?,
+        format: Format?,
+        property: ObservableValue<S>,
+        readonly: Boolean
+) {
     if (stringProperty.isBound) stringProperty.unbind()
-    val effectiveReadonly = if (readonly) readonly else property !is Property<S> || S::class != T::class
+    val effectiveReadonly = readonly || property !is Property<S> || S::class != T::class
 
     ViewModel.register(stringProperty, property)
 
-    if (S::class == String::class) {
-        if (effectiveReadonly)
-            stringProperty.bind(property as ObservableValue<String>)
-        else
-            stringProperty.bindBidirectional(property as Property<String>)
+    if (S::class == String::class) when {
+        effectiveReadonly -> stringProperty.bind(property as ObservableValue<String>)
+        else -> stringProperty.bindBidirectional(property as Property<String>)
     } else {
         val effectiveConverter = if (format != null) null else converter ?: getDefaultConverter<S>()
         if (effectiveReadonly) {
             val toStringConverter = Callable {
-                if (converter != null)
-                    converter.toString(property.value)
-                else if (format != null)
-                    format.format(property.value)
-                else property.value?.toString()
+                when {
+                    converter != null -> converter.toString(property.value)
+                    format != null -> format.format(property.value)
+                    else -> property.value?.toString()
+                }
             }
             val stringBinding = Bindings.createStringBinding(toStringConverter, property)
             stringProperty.bind(stringBinding)
-        } else {
-            if (effectiveConverter != null) {
-                stringProperty.bindBidirectional(property as Property<S>, effectiveConverter as StringConverter<S>)
-            } else if (format != null) {
-                stringProperty.bindBidirectional(property as Property<S>, format)
-            } else {
-                throw IllegalArgumentException("Cannot convert from ${S::class} to String without an explicit converter or format")
-            }
+        } else when {
+            effectiveConverter != null -> stringProperty.bindBidirectional(property as Property<S>, effectiveConverter as StringConverter<S>)
+            format != null -> stringProperty.bindBidirectional(property as Property<S>, format)
+            else -> throw IllegalArgumentException("Cannot convert from ${S::class} to String without an explicit converter or format")
         }
     }
 }
 
-inline fun <reified T : Any> getDefaultConverter(): StringConverter<T>? {
-    val converter: StringConverter<out Any>? = when (T::class.javaPrimitiveType ?: T::class) {
-        Int::class.javaPrimitiveType -> IntegerStringConverter()
-        Long::class.javaPrimitiveType -> LongStringConverter()
-        Double::class.javaPrimitiveType -> DoubleStringConverter()
-        Float::class.javaPrimitiveType -> FloatStringConverter()
-        Date::class -> DateStringConverter()
-        BigDecimal::class -> BigDecimalStringConverter()
-        BigInteger::class -> BigIntegerStringConverter()
-        Number::class -> NumberStringConverter()
-        LocalDate::class -> LocalDateStringConverter()
-        LocalTime::class -> LocalTimeStringConverter()
-        LocalDateTime::class -> LocalDateTimeStringConverter()
-        Boolean::class.javaPrimitiveType -> BooleanStringConverter() as StringConverter<T>
-        else -> null
-    }
-    return if (converter != null) converter as StringConverter<T> else null
-}
+inline fun <reified T : Any> getDefaultConverter() = when (T::class.javaPrimitiveType ?: T::class) {
+    Int::class.javaPrimitiveType -> IntegerStringConverter()
+    Long::class.javaPrimitiveType -> LongStringConverter()
+    Double::class.javaPrimitiveType -> DoubleStringConverter()
+    Float::class.javaPrimitiveType -> FloatStringConverter()
+    Date::class -> DateStringConverter()
+    BigDecimal::class -> BigDecimalStringConverter()
+    BigInteger::class -> BigIntegerStringConverter()
+    Number::class -> NumberStringConverter()
+    LocalDate::class -> LocalDateStringConverter()
+    LocalTime::class -> LocalTimeStringConverter()
+    LocalDateTime::class -> LocalDateTimeStringConverter()
+    Boolean::class.javaPrimitiveType -> BooleanStringConverter()
+    else -> null
+} as StringConverter<T>?
 
 fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
     init {
@@ -145,13 +152,11 @@ fun ObservableValue<Boolean>.toBinding() = object : BooleanBinding() {
 
     override fun computeValue() = this@toBinding.value
 
-    override fun getDependencies(): ObservableList<*> {
-        return FXCollections.singletonObservableList(this@toBinding)
-    }
+    override fun getDependencies(): ObservableList<*> = FXCollections.singletonObservableList(this@toBinding)
 }
 
 fun <T, N> ObservableValue<T>.select(nested: (T) -> ObservableValue<N>): Property<N> {
-    fun extractNested(): ObservableValue<N>? = if (value != null) nested(value) else null
+    fun extractNested(): ObservableValue<N>? = value?.let(nested)
 
     var currentNested: ObservableValue<N>? = extractNested()
 
@@ -190,7 +195,7 @@ fun <T> ObservableValue<T>.selectBoolean(nested: (T) -> BooleanExpression): Bool
     var currentNested = extractNested()
 
     return object : SimpleBooleanProperty() {
-        val changeListener = ChangeListener<Boolean> { observableValue, oldValue, newValue ->
+        val changeListener = ChangeListener<Boolean> { _, _, _ ->
             currentNested = extractNested()
             fireValueChangedEvent()
         }
