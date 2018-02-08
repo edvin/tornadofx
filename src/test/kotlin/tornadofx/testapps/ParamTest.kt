@@ -6,9 +6,16 @@ import java.time.LocalDateTime
 class ParamTestApp : App(ParamCallerView::class)
 
 class ParamCallerView : View() {
-    override val root = button("Open modal with param") {
-        action {
-            find<ParamReceiverView>(mapOf("name" to "Param ${LocalDateTime.now()}")).openModal()
+    override val root = vbox {
+        button("Open modal with paramMap"){
+            action {
+                find<ParamReceiverView>(mapOf("name" to "Param ${LocalDateTime.now()}")).openModal()
+            }
+        }
+        button("Open modal with paramVararg"){
+            action {
+                find<ParamReceiverView>("name" to "Param ${LocalDateTime.now()}").openModal()
+            }
         }
     }
 }

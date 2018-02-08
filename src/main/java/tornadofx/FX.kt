@@ -384,7 +384,9 @@ fun <T : ScopedInstance> Scope.set(vararg value: T) = value.associateByTo(FX.get
 fun varargParamsToMap(params: Array<out Pair<String, Any?>>) = params.toMap()
 
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
+inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<*, Any?>): T = find(scope, params.toMap())
 
+fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<*, Any?>): T = find(type, scope, params.toMap())
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope

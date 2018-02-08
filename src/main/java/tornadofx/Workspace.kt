@@ -341,6 +341,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find<T>(scope, params))
+    inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, vararg params: Pair<*, Any?>) { dock<T>(scope, params.toMap()) }
 
     fun dock(child: UIComponent, forward: Boolean = true) {
         if (child == dockedComponent) return
