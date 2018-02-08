@@ -94,40 +94,21 @@ class ValidationContext {
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      * It is allowed to pass inn fields that has no corresponding validator. They will register as validated.
-     * This method continues if a failure is found.
      */
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
-        val firstFailing = fields.getMatchingValidators()
-                .filterNot { it.validate(decorateErrors) }
-                .firstOrNull()
-                ?.node
-        if (focusFirstError) firstFailing?.requestFocus()
-        return firstFailing == null
-    }
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, failfast: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
+        val validateThese = if (fields.isEmpty()) validators else validators.filter {
+            val facade = it.property.viewModelFacade
+            facade != null && facade in fields
+        }
 
-    private fun Array<out ObservableValue<*>>.getMatchingValidators() = if (this.isEmpty()) validators else validators.filter {
-        val facade = it.property.viewModelFacade
-        facade != null && facade in this
-    }
+        @Suppress("SimplifiableCallChain")
+        val firstFailingNode = when(failfast) {
+            true -> validateThese.firstOrNull { !it.validate(decorateErrors) }
+            false -> validateThese.filter { !it.validate(decorateErrors) }.firstOrNull()
+        }?.node
 
-
-    /**
-     * Rerun all validators until (or just the ones passed in) and return a boolean indicating if validation passed.
-     * This method returns immediately after a failure is found
-     */
-    fun validateSmart(vararg fields: ObservableValue<*>) = validateSmart(true, true, fields = *fields)
-
-    /**
-     * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
-     * It is allowed to pass in fields that has no corresponding validator. They will register as validated.
-     * This method returns immediately after a failure is found
-     */
-    fun validateSmart(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
-        val firstFailing = fields.getMatchingValidators()
-                .firstOrNull { !it.validate(decorateErrors) }
-                ?.node
-        if (focusFirstError) firstFailing?.requestFocus()
-        return firstFailing == null
+        if (focusFirstError) firstFailingNode?.requestFocus()
+        return firstFailingNode != null
     }
 
     /**

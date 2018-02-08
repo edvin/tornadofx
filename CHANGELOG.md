@@ -24,7 +24,7 @@
 - Renamed tableview column builder for readonly non-observable properties to `readonlyColumn` (https://github.com/edvin/tornadofx/issues/599)
 - Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
 - Removed CheckBoxCell in favor of inline cellFormat
-
+- ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
@@ -35,7 +35,6 @@
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
 - obserableList<T>() creates FXCollections.observableArrayList<T>
 - ResourceBundle.format() provides a short way to insert translations with variables in them
-- ValidationContext.smartValidate doesn't continue validating after an failure has been detected
 
 ## [1.7.14]
 
