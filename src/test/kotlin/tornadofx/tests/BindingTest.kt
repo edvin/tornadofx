@@ -38,6 +38,22 @@ class BindingTest {
     }
 
     @Test
+    fun observableMapBinding() {
+        val map = FXCollections.observableHashMap<String, Int>()
+        val list = observableList<Char>()
+        map["0123456"] = 3
+        list.bind(map){k,v-> k[v]}
+        Assert.assertEquals(list, listOf('3'))
+        map["0123456"] = 4
+        Assert.assertEquals(list, listOf('4'))
+        map["abcdefg"] = 3
+        Assert.assertTrue(
+                "expected ['d', '4'] got ${list.joinToString() }}",
+                list.containsAll(listOf('d', '4')) && list.size == 2
+        )
+    }
+
+    @Test
     fun nestedBinding() {
         val father = Person("Mr Father", 50)
         val stepFather = Person("Mr Step Father", 40)
