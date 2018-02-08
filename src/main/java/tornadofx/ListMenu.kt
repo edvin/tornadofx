@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallerImpl.FACTORY
 import javafx.beans.DefaultProperty
 import javafx.beans.property.*
 import javafx.collections.ObservableList
@@ -80,10 +81,13 @@ class ListMenu : Control() {
 
     override fun getUserAgentStylesheet(): String = ListMenu::class.java.getResource("listmenu.css").toExternalForm()
 
-    fun item(text: String? = null, graphic: Node? = null, tag: Any? = null, op :ListMenuItem.() -> Unit = {}): ListMenuItem {
-        val item = ListMenuItem(text ?: tag?.toString(), graphic)
-        item.tag = tag
-        return opcr(this, item, op)
+    fun item(
+            text : String? = null,
+            graphic : Node? = null,
+            tag : Any? = null,
+            op : ListMenuItem.() -> Unit = {}
+    ) = ListMenuItem(text ?: tag?.toString(), graphic).attachTo(this, op){
+        it.tag = tag
     }
 
     companion object {
@@ -317,12 +321,15 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
     private val graphicFixedSize: Double get() = skinnable.menu.graphicFixedSizeProperty.value.toDouble()
 }
 
-fun EventTarget.listmenu(orientation: Orientation = VERTICAL, iconPosition: Side = Side.LEFT, theme: String? = null, tag: Any? = null, op: ListMenu.() -> Unit = {}): ListMenu {
-    val listmenu = ListMenu().apply {
-        this.orientation = orientation
-        this.iconPosition = iconPosition
-        this.theme = theme
-        this.tag = tag
-    }
-    return opcr(this, listmenu, op)
+fun EventTarget.listmenu(
+        orientation: Orientation = VERTICAL,
+        iconPosition: Side = Side.LEFT,
+        theme: String? = null,
+        tag: Any? = null,
+        op: ListMenu.() -> Unit = {}
+)= ListMenu().attachTo(this, op) {
+    it.orientation = orientation
+    it.iconPosition = iconPosition
+    it.theme = theme
+    it.tag = tag
 }

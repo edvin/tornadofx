@@ -27,13 +27,14 @@ import javafx.scene.layout.StackPane
 import java.util.*
 import kotlin.reflect.KClass
 
-fun <T> EventTarget.datagrid(items: List<T>? = null, scope: Scope = DefaultScope, op: DataGrid<T>.() -> Unit = {}): DataGrid<T> {
-    val datagrid = DataGrid<T>()
-    datagrid.scope = scope
-    if (items is ObservableList<T>) datagrid.items = items
-    else if (items is List<T>) datagrid.items.setAll(items)
-    opcr(this, datagrid, op)
-    return datagrid
+fun <T> EventTarget.datagrid(
+        items: List<T>? = null,
+        scope: Scope = DefaultScope,
+        op: DataGrid<T>.() -> Unit = {}
+) = DataGrid<T>().attachTo(this, op){
+    it.scope = scope
+    if (items is ObservableList<T>) it.items = items
+    else if (items is List<T>) it.items.setAll(items)
 }
 
 class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerPage: Int = 20): HBox() {

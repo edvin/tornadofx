@@ -35,6 +35,8 @@
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
 - obserableList<T>() creates FXCollections.observableArrayList<T>
 - ResourceBundle.format() provides a short way to insert translations with variables in them
+- ocpr is now available as extension function: attachTo
+
 
 ## [1.7.14]
 

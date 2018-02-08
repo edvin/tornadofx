@@ -1,6 +1,5 @@
 package tornadofx
 
-import com.sun.org.apache.bcel.internal.Repository.addClass
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
@@ -16,14 +15,13 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
-import tornadofx.DrawerStyles.Companion.buttonArea
-import tornadofx.DrawerStyles.Companion.contentArea
-import tornadofx.Stylesheet.Companion.bottom
-import tornadofx.Stylesheet.Companion.contextMenu
-import tornadofx.Stylesheet.Companion.left
-import tornadofx.Stylesheet.Companion.right
 
-fun EventTarget.drawer(side: Side = Side.LEFT, multiselect: Boolean = false, floatingContent: Boolean = false, op: Drawer.() -> Unit) = opcr(this, Drawer(side, multiselect, floatingContent), op)
+fun EventTarget.drawer(
+        side: Side = Side.LEFT,
+        multiselect: Boolean = false,
+        floatingContent: Boolean = false,
+        op: Drawer.() -> Unit
+) = Drawer(side, multiselect, floatingContent).attachTo(this, op)
 
 class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)

@@ -13,7 +13,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import kotlin.reflect.KClass
 
-fun EventTarget.tabpane(op: TabPane.() -> Unit = {}) = opcr(this, TabPane(), op)
+fun EventTarget.tabpane(op: TabPane.() -> Unit = {}) =  TabPane().attachTo(this, op)
 
 fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab {
     val tab = Tab(text, content)
