@@ -22,21 +22,23 @@ import javafx.scene.web.WebView
 import javafx.util.StringConverter
 import java.time.LocalDate
 
-fun EventTarget.webview(op: WebView.() -> Unit = {}) = opcr(this, WebView(), op)
+fun EventTarget.webview(op: WebView.() -> Unit = {}) = WebView().attachTo(this, op)
 
 enum class ColorPickerMode { Button, MenuButton, SplitMenuButton }
 
-fun EventTarget.colorpicker(color: Color? = null, mode: ColorPickerMode = ColorPickerMode.Button, op: ColorPicker.() -> Unit = {}): ColorPicker {
-    val picker = ColorPicker()
-    if (mode == ColorPickerMode.MenuButton) picker.addClass(ColorPicker.STYLE_CLASS_BUTTON)
-    else if (mode == ColorPickerMode.SplitMenuButton) picker.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
-    if (color != null) picker.value = color
-    return opcr(this, picker, op)
+fun EventTarget.colorpicker(
+        color: Color? = null,
+        mode: ColorPickerMode = ColorPickerMode.Button,
+        op: ColorPicker.() -> Unit = {}
+) = ColorPicker().attachTo(this, op) {
+    if (mode == ColorPickerMode.MenuButton) it.addClass(ColorPicker.STYLE_CLASS_BUTTON)
+    else if (mode == ColorPickerMode.SplitMenuButton) it.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
+    if (color != null) it.value = color
 }
 
-fun EventTarget.textflow(op: TextFlow.() -> Unit = {}) = opcr(this, TextFlow(), op)
+fun EventTarget.textflow(op: TextFlow.() -> Unit = {}) = TextFlow().attachTo(this, op)
 
-fun EventTarget.text(op: Text.() -> Unit = {}) = opcr(this, Text(), op)
+fun EventTarget.text(op: Text.() -> Unit = {}) = Text().attachTo(this, op)
 
 internal val EventTarget.properties: ObservableMap<Any, Any>
     get() = when (this) {
@@ -60,15 +62,17 @@ var EventTarget.tag: Any?
         tagProperty.value = value
     }
 
-@Deprecated("Properties set on the fake node would be lost. Do not use this function.", ReplaceWith("Manually adding children"), DeprecationLevel.WARNING)
+@Deprecated("Properties set on the fake node would be lost. Do not use this function.", ReplaceWith("Manually adding children"))
 fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
-    val fake = Pane()
-    op(fake)
+    val fake = Pane().also(op)
     addTo.addAll(fake.children)
 }
 
 
-fun EventTarget.text(initialValue: String? = null, op: Text.() -> Unit = {}) = opcr(this, Text().apply { if (initialValue != null) text = initialValue }, op)
+fun EventTarget.text(initialValue: String? = null, op: Text.() -> Unit = {}) = Text().attachTo(this, op) {
+    if (initialValue != null) it.text = initialValue
+}
+
 fun EventTarget.text(property: Property<String>, op: Text.() -> Unit = {}) = text().apply {
     bind(property)
     op(this)
@@ -79,7 +83,9 @@ fun EventTarget.text(observable: ObservableValue<String>, op: Text.() -> Unit = 
     op(this)
 }
 
-fun EventTarget.textfield(value: String? = null, op: TextField.() -> Unit = {}) = opcr(this, TextField().apply { if (value != null) text = value }, op)
+fun EventTarget.textfield(value: String? = null, op: TextField.() -> Unit = {}) = TextField().attachTo(this, op) {
+    if (value != null) it.text = value
+}
 
 fun EventTarget.textfield(property: ObservableValue<String>, op: TextField.() -> Unit = {}) = textfield().apply {
     bind(property)
@@ -92,7 +98,10 @@ fun EventTarget.textfield(property: ObservableValue<Number>, op: TextField.() ->
     op(this)
 }
 
-fun EventTarget.passwordfield(value: String? = null, op: PasswordField.() -> Unit = {}) = opcr(this, PasswordField().apply { if (value != null) text = value }, op)
+fun EventTarget.passwordfield(value: String? = null, op: PasswordField.() -> Unit = {}) = PasswordField().attachTo(this, op) {
+    if (value != null) it.text = value
+}
+
 fun EventTarget.passwordfield(property: ObservableValue<String>, op: PasswordField.() -> Unit = {}) = passwordfield().apply {
     bind(property)
     op(this)
@@ -104,13 +113,16 @@ fun <T> EventTarget.textfield(property: Property<T>, converter: StringConverter<
     op(this)
 }
 
-fun EventTarget.datepicker(op: DatePicker.() -> Unit = {}) = opcr(this, DatePicker(), op)
+fun EventTarget.datepicker(op: DatePicker.() -> Unit = {}) = DatePicker().attachTo(this, op)
 fun EventTarget.datepicker(property: Property<LocalDate>, op: DatePicker.() -> Unit = {}) = datepicker().apply {
     bind(property)
     op(this)
 }
 
-fun EventTarget.textarea(value: String? = null, op: TextArea.() -> Unit = {}) = opcr(this, TextArea().apply { if (value != null) text = value }, op)
+fun EventTarget.textarea(value: String? = null, op: TextArea.() -> Unit = {}) = TextArea().attachTo(this, op) {
+    if (value != null) it.text = value
+}
+
 fun EventTarget.textarea(property: ObservableValue<String>, op: TextArea.() -> Unit = {}) = textarea().apply {
     bind(property)
     op(this)
@@ -122,99 +134,91 @@ fun <T> EventTarget.textarea(property: Property<T>, converter: StringConverter<T
     op(this)
 }
 
-fun EventTarget.buttonbar(buttonOrder: String? = null, op: (ButtonBar.() -> Unit)): ButtonBar {
-    val bar = ButtonBar()
-    if (buttonOrder != null) bar.buttonOrder = buttonOrder
-    return opcr(this, bar, op)
+fun EventTarget.buttonbar(buttonOrder: String? = null, op: (ButtonBar.() -> Unit)) = ButtonBar().attachTo(this, op) {
+    if (buttonOrder != null) it.buttonOrder = buttonOrder
 }
 
-fun EventTarget.htmleditor(html: String? = null, op: HTMLEditor.() -> Unit = {}) = opcr(this, HTMLEditor().apply { if (html != null) htmlText = html }, op)
+fun EventTarget.htmleditor(html: String? = null, op: HTMLEditor.() -> Unit = {}) = HTMLEditor().attachTo(this, op) {
+    if (html != null) it.htmlText = html
+}
 
-fun EventTarget.checkbox(text: String? = null, property: Property<Boolean>? = null, op: CheckBox.() -> Unit = {}) = opcr(this, CheckBox(text).apply {
-    if (property != null) bind(property)
-}, op)
+fun EventTarget.checkbox(text: String? = null, property: Property<Boolean>? = null, op: CheckBox.() -> Unit = {}) = CheckBox(text).attachTo(this, op) {
+    if (property != null) it.bind(property)
+}
 
-fun EventTarget.progressindicator(op: ProgressIndicator.() -> Unit = {}) = opcr(this, ProgressIndicator(), op)
+fun EventTarget.progressindicator(op: ProgressIndicator.() -> Unit = {}) = ProgressIndicator().attachTo(this, op)
 fun EventTarget.progressindicator(property: Property<Number>, op: ProgressIndicator.() -> Unit = {}) = progressindicator().apply {
     bind(property)
     op(this)
 }
 
-fun EventTarget.progressbar(initialValue: Double? = null, op: ProgressBar.() -> Unit = {}) = opcr(this, ProgressBar().apply { if (initialValue != null) progress = initialValue }, op)
+fun EventTarget.progressbar(initialValue: Double? = null, op: ProgressBar.() -> Unit = {}) = ProgressBar().attachTo(this, op) {
+    if (initialValue != null) it.progress = initialValue
+}
+
 fun EventTarget.progressbar(property: ObservableValue<Number>, op: ProgressBar.() -> Unit = {}) = progressbar().apply {
     bind(property)
     op(this)
 }
 
-fun EventTarget.slider(min: Number? = null, max: Number? = null, value: Number? = null, orientation: Orientation? = null, op: Slider.() -> Unit= {}) = opcr(this, Slider().apply {
-    if (min != null) this.min = min.toDouble()
-    if (max != null) this.max = max.toDouble()
-    if (value != null) this.value = value.toDouble()
-    if (orientation != null) this.orientation = orientation
-}, op)
+fun EventTarget.slider(
+        min: Number? = null,
+        max: Number? = null,
+        value: Number? = null,
+        orientation: Orientation? = null,
+        op: Slider.() -> Unit = {}
+) = Slider().attachTo(this, op) {
+    if (min != null) it.min = min.toDouble()
+    if (max != null) it.max = max.toDouble()
+    if (value != null) it.value = value.toDouble()
+    if (orientation != null) it.orientation = orientation
+}
 
 // Buttons
-fun EventTarget.button(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button(text)
-    if (graphic != null) button.graphic = graphic
-    return opcr(this, button, op)
+fun EventTarget.button(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) = Button(text).attachTo(this, op) {
+    if (graphic != null) it.graphic = graphic
 }
 
-fun EventTarget.menubutton(text: String = "", graphic: Node? = null, op: MenuButton.() -> Unit = {}): MenuButton {
-    val button = MenuButton(text)
-    if (graphic != null) button.graphic = graphic
-    return opcr(this, button, op)
+fun EventTarget.menubutton(text: String = "", graphic: Node? = null, op: MenuButton.() -> Unit = {}) = MenuButton(text).attachTo(this, op) {
+    if (graphic != null) it.graphic = graphic
 }
 
-fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button()
-    button.textProperty().bind(text)
-    if (graphic != null) button.graphic = graphic
-    return opcr(this, button, op)
+fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}) = Button().attachTo(this, op) {
+    it.textProperty().bind(text)
+    if (graphic != null) it.graphic = graphic
 }
 
-fun ToolBar.button(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button(text)
-    if (graphic != null)
-        button.graphic = graphic
-    items.add(button)
-    return button.also(op)
+fun ToolBar.button(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) = Button(text).also {
+    if (graphic != null) it.graphic = graphic
+    items += it
+    op(it)
 }
 
-fun ToolBar.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button()
-    button.textProperty().bind(text)
-    if (graphic != null)
-        button.graphic = graphic
-    items.add(button)
-    return button.also(op)
+fun ToolBar.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}) = Button().also {
+    it.textProperty().bind(text)
+    if (graphic != null) it.graphic = graphic
+    items += it
+    op(it)
 }
 
-fun ButtonBar.button(text: String = "", type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button(text)
-    if (type != null)
-        ButtonBar.setButtonData(button, type)
-    if (graphic != null)
-        button.graphic = graphic
-    buttons.add(button)
-    return button.also(op)
+fun ButtonBar.button(text: String = "", type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: Button.() -> Unit = {}) = Button(text).also {
+    if (type != null) ButtonBar.setButtonData(it, type)
+    if (graphic != null) it.graphic = graphic
+    buttons += it
+    op(it)
 }
 
-fun ButtonBar.button(text: ObservableValue<String>, type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: Button.() -> Unit = {}): Button {
-    val button = Button()
-    button.textProperty().bind(text)
-    if (type != null)
-        ButtonBar.setButtonData(button, type)
-    if (graphic != null)
-        button.graphic = graphic
-    buttons.add(button)
-    return button.also(op)
+fun ButtonBar.button(text: ObservableValue<String>, type: ButtonBar.ButtonData? = null, graphic: Node? = null, op: Button.() -> Unit = {}) = Button().also {
+    it.textProperty().bind(text)
+    if (type != null) ButtonBar.setButtonData(it, type)
+    if (graphic != null) it.graphic = graphic
+    buttons += it
+    op(it)
 }
 
-fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}): ToggleGroup {
-    val group = ToggleGroup()
-    properties["tornadofx.togglegroup"] = group
-    return group.also(op)
+fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}) = ToggleGroup().also {
+    properties["tornadofx.togglegroup"] = it
+    op(it)
 }
 
 /**
@@ -226,7 +230,7 @@ fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}): ToggleGroup {
  * the property value will be updated if it is writeable.
  */
 fun <T> ToggleGroup.bind(property: ObservableValue<T>) = selectedValueProperty<T>().apply {
-    (property as? Property<T>)?.also{ bindBidirectional(it) }
+    (property as? Property<T>)?.also { bindBidirectional(it) }
             ?: bind(property)
 }
 
@@ -238,17 +242,16 @@ fun <T> ToggleGroup.bind(property: ObservableValue<T>) = selectedValueProperty<T
  *
  * To bind to this property, use the #ToggleGroup.bind() function.
  */
-fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> =
-        properties.getOrPut("tornadofx.selectedValueProperty") {
-            SimpleObjectProperty<T>().apply {
-                selectedToggleProperty().onChange {
-                    value = it?.properties?.get("tornadofx.toggleGroupValue") as T?
-                }
-                onChange { selectedValue ->
-                    selectToggle(toggles.find { it.properties["tornadofx.toggleGroupValue"] == selectedValue })
-                }
-            }
-        } as ObjectProperty<T>
+fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> = properties.getOrPut("tornadofx.selectedValueProperty") {
+    SimpleObjectProperty<T>().apply {
+        selectedToggleProperty().onChange {
+            value = it?.properties?.get("tornadofx.toggleGroupValue") as T?
+        }
+        onChange { selectedValue ->
+            selectToggle(toggles.find { it.properties["tornadofx.toggleGroupValue"] == selectedValue })
+        }
+    }
+} as ObjectProperty<T>
 
 /**
  * Create a togglebutton inside the current or given toggle group. The optional value parameter will be matched against
@@ -258,13 +261,18 @@ fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> =
  * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
  * togglebutton, it will be automatically selected.
  */
-fun Node.togglebutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), selectFirst: Boolean = true, value: Any? = null, op: ToggleButton.() -> Unit = {}) =
-        opcr(this, ToggleButton().apply {
-            this.text = if (value != null && text == null) value.toString() else text ?: ""
-            properties["tornadofx.toggleGroupValue"] = value ?: text
-            if (group != null) toggleGroup = group
-            if (toggleGroup?.selectedToggle == null && selectFirst) isSelected = true
-        }, op)
+fun Node.togglebutton(
+        text: String? = null,
+        group: ToggleGroup? = getToggleGroup(),
+        selectFirst: Boolean = true,
+        value: Any? = null,
+        op: ToggleButton.() -> Unit = {}
+) = ToggleButton().attachTo(this, op) {
+    it.text = if (value != null && text == null) value.toString() else text ?: ""
+    it.properties["tornadofx.toggleGroupValue"] = value ?: text
+    if (group != null) it.toggleGroup = group
+    if (it.toggleGroup?.selectedToggle == null && selectFirst) it.isSelected = true
+}
 
 fun ToggleButton.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
@@ -278,20 +286,27 @@ fun ToggleButton.whenSelected(op: () -> Unit) {
  * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
  * radiobutton, it will be automatically selected.
  */
-fun Node.radiobutton(text: String? = null, group: ToggleGroup? = getToggleGroup(), value: Any? = null, op: RadioButton.() -> Unit = {})
-        = opcr(this, RadioButton().apply {
-    this.text = if (value != null && text == null) value.toString() else text ?: ""
-    properties["tornadofx.toggleGroupValue"] = value ?: text
-    if (group != null) toggleGroup = group
-}, op)
-
-fun EventTarget.label(text: String = "", graphic: Node? = null, op: Label.() -> Unit = {}): Label {
-    val label = Label(text)
-    if (graphic != null) label.graphic = graphic
-    return opcr(this, label, op)
+fun Node.radiobutton(
+        text: String? = null,
+        group: ToggleGroup? = getToggleGroup(),
+        value: Any? = null,
+        op: RadioButton.() -> Unit = {}
+) = RadioButton().attachTo(this, op) {
+    it.text = if (value != null && text == null) value.toString() else text ?: ""
+    it.properties["tornadofx.toggleGroupValue"] = value ?: text
+    if (group != null) it.toggleGroup = group
 }
 
-inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphicProperty: ObjectProperty<Node>? = null, converter: StringConverter<in T>? = null, noinline op: Label.() -> Unit = {}) = label().apply {
+fun EventTarget.label(text: String = "", graphic: Node? = null, op: Label.() -> Unit = {}) = Label(text).attachTo(this, op) {
+    if (graphic != null) it.graphic = graphic
+}
+
+inline fun <reified T> EventTarget.label(
+        observable: ObservableValue<T>,
+        graphicProperty: ObjectProperty<Node>? = null,
+        converter: StringConverter<in T>? = null,
+        noinline op: Label.() -> Unit = {}
+) = label().apply {
     if (converter == null) {
         if (T::class == String::class) {
             @Suppress("UNCHECKED_CAST")
@@ -306,25 +321,30 @@ inline fun <reified T> EventTarget.label(observable: ObservableValue<T>, graphic
     op(this)
 }
 
-fun EventTarget.hyperlink(text: String = "", graphic: Node? = null, op: Hyperlink.() -> Unit = {}) = opcr(this, Hyperlink(text, graphic), op)
+fun EventTarget.hyperlink(text: String = "", graphic: Node? = null, op: Hyperlink.() -> Unit = {}) = Hyperlink(text, graphic).attachTo(this, op)
 fun EventTarget.hyperlink(observable: ObservableValue<String>, graphic: Node? = null, op: Hyperlink.() -> Unit = {}) = hyperlink(graphic = graphic).apply {
     bind(observable)
     op(this)
 }
 
-fun EventTarget.menubar(op: MenuBar.() -> Unit = {}) = opcr(this, MenuBar(), op)
+fun EventTarget.menubar(op: MenuBar.() -> Unit = {}) = MenuBar().attachTo(this, op)
 
-fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: ImageView.() -> Unit = {})
-        = opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
+fun EventTarget.imageview(url: String? = null, lazyload: Boolean = true, op: ImageView.() -> Unit = {}) =
+        opcr(this, if (url == null) ImageView() else ImageView(Image(url, lazyload)), op)
 
-fun EventTarget.imageview(url: ObservableValue<String>, lazyload: Boolean = true, op: ImageView.() -> Unit = {})
-        = opcr(this, ImageView().apply { imageProperty().bind(objectBinding(url) { value?.let { Image(it, lazyload) } }) }, op)
+fun EventTarget.imageview(
+        url: ObservableValue<String>,
+        lazyload: Boolean = true,
+        op: ImageView.() -> Unit = {}
+) = ImageView().attachTo(this, op) { imageView ->
+    imageView.imageProperty().bind(objectBinding(url) { value?.let { Image(it, lazyload) } })
+}
 
-fun EventTarget.imageview(image: ObservableValue<Image?>, op: ImageView.() -> Unit = {})
-        = opcr(this, ImageView().apply { imageProperty().bind(image) }, op)
+fun EventTarget.imageview(image: ObservableValue<Image?>, op: ImageView.() -> Unit = {}) = ImageView().attachTo(this, op) {
+    it.imageProperty().bind(image)
+}
 
-fun EventTarget.imageview(image: Image, op: ImageView.() -> Unit = {})
-        = opcr(this, ImageView(image), op)
+fun EventTarget.imageview(image: Image, op: ImageView.() -> Unit = {}) = ImageView(image).attachTo(this, op)
 
 /**
  * Listen to changes and update the value of the property if the given mutator results in a different value
@@ -354,7 +374,8 @@ fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.rep
 /**
  * Remove any non integer values from a Text Input Control.
  */
-fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) = textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) =
+        textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
 
 fun ChoiceBox<*>.action(op: () -> Unit) = setOnAction { op() }
 fun ButtonBase.action(op: () -> Unit) = setOnAction { op() }
