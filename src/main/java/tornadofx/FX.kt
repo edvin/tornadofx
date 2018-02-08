@@ -8,10 +8,7 @@ import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
-import javafx.collections.ObservableSet
+import javafx.collections.*
 import javafx.event.EventTarget
 import javafx.scene.Group
 import javafx.scene.Node
@@ -594,11 +591,23 @@ fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -
 fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceList, converter)) { "Unable to extract child nodes from $this" }
 
 /**
- * Bind the children of this Layout node to the given observable set of items by converting
- * them into nodes via the given converter function. Changes to the source set will be reflected
- * in the children list of this layout node.
+ * Bind the children of this Layout node to the given observable set of items
+ * by converting them into nodes via the given converter function.
+ * Changes to the source set will be reflected in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceSet, converter)) { "Unable to extract child nodes from $this" }
+inline fun <reified T> EventTarget.bindChildren(
+        sourceSet: ObservableSet<T>,
+        noinline converter: (T) -> Node
+): SetConversionListener<T, Node> = requireNotNull(
+        getChildList()?.bind(sourceSet, converter)
+) { "Unable to extract child nodes from $this" }
+
+inline fun <reified K, reified V> EventTarget.bindChildren(
+        sourceMap: ObservableMap<K,V>,
+        noinline converter: (K,V) -> Node
+): MapConversionListener<K,V,Node> = requireNotNull(
+        getChildList()?.bind(sourceMap, converter)
+) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the given observable list of items by converting

@@ -204,6 +204,42 @@ fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceSet: ObservableS
     return listener
 }
 
+fun main(args: Array<String>) {
+    val map = FXCollections.observableHashMap<String, Int>()
+    val list = observableList<Char>()
+    map["0123456"] = 3
+    list.bind(map){k,v-> k[v]}
+    println(list)
+}
+fun <SourceTypeKey, SourceTypeValue, TargetType> MutableList<TargetType>.bind(
+        sourceMap: ObservableMap<SourceTypeKey, SourceTypeValue>,
+        converter: (SourceTypeKey, SourceTypeValue) -> TargetType
+): MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType> {
+    val ignoringParentConverter: (SourceTypeKey, SourceTypeValue) -> TargetType = { key, value ->
+        FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once
+        try {
+            converter(key, value)
+        } finally {
+            FX.ignoreParentBuilder = FX.IgnoreParentBuilder.No
+        }
+    }
+    val listener = MapConversionListener(this, ignoringParentConverter)
+    if (this is ObservableList<*>) {
+        sourceMap.forEach { source ->
+            val converted = ignoringParentConverter(source.key,source.value)
+            listener.sourceToTarget[source] = converted
+        }
+        (this as ObservableList<TargetType>).setAll(listener.sourceToTarget.values)
+    } else {
+        clear()
+        addAll(sourceMap.map{ignoringParentConverter(it.key, it.value) })
+    }
+    sourceMap.removeListener(listener)
+    sourceMap.addListener(listener)
+    return listener
+}
+
+
 /**
  * Listens to changes on a list of SourceType and keeps the target list in sync by converting
  * each object into the TargetType via the supplied converter.
@@ -244,6 +280,50 @@ class ListConversionListener<SourceType, TargetType>(targetList: MutableList<Tar
         val ourList = targetRef.get() ?: return false
 
         if (other is ListConversionListener<*, *>) {
+            val otherList = other.targetRef.get()
+            return ourList === otherList
+        }
+        return false
+    }
+}
+
+/**
+ * Listens to changes on a Map of SourceTypeKey to SourceTypeValue and keeps the target list in sync by converting
+ * each object into the TargetType via the supplied converter.
+ */
+class MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType>(
+        targetList: MutableList<TargetType>,
+        val converter: (SourceTypeKey, SourceTypeValue) -> TargetType
+) : MapChangeListener<SourceTypeKey, SourceTypeValue>, WeakListener {
+
+    internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
+    internal val sourceToTarget = HashMap<Map.Entry<SourceTypeKey, SourceTypeValue>, TargetType>()
+    override fun onChanged(change: MapChangeListener.Change<out SourceTypeKey, out SourceTypeValue>) {
+        val list = targetRef.get()
+        if (list == null) {
+            change.map.removeListener(this)
+        } else {
+            if (change.wasRemoved()) {
+                list.remove(converter(change.key, change.valueRemoved))
+            }
+            if (change.wasAdded()) {
+                list.add(converter(change.key, change.valueAdded))
+            }
+        }
+    }
+
+    override fun wasGarbageCollected() = targetRef.get() == null
+
+    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+
+        val ourList = targetRef.get() ?: return false
+
+        if (other is MapConversionListener<*, *, *>) {
             val otherList = other.targetRef.get()
             return ourList === otherList
         }
