@@ -35,6 +35,7 @@
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
 - obserableList<T>() creates FXCollections.observableArrayList<T>
 - ResourceBundle.format() provides a short way to insert translations with variables in them
+- ValidationContext.smartValidate doesn't continue validating after an failure has been detected
 
 ## [1.7.14]
 

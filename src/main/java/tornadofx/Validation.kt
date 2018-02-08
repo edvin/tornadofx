@@ -59,7 +59,7 @@ class ValidationContext {
                     } else {
                         if (!delayActive) {
                             delayActive = true
-                            thread(true) {
+                            thread {
                                 Thread.sleep(validator.trigger.delay)
                                 FX.runAndWait {
                                     validator.validate(decorateErrors)
@@ -70,7 +70,7 @@ class ValidationContext {
                     }
                 }
             }
-            is ValidationTrigger.OnBlur -> {
+            ValidationTrigger.OnBlur -> {
                 validator.node.focusedProperty().onChange {
                     if (!it) validator.validate(decorateErrors)
                 }
@@ -94,26 +94,40 @@ class ValidationContext {
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      * It is allowed to pass inn fields that has no corresponding validator. They will register as validated.
+     * This method continues if a failure is found.
      */
     fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
-        var firstErrorFocused = false
-        var validationSucceeded = true
+        val firstFailing = fields.getMatchingValidators()
+                .filterNot { it.validate(decorateErrors) }
+                .firstOrNull()
+                ?.node
+        if (focusFirstError) firstFailing?.requestFocus()
+        return firstFailing == null
+    }
 
-        val validateThese = if (fields.isEmpty()) validators else validators.filter {
-            val facade = it.property.viewModelFacade
-            facade != null && facade in fields
-        }
+    private fun Array<out ObservableValue<*>>.getMatchingValidators() = if (this.isEmpty()) validators else validators.filter {
+        val facade = it.property.viewModelFacade
+        facade != null && facade in this
+    }
 
-        for (validator in validateThese) {
-            if (!validator.validate(decorateErrors)) {
-                validationSucceeded = false
-                if (focusFirstError && !firstErrorFocused) {
-                    firstErrorFocused = true
-                    validator.node.requestFocus()
-                }
-            }
-        }
-        return validationSucceeded
+
+    /**
+     * Rerun all validators until (or just the ones passed in) and return a boolean indicating if validation passed.
+     * This method returns immediately after a failure is found
+     */
+    fun validateSmart(vararg fields: ObservableValue<*>) = validateSmart(true, true, fields = *fields)
+
+    /**
+     * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
+     * It is allowed to pass in fields that has no corresponding validator. They will register as validated.
+     * This method returns immediately after a failure is found
+     */
+    fun validateSmart(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
+        val firstFailing = fields.getMatchingValidators()
+                .firstOrNull { !it.validate(decorateErrors) }
+                ?.node
+        if (focusFirstError) firstFailing?.requestFocus()
+        return firstFailing == null
     }
 
     /**
