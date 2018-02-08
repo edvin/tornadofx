@@ -89,13 +89,13 @@ class ValidationContext {
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      */
-    fun validate(vararg fields: ObservableValue<*>) = validate(true, true, fields = *fields)
+    fun validate(vararg fields: ObservableValue<*>) = validate(true, true,false, fields = *fields)
 
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      * It is allowed to pass inn fields that has no corresponding validator. They will register as validated.
      */
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, failFast: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, failFast: Boolean = false, vararg fields: ObservableValue<*>): Boolean {
         val validateThese = if (fields.isEmpty()) validators else validators.filter {
             val facade = it.property.viewModelFacade
             facade != null && facade in fields
