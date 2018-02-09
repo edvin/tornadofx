@@ -7,8 +7,6 @@ import javafx.event.EventTarget
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.KeyCombination
-import tornadofx.Stylesheet.Companion.contextMenu
-import tornadofx.WizardStyles.Companion.graphic
 
 //Menu-related operator functions
 operator fun <T : MenuItem> Menu.plusAssign(menuItem: T) {
@@ -24,17 +22,15 @@ operator fun <T : MenuItem> ContextMenu.plusAssign(menuItem: T) {
 }
 
 //MenuBar extensions
-fun MenuBar.menu(name: String? = null, graphic: Node? = null, op: Menu.() -> Unit = {}): Menu {
-    val menu = Menu(name, graphic).also(op)
-    this += menu
-    return menu
+fun MenuBar.menu(name: String? = null, graphic: Node? = null, op: Menu.() -> Unit = {}) = Menu(name, graphic).also {
+    op(it)
+    this += it
 }
 
 //ContextMenu extensions
-fun ContextMenu.menu(name: String? = null, op: Menu.() -> Unit = {}): Menu {
-    val menu = Menu(name).also(op)
-    this += menu
-    return menu
+fun ContextMenu.menu(name: String? = null, op: Menu.() -> Unit = {}) = Menu(name).also{
+    op(it)
+    this += it
 }
 
 /**
@@ -42,17 +38,17 @@ fun ContextMenu.menu(name: String? = null, op: Menu.() -> Unit = {}): Menu {
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, KeyCombination.valueOf(keyCombination), graphic).action(onAction)"))
-fun ContextMenu.menuitem(name: String, keyCombination: String, graphic: Node? = null, onAction: () -> Unit = {}): MenuItem {
-    return this.item(name, KeyCombination.valueOf(keyCombination), graphic).apply { action(onAction) }
-}
+fun ContextMenu.menuitem(
+        name: String, keyCombination: String, graphic: Node? = null, onAction: () -> Unit = {}
+): MenuItem = item(name, KeyCombination.valueOf(keyCombination), graphic).apply { action(onAction) }
 
-fun ContextMenu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}): CheckMenuItem {
-    val checkMenuItem = CheckMenuItem(name, graphic)
-    keyCombination?.apply { checkMenuItem.accelerator = this }
-    graphic?.apply { checkMenuItem.graphic = graphic }
-    op(checkMenuItem)
-    this += checkMenuItem
-    return checkMenuItem
+fun ContextMenu.checkmenuitem(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}
+) = CheckMenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    this += it
 }
 
 /**
@@ -60,26 +56,26 @@ fun ContextMenu.checkmenuitem(name: String, keyCombination: KeyCombination? = nu
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, keyCombination, graphic).action(onAction)"))
-fun ContextMenu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: (ActionEvent) -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(name, graphic)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = this }
-    menuItem.setOnAction(onAction)
-    this += menuItem
-    return menuItem
+fun ContextMenu.menuitem(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: (ActionEvent) -> Unit = {}
+) = MenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = this }
+    it.setOnAction(onAction)
+    this += it
 }
 
 /**
  * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action. Notice that this differs
  * from the deprecated `menuitem` builder where the op is configured as the `setOnAction` directly.
  */
-fun ContextMenu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(name, graphic)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = this }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun ContextMenu.item(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}
+) = MenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = this }
+    op(it)
+    this += it
 }
 
 /**
@@ -87,32 +83,30 @@ fun ContextMenu.item(name: String, keyCombination: KeyCombination? = null, graph
  * call `setOnAction` to provide the menu item action. Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun ContextMenu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(null, graphic)
-    menuItem.textProperty().bind(name)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = this }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun ContextMenu.item(
+        name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}
+) = MenuItem(null, graphic).also {
+    it.textProperty().bind(name)
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = this }
+    op(it)
+    this += it
 }
 
 /**
  * Add a separator to the contextmenu
  */
 fun ContextMenu.separator(op: SeparatorMenuItem.() -> Unit = {}) {
-    val separator = SeparatorMenuItem()
-    op(separator)
-    this += separator
+    this += SeparatorMenuItem().also(op)
 }
 
 //Menu extensions
-fun Menu.menu(name: String? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: Menu.() -> Unit = {}): Menu {
-    val menu = Menu(name, graphic)
-    keyCombination?.apply { menu.accelerator = this }
-    op(menu)
-    this += menu
-    return menu
+fun Menu.menu(
+        name: String? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: Menu.() -> Unit = {}
+) = Menu(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    op(it)
+    this += it
 }
 
 //Menu extensions
@@ -132,13 +126,13 @@ fun Menu.menuitem(name: String, keyCombination: String, graphic: Node? = null, o
  * op block operates on the MenuItem. This deprecation was made to align the menuitem builder with the other builders.
  */
 @Deprecated("Use the item builder instead, which expects an action parameter", ReplaceWith("item(name, keyCombination, graphic).action(onAction)"))
-fun Menu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: (ActionEvent) -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(name, graphic);
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = graphic }
-    menuItem.setOnAction(onAction)
-    this += menuItem
-    return menuItem
+fun Menu.menuitem(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, onAction: (ActionEvent) -> Unit = {}
+) = MenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    it.setOnAction(onAction)
+    this += it
 }
 
 /**
@@ -146,60 +140,61 @@ fun Menu.menuitem(name: String, keyCombination: KeyCombination? = null, graphic:
  * Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun Menu.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(name, graphic)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = graphic }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun Menu.item(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}
+) = MenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    this += it
 }
 
 /**
  * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
  * of the item. The item action is configured with the `action` builder.
  */
-fun Menu.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun Menu.customitem(
+        keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}
+) = CustomMenuItem().also {
+    it.isHideOnClick = hideOnClick
+    keyCombination?.apply{ it.accelerator = this }
+    op(it)
+    this += it
 }
 
 /**
  * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
  * of the item. The item action is configured with the `action` builder.
  */
-fun MenuButton.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op(menuItem)
-    items.add(menuItem)
-    return menuItem
+fun MenuButton.customitem(
+        keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}
+) = CustomMenuItem().also {
+    it.isHideOnClick = hideOnClick
+    keyCombination?.apply{ it.accelerator = this }
+    op(it)
+    items.add(it)
 }
 
 /**
  * Create a CustomMenuItem. You must provide a builder inside the `CustomMenuItem` or assign to the `content` property
  * of the item. The item action is configured with the `action` builder.
  */
-fun ContextMenu.customitem(keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}): CustomMenuItem {
-    val menuItem = CustomMenuItem()
-    menuItem.isHideOnClick = hideOnClick
-    keyCombination?.also { menuItem.accelerator = it }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun ContextMenu.customitem(
+        keyCombination: KeyCombination? = null, hideOnClick: Boolean = true, op: CustomMenuItem.() -> Unit = {}
+) = CustomMenuItem().also {
+    it.isHideOnClick = hideOnClick
+    keyCombination?.apply{ it.accelerator = this }
+    op(it)
+    this += it
 }
-fun MenuButton.item(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(name, graphic)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = graphic }
-    op(menuItem)
-    items.add(menuItem)
-    return menuItem
+
+fun MenuButton.item(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}
+) = MenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    items += it
 }
 
 /**
@@ -213,60 +208,63 @@ fun Menu.item(name: String, keyCombination: String, graphic: Node? = null, op: M
  * call `setOnAction` to provide the menu item action. Notice that this differs from the deprecated `menuitem` builder where the op
  * is configured as the `setOnAction` directly.
  */
-fun Menu.item(name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}): MenuItem {
-    val menuItem = MenuItem(null, graphic)
-    menuItem.textProperty().bind(name)
-    keyCombination?.apply { menuItem.accelerator = this }
-    graphic?.apply { menuItem.graphic = graphic }
-    op(menuItem)
-    this += menuItem
-    return menuItem
+fun Menu.item(
+        name: ObservableValue<String>, keyCombination: KeyCombination? = null, graphic: Node? = null, op: MenuItem.() -> Unit = {}
+) = MenuItem(null, graphic).also {
+    it.textProperty().bind(name)
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    this += it
 }
 
 fun Menu.separator() {
     this += SeparatorMenuItem()
 }
 
-fun Menu.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}): RadioMenuItem {
-    val radioMenuItem = RadioMenuItem(name, graphic)
-    toggleGroup?.apply { radioMenuItem.toggleGroup = this }
-    keyCombination?.apply { radioMenuItem.accelerator = this }
-    graphic?.apply { radioMenuItem.graphic = graphic }
-    op(radioMenuItem)
-    this += radioMenuItem
-    return radioMenuItem
+fun Menu.radiomenuitem(
+        name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null,
+        graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}
+)  = RadioMenuItem(name, graphic).also {
+    toggleGroup?.apply { it.toggleGroup = this }
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    this += it
 }
 
 fun Menu.checkmenuitem(name: String, keyCombination: String, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}) =
         checkmenuitem(name, KeyCombination.valueOf(keyCombination), graphic, selected, op)
 
-fun Menu.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}): CheckMenuItem {
-    val checkMenuItem = CheckMenuItem(name, graphic)
-    keyCombination?.apply { checkMenuItem.accelerator = this }
-    graphic?.apply { checkMenuItem.graphic = graphic }
-    selected?.apply { checkMenuItem.selectedProperty().bindBidirectional(this) }
-    op(checkMenuItem)
-    this += checkMenuItem
-    return checkMenuItem
+fun Menu.checkmenuitem(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, selected: Property<Boolean>? = null,
+        op: CheckMenuItem.() -> Unit = {}
+) = CheckMenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    selected?.apply { it.selectedProperty().bindBidirectional(this) }
+    op(it)
+    this += it
 }
 
-fun MenuButton.radiomenuitem(name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}): RadioMenuItem {
-    val radioMenuItem = RadioMenuItem(name, graphic)
-    toggleGroup?.apply { radioMenuItem.toggleGroup = this }
-    keyCombination?.apply { radioMenuItem.accelerator = this }
-    graphic?.apply { radioMenuItem.graphic = graphic }
-    op(radioMenuItem)
-    items.add(radioMenuItem)
-    return radioMenuItem
+fun MenuButton.radiomenuitem(
+        name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null,
+        graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}
+) = RadioMenuItem(name, graphic).also {
+    toggleGroup?.apply { it.toggleGroup = this }
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    items += it
 }
 
-fun MenuButton.checkmenuitem(name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}): CheckMenuItem {
-    val checkMenuItem = CheckMenuItem(name, graphic)
-    keyCombination?.apply { checkMenuItem.accelerator = this }
-    graphic?.apply { checkMenuItem.graphic = graphic }
-    op(checkMenuItem)
-    items.add(checkMenuItem)
-    return checkMenuItem
+fun MenuButton.checkmenuitem(
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}
+) = CheckMenuItem(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    graphic?.apply { it.graphic = graphic }
+    op(it)
+    items += it
 }
 
 fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
@@ -274,7 +272,7 @@ fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
     op(menu)
     if (this is Control) {
         contextMenu = menu
-    } else if (this is Node) {
+    } else (this as? Node)?.apply {
         setOnContextMenuRequested { event ->
             menu.show(this, event.screenX, event.screenY)
             event.consume()
@@ -287,14 +285,16 @@ fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
  */
 fun EventTarget.lazyContextmenu(op: ContextMenu.() -> Unit = {}) = apply {
     var currentMenu: ContextMenu? = null
-    if (this is Node) {
+    (this as? Node)?.apply {
         setOnContextMenuRequested { event ->
             currentMenu?.hide()
 
             currentMenu = ContextMenu()
-            currentMenu!!.setOnCloseRequest { currentMenu = null }
-            op(currentMenu!!)
-            currentMenu!!.show(this, event.screenX, event.screenY)
+            currentMenu!!.also {
+                it.setOnCloseRequest { currentMenu = null }
+                op(it)
+                it.show(this, event.screenX, event.screenY)
+            }
             event.consume()
         }
     }
