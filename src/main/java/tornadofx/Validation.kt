@@ -59,7 +59,7 @@ class ValidationContext {
                     } else {
                         if (!delayActive) {
                             delayActive = true
-                            thread(true) {
+                            thread {
                                 Thread.sleep(validator.trigger.delay)
                                 FX.runAndWait {
                                     validator.validate(decorateErrors)
@@ -70,7 +70,7 @@ class ValidationContext {
                     }
                 }
             }
-            is ValidationTrigger.OnBlur -> {
+            ValidationTrigger.OnBlur -> {
                 validator.node.focusedProperty().onChange {
                     if (!it) validator.validate(decorateErrors)
                 }
@@ -95,25 +95,20 @@ class ValidationContext {
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      * It is allowed to pass inn fields that has no corresponding validator. They will register as validated.
      */
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
-        var firstErrorFocused = false
-        var validationSucceeded = true
-
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, failfast: Boolean = true, vararg fields: ObservableValue<*>): Boolean {
         val validateThese = if (fields.isEmpty()) validators else validators.filter {
             val facade = it.property.viewModelFacade
             facade != null && facade in fields
         }
 
-        for (validator in validateThese) {
-            if (!validator.validate(decorateErrors)) {
-                validationSucceeded = false
-                if (focusFirstError && !firstErrorFocused) {
-                    firstErrorFocused = true
-                    validator.node.requestFocus()
-                }
-            }
-        }
-        return validationSucceeded
+        @Suppress("SimplifiableCallChain")
+        val firstFailingNode = when(failfast) {
+            true -> validateThese.firstOrNull { !it.validate(decorateErrors) }
+            false -> validateThese.filter { !it.validate(decorateErrors) }.firstOrNull()
+        }?.node
+
+        if (focusFirstError) firstFailingNode?.requestFocus()
+        return firstFailingNode != null
     }
 
     /**
