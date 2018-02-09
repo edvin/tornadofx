@@ -5,6 +5,7 @@ import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Point2D
+import javafx.geometry.Point3D
 import javafx.scene.Node
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
@@ -645,7 +646,7 @@ abstract class ViewTransition {
      */
     class FadeThrough(duration: Duration, val color: Paint = Color.TRANSPARENT) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
-        val halfTime = duration.divide(2.0)!!
+        val halfTime: Duration = duration.divide(2.0)
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.fade(halfTime, 0, easing = Interpolator.EASE_IN, play = false)
                 .then(replacement.fade(halfTime, 0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
@@ -834,8 +835,8 @@ abstract class ViewTransition {
      * @param vertical Whether to flip the card vertically or horizontally
      */
     class Flip(duration: Duration, vertical: Boolean = false) : ViewTransition() {
-        val halfTime = duration.divide(2.0)!!
-        val targetAxis = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)!!
+        val halfTime: Duration = duration.divide(2.0)
+        val targetAxis: Point3D = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)
 
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             return current.rotate(halfTime, 90, easing = Interpolator.EASE_IN, play = false) {

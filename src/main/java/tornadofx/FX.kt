@@ -57,12 +57,9 @@ open class Scope() {
     val hasActiveWorkspace: Boolean get() = workspaceInstance != null
 
     var workspace: Workspace
-        get() {
-            if (workspaceInstance == null) {
-                // Use configured default workspace
-                workspaceInstance = find(FX.defaultWorkspace, this)
-            }
-            return workspaceInstance!!
+        get() = workspaceInstance ?: find(FX.defaultWorkspace, this).also {
+            // Use configured default workspace
+            workspaceInstance = it
         }
         set(value) {
             workspaceInstance = value

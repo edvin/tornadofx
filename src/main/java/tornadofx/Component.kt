@@ -178,29 +178,22 @@ abstract class Component : Configurable {
     inline fun <reified T> nullableParam(defaultValue: T? = null) = param(defaultValue)
 
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, params: Map<String, Any?>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
-        var fragment: T? = null
-
-        override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (fragment == null) fragment = find(overrideScope, params)
-            return fragment!!
-        }
+        val fragment: T by lazy { find<T>(overrideScope, params) }
+        override fun getValue(thisRef: Component, property: KProperty<*>): T = fragment
     }
 
     inline fun <reified T : Any> di(name: String? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         var injected: T? = null
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
-            if (FX.dicontainer == null) {
-                throw AssertionError("Injector is not configured, so bean of type ${T::class} cannot be resolved")
-            } else {
-                if (injected == null) injected = FX.dicontainer?.let {
-                    if (name != null) {
-                        it.getInstance(name)
-                    } else {
-                        it.getInstance()
-                    }
+            val dicontainer = FX.dicontainer ?: throw AssertionError(
+                    "Injector is not configured, so bean of type ${T::class} cannot be resolved")
+            return dicontainer.let {
+                if (name != null) {
+                    it.getInstance<T>(name)
+                } else {
+                    it.getInstance()
                 }
-            }
-            return injected!!
+            }.also { injected = it }
         }
     }
 
@@ -305,7 +298,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     val isDockedProperty: ReadOnlyBooleanProperty = SimpleBooleanProperty()
     val isDocked by isDockedProperty
 
-    var fxmlLoader: FXMLLoader? = null
+    lateinit var fxmlLoader: FXMLLoader
     var modalStage: Stage? = null
     internal var muteDocking = false
     abstract val root: Parent
@@ -870,15 +863,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             }
         }
 
-        return fxmlLoader!!.load()
+        return fxmlLoader.load()
     }
 
     fun <T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
-            val value = thisRef.fxmlLoader!!.namespace[key]
+            val value = thisRef.fxmlLoader.namespace[key]
             if (value == null) {
-                log.warning("Property $key of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader!!.location}")
+                log.warning("Property $key of $thisRef was not resolved because there is no matching fx:id in ${thisRef.fxmlLoader.location}")
             } else {
                 return value as T
             }
