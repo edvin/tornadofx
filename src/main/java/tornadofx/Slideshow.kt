@@ -95,10 +95,10 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     }
 
     class Slide(val view: KClass<out UIComponent>, val transition: ViewTransition? = null) {
-        private var ui: UIComponent? = null
+        private lateinit var ui: UIComponent
         fun getUI(scope: Scope): UIComponent {
-            if (ui == null) ui = find(view, scope)
-            return ui!!
+            if (!::ui.isInitialized) ui = find(view, scope)
+            return ui
         }
     }
 }

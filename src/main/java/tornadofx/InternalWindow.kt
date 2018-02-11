@@ -128,7 +128,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
         }
     }
 
-    override fun getUserAgentStylesheet() = URL("css://${Styles::class.java.name}").toExternalForm()!!
+    override fun getUserAgentStylesheet(): String = URL("css://${Styles::class.java.name}").toExternalForm()
 
     fun fillOverlay() {
         overlay?.graphicsContext2D.apply {
@@ -147,13 +147,15 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
 
         coverNode.uiComponent<UIComponent>()?.muteDocking = true
 
+        val coverParent = this.coverParent
         if (coverParent != null) {
-            indexInCoverParent = coverParent!!.getChildList()!!.indexOf(owner)
-            owner.removeFromParent()
-            coverParent!!.getChildList()!!.add(indexInCoverParent!!, this)
+            val childList = coverParent.getChildList() ?: kotlin.error("Can't reach children of owner parent")
+            indexInCoverParent = childList.indexOf(owner).also { index ->
+                owner.removeFromParent()
+                childList.add(index, this)
+            }
         } else {
-            val scene = owner.scene
-            scene.root = this
+            owner.scene.root = this
         }
 
         coverNode.uiComponent<UIComponent>()?.muteDocking = false
@@ -170,8 +172,10 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
 
         coverNode.removeFromParent()
         removeFromParent()
+        val indexInCoverParent = this.indexInCoverParent
         if (indexInCoverParent != null) {
-            coverParent!!.getChildList()!!.add(indexInCoverParent!!, coverNode)
+            val childList = coverParent!!.getChildList() ?: kotlin.error("Can't reach children of owner parent")
+            childList.add(indexInCoverParent, coverNode)
         } else {
             scene?.root = coverNode as Parent?
         }
@@ -218,5 +222,4 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
             window.top.layoutY += mouseEvent.y - y
         }
     }
-
 }

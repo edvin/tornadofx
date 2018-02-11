@@ -191,7 +191,7 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
         text.textProperty().bind(control.textProperty)
         children.add(text)
 
-        if (skinnable.graphic != null) registerGraphic(skinnable.graphic!!)
+        skinnable.graphic?.let { registerGraphic(it) }
 
         skinnable.graphicProperty.addListener { _, old, new ->
             if (old != null) children.remove(old)
@@ -207,8 +207,8 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
         var w = if (text.text.isNullOrBlank()) 0.0 else text.prefWidth(height)
 
-        if (skinnable.graphic != null) {
-            val graphicSize = Math.max(skinnable.graphic!!.prefWidth(-1.0), graphicFixedSize)
+        skinnable.graphic?.let { graphic ->
+            val graphicSize = Math.max(graphic.prefWidth(-1.0), graphicFixedSize)
             if (iconPosition.isVertical)
                 w += graphicSize
             else
@@ -221,8 +221,8 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
     override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
         var h = if (text.text.isNullOrBlank()) 0.0 else text.prefHeight(width)
 
-        if (skinnable.graphic != null) {
-            val graphicSize = Math.max(skinnable.graphic!!.prefHeight(-1.0), graphicFixedSize)
+        skinnable.graphic?.let { graphic ->
+            val graphicSize = Math.max(graphic.prefHeight(-1.0), graphicFixedSize)
             if (iconPosition.isHorizontal)
                 h += graphicSize
             else

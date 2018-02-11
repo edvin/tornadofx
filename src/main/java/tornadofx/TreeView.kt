@@ -125,15 +125,15 @@ fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(mo
 
 fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
-        if (event.code == KeyCode.BACK_SPACE && selectionModel.selectedItem?.value != null)
-            action(selectedValue!!)
+        val value = selectedValue
+        if (event.code == KeyCode.BACK_SPACE && value != null)
+            action(value)
     }
 }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
-    selectionModel.selectedItemProperty().addListener { obs, old, new ->
-        if (new != null && new.value != null)
-            action(new.value)
+    selectionModel.selectedItemProperty().addListener { _, _, new ->
+        new?.value?.let { action(it) }
     }
 }
 

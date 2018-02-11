@@ -167,7 +167,7 @@ open class ViewModel : Component(), ScopedInstance {
     inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: T? = null, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, defaultValue, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, _, newValue ->
-        if (property!! in ignoreDirtyStateProperties) return@ChangeListener
+        if (property in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
         if (sourceValue == newValue) {

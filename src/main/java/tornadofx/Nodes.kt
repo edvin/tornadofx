@@ -1195,13 +1195,13 @@ class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) :
 internal class ShortLongPressHandler(node: Node) {
     var holdTimer = PauseTransition(700.millis)
     var consume: Boolean = false
-    var originatingEvent: MouseEvent? = null
+    lateinit var originatingEvent: MouseEvent
 
     var shortAction: ((MouseEvent) -> Unit)? = null
     var longAction: ((MouseEvent) -> Unit)? = null
 
     init {
-        holdTimer.setOnFinished { longAction?.invoke(originatingEvent!!) }
+        holdTimer.setOnFinished { longAction?.invoke(originatingEvent) }
 
         node.addEventHandler(MouseEvent.MOUSE_PRESSED) {
             originatingEvent = it
@@ -1212,7 +1212,7 @@ internal class ShortLongPressHandler(node: Node) {
         node.addEventHandler(MouseEvent.MOUSE_RELEASED) {
             if (holdTimer.status == Animation.Status.RUNNING) {
                 holdTimer.stop()
-                shortAction?.invoke(originatingEvent!!)
+                shortAction?.invoke(originatingEvent)
                 if (consume) it.consume()
             }
         }

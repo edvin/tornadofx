@@ -8,15 +8,13 @@ import javafx.stage.FileChooser
 import javafx.stage.Stage
 import javafx.stage.Window
 import tornadofx.FileChooserMode.*
-import tornadofx.Stylesheet.Companion.title
-import tornadofx.WizardStyles.Companion.buttons
 import java.io.File
 
 /**
  * Show a confirmation dialog and execute the given action if confirmButton is clicked. The button types
  * of the confirmButton and cancelButton are configurable.
  */
-fun confirm(header: String, content: String = "", confirmButton: ButtonType = ButtonType.OK, cancelButton: ButtonType = ButtonType.CANCEL, owner: Window? = null, title: String? = null, actionFn: () -> Unit) {
+inline fun confirm(header: String, content: String = "", confirmButton: ButtonType = ButtonType.OK, cancelButton: ButtonType = ButtonType.CANCEL, owner: Window? = null, title: String? = null, actionFn: () -> Unit) {
     alert(Alert.AlertType.CONFIRMATION, header, content, confirmButton, cancelButton, owner = owner, title = title) {
         if (it == confirmButton) actionFn()
     }
@@ -30,33 +28,35 @@ fun confirm(header: String, content: String = "", confirmButton: ButtonType = Bu
  *
  * You can optionally pass an owner window parameter.
  */
-fun alert(type: Alert.AlertType,
-          header: String,
-          content: String? = null,
-          vararg buttons: ButtonType,
-          owner: Window? = null,
-          title: String? = null,
-          actionFn: Alert.(ButtonType) -> Unit = {}): Alert {
+inline fun alert(type: Alert.AlertType,
+                 header: String,
+                 content: String? = null,
+                 vararg buttons: ButtonType,
+                 owner: Window? = null,
+                 title: String? = null,
+                 actionFn: Alert.(ButtonType) -> Unit = {}): Alert {
 
     val alert = Alert(type, content ?: "", *buttons)
     title?.let { alert.title = it }
     alert.headerText = header
     owner?.also { alert.initOwner(it) }
     val buttonClicked = alert.showAndWait()
-    buttonClicked.ifPresent { actionFn(alert, buttonClicked.get()) }
+    if (buttonClicked.isPresent) {
+        alert.actionFn(buttonClicked.get())
+    }
     return alert
 }
 
-fun warning(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+inline fun warning(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
         alert(Alert.AlertType.WARNING, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun error(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+inline fun error(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
         alert(Alert.AlertType.ERROR, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun information(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+inline fun information(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
         alert(Alert.AlertType.INFORMATION, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
-fun confirmation(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
+inline fun confirmation(header: String, content: String? = null, vararg buttons: ButtonType, owner: Window? = null, title: String? = null, actionFn: Alert.(ButtonType) -> Unit = {}) =
         alert(Alert.AlertType.CONFIRMATION, header, content, *buttons, owner = owner, title = title, actionFn = actionFn)
 
 enum class FileChooserMode { None, Single, Multi, Save }
