@@ -38,11 +38,8 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
     var tooltip: Tooltip? = null
     var attachedToNode: Node? = null
 
-    @Suppress("ObjectLiteralToLambda") // Must remain object literal or else removeListener doesn't match
-    var focusListener = object : ChangeListener<Boolean> {
-        override fun changed(observable: ObservableValue<out Boolean>?, oldValue: Boolean?, newValue: Boolean?) {
-            if (newValue == true) showTooltip(attachedToNode!!) else tooltip?.hide()
-        }
+    var focusListener = ChangeListener<Boolean> { _, _, newValue ->
+        if (newValue == true) showTooltip(attachedToNode!!) else tooltip?.hide()
     }
 
     override fun decorate(node: Node) {

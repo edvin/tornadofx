@@ -465,8 +465,8 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
 }
 
 class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionModel<T>() {
-    private val selectedIndicies = FXCollections.observableArrayList<Int>()
-    private val selectedItems = FXCollections.observableArrayList<T>()
+    private val selectedIndicies: ObservableList<Int> = FXCollections.observableArrayList()
+    private val selectedItems: ObservableList<T> = FXCollections.observableArrayList()
 
     fun getCellAt(index: Int): DataGridCell<T>? {
         val skin = dataGrid.skin as DataGridSkin<T>

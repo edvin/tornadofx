@@ -351,7 +351,7 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override fun content() = request.connection.errorStream ?: request.connection.inputStream
 
     override fun bytes(): ByteArray {
-        if (bytesRead != null) return bytesRead!!
+        bytesRead?.let { return it }
 
         try {
             val unwrapped = when (request.connection.contentEncoding) {
@@ -590,12 +590,12 @@ class DigestAuthContext(val username: String, val password: String) : AuthContex
         extractNextNonce(response)
         if (response.statusCode != 401 || response.request.properties["Authorization-Retried"] != null) return response
         val params = response.digestParams
-        if (params != null && params["stale"]?.toBoolean() ?: true) {
+        if (params != null && params["stale"]?.toBoolean() != false) {
             FX.log.fine { "Digest Challenge: $params" }
             algorithm = params["algorithm"] ?: "MD5"
             digest = MessageDigest.getInstance(algorithm.removeSuffix("-sess"))
-            realm = params["realm"]!!
-            nonce = params["nonce"]!!
+            realm = params["realm"] ?: kotlin.error("Realm is not present in response digest parameters")
+            nonce = params["nonce"] ?: kotlin.error("Nonce is not present in response digest parameters")
             opaque = params["opaque"] ?: ""
             nonceCounter.set(0)
             qop = (params["qop"] ?: "").split(",").map(String::trim).sortedBy { it.length }.last()
