@@ -447,7 +447,8 @@ inline fun <reified T : Any> DIContainer.getInstance() = getInstance(T::class)
 inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance(T::class, name)
 
 /**
- * Add the given node to the pane, invoke the node operation and return the node
+ * Add the given node to the pane, invoke the node operation and return the node. The `opcr` name
+ * is an acronym for "op connect & return".
  */
 fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}): T {
     parent.addChildIfPossible(node)
