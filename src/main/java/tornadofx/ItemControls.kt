@@ -643,6 +643,7 @@ fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S
                 onCommit(event, event.rowValue)
             }
         }
+        column.columns.forEach(::addEventHandlerForColumn)
     }
 
     columns.forEach(::addEventHandlerForColumn)
@@ -1132,7 +1133,7 @@ fun <S, T> TableColumn<S, T>.setValue(item: S, value: T?) {
 }
 
 /**
- * Get the value from the property rperesenting this TableColumn.
+ * Get the value from the property representing this TableColumn.
  */
 fun <S, T> TableColumn<S, T>.getValue(item: S) = getTableColumnProperty(item).value
 
