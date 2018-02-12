@@ -9,6 +9,8 @@ import javafx.collections.ObservableMap
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.TableView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
@@ -93,7 +95,7 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
      */
     constructor(scope: Scope = DefaultScope, properties : Map<Any,Any>? = null) : this(scope, null, properties)
 
-    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
+    private val smartProperties: ObservableMap<Any,Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = smartProperties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = smartProperties["tornadofx.cellCache"] as ListCellCache<T>?
@@ -210,4 +212,8 @@ fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider
     if (properties["tornadofx.cellCacheCapable"] != true) {
         cellFormat(scope) { }
     }
+}
+
+fun <T> ListView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
 }

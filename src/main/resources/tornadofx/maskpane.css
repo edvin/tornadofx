@@ -1,0 +1,9 @@
+.mask-pane {
+    -fx-background-color: rgba(0,0,0,0.5);
+    -fx-accent: aliceblue;
+}
+
+.mask-pane > .progress-indicator {
+    -fx-max-width: 300;
+    -fx-max-height: 300;
+}

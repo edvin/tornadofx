@@ -54,7 +54,7 @@ open class ViewModel : Component(), ScopedInstance {
         fun register(property: ObservableValue<*>, possiblyFacade: ObservableValue<*>?) {
             val propertyOwner = (possiblyFacade as? Property<*>)?.bean as? ViewModel
             if (propertyOwner != null) {
-                propertyToFacade[property] = possiblyFacade as Property<*>
+                propertyToFacade[property] = possiblyFacade
                 propertyToViewModel[property] = propertyOwner
             }
         }
@@ -66,7 +66,7 @@ open class ViewModel : Component(), ScopedInstance {
                 if (it.wasAdded()) {
                     it.addedSubList.forEach { facade ->
                         facade.addListener { obs, _, nv ->
-                            if (validate(fields = facade)) propertyMap[obs]!!.invoke()?.value = nv
+                            if (validate(fields = *arrayOf(facade))) propertyMap[obs]!!.invoke()?.value = nv
                         }
                     }
                 }
@@ -100,7 +100,7 @@ open class ViewModel : Component(), ScopedInstance {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline propertyProducer: () -> PropertyType?): ResultType {
+    inline fun <reified PropertyType : Property<T>, reified T : Any, ResultType : PropertyType> bind(autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: T? = null, noinline propertyProducer: () -> PropertyType?): ResultType {
         val prop = propertyProducer()
 
         val facade : Property<*> = if (forceObjectProperty) {
@@ -142,7 +142,7 @@ open class ViewModel : Component(), ScopedInstance {
             }
         }
 
-        assignValue(facade, prop)
+        assignValue(facade, prop, defaultValue)
 
         facade.addListener(dirtyListener)
         propertyMap[facade] = propertyProducer
@@ -164,7 +164,7 @@ open class ViewModel : Component(), ScopedInstance {
         return facade as ResultType
     }
 
-    inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, op))
+    inline fun <reified T : Any> property(autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: T? = null, noinline op: () -> Property<T>) = PropertyDelegate(bind(autocommit, forceObjectProperty, defaultValue, op))
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, _, newValue ->
         if (property!! in ignoreDirtyStateProperties) return@ChangeListener
@@ -203,7 +203,7 @@ open class ViewModel : Component(), ScopedInstance {
 
     }
 
-    fun commit(vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null) =
+    fun commit(vararg fields: ObservableValue<*>, successFn: () -> Unit = {}) =
             commit(false, true, fields = *fields, successFn = successFn)
 
     /**
@@ -213,7 +213,7 @@ open class ViewModel : Component(), ScopedInstance {
      *
      * @param force Force flush even if validation fails
      */
-    fun commit(force: Boolean = false, focusFirstError: Boolean = true, vararg fields: ObservableValue<*>, successFn: (() -> Unit)? = null): Boolean {
+    fun commit(force: Boolean = false, focusFirstError: Boolean = true, vararg fields: ObservableValue<*>, successFn: () -> Unit = {}): Boolean {
         var committed = true
 
         val commits = mutableListOf<Commit>()
@@ -237,7 +237,7 @@ open class ViewModel : Component(), ScopedInstance {
         if (committed) {
             onCommit()
             onCommit(commits)
-            successFn?.invoke()
+            successFn.invoke()
         }
         return committed
     }
@@ -273,8 +273,8 @@ open class ViewModel : Component(), ScopedInstance {
         }
     }
 
-    fun assignValue(facade: Property<*>, prop: Property<*>?) {
-        facade.value = prop?.value
+    fun assignValue(facade: Property<*>, prop: Property<*>?, defaultValue: Any? = null) {
+        facade.value = prop?.value ?: defaultValue
 
         // Never allow null collection values
         if (facade.value == null) {
@@ -352,9 +352,9 @@ val <T> Property<T>.isNotDirty: Boolean get() = !isDirty
  * Listen to changes in the given observable and call the op with the new value on change.
  * After each change the viewmodel is rolled back to reflect the values in the new source object or objects.
  */
-fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(T?) -> Unit)? = null) {
+fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: V.(T?) -> Unit = {}) {
     observable.addListener { _, _, newValue ->
-        op?.invoke(this, newValue)
+        op(this, newValue)
         rollback()
     }
 }
@@ -362,12 +362,13 @@ fun <V : ViewModel, T> V.rebindOnChange(observable: ObservableValue<T>, op: (V.(
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the ListCellFragment changes.
  */
-fun <V : ItemViewModel<T>, T> V.bindTo(cellFragment: ListCellFragment<T>) = apply {
-    itemProperty.bind(cellFragment.itemProperty)
+fun <V : ItemViewModel<T>, T> V.bindTo(itemFragment: ItemFragment<T>) = apply {
+    itemProperty.bind(itemFragment.itemProperty)
 }
 
 /**
  * Rebind the itemProperty of the ViewModel when the itemProperty in the TableCellFragment changes.
+ * TODO: Do we need this, or can we just use the one above?
  */
 fun <V : ItemViewModel<T>, S, T> V.bindToItem(cellFragment: TableCellFragment<S, T>) = apply {
     itemProperty.bind(cellFragment.itemProperty)
@@ -526,28 +527,32 @@ open class ItemViewModel<T> @JvmOverloads constructor(initialValue: T? = null, v
             task { func() } success { if (itemProperty.isBound && item is JsonModel) (item as JsonModel).update(it as JsonModel) else item = it }
 
     @JvmName("bindField")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
-            = bind(autocommit, forceObjectProperty) { item?.let { property.get(it).toProperty() } }
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { item?.let { property.get(it).toProperty() } }
 
     @JvmName("bindMutableField")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
-            = bind(autocommit, forceObjectProperty) { item?.observable(property) }
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { item?.observable(property) }
+
+    @JvmName("bindMutableNullableField")
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KMutableProperty1<T, N?>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { (item?.observable(property) ?: SimpleObjectProperty<N>()) as Property<N> }
 
     @JvmName("bindProperty")
-    inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
-            = bind(autocommit, forceObjectProperty) { item?.let { property.get(it) } }
+    inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { item?.let { property.get(it) } }
 
     @JvmName("bindMutableProperty")
     inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KMutableProperty1<T, PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
             = bind(autocommit, forceObjectProperty) { item?.observable(property) } as ReturnType
 
     @JvmName("bindGetter")
-    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
-            = bind(autocommit, forceObjectProperty) { item?.let { property.call(it).toProperty() } }
+    inline fun <reified N : Any, ReturnType : Property<N>> bind(property: KFunction<N>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { item?.let { property.call(it).toProperty() } }
 
     @JvmName("bindPropertyFunction")
-    inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KFunction<PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false): ReturnType
-            = bind(autocommit, forceObjectProperty) { item?.let { property.call(it) } }
+    inline fun <reified N : Any, reified PropertyType : Property<N>, ReturnType : PropertyType> bind(property: KFunction<PropertyType>, autocommit: Boolean = false, forceObjectProperty: Boolean = false, defaultValue: N? = null): ReturnType
+            = bind(autocommit, forceObjectProperty, defaultValue) { item?.let { property.call(it) } }
 }
 
 class Commit(val property: ObservableValue<*>, val oldValue: Any?, val newValue: Any?) {

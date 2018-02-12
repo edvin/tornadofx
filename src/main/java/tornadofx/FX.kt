@@ -4,9 +4,10 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.property.*
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
+import javafx.beans.property.ListProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -25,7 +26,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
-import javafx.util.Duration
+import tornadofx.FX.Companion.childInterceptors
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -129,21 +130,15 @@ class FX {
 
         val lock = Any()
 
-        /**
-         * An interceptor that can veto or provide another mechanism for adding children to their parent.
-         *
-         * This callback is called for all builders right before the default mechanism adds the newly created
-         * node to the parent container. Returning false means that the default will be used. Returning true means
-         * that you added the child yourself and that the default mechanism should do nothing.
-         *
-         * This is useful for layout containers that need special handling when adding child nodes.
-         *
-         * Example: MigPane needs to add a default ComponentConstraint object to be able to manipulate the
-         * constraint after the child is added.
-         *
-         * FX.addChildInterceptor = { parent, node, index -> if (parent is MigPane) { parent.add(node, CC()); true } else false }
-         */
-        var addChildInterceptor: (parent: EventTarget, node: Node, index: Int?) -> Boolean = { _, _, _ -> false }
+        internal val childInterceptors = mutableSetOf<ChildInterceptor>()
+
+        fun addChildInterceptor(interceptor: ChildInterceptor) {
+            childInterceptors.add(interceptor)
+        }
+
+        fun removeChildInterceptor(interceptor: ChildInterceptor) {
+            childInterceptors.remove(interceptor)
+        }
 
         @JvmStatic
         var dicontainer: DIContainer? = null
@@ -192,6 +187,14 @@ class FX {
         init {
             locale = Locale.getDefault()
             inheritScopeHolder.set(DefaultScope)
+            importChildInterceptors()
+        }
+
+        private fun importChildInterceptors() {
+            ServiceLoader.load(ChildInterceptor::class.java).forEach {
+                FX.log.info("Adding Child Interceptor $it")
+                FX.addChildInterceptor(it)
+            }
         }
 
         fun runAndWait(action: () -> Unit) {
@@ -263,13 +266,12 @@ class FX {
             if (obsolete is View) {
                 getComponents(obsolete.scope).remove(obsolete.javaClass.kotlin)
             }
-            if (obsolete is ScopedInstance) {
-                @Suppress("UNCHECKED_CAST")
-                replacement = find(obsolete.javaClass.kotlin as KClass<UIComponent>, obsolete.scope)
+            if (obsolete is UIComponent) {
+                replacement = find(obsolete.javaClass.kotlin, obsolete.scope)
             } else {
                 val noArgsConstructor = obsolete.javaClass.constructors.any { it.parameterCount == 0 }
                 if (noArgsConstructor) {
-                    replacement = obsolete.javaClass.getDeclaredConstructor().newInstance()
+                    replacement = obsolete.javaClass.newInstance()
                 } else {
                     log.warning("Unable to reload $obsolete because it's missing a no args constructor")
                     return
@@ -300,17 +302,17 @@ class FX {
     }
 }
 
-fun <T> weak(referent: T, deinit: (() -> Unit)? = null): WeakDelegate<T> = WeakDelegate(referent, deinit)
+fun <T> weak(referent: T, deinit: () -> Unit = {}): WeakDelegate<T> = WeakDelegate(referent, deinit)
 
-class WeakDelegate<T>(referent: T, deinit: (() -> Unit)? = null) : ReadOnlyProperty<Any, DeregisteringWeakReference<T>> {
+class WeakDelegate<T>(referent: T, deinit: () -> Unit = {}) : ReadOnlyProperty<Any, DeregisteringWeakReference<T>> {
     private val weakRef = DeregisteringWeakReference(referent, deinit)
     override fun getValue(thisRef: Any, property: KProperty<*>) = weakRef
 }
 
-class DeregisteringWeakReference<T>(referent: T, val deinit: (() -> Unit)? = null) : WeakReference<T>(referent) {
+class DeregisteringWeakReference<T>(referent: T, val deinit: () -> Unit = {}) : WeakReference<T>(referent) {
     fun ifActive(op: T.() -> Unit) {
         val ref = get()
-        if (ref != null) op(ref) else deinit?.invoke()
+        if (ref != null) op(ref) else deinit()
     }
 }
 
@@ -411,7 +413,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         if (!components.containsKey(type as KClass<out ScopedInstance>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
-                    val cmp = type.java.getDeclaredConstructor().newInstance()
+                    val cmp = type.java.newInstance()
                     (cmp as? UIComponent)?.init()
                     // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != useScope) {
@@ -426,7 +428,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
         return cmp
     }
 
-    val cmp = type.java.getDeclaredConstructor().newInstance()
+    val cmp = type.java.newInstance()
     cmp.paramsProperty.value = stringKeyedMap
     (cmp as? Fragment)?.init()
 
@@ -450,15 +452,16 @@ inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance
 /**
  * Add the given node to the pane, invoke the node operation and return the node
  */
-fun <T : Node> opcr(parent: EventTarget, node: T, op: (T.() -> Unit)? = null): T {
+fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}): T {
     parent.addChildIfPossible(node)
-    op?.invoke(node)
+    op(node)
     return node
 }
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
-    if (FX.addChildInterceptor(this, node, index)) return
+    if (FX.childInterceptors.dropWhile { !it(this, node, index) }.isNotEmpty()) return
+
     if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     if (this is Node) {
         val target = builderTarget
@@ -521,6 +524,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             // Map the tab to the UIComponent for later retrieval. Used to close tab with UIComponent.close()
             node.uiComponent<UIComponent>()?.properties?.set("tornadofx.tab", this)
         }
+        is ButtonBase -> {
+            graphic = node
+        }
         is BorderPane -> {
         } // Either pos = builder { or caught by builderTarget above
         is TabPane -> {
@@ -551,7 +557,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             if (node is TitledPane)
                 addChild(node)
         }
-        // TODO: Reenable when DataGrid is Java 9 compatible
+    // TODO: Reenable when DataGrid is Java 9 compatible
 //        is DataGrid<*> -> {
 //        }
         is Field -> {
@@ -559,6 +565,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         }
         is CustomMenuItem -> {
             content = node
+        }
+        is MenuItem -> {
+            graphic = node
         }
         else -> getChildList()?.apply {
             if (!contains(node)) {
@@ -576,32 +585,28 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
  * them into nodes via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -> Node): ListConversionListener<T, Node>
-        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
+fun <T> EventTarget.bindChildren(sourceList: ObservableList<T>, converter: (T) -> Node): ListConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceList, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the items of the given ListPropery by converting
  * them into nodes via the given converter function. Changes to the source list and changing the list inside the ListProperty
  * will be reflected in the children list of this layout node.
  */
-fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node>
-        = requireNotNull(getChildList()?.bind(sourceList, converter)){"Unable to extract child nodes from $this"}
+fun <T> EventTarget.bindChildren(sourceList: ListProperty<T>, converter: (T) -> Node): ListConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceList, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the given observable set of items by converting
  * them into nodes via the given converter function. Changes to the source set will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node>
-    = requireNotNull(getChildList()?.bind(sourceSet, converter)){"Unable to extract child nodes from $this"}
+inline fun <reified T> EventTarget.bindChildren(sourceSet: ObservableSet<T>, noinline converter: (T) -> Node): SetConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceSet, converter)) { "Unable to extract child nodes from $this" }
 
 /**
  * Bind the children of this Layout node to the given observable list of items by converting
  * them into UIComponents via the given converter function. Changes to the source list will be reflected
  * in the children list of this layout node.
  */
-inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node>
-         = requireNotNull(getChildList()?.bind(sourceList){ converter(it).root }) { "Unable to extract child nodes from $this" }
+inline fun <reified T> EventTarget.bindComponents(sourceList: ObservableList<T>, noinline converter: (T) -> UIComponent): ListConversionListener<T, Node> = requireNotNull(getChildList()?.bind(sourceList) { converter(it).root }) { "Unable to extract child nodes from $this" }
 
 
 /**
@@ -627,82 +632,4 @@ private fun Parent.getChildrenReflectively(): MutableList<Node>? {
         return getter.invoke(this) as MutableList<Node>
     }
     return null
-}
-
-
-/**
- * Run the specified Runnable on the JavaFX Application Thread at some
- * unspecified time in the future.
- */
-fun runLater(op: () -> Unit) = Platform.runLater(op)
-
-/**
- * Run the specified Runnable on the JavaFX Application Thread after a
- * specified delay.
- *
- * runLater(10.seconds) {
- *     // Do something on the application thread
- * }
- *
- * This function returns a TimerTask which includes a runningProperty as well as the owning timer.
- * You can cancel the task before the time is up to abort the execution.
- */
-fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
-    val timer = Timer(true)
-    val task = FXTimerTask(op, timer)
-    timer.schedule(task, delay.toMillis().toLong())
-    return task
-}
-
-class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
-    private val internalRunning = ReadOnlyBooleanWrapper(false)
-    val runningProperty: ReadOnlyBooleanProperty get() = internalRunning.readOnlyProperty
-    val running: Boolean get() = runningProperty.value
-
-    private val internalCompleted = ReadOnlyBooleanWrapper(false)
-    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
-    val completed: Boolean get() = completedProperty.value
-
-    override fun run() {
-        internalRunning.value = true
-        Platform.runLater {
-            try {
-                op()
-            } finally {
-                internalRunning.value = false
-                internalCompleted.value = true
-            }
-        }
-    }
-}
-
-/**
- * Wait on the UI thread until a certain value is available on this observable.
- *
- * This method does not block the UI thread even though it halts further execution until the condition is met.
- */
-fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    val changeListener = object : ChangeListener<T> {
-        override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
-            if (condition(value)) {
-                runLater {
-                    Platform.exitNestedEventLoop(this@awaitUntil, null)
-                    removeListener(this)
-                }
-            }
-        }
-    }
-
-    changeListener.changed(this, value, value)
-    addListener(changeListener)
-    Platform.enterNestedEventLoop(this)
-}
-
-/**
- * Wait on the UI thread until this observable value is true.
- *
- * This method does not block the UI thread even though it halts further execution until the condition is met.
- */
-fun ObservableValue<Boolean>.awaitUntil() {
-    this.awaitUntil { it }
 }

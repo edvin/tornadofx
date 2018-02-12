@@ -48,11 +48,10 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit) =
             item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showHeader, op)
 
-    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = multiselect, op: (DrawerItem.() -> Unit)? = null): DrawerItem {
-        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
-        item.button.textProperty().bind(uiComponent.headingProperty)
-        item.children.add(uiComponent.root)
-        op?.invoke(item)
+    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = multiselect, showHeader: Boolean = true, op: DrawerItem.() -> Unit): DrawerItem {
+        val item = DrawerItem(this, title, icon, showHeader)
+        item.button.textProperty().bind(title)
+        op(item)
         items.add(item)
         if (expanded) item.button.isSelected = true
         (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
@@ -63,9 +62,10 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         return item
     }
 
-    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = multiselect, showHeader: Boolean = true, op: DrawerItem.() -> Unit): DrawerItem {
-        val item = DrawerItem(this, title, icon, showHeader)
-        item.button.textProperty().bind(title)
+    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit = {}): DrawerItem {
+        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
+        item.button.textProperty().bind(uiComponent.headingProperty)
+        item.children.add(uiComponent.root)
         op(item)
         items.add(item)
         if (expanded) item.button.isSelected = true

@@ -4,8 +4,10 @@ import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.scene.Node
+import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
+import javafx.scene.control.TableView
 import javafx.util.Callback
 import javafx.util.StringConverter
 import kotlin.reflect.KClass
@@ -138,4 +140,8 @@ fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = DefaultScope, cachedGraph
 
 fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): TableColumn<T, S?> = apply {
     cellFormat(DefaultScope) { text = converter.toString(it) }
+}
+
+fun <T> TableView<T>.multiSelect(enable: Boolean = true) {
+    selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
 }
