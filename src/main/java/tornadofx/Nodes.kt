@@ -1263,6 +1263,9 @@ fun <T: Node> T.longpress(threshold: Duration = 700.millis, consume: Boolean = f
  * so for these use cases you don't need to supply a cache key.
  *
  * Remember that you can still update whatever you assign to graphic below it on each `cellFormat` update item callback.
+ *
+ * Important: Make sure to not cache hard coded data from the current item this cell represents, as this will change
+ * when the cell is reused to display another item. Either bind to the itemProperty with select, or use `cellCache` instead.
  */
 fun <T : Node> Node.cache(key: Any = "tornadofx.cachedNode", op: EventTarget.() -> T) = properties.getOrPut(key) {
     op(this)
