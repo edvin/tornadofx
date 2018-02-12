@@ -118,6 +118,13 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     val cellCacheProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
     var cellCache: ((T) -> Node)? get() = cellCacheProperty.get(); set(value) = cellCacheProperty.set(value)
+
+    /**
+     * Assign a Node to the graphic property of this cell. The graphic is cached and will be reused
+     * for whatever cell is currently displaying the current item. Cells will in their life cycle be
+     * used to display serveral different items, but using this function will make sure that there is
+     * never a mismatch between the cached graphic node and the item it was created for.
+     */
     fun cellCache(cachedGraphic: (T) -> Node) {
         this.cellCache = cachedGraphic
     }
