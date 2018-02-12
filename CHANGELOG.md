@@ -26,7 +26,7 @@
 - Renamed tableview column builder for readonly non-observable properties to `readonlyColumn` (https://github.com/edvin/tornadofx/issues/599)
 - Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
 - Removed CheckBoxCell in favor of inline cellFormat
-
+- ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)

@@ -30,10 +30,9 @@ abstract class TreeCellFragment<T> : ItemFragment<T>() {
 }
 
 open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<T>?): TreeCell<T>() {
-
-    private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)? get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
-    private val cellFormat: (TreeCell<T>.(T) -> Unit)? get() = treeView.properties["tornadofx.cellFormat"] as (TreeCell<T>.(T) -> Unit)?
-    private val cellCache: TreeCellCache<T>? get() = treeView.properties["tornadofx.cellCache"] as TreeCellCache<T>?
+    @Suppress("UNCHECKED_CAST") private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)? get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
+    @Suppress("UNCHECKED_CAST") private val cellFormat: (TreeCell<T>.(T) -> Unit)? get() = treeView.properties["tornadofx.cellFormat"] as (TreeCell<T>.(T) -> Unit)?
+    @Suppress("UNCHECKED_CAST") private val cellCache: TreeCellCache<T>? get() = treeView.properties["tornadofx.cellCache"] as TreeCellCache<T>?
     private var cellFragment: TreeCellFragment<T>? = null
     private var fresh = true
 
@@ -77,6 +76,7 @@ open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<
                 FX.ignoreParentBuilder = FX.IgnoreParentBuilder.No
             }
             if (fresh) {
+                @Suppress("UNCHECKED_CAST")
                 val cellFragmentType = treeView.properties["tornadofx.cellFragment"] as KClass<TreeCellFragment<T>>?
                 cellFragment = if (cellFragmentType != null) find(cellFragmentType, scope) else null
                 fresh = false
@@ -110,7 +110,7 @@ open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<
 
 class TreeCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
+    fun getOrCreateNode(value: T) = store.getOrPut(value){ cacheProvider(value) }
 }
 
 fun <T> TreeView<T>.bindSelected(property: Property<T>) {
@@ -124,11 +124,11 @@ fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(mo
 
 
 fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
+    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
         val value = selectedValue
         if (event.code == KeyCode.BACK_SPACE && value != null)
             action(value)
-    })
+    }
 }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {

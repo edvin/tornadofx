@@ -180,8 +180,8 @@ open class ViewModel : Component(), ScopedInstance {
     val isDirty: Boolean get() = dirty.value
     val isNotDirty: Boolean get() = !isDirty
 
-    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, vararg fields: ObservableValue<*>): Boolean =
-            validationContext.validate(focusFirstError, decorateErrors, *fields)
+    fun validate(focusFirstError: Boolean = true, decorateErrors: Boolean = true, failFast: Boolean = false, vararg fields: ObservableValue<*>): Boolean =
+            validationContext.validate(focusFirstError, decorateErrors,failFast, *fields)
 
     fun clearDecorators() = validationContext.validate(focusFirstError = false, decorateErrors = false)
 

@@ -449,11 +449,11 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
         internalCompleted.value = true
     }
 
-    override public fun updateProgress(workDone: Long, max: Long) {
+    public override fun updateProgress(workDone: Long, max: Long) {
         super.updateProgress(workDone, max)
     }
 
-    override public fun updateProgress(workDone: Double, max: Double) {
+    public override fun updateProgress(workDone: Double, max: Double) {
         super.updateProgress(workDone, max)
     }
 
@@ -462,11 +462,11 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
         super.updateValue(v as T)
     }
 
-    override public fun updateTitle(t: String?) {
+    public override fun updateTitle(t: String?) {
         super.updateTitle(t)
     }
 
-    override public fun updateMessage(m: String?) {
+    public override fun updateMessage(m: String?) {
         super.updateMessage(m)
     }
 
