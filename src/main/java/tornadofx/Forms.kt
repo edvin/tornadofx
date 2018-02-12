@@ -67,8 +67,8 @@ open class Form : VBox() {
 
     internal val fieldsets = HashSet<Fieldset>()
 
-    override fun getUserAgentStylesheet() =
-            Form::class.java.getResource("form.css").toExternalForm()!!
+    override fun getUserAgentStylesheet(): String =
+            Form::class.java.getResource("form.css").toExternalForm()
 }
 
 @DefaultProperty("children")
@@ -189,7 +189,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
         HBox.setHgrow(input, inputGrow)
     }
 
-    val form: Form get() = findParent<Form>()!!
+    val form: Form get() = findParent() ?: kotlin.error("FieldSet should be a child of Form node")
 
     internal val fields = HashSet<Field>()
 
@@ -264,7 +264,7 @@ abstract class AbstractField(text: String? = null, val forceLabelIndent: Boolean
         children.add(labelContainer)
     }
 
-    val fieldset: Fieldset get() = findParent()!!
+    val fieldset: Fieldset get() = findParent() ?: kotlin.error("Field should be a child of FieldSet node")
 
     override fun computePrefHeight(width: Double): Double {
         val labelHasContent = forceLabelIndent || !labelProperty.value.isNullOrBlank()

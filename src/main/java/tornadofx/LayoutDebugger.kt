@@ -63,7 +63,7 @@ class LayoutDebugger : Fragment() {
 
     private fun hookListeners() {
         nodeTree.selectionModel.selectedItemProperty().onChange {
-            if (it?.value != null) setSelectedNode(it!!.value.node)
+            if (it?.value != null) setSelectedNode(it.value.node)
         }
 
         // Position overlay over hovered node

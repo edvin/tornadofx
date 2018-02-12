@@ -152,8 +152,9 @@ class ValidationContext {
             decorator?.apply { undecorate(node) }
             decorator = null
 
-            result = validator(this@ValidationContext, property.value)
-            (valid as BooleanProperty).value = result == null || result!!.severity != ValidationSeverity.Error
+            result = validator(this@ValidationContext, property.value).also {
+                (valid as BooleanProperty).value = it == null || it.severity != ValidationSeverity.Error
+            }
 
             if (decorateErrors) {
                 result?.apply {

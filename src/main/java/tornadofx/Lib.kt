@@ -12,6 +12,8 @@ import javafx.scene.control.TableView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.DataFormat
+import tornadofx.Stylesheet.Companion.left
+import tornadofx.Stylesheet.Companion.right
 import java.io.File
 import java.util.function.Predicate
 
@@ -169,7 +171,7 @@ class SortedFilteredList<T>(
      *
      * The underlying sortedItems.comparatorProperty` is automatically bound to `tableView.comparatorProperty`.
      */
-    fun bindTo(tableView: TableView<T>): SortedFilteredList<T> = apply{
+    fun bindTo(tableView: TableView<T>): SortedFilteredList<T> = apply {
         tableView.items = this
         sortedItems.comparatorProperty().bind(tableView.comparatorProperty())
     }
@@ -180,7 +182,7 @@ class SortedFilteredList<T>(
      * The `listView.items` is set to the underlying sortedItems.
      *
      */
-    fun bindTo(listView: ListView<T>): SortedFilteredList<T> = apply{ listView.items = this }
+    fun bindTo(listView: ListView<T>): SortedFilteredList<T> = apply { listView.items = this }
 
     /**
      * Update the filter predicate whenever the given observable changes. The filter expression
@@ -216,6 +218,9 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
+inline fun <T> ChangeListener(crossinline listener: (observable: ObservableValue<out T>?, oldValue: T, newValue: T) -> Unit): ChangeListener<T> =
+        javafx.beans.value.ChangeListener<T> { observable, oldValue, newValue -> listener(observable, oldValue, newValue) }
+
 /**
  * Listen for changes to this observable. Optionally only listen x times.
  * The lambda receives the changed value when the change occurs, which may be null,
@@ -232,14 +237,25 @@ fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
     }
     addListener(listener)
 }
+
 fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit) = onChangeTimes(1, op)
 
 fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
 fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new ?: false) } }
 fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0).toInt()) } }
 fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0L).toLong()) } }
-fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0f).toFloat()) } }
-fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0.0).toDouble()) } }
+fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply {
+    addListener { o, old, new ->
+        op((new ?: 0f).toFloat())
+    }
+}
+
+fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply {
+    addListener { o, old, new ->
+        op((new ?: 0.0).toDouble())
+    }
+}
+
 fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
     addListener(ListChangeListener { op(it) })
 }
@@ -291,8 +307,52 @@ fun <R> proxypropDouble(receiver: Property<R>, getter: Property<R>.() -> Double,
 }
 
 fun insets(all: Number) = Insets(all.toDouble(), all.toDouble(), all.toDouble(), all.toDouble())
-fun insets(horizontal: Number? = null, vertical: Number? = null) = Insets(vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0, vertical?.toDouble() ?: 0.0, horizontal?.toDouble() ?: 0.0)
-fun insets(top: Number? = null, right: Number? = null, bottom: Number? = null, left: Number? = null) = Insets(top?.toDouble() ?: 0.0, right?.toDouble() ?: 0.0, bottom?.toDouble() ?: 0.0, left?.toDouble() ?: 0.0)
+fun insets(horizontal: Number? = null, vertical: Number? = null) = Insets(
+        vertical?.toDouble() ?: 0.0,
+        horizontal?.toDouble() ?: 0.0,
+        vertical?.toDouble() ?: 0.0,
+        horizontal?.toDouble() ?: 0.0
+)
+
+fun insets(
+        top: Number? = null,
+        right: Number? = null,
+        bottom: Number? = null,
+        left: Number? = null
+) = Insets(
+        top?.toDouble() ?: 0.0,
+        right?.toDouble() ?: 0.0,
+        bottom?.toDouble() ?: 0.0,
+        left?.toDouble() ?: 0.0
+)
+
+fun Insets.copy(
+        top: Number? = null,
+        right: Number? = null,
+        bottom: Number? = null,
+        left: Number? = null
+) = Insets(
+        top?.toDouble() ?: this.top,
+        right?.toDouble() ?: this.right,
+        bottom?.toDouble() ?: this.bottom,
+        left?.toDouble() ?: this.left
+)
+
+
+fun Insets.copy(
+        horizontal: Number? = null,
+        vertical: Number? = null
+) = Insets(
+        vertical?.toDouble() ?: this.top,
+        horizontal?.toDouble() ?: this.right,
+        vertical?.toDouble() ?: this.bottom,
+        horizontal?.toDouble() ?: this.left
+)
+val Insets.horizontal get() = (left+right)/2
+val Insets.vertical get() = (top+bottom)/2
+val Insets.all get() = (left+right+top+bottom)/4
+
+
 
 fun String.isLong() = toLongOrNull() != null
 fun String.isInt() = toIntOrNull() != null

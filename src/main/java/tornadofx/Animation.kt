@@ -5,6 +5,7 @@ import javafx.beans.value.WritableValue
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.geometry.Point2D
+import javafx.geometry.Point3D
 import javafx.scene.Node
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
@@ -26,17 +27,9 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
     values.add(keyValue)
 }
 
-fun SequentialTransition.timeline(op: (Timeline).() -> Unit): Timeline {
-    val timeline = timeline(false, op)
-    children.add(timeline)
-    return timeline
-}
+fun SequentialTransition.timeline(op: (Timeline).() -> Unit) = timeline(false, op).also { children += it }
 
-fun ParallelTransition.timeline(op: (Timeline).() -> Unit): Timeline {
-    val timeline = timeline(false, op)
-    children.add(timeline)
-    return timeline
-}
+fun ParallelTransition.timeline(op: (Timeline).() -> Unit) = timeline(false, op).also { children += it }
 
 fun sequentialTransition(play: Boolean = true, op: (SequentialTransition.() -> Unit)) = SequentialTransition().apply {
     op(this)
@@ -48,11 +41,9 @@ fun parallelTransition(play: Boolean = true, op: (ParallelTransition.() -> Unit)
     if (play) play()
 }
 
-fun timeline(play: Boolean = true, op: (Timeline).() -> Unit): Timeline {
-    val timeline = Timeline()
-    timeline.op()
-    if (play) timeline.play()
-    return timeline
+fun timeline(play: Boolean = true, op: (Timeline).() -> Unit) = Timeline().apply {
+    op()
+    if (play) play()
 }
 
 /**
@@ -321,7 +312,10 @@ infix fun Animation.and(animation: Animation): ParallelTransition {
  * @param op Modify the animation before playing
  * @return A ParallelTransition
  */
-fun Iterable<Animation>.playParallel(play: Boolean = true, op: ParallelTransition.() -> Unit = {}) = ParallelTransition().apply {
+fun Iterable<Animation>.playParallel(
+        play: Boolean = true,
+        op: ParallelTransition.() -> Unit = {}
+) = ParallelTransition().apply {
     children.setAll(toList())
     op(this)
     if (play) play()
@@ -361,7 +355,10 @@ infix fun Animation.then(animation: Animation): SequentialTransition {
  * @param op Modify the animation before playing
  * @return A SequentialTransition
  */
-fun Iterable<Animation>.playSequential(play: Boolean = true, op: SequentialTransition.() -> Unit = {}) = SequentialTransition().apply {
+fun Iterable<Animation>.playSequential(
+        play: Boolean = true,
+        op: SequentialTransition.() -> Unit = {}
+) = SequentialTransition().apply {
     children.setAll(toList())
     op(this)
     if (play) play()
@@ -412,12 +409,8 @@ fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit =
 }
 
 fun Timeline.keyframe(duration: Duration, op: (KeyFrameBuilder).() -> Unit): KeyFrame {
-    val keyFrameBuilder = KeyFrameBuilder(duration)
-    keyFrameBuilder.op()
-
-    return keyFrameBuilder.build().apply {
-        this@keyframe += this
-    }
+    val keyFrame = KeyFrameBuilder(duration).also(op).build()
+    return keyFrame.also{ this += it }
 }
 
 class KeyFrameBuilder(val duration: Duration) {
@@ -645,7 +638,7 @@ abstract class ViewTransition {
      */
     class FadeThrough(duration: Duration, val color: Paint = Color.TRANSPARENT) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
-        val halfTime = duration.divide(2.0)!!
+        val halfTime: Duration = duration.divide(2.0)
         override fun create(current: Node, replacement: Node, stack: StackPane)
                 = current.fade(halfTime, 0, easing = Interpolator.EASE_IN, play = false)
                 .then(replacement.fade(halfTime, 0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
@@ -701,7 +694,7 @@ abstract class ViewTransition {
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Slide(duration, direction.reversed()).apply { setup = this@Slide.setup }
+        override fun reversed() = Slide(duration, direction.reversed()).also { it.setup = setup }
     }
 
     /**
@@ -726,7 +719,7 @@ abstract class ViewTransition {
 
         override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
 
-        override fun reversed() = Reveal(duration, direction.reversed()).apply { setup = this@Cover.setup }
+        override fun reversed() = Reveal(duration, direction.reversed()).also { it.setup = setup }
     }
 
 
@@ -755,7 +748,7 @@ abstract class ViewTransition {
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Cover(duration, direction.reversed()).apply { setup = this@Reveal.setup }
+        override fun reversed() = Cover(duration, direction.reversed()).also { it.setup = setup }
     }
 
     /**
@@ -788,7 +781,7 @@ abstract class ViewTransition {
             removed.opacity = 1.0
         }
 
-        override fun reversed() = Metro(duration, direction.reversed(), distancePercentage).apply { setup = this@Metro.setup }
+        override fun reversed() = Metro(duration, direction.reversed(), distancePercentage).also { it.setup = setup }
     }
 
     /**
@@ -823,7 +816,7 @@ abstract class ViewTransition {
             removed.scaleY = 1.0
         }
 
-        override fun reversed() = Swap(duration, direction.reversed(), scale).apply { setup = this@Swap.setup }
+        override fun reversed() = Swap(duration, direction.reversed(), scale).also { it.setup = setup }
     }
 
     /**
@@ -834,8 +827,8 @@ abstract class ViewTransition {
      * @param vertical Whether to flip the card vertically or horizontally
      */
     class Flip(duration: Duration, vertical: Boolean = false) : ViewTransition() {
-        val halfTime = duration.divide(2.0)!!
-        val targetAxis = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)!!
+        val halfTime: Duration = duration.divide(2.0)
+        val targetAxis: Point3D = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)
 
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             return current.rotate(halfTime, 90, easing = Interpolator.EASE_IN, play = false) {
@@ -886,7 +879,7 @@ abstract class ViewTransition {
             removed.opacity = 1.0
         }
 
-        override fun reversed() = Implode(duration, scale).apply { setup = this@Explode.setup }
+        override fun reversed() = Implode(duration, scale).also{ it.setup = setup }
     }
 
     /**
@@ -903,6 +896,6 @@ abstract class ViewTransition {
 
         override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
 
-        override fun reversed() = Explode(duration, scale).apply { setup = this@Implode.setup }
+        override fun reversed() = Explode(duration, scale).also{ it.setup = setup }
     }
 }

@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- onEditCommit {} listens for changes in nested columns
 - UIComponent.close() should be able to close primary stage as well (https://github.com/edvin/tornadofx/issues/622)
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
@@ -12,10 +13,11 @@
 - ServiceLoader provided interceptors were added every time an App class was initialized 
 - inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
 - smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
-
+- The getters and setters of horizontalPadding and verticalPadding did not correspond
 ### Changes
 
 - Kotlin 1.2.21
+- Many internal refactorings
 - AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter
@@ -36,7 +38,7 @@
 - obserableList<T>() creates FXCollections.observableArrayList<T>
 - ResourceBundle.format() provides a short way to insert translations with variables in them
 - ocpr is now available as extension function: attachTo
-
+- Insets.copy(), Intsets.horizontal, Intsets.vertical, Intsets.all
 
 ## [1.7.14]
 

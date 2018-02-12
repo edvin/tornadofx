@@ -23,7 +23,7 @@ interface TornadoFXResizeFeatures<COLUMN, out TABLE : Any> {
 class TornadoFXTreeTableResizeFeatures(val param: TreeTableView.ResizeFeatures<out Any>) : TornadoFXResizeFeatures<TreeTableColumn<*, *>, TreeTableView<*>> {
     override val column = param.column?.toTornadoFXColumn()
     override val table = param.table.toTornadoFXTable()
-    override val delta get() = param.delta!!
+    override val delta: Double get() = param.delta
 }
 
 class TornadoFxTableResizeFeatures(val param: TableView.ResizeFeatures<out Any>) : TornadoFXResizeFeatures<TableColumn<*, *>, TableView<*>> {

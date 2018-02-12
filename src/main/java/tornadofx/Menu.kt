@@ -285,17 +285,13 @@ fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
  */
 fun EventTarget.lazyContextmenu(op: ContextMenu.() -> Unit = {}) = apply {
     var currentMenu: ContextMenu? = null
-    (this as? Node)?.apply {
-        setOnContextMenuRequested { event ->
-            currentMenu?.hide()
-
-            currentMenu = ContextMenu()
-            currentMenu!!.also {
-                it.setOnCloseRequest { currentMenu = null }
-                op(it)
-                it.show(this, event.screenX, event.screenY)
-            }
-            event.consume()
+    (this as? Node)?.setOnContextMenuRequested { event ->
+        currentMenu?.hide()
+        currentMenu = ContextMenu().also {
+            it.setOnCloseRequest { currentMenu = null }
+            op(it)
+            it.show(this, event.screenX, event.screenY)
         }
+        event.consume()
     }
 }

@@ -4,7 +4,6 @@ import javafx.beans.property.ObjectProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
-import javafx.geometry.Insets
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.Group
@@ -263,85 +262,72 @@ fun Accordion.fold(title: String? = null, op: Pane.() -> Unit = {}): TitledPane 
 
 fun EventTarget.region(op: Region.() -> Unit = {}) = opcr(this, Region(), op)
 
+
 @Deprecated("Use the paddingRight property instead", ReplaceWith("paddingRight = p"))
-fun Region.paddingRight(p: Double) {
-    padding = Insets(padding.top, p, padding.bottom, padding.left)
-}
+fun Region.paddingRight(p: Double) { paddingRight = p }
 
 var Region.paddingRight: Number
     get() = padding.right
     set(value) {
-        padding = Insets(padding.top, value.toDouble(), padding.bottom, padding.left)
+        padding = padding.copy(right = value.toDouble())
     }
 
 @Deprecated("Use the paddingLeft property instead", ReplaceWith("paddingLeft = p"))
-fun Region.paddingLeft(p: Double) {
-    padding = Insets(padding.top, padding.right, padding.bottom, p)
-}
+fun Region.paddingLeft(p: Double) { paddingLeft = p }
 
 var Region.paddingLeft: Number
     get() = padding.left
     set(value) {
-        padding = Insets(padding.top, padding.right, padding.bottom, value.toDouble())
+        padding = padding.copy(left = value)
     }
 
 @Deprecated("Use the paddingTop property instead", ReplaceWith("paddingTop = p"))
-fun Region.paddingTop(p: Double) {
-    padding = Insets(p, padding.right, padding.bottom, padding.left)
-}
+fun Region.paddingTop(p: Double) { paddingTop = p }
 
 var Region.paddingTop: Number
     get() = padding.top
     set(value) {
-        padding = Insets(value.toDouble(), padding.right, padding.bottom, padding.left)
+        padding = padding.copy(top = value)
     }
 
 @Deprecated("Use the paddingBottom property instead", ReplaceWith("paddingBottom = p"))
-fun Region.paddingBottom(p: Double) {
-    padding = Insets(padding.top, padding.right, p, padding.left)
-}
+fun Region.paddingBottom(p: Double) { paddingBottom = p }
 
 var Region.paddingBottom: Number
     get() = padding.bottom
     set(value) {
-        padding = Insets(padding.top, padding.right, value.toDouble(), padding.left)
+        padding = padding.copy(bottom = value)
     }
 
 @Deprecated("Use the paddingVertical property instead", ReplaceWith("paddingVertical = p"))
-fun Region.paddingVertical(p: Double) {
-    val half = p / 2.0
-    padding = Insets(half, padding.right, half, padding.left)
-}
+fun Region.paddingVertical(p: Double) { paddingVertical = p }
 
 var Region.paddingVertical: Number
-    get() = (padding.top + padding.bottom) / 2.0
+    get() = padding.vertical * 2
     set(value) {
         val half = value.toDouble() / 2.0
-        padding = Insets(half, padding.right, half, padding.left)
+        padding = padding.copy(vertical = half)
     }
 
 @Deprecated("Use the paddingHorizontal property instead", ReplaceWith("paddingHorizontal = p"))
-fun Region.paddingHorizontal(p: Double) {
-    val half = p / 2.0
-    padding = Insets(padding.top, half, padding.bottom, half)
-}
+fun Region.paddingHorizontal(p: Double) { paddingHorizontal = p }
 
 var Region.paddingHorizontal: Number
-    get() = (padding.left + padding.right) / 2.0
+    get() = padding.horizontal * 2
     set(value) {
         val half = value.toDouble() / 2.0
-        padding = Insets(padding.top, half, padding.bottom, half)
+        padding = padding.copy(horizontal = half)
     }
 
 @Deprecated("Use the paddingAll property instead", ReplaceWith("paddingAll = p"))
 fun Region.paddingAll(p: Double) {
-    padding = Insets(p, p, p, p)
+    paddingAll = p
 }
 
 var Region.paddingAll: Number
-    get() = (padding.top + padding.right + padding.bottom + padding.left) / 4.0
+    get() = padding.all
     set(value) {
-        padding = Insets(value.toDouble(), value.toDouble(), value.toDouble(), value.toDouble())
+        padding = insets(value)
     }
 
 fun Region.fitToParentHeight() {
