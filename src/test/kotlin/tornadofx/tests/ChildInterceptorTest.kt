@@ -17,9 +17,7 @@ abstract class BaseInterceptor : ChildInterceptor {
 
 class DummyPane : Pane()
 
-fun EventTarget.dummyPane(op: DummyPane.() -> Unit = {}): DummyPane {
-	return opcr(this, DummyPane(), op)
-}
+fun EventTarget.dummyPane(op: DummyPane.() -> Unit = {}) = DummyPane().attachTo(this, op)
 
 class FirstInterceptor : BaseInterceptor() {
 	override fun invoke(parent: EventTarget, node: Node, index: Int?): Boolean = when (parent) {

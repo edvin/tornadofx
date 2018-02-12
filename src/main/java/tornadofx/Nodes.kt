@@ -1176,7 +1176,7 @@ fun MenuItem.enableWhen(obs: ObservableValue<Boolean>) {
     disableProperty().cleanBind(binding)
 }
 
-fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: SVGIcon.() -> Unit = {}) = opcr(this, SVGIcon(shape, size, color), op)
+fun EventTarget.svgicon(shape: String, size: Number = 16, color: Paint = Color.BLACK, op: SVGIcon.() -> Unit = {}) = SVGIcon(shape, size, color).attachTo(this, op)
 
 class SVGIcon(svgShape: String, size: Number = 16, color: Paint = Color.BLACK) : Pane() {
     init {

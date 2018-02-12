@@ -26,7 +26,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
-import tornadofx.FX.Companion.childInterceptors
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -450,11 +449,23 @@ inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance
  * Add the given node to the pane, invoke the node operation and return the node. The `opcr` name
  * is an acronym for "op connect & return".
  */
-fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}): T {
-    parent.addChildIfPossible(node)
-    op(node)
-    return node
+inline fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}) = node.apply {
+    parent.addChildIfPossible(this)
+    op(this)
 }
+
+/**
+ * Attaches the node to the pane and invokes the node operation.
+ */
+inline fun <T : Node> T.attachTo(parent: EventTarget, op: T.() -> Unit = {}): T = opcr(parent, this, op)
+
+internal inline fun <T : Node> T.attachTo(
+        parent: EventTarget,
+        after: T.() -> Unit,
+        before: (T) -> Unit
+) = this.also(before).attachTo(parent, after)
+
+
 
 @Suppress("UNNECESSARY_SAFE_CALL")
 fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {

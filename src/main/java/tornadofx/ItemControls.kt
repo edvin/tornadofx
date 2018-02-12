@@ -2,9 +2,7 @@
 
 package tornadofx
 
-import com.sun.corba.se.impl.util.RepositoryId.cache
 import com.sun.javafx.scene.control.skin.TableRowSkin
-import com.sun.org.apache.bcel.internal.Repository.addClass
 import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
@@ -31,10 +29,6 @@ import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import tornadofx.Stylesheet.Companion.editable
-import tornadofx.Stylesheet.Companion.root
-import tornadofx.Stylesheet.Companion.title
-import tornadofx.WizardStyles.Companion.graphic
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -44,35 +38,31 @@ import kotlin.reflect.KProperty1
 /**
  * Create a spinner for an arbitrary type. This spinner requires you to configure a value factory, or it will throw an exception.
  */
-fun <T> EventTarget.spinner(editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: Spinner<T>.() -> Unit = {}): Spinner<T> {
-    val spinner = Spinner<T>()
-    spinner.isEditable = editable
-    opcr(this, spinner, op)
-    if (property != null) {
-        requireNotNull(spinner.valueFactory) {
+fun <T> EventTarget.spinner(
+        editable: Boolean = false,
+        property: Property<T>? = null,
+        enableScroll: Boolean = false,
+        op: Spinner<T>.() -> Unit = {}
+) = Spinner<T>().also{
+    it.isEditable = editable
+    it.attachTo(this, op)
+
+    if (property != null) requireNotNull(it.valueFactory) {
             "You must configure the value factory or use the Number based spinner builder " +
                     "which configures a default value factory along with min, max and initialValue!"
-        }
-        spinner.valueFactory.valueProperty().bindBidirectional(property)
-        ViewModel.register(spinner.valueFactory.valueProperty(), property)
+    }.valueProperty().apply {
+        bindBidirectional(property)
+        ViewModel.register(this, property)
     }
 
-    if (enableScroll) {
-        spinner.setOnScroll { event ->
-            if (event.deltaY > 0) spinner.increment()
-            if (event.deltaY < 0) spinner.decrement()
-        }
+    if (enableScroll) it.setOnScroll { event ->
+        if (event.deltaY > 0) it.increment()
+        if (event.deltaY < 0) it.decrement()
     }
 
-    if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue ->
-            if (!newValue) {
-                spinner.increment(0)
-            }
-        }
+    if (editable) it.focusedProperty().addListener { _, _, newValue ->
+        if (!newValue) it.increment(0)
     }
-
-    return spinner
 }
 
 inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = null, initialValue: T? = null, amountToStepBy: T? = null, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, noinline op: Spinner<T>.() -> Unit = {}): Spinner<T> {
@@ -107,65 +97,61 @@ inline fun <reified T : Number> EventTarget.spinner(min: T? = null, max: T? = nu
         }
     }
 
-    return opcr(this, spinner, op)
+    return spinner.attachTo(this, op)
 }
 
-fun <T> EventTarget.spinner(items: ObservableList<T>, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: Spinner<T>.() -> Unit = {}): Spinner<T> {
-    val spinner = Spinner<T>(items)
-    if (property != null) {
-        spinner.valueFactory.valueProperty().bindBidirectional(property)
-        ViewModel.register(spinner.valueFactory.valueProperty(), property)
-    }
-    spinner.isEditable = editable
-
-    if (enableScroll) {
-        spinner.setOnScroll { event ->
-            if (event.deltaY > 0) spinner.increment()
-            if (event.deltaY < 0) spinner.decrement()
-        }
+fun <T> EventTarget.spinner(
+        items: ObservableList<T>,
+        editable: Boolean = false,
+        property: Property<T>? = null,
+        enableScroll: Boolean = false,
+        op: Spinner<T>.() -> Unit = {}
+) = Spinner<T>(items).attachTo(this,op){
+    if (property != null) it.valueFactory.valueProperty().apply {
+        bindBidirectional(property)
+        ViewModel.register(this, property)
     }
 
-    if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue ->
-            if (!newValue) {
-                spinner.increment(0)
-            }
-        }
+    it.isEditable = editable
+
+    if (enableScroll) it.setOnScroll { event ->
+        if (event.deltaY > 0) it.increment()
+        if (event.deltaY < 0) it.decrement()
     }
 
-    return opcr(this, spinner, op)
+    if (editable) it.focusedProperty().addListener { _, _, newValue ->
+        if (!newValue) it.increment(0)
+    }
 }
 
-fun <T> EventTarget.spinner(valueFactory: SpinnerValueFactory<T>, editable: Boolean = false, property: Property<T>? = null, enableScroll: Boolean = false, op: Spinner<T>.() -> Unit = {}): Spinner<T> {
-    val spinner = Spinner<T>(valueFactory)
-    if (property != null) {
-        spinner.valueFactory.valueProperty().bindBidirectional(property)
-        ViewModel.register(spinner.valueFactory.valueProperty(), property)
-    }
-    spinner.isEditable = editable
-
-    if (enableScroll) {
-        spinner.setOnScroll { event ->
-            if (event.deltaY > 0) spinner.increment()
-            if (event.deltaY < 0) spinner.decrement()
-        }
+fun <T> EventTarget.spinner(
+        valueFactory: SpinnerValueFactory<T>,
+        editable: Boolean = false,
+        property: Property<T>? = null,
+        enableScroll: Boolean = false,
+        op: Spinner<T>.() -> Unit = {}
+) = Spinner<T>(valueFactory).attachTo(this, op){
+    if (property != null) it.valueFactory.valueProperty().apply {
+        bindBidirectional(property)
+        ViewModel.register(this, property)
     }
 
-    if (editable) {
-        spinner.focusedProperty().addListener { _, _, newValue ->
-            if (!newValue) {
-                spinner.increment(0)
-            }
-        }
+    it.isEditable = editable
+
+    if (enableScroll) it.setOnScroll { event ->
+        if (event.deltaY > 0) it.increment()
+        if (event.deltaY < 0) it.decrement()
     }
 
-    return opcr(this, spinner, op)
+    if (editable) it.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) it.increment(0)
+    }
 }
 
-fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: ComboBox<T>.() -> Unit = {}) = opcr(this, ComboBox<T>().apply {
-    if (values != null) items = values as? ObservableList<T> ?: values.observable()
-    if (property != null) bind(property)
-}, op)
+fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: ComboBox<T>.() -> Unit = {}) = ComboBox<T>().attachTo(this, op) {
+    if (values != null) it.items = values as? ObservableList<T> ?: values.observable()
+    if (property != null) it.bind(property)
+}
 
 fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) {
     cellFactory = Callback {
@@ -175,68 +161,60 @@ fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, f
     if (formatButtonCell) buttonCell = cellFactory.call(null)
 }
 
-fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: ChoiceBox<T>.() -> Unit = {}) = opcr(this, ChoiceBox<T>().apply {
-    if (values != null) items = (values as? ObservableList<T>) ?: values.observable()
-    if (property != null) bind(property)
-}, op)
+fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: ChoiceBox<T>.() -> Unit = {}) = ChoiceBox<T>().attachTo(this, op) {
+    if (values != null) it.items = (values as? ObservableList<T>) ?: values.observable()
+    if (property != null) it.bind(property)
+}
 
-fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: ListView<T>.() -> Unit = {}) = opcr(this, ListView<T>().apply {
+fun <T> EventTarget.listview(values: ObservableList<T>? = null, op: ListView<T>.() -> Unit = {}) = ListView<T>().attachTo(this, op) {
     if (values != null) {
-        if (values is SortedFilteredList<T>) values.bindTo(this)
-        else items = values
+        if (values is SortedFilteredList<T>) values.bindTo(it)
+        else it.items = values
     }
-}, op)
+}
 
 fun <T> EventTarget.listview(values: ReadOnlyListProperty<T>, op: ListView<T>.() -> Unit = {}) = listview(values as ObservableValue<ObservableList<T>>, op)
 
-fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: ListView<T>.() -> Unit = {}) = opcr(this, ListView<T>().apply {
+fun <T> EventTarget.listview(values: ObservableValue<ObservableList<T>>, op: ListView<T>.() -> Unit = {}) = ListView<T>().attachTo(this, op) {
     fun rebinder() {
-        (items as? SortedFilteredList<T>)?.bindTo(this)
+        (it.items as? SortedFilteredList<T>)?.bindTo(it)
     }
-    itemsProperty().bind(values)
+    it.itemsProperty().bind(values)
     rebinder()
-    itemsProperty().onChange {
+    it.itemsProperty().onChange {
         rebinder()
     }
-}, op)
+}
 
-fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: TableView<T>.() -> Unit = {}): TableView<T> {
-    val tableview = TableView<T>()
+fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
     if (items != null) {
-        if (items is SortedFilteredList<T>) items.bindTo(tableview)
-        else tableview.items = items
+        if (items is SortedFilteredList<T>) items.bindTo(it)
+        else it.items = items
     }
-    return opcr(this, tableview, op)
 }
 
 fun <T> EventTarget.tableview(items: ReadOnlyListProperty<T>, op: TableView<T>.() -> Unit = {}) = tableview(items as ObservableValue<ObservableList<T>>, op)
 
-fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: TableView<T>.() -> Unit = {}): TableView<T> {
-    val tableview = TableView<T>()
+fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
     fun rebinder() {
-        (tableview.items as? SortedFilteredList<T>)?.bindTo(tableview)
+        (it.items as? SortedFilteredList<T>)?.bindTo(it)
     }
-    tableview.itemsProperty().bind(items)
+    it.itemsProperty().bind(items)
     rebinder()
-    tableview.itemsProperty().onChange {
+    it.itemsProperty().onChange {
         rebinder()
     }
     items.onChange {
         rebinder()
     }
-    return opcr(this, tableview, op)
 }
 
-fun <T> EventTarget.treeview(root: TreeItem<T>? = null, op: TreeView<T>.() -> Unit = {}): TreeView<T> {
-    val treeview = TreeView<T>()
-    if (root != null) treeview.root = root
-    return opcr(this, treeview, op)
+fun <T> EventTarget.treeview(root: TreeItem<T>? = null, op: TreeView<T>.() -> Unit = {}) = TreeView<T>().attachTo(this, op) {
+    if (root != null) it.root = root
 }
 
-fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: TreeTableView<T>.() -> Unit = {}): TreeTableView<T> {
-    val treetableview = TreeTableView<T>()
-    if (root != null) treetableview.root = root
-    return opcr(this, treetableview, op)
+fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: TreeTableView<T>.() -> Unit = {}) = TreeTableView<T>().attachTo(this, op) {
+    if (root != null) it.root = root
 }
 
 fun <T : Any> TreeView<T>.lazyPopulate(
