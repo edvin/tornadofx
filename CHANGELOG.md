@@ -13,7 +13,7 @@
 - ServiceLoader provided interceptors were added every time an App class was initialized 
 - inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
 - smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
-
+- The getters and setters of horizontalPadding and verticalPadding did not correspond
 ### Changes
 
 - Kotlin 1.2.21
@@ -37,7 +37,7 @@
 - placeholder<UIComponent> builder for TableView, TreeTableView, ListView  
 - obserableList<T>() creates FXCollections.observableArrayList<T>
 - ResourceBundle.format() provides a short way to insert translations with variables in them
-
+- Insets.copy(), Intsets.horizontal, Intsets.vertical, Intsets.all
 ## [1.7.14]
 
 ### Fixed
