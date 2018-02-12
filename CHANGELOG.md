@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- onEditCommit {} listens for changes in nested columns
 - UIComponent.close() should be able to close primary stage as well (https://github.com/edvin/tornadofx/issues/622)
 - SmartResize.Policy manual resize broken (https://github.com/edvin/tornadofx/issues/570)
 - TableView bound to ListProperty should rebind when value changes
@@ -16,6 +17,7 @@
 ### Changes
 
 - Kotlin 1.2.21
+- Many internal refactorings
 - AnchorPaneConstraint properties now accept any Number, not just Double
 - AbstractField.textProperty was renamed to labelProperty to avoid confusion with the textProperty() exposed by textfields inside of a field
 - ItemViewModel.bind `defaultValue` parameter

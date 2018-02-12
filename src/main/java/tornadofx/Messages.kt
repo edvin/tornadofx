@@ -34,9 +34,9 @@ object FXResourceBundleControl : ResourceBundle.Control() {
                 if (ResourceBundle::class.java.isAssignableFrom(bundleClass)) bundleClass.newInstance()
                 else throw ClassCastException(bundleClass.name + " cannot be cast to ResourceBundle")
 
-            } catch (e: ClassNotFoundException) { null}
+            } catch (e: ClassNotFoundException) { null }
             "java.properties" -> {
-                val resourceName = toResourceName(bundleName, "properties")!!
+                val resourceName: String = toResourceName(bundleName, "properties")
                 doPrivileged<IOException, InputStream?> {
                     if (!reload) loader.getResourceAsStream(resourceName)
                     else loader.getResource(resourceName)?.openConnection()?.apply {

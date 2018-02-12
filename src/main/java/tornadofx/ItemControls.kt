@@ -261,14 +261,12 @@ class LazyTreeItem<T : Any>(
         val itemProcessor: (LazyTreeItem<T>) -> Unit = {},
         val childFactory: (TreeItem<T>) -> List<T>?
 ) : TreeItem<T>(value) {
-    var leafResult: Boolean? = null
+    private val leafResult: Boolean by lazy { leafCheck(this) }
     var childFactoryInvoked = false
     var childFactoryResult: List<T>? = null
 
     override fun isLeaf(): Boolean {
-        if (leafResult == null)
-            leafResult = leafCheck(this)
-        return leafResult!!
+        return leafResult
     }
 
     override fun getChildren(): ObservableList<TreeItem<T>> {
@@ -311,8 +309,11 @@ class LazyTreeItem<T : Any>(
     private fun invokeAndSetChildFactorySynchronously(): List<T>? {
         if (!childFactoryInvoked) {
             childFactoryInvoked = true
-            childFactoryResult = childFactory(this)
-            if (childFactoryResult != null) super.getChildren().setAll(childFactoryResult!!.map { newLazyTreeItem(it) })
+            childFactoryResult = childFactory(this).also { result ->
+                if(result != null) {
+                    super.getChildren().setAll(result.map { newLazyTreeItem(it) })
+                }
+            }
         }
         return childFactoryResult
     }
@@ -642,6 +643,7 @@ fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S
                 onCommit(event, event.rowValue)
             }
         }
+        column.columns.forEach(::addEventHandlerForColumn)
     }
 
     columns.forEach(::addEventHandlerForColumn)
@@ -921,21 +923,13 @@ val <S> TableView<S>.editModel: TableViewEditModel<S>
 class TableViewEditModel<S>(val tableView: TableView<S>) {
     val items = FXCollections.observableHashMap<S, TableColumnDirtyState<S>>()
 
-    private var _selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?>? = null
-    val selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?>
-        get() {
-            if (_selectedItemDirtyState == null)
-                _selectedItemDirtyState = objectBinding(tableView.selectionModel.selectedItemProperty()) { getDirtyState(value) }
-            return _selectedItemDirtyState!!
-        }
+    val selectedItemDirtyState: ObjectBinding<TableColumnDirtyState<S>?> by lazy {
+        objectBinding(tableView.selectionModel.selectedItemProperty()) { getDirtyState(value) }
+    }
 
-    private var _selectedItemDirty: BooleanBinding? = null
-    val selectedItemDirty: BooleanBinding
-        get() {
-            if (_selectedItemDirty == null)
-                _selectedItemDirty = booleanBinding(selectedItemDirtyState) { value?.dirty?.value ?: false }
-            return _selectedItemDirty!!
-        }
+    val selectedItemDirty: BooleanBinding by lazy {
+        booleanBinding(selectedItemDirtyState) { value?.dirty?.value ?: false }
+    }
 
     fun getDirtyState(item: S): TableColumnDirtyState<S> = items.getOrPut(item) { TableColumnDirtyState(this, item) }
 
@@ -1045,13 +1039,7 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
             return _dirtyColumns!!
         }
 
-    private var _dirty: BooleanBinding? = null
-    val dirty: BooleanBinding
-        get() {
-            if (_dirty == null)
-                _dirty = booleanBinding(dirtyColumns) { isNotEmpty() }
-            return _dirty!!
-        }
+    val dirty: BooleanBinding by lazy { booleanBinding(dirtyColumns) { isNotEmpty() } }
     val isDirty: Boolean get() = dirty.value
 
     fun getDirtyColumnProperty(column: TableColumn<*, *>) = booleanBinding(dirtyColumns) { containsKey(column as TableColumn<S, Any?>) }
@@ -1145,7 +1133,7 @@ fun <S, T> TableColumn<S, T>.setValue(item: S, value: T?) {
 }
 
 /**
- * Get the value from the property rperesenting this TableColumn.
+ * Get the value from the property representing this TableColumn.
  */
 fun <S, T> TableColumn<S, T>.getValue(item: S) = getTableColumnProperty(item).value
 

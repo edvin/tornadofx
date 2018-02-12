@@ -43,7 +43,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
      * Path for the application wide config element. It is `app.properties` by default,
      * in the folder provided by #configBasePath
      */
-    override val configPath: Path get() = configBasePath.resolve("app.properties")!!
+    override val configPath: Path get() = configBasePath.resolve("app.properties")
 
     private val trayIcons = ArrayList<TrayIcon>()
     val resources: ResourceLookup by lazy {

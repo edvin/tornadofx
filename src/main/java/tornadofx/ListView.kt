@@ -27,13 +27,15 @@ import kotlin.reflect.KClass
  */
 fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
     addEventFilter(MouseEvent.MOUSE_CLICKED) { event ->
+        val selectedItem = this.selectedItem
         if (event.clickCount == clickCount && selectedItem != null && event.target.isInsideRow())
-            action(selectedItem!!)
+            action(selectedItem)
     }
 
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+        val selectedItem = this.selectedItem
         if (event.code == KeyCode.ENTER && !event.isMetaDown && selectedItem != null)
-            action(selectedItem!!)
+            action(selectedItem)
     }
 }
 
@@ -44,10 +46,11 @@ fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
         task { func() } success { if (items == null) items = FXCollections.observableArrayList(it) else items.setAll(it) }
 
 fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
+    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
+        val selectedItem = this.selectedItem
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
-            action(selectedItem!!)
-    })
+            action(selectedItem)
+    }
 }
 
 class ListCellCache<T>(private val cacheProvider: (T) -> Node) {

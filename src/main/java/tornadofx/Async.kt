@@ -360,7 +360,8 @@ class MaskPane : BorderPane() {
         center = progressindicator()
     }
 
-    override fun getUserAgentStylesheet() = MaskPane::class.java.getResource("maskpane.css").toExternalForm()!!
+    override fun getUserAgentStylesheet(): String =
+            MaskPane::class.java.getResource("maskpane.css").toExternalForm()
 }
 
 /**
