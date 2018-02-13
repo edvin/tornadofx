@@ -128,9 +128,9 @@ class SortedFilteredList<T>(
         sortedItems.addListener(listener)
     }
 
-    override fun setAll(col: MutableCollection<out T>?) = false
+    override fun setAll(col: MutableCollection<out T>?) = items.setAll(col)
 
-    override fun setAll(vararg elements: T) = false
+    override fun setAll(vararg elements: T) = items.setAll(*elements)
 
     /**
      * Support editing of the sorted/filtered list. Useful to support editing support in ListView/TableView etc

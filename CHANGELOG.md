@@ -14,6 +14,7 @@
 - inheritParamHolder and inheritScopeHolder are cleared on Application stop (https://github.com/edvin/tornadofx/issues/602)
 - smartResize throws exception for hidden columns (https://github.com/edvin/tornadofx/issues/606)
 - The getters and setters of horizontalPadding and verticalPadding did not correspond
+
 ### Changes
 
 - Kotlin 1.2.21
@@ -27,6 +28,7 @@
 - Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
 - Removed CheckBoxCell in favor of inline cellFormat
 - ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
+
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
@@ -39,6 +41,7 @@
 - ResourceBundle.format() provides a short way to insert translations with variables in them
 - ocpr is now available as extension function: attachTo
 - Insets.copy(), Intsets.horizontal, Intsets.vertical, Intsets.all
+- SortedFilteredList forwards setAll() to backing list
 
 ## [1.7.14]
 
