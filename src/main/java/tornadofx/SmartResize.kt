@@ -54,7 +54,7 @@ class SmartResize private constructor() : TableViewResizeCallback {
         val POLICY = SmartResize()
         val ResizeTypeKey = "tornadofx.smartColumnResizeType"
 
-        internal var TableView<*>.isSmartResizing: Boolean
+        private var TableView<*>.isSmartResizing: Boolean
             get() = properties[IS_SMART_RESIZING] == true
             set(value) {
                 properties[IS_SMART_RESIZING] = value
@@ -357,22 +357,10 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
 }
 
 fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
-    val doResize = {
-        val columnType = if (skin is TreeTableViewSkin<*>) TreeTableColumn::class.java else TableColumn::class.java
-        val resizer = skin!!.javaClass.getDeclaredMethod("resizeColumnToFitContent", columnType, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach {
-            if ((it.column as? TreeTableColumn<*, *>)?.isVisible == true)
-                try { resizer.invoke(skin, it.column, maxRows) } catch (ignored: Exception) {}
-        }
-        afterResize()
-    }
-    if (skin == null) {
-        skinProperty.onChangeOnce {
-            Platform.runLater { doResize() }
-        }
-    } else {
-        doResize()
+    when (table) {
+        is TableView<*> -> (table as TableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column  as TableColumn<*, *> }, maxRows, afterResize)
+        is TreeTableView<*> -> (table as TreeTableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column  as TreeTableColumn<*, *> }, maxRows, afterResize)
+        else -> throw IllegalArgumentException("Unable to resize columns for unknown table type $table")
     }
 }
 

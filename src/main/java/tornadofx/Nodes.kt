@@ -292,31 +292,31 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
                     try { resizer.invoke(skin, it, maxRows) } catch (ignored: Exception) {}
             }
             afterResize()
-        } catch (ex: Exception) {
+        } catch (ex: Throwable) {
             // Silent for now, it is usually run multiple times
             //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
         }
     }
-    if (skin == null) Platform.runLater { doResize() } else doResize()
+    if (skin == null) skinProperty().onChangeOnce { doResize() } else doResize()
 }
 
 fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTableColumn<*, *>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     val doResize = {
-        val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
-        resizer.isAccessible = true
-        resizeColumns.forEach {
-            if (it.isVisible)
-                try { resizer.invoke(skin, it, maxRows)  } catch (ignored: Exception) {}
+        try {
+            val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
+            resizer.isAccessible = true
+            resizeColumns.forEach {
+                if (it.isVisible)
+                    try { resizer.invoke(skin, it, maxRows) } catch (ignored: Exception) { }
+            }
+            afterResize.invoke()
+        } catch (ex: Throwable) {
+            ex.printStackTrace()
+            // Silent for now, it is usually run multiple times
+            //log.warning("Unable to resize columns to content: ${columns.map { it.text }.joinToString(", ")}")
         }
-        afterResize.invoke()
     }
-    if (skin == null) {
-        skinProperty().onChangeOnce {
-            Platform.runLater { doResize() }
-        }
-    } else {
-        doResize()
-    }
+    if (skin == null) skinProperty().onChangeOnce { doResize() } else doResize()
 }
 
 fun <T> TableView<T>.selectWhere(scrollTo: Boolean = true, condition: (T) -> Boolean) {
