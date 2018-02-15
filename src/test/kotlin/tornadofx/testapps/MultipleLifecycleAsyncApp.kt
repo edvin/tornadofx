@@ -1,25 +1,20 @@
 package tornadofx.testapps
 
+import javafx.beans.property.SimpleIntegerProperty
 import tornadofx.*
 
-class MultipleLifecycleAsyncApp : App(MultipleLifecycleAsyncView::class)
-
 class MultipleLifecycleAsyncView : View("Multiple Lifecycle Async") {
-    val controller: MultipleLifecycleAsyncController by inject()
+    val counterProperty = SimpleIntegerProperty()
+    var counter by counterProperty
     override val root = pane {
-        button("Robot-click to repeat bug") {
-            id = "bug"
+        button("Increment on background thread and main thread") {
             action {
                 runAsync {
-                    controller.onAction("button clicked")
+                    counter++
+                } success {
+                    counter++
                 }
             }
         }
-    }
-}
-
-class MultipleLifecycleAsyncController : Controller() {
-    fun onAction(message: String) {
-        println(message)
     }
 }
