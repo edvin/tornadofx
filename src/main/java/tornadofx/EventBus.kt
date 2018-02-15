@@ -52,8 +52,8 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
 class EventBus {
     enum class RunOn { ApplicationThread, BackgroundThread }
 
-    private val subscriptions = HashMap<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
-    private val eventScopes = HashMap<EventContext.(FXEvent) -> Unit, Scope>()
+    private val subscriptions = mutableMapOf<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
+    private val eventScopes = mutableMapOf<EventContext.(FXEvent) -> Unit, Scope>()
 
     inline fun <reified T: FXEvent> subscribe(scope: Scope, registration : FXEventRegistration)
             = subscribe(T::class, scope, registration)
@@ -87,7 +87,7 @@ class EventBus {
 
     fun fire(event: FXEvent) {
         fun fireEvents() {
-            subscriptions[event.javaClass.kotlin]?.toTypedArray()?.forEach {
+            subscriptions[event.javaClass.kotlin]?.forEach {
                 if (event.scope == null || event.scope == eventScopes[it.action]) {
                     val count = it.count.andIncrement
                     if (it.maxCount == null || count < it.maxCount) {

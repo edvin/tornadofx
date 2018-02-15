@@ -393,7 +393,7 @@ fun JsonStructure.toPrettyString(): String {
 
 fun JsonStructure.toString(vararg options: String): String {
     val stringWriter = StringWriter()
-    val config = HashMap<String, Boolean>().apply { options.forEach { put(it, true) } }
+    val config = options.associate { it to  true }
     val writerFactory = Json.createWriterFactory(config)
     val jsonWriter = writerFactory.createWriter(stringWriter)
     jsonWriter.write(this)

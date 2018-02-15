@@ -476,12 +476,12 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         selections -= selection
     }
 
-    override fun render() = imports.map { "@import url(css://${it.java.name})" }.joinToString(separator = "\n", postfix = "\n") +
+    override fun render() = imports.joinToString(separator = "\n", postfix = "\n") { "@import url(css://${it.java.name})" } +
             selections.joinToString(separator = "") { it.render() }
 
     val base64URL: URL
         get() {
-            val content = Base64.getEncoder().encodeToString(render().toByteArray(StandardCharsets.UTF_8))
+            val content = Base64.getEncoder().encodeToString(render().toByteArray())
             return URL("css://$content:64")
         }
 
@@ -553,7 +553,7 @@ open class PropertyHolder {
 
     val properties = linkedMapOf<String, Pair<Any, ((Any) -> String)?>>()
     val unsafeProperties = linkedMapOf<String, Any>()
-    val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = LinkedHashMap(properties).apply { putAll(unsafeProperties.mapValues { it.value to null }) }
+    val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = properties + unsafeProperties.mapValues { it.value to null }
 
     // Root
     var baseColor: Color by cssprop("-fx-base")
@@ -902,9 +902,9 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     }
 
     override fun toSelection() = this
-    fun strings(parents: List<String>, refine: Boolean) = rule.map { it.render() }.cartesian(parents, refine)
+    fun strings(parents: List<String>, refine: Boolean) = rule.mapEach { render() }.cartesian(parents, refine)
 
-    fun simpleRender() = rule.map { it.render() }.joinToString()
+    fun simpleRender() = rule.joinToString { it.render() }
 }
 
 class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), SelectionHolder {
@@ -952,13 +952,13 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
 
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
-        mixin.properties.forEach { k, v ->
-            (properties[k]?.first as? MultiValue<Any>)?.addAll(v.first as MultiValue<Any>)
-                    ?: run { properties[k] = v }
+        mixin.properties.withEach {
+            (properties[key]?.first as? MultiValue<Any>)?.addAll(value.first as MultiValue<Any>)
+                    ?: run { properties[key] = value }
         }
-        mixin.unsafeProperties.forEach { k, v ->
-            (unsafeProperties[k] as? MultiValue<Any>)?.addAll(v as MultiValue<Any>)
-                    ?: run { unsafeProperties[k] = v }
+        mixin.unsafeProperties.withEach {
+            (unsafeProperties[key] as? MultiValue<Any>)?.addAll(value as MultiValue<Any>)
+                    ?: run { unsafeProperties[key] = value }
         }
         selections.putAll(mixin.selections)
     }
@@ -1039,7 +1039,7 @@ class InlineCss : PropertyHolder(), Rendered {
     }
 }
 
-fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
+fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = withEach { style(append, op) }
 
 fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
@@ -1178,7 +1178,7 @@ internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else th
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map(String::toRuleSet).toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     val rules = CssRule.subRuleRegex.findAll(this)
-            .map { CssSubRule(CssRule(it.groupValues[2], it.groupValues[3], false), CssSubRule.Relation.of(it.groupValues[1])) }
+            .mapEach { CssSubRule(CssRule(groupValues[2], groupValues[3], false), CssSubRule.Relation.of(groupValues[1])) }
             .toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
@@ -1198,8 +1198,8 @@ fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClas
  * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
  */
 fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
-    cssClass.forEach {
-        if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
+    cssClass.withEach {
+        if (prefix == ":") addPseudoClass(name) else addClass(name)
     }
 }
 
@@ -1207,8 +1207,8 @@ fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
  * Remove the given given type safe css class(es) from this node. Pseudo classes are also supported.
  */
 fun <T : Node> T.removeClass(vararg cssClass: CssRule) = apply {
-    cssClass.forEach {
-        if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
+    cssClass.withEach {
+        if (prefix == ":") removePseudoClass(name) else removeClass(name)
     }
 }
 
@@ -1242,7 +1242,7 @@ fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> css
 /**
  * Toggle the given type safe css class on every node in this iterable based on the given predicate. Pseudo classes are also supported.
  */
-fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
+fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = withEach { toggleClass(cssClass, predicate) }
 
 /**
  * Bind this observable type safe css rule to this Node. Pseudo classes are also supported.

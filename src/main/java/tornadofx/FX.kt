@@ -85,7 +85,7 @@ class FX {
     enum class IgnoreParentBuilder { No, Once }
     companion object {
         var defaultWorkspace: KClass<out Workspace> = Workspace::class
-        internal val fixedScopes = HashMap<KClass<out Component>, Scope>()
+        internal val fixedScopes = mutableMapOf<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = object : ThreadLocal<Scope>() {
             override fun initialValue() = DefaultScope
         }
@@ -105,14 +105,14 @@ class FX {
         val log: Logger = Logger.getLogger("FX")
         val initialized = SimpleBooleanProperty(false)
 
-        internal val primaryStages = HashMap<Scope, Stage>()
+        internal val primaryStages = mutableMapOf<Scope, Stage>()
         val primaryStage: Stage get() = primaryStages[DefaultScope]!!
         fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
         fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) {
             primaryStages[scope] = stage
         }
 
-        internal val applications = HashMap<Scope, Application>()
+        internal val applications = mutableMapOf<Scope, Application>()
         val application: Application get() = applications[DefaultScope]!!
         fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
         fun setApplication(scope: Scope = DefaultScope, application: Application) {
@@ -121,7 +121,7 @@ class FX {
 
         val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
 
-        internal val components = HashMap<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
+        internal val components = mutableMapOf<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
         fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
 
         val lock = Any()
@@ -379,17 +379,9 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
 @Suppress("UNCHECKED_CAST")
-fun <T : ScopedInstance> Scope.set(vararg value: T) = apply {
-    FX.getComponents(this).apply {
-        for (v in value) put(v.javaClass.kotlin, v)
-    }
-}
-
-fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
-    val m = HashMap<String, Any?>()
-    params.forEach { m.put(it.first, it.second) }
-    return m
-}
+fun <T : ScopedInstance> Scope.set(vararg value: T) = value.associateByTo(FX.getComponents(this)) { it::class }
+@Deprecated("is now included in the stdlib", ReplaceWith("params.toMap()"))
+fun varargParamsToMap(params: Array<out Pair<String, Any?>>) = params.toMap()
 
 inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
 
@@ -397,11 +389,10 @@ inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
-    val stringKeyedMap = HashMap<String, Any?>()
-    params?.forEach {
-        val stringKey = (it.key as? KProperty<*>)?.name ?: it.key.toString()
-        stringKeyedMap[stringKey] = params[it.key]
-    }
+    val stringKeyedMap = params?.keys?.associate {
+        val stringKey = (it as? KProperty<*>)?.name ?: it.toString()
+        stringKey to params[it]
+    }.orEmpty()
     inheritParamHolder.set(stringKeyedMap)
 
     if (ScopedInstance::class.java.isAssignableFrom(type.java)) {

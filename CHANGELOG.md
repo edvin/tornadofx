@@ -28,7 +28,8 @@
 - Renamed Node.index to Node.indexInParent to avoid subtle bugs (Partly fixes https://github.com/edvin/tornadofx/issues/598)
 - Removed CheckBoxCell in favor of inline cellFormat
 - ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
-
+- (Linked)HashMaps are generalized to (Mutable)Map
+- ArrayList are generalized to (Mutable)List
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
@@ -42,7 +43,7 @@
 - ocpr is now available as extension function: attachTo
 - Insets.copy(), Intsets.horizontal, Intsets.vertical, Intsets.all
 - SortedFilteredList forwards setAll() to backing list
-
+- withEach/mapEach/mapEachTo are the receiver-functions of forEach/map/mapTo.
 ## [1.7.14]
 
 ### Fixed

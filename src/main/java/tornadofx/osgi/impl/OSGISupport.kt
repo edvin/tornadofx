@@ -8,6 +8,7 @@ import org.osgi.framework.FrameworkUtil
 import org.osgi.framework.ServiceEvent
 import org.osgi.util.tracker.ServiceTracker
 import tornadofx.FX
+import tornadofx.withEach
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
@@ -32,8 +33,5 @@ fun getBundleId(classFromBundle: KClass<*>): Long? {
 inline fun <reified T:Any?> getBundleId(): Long? = getBundleId(T::class)
 
 inline fun <S, T> ServiceTracker<S, T>.withEach(fn: (S) -> Unit) {
-    services?.forEach {
-        it as S
-        fn(it)
-    }
+    services?.withEach {fn(this as S) }
 }

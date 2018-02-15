@@ -3,6 +3,7 @@ package tornadofx.adapters
 import javafx.beans.property.ObjectProperty
 import javafx.scene.control.*
 import javafx.util.Callback
+import tornadofx.mapEach
 
 fun TreeTableView<*>.toTornadoFXTable() = TornadoFXTreeTable(this)
 fun TableView<*>.toTornadoFXTable() : TornadoFXTable<TableColumn<*,*>, TableView<*>> = TornadoFXNormalTable(this)
@@ -29,7 +30,7 @@ class TornadoFXTreeTable(override val table: TreeTableView<*>) : TornadoFXTable<
 
     override val contentColumns get() = table.columns.flatMap {
         if (it.columns.isEmpty()) listOf(it) else it.columns
-    }.map { it.toTornadoFXColumn() }
+    }.mapEach { toTornadoFXColumn() }
 
     override val properties = table.properties
 
@@ -53,7 +54,7 @@ class TornadoFXNormalTable(override val table: TableView<*>) : TornadoFXTable<Ta
 
     override val contentColumns get() = table.columns.flatMap {
         if (it.columns.isEmpty()) listOf(it) else it.columns
-    }.map { it.toTornadoFXColumn() }
+    }.mapEach { toTornadoFXColumn() }
 
     override var skin
         get() = table.skin

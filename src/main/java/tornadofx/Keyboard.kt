@@ -57,9 +57,9 @@ class KeyboardLayout : Control() {
     }
 
     fun load(json: JsonObject) {
-        rows.addAll(json.getJsonArray("rows").map {
+        json.getJsonArray("rows").mapTo(rows) {
             KeyboardRow.fromJSON(this, it as JsonObject)
-        })
+        }
     }
 
     fun toJSON() = JsonBuilder()
@@ -93,6 +93,7 @@ class KeyboardLayout : Control() {
         }
         return output.toString()
     }
+
 
     internal fun addKeys(added: List<KeyboardKey>) = children.addAll(added)
     internal fun removeKeys(removed: List<KeyboardKey>) = children.removeAll(removed)
