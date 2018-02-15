@@ -29,7 +29,7 @@
 - Removed CheckBoxCell in favor of inline cellFormat
 - ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
 - (Linked)HashMaps are generalized to (Mutable)Map
-- LinkedList/ArrayList are generalized to (Mutable)List
+- ArrayList are generalized to (Mutable)List
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
