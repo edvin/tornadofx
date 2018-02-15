@@ -1,57 +1,39 @@
 package tornadofx.tests
 
-import io.mockk.MockKAnnotations
-import io.mockk.every
-import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.verify
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.testfx.api.FxRobot
 import org.testfx.api.FxToolkit
 import tornadofx.*
-import tornadofx.testapps.MultipleLifecycleAsyncApp
-import tornadofx.testapps.MultipleLifecycleAsyncController
+import tornadofx.testapps.MultipleLifecycleAsyncView
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-
+import kotlin.test.assertEquals
 
 @RunWith(Parameterized::class)
-class AsyncBugAppTest(val rounds: Int) {
+class MultipleLifecycleAsyncAppTest(val round: Int) {
 
     companion object {
         @JvmStatic
         @Parameterized.Parameters
         fun data(): Collection<Array<Int>> {
-            return listOf(arrayOf(1), arrayOf(1))
+            return listOf(arrayOf(1), arrayOf(2))
         }
     }
 
     lateinit var robot: FxRobot
     lateinit var app: App
 
-    @RelaxedMockK
-    lateinit var controller: MultipleLifecycleAsyncController
-
-    @Rule
-    @JvmField
-    val timeout = Timeout(10, TimeUnit.SECONDS)
-
     @Before
     fun before() {
-        MockKAnnotations.init(this)
-
         FxToolkit.registerPrimaryStage()
-        app = MultipleLifecycleAsyncApp()
-        app.scope.set(controller)
+        app = App(MultipleLifecycleAsyncView::class)
         FxToolkit.setupApplication { app }
         robot = FxRobot()
 
-        println("rounds = $rounds")
+        println("round: $round")
     }
 
     @After
@@ -62,16 +44,13 @@ class AsyncBugAppTest(val rounds: Int) {
 
     @Test(timeout = 20000)
     fun itShouldSurviveRunAsyncMultipleTimes() {
-//        val latch = CountDownLatch(rounds)
-//        every { controller.onAction(any()) }.answers { latch.countDown() }
-//
-//        var i = 0
-//        while (i < rounds) {
-//            robot.clickOn("#bug")
-//            i++
-//        }
-//
-//        latch.await()
-//        verify(exactly = rounds) { controller.onAction(any()) }
+        val latch = CountDownLatch(2)
+        val view: MultipleLifecycleAsyncView = find()
+        view.counterProperty.onChange { latch.countDown() }
+
+        robot.clickOn(".button")
+
+        latch.await()
+        assertEquals(2, view.counter)
     }
 }
