@@ -154,6 +154,7 @@
 - TabPane.contains(UIComponent) and Iterable<Node>.contains(UIComponent)
 - Override -fx-accent with type-safe CSS property accentColor
 - Component.paramsProperty can be used to detec changes to incoming parameters (overriden on new find)
+- the "params"-parameter of multiple functions accepts now a varargs of pairs as well
 
 ## [1.7.10]
 

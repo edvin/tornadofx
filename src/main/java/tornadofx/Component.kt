@@ -4,6 +4,7 @@ package tornadofx
 
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
 import com.sun.javafx.application.HostServicesDelegate
+import com.sun.xml.internal.ws.streaming.XMLStreamReaderUtil.close
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -103,8 +104,12 @@ abstract class Component : Configurable {
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
 
+    inline fun <reified T : Component> find(vararg params: Pair<*, Any?>, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params.toMap()).apply(op)
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params).apply(op)
+
     fun <T : Component> find(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) = find(type, scope, params).apply(op)
+    fun <T : Component> find(type: KClass<T>, vararg params: Pair<*, Any?>, op: T.() -> Unit = {}) = find(type, scope, params.toMap()).apply(op)
+
     @JvmOverloads
     fun <T : Component> find(componentType: Class<T>, params: Map<*, Any?>? = null, scope: Scope = this@Component.scope): T = find(componentType.kotlin, scope, params)
 
@@ -154,9 +159,22 @@ abstract class Component : Configurable {
         ResourceLookup(this)
     }
 
-    inline fun <reified T> inject(overrideScope: Scope = scope, params: Map<String, Any?>? = null): ReadOnlyProperty<Component, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<Component, T> {
-        override fun getValue(thisRef: Component, property: KProperty<*>) = find<T>(overrideScope, params)
-    }
+    inline fun <reified T> inject(
+            overrideScope: Scope = scope,
+            vararg params: Pair<String, Any?>
+    ): ReadOnlyProperty<Component, T>
+            where T : Component, T : ScopedInstance
+            = inject(overrideScope, params.toMap())
+
+    inline fun <reified T> inject(
+            overrideScope: Scope = scope,
+            params: Map<String, Any?>? = null
+    ): ReadOnlyProperty<Component, T>
+            where T : Component,
+                  T : ScopedInstance =
+            object : ReadOnlyProperty<Component, T> {
+                override fun getValue(thisRef: Component, property: KProperty<*>) = find<T>(overrideScope, params)
+            }
 
     inline fun <reified T> param(defaultValue: T? = null): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
@@ -177,6 +195,7 @@ abstract class Component : Configurable {
     @Deprecated("No need to use the nullableParam anymore, use param instead", ReplaceWith("param(defaultValue)"))
     inline fun <reified T> nullableParam(defaultValue: T? = null) = param(defaultValue)
 
+    inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, vararg params: Pair<String, Any?>): ReadOnlyProperty<Component, T> = fragment(overrideScope, params.toMap())
     inline fun <reified T : Fragment> fragment(overrideScope: Scope = scope, params: Map<String, Any?>): ReadOnlyProperty<Component, T> = object : ReadOnlyProperty<Component, T> {
         val fragment: T by lazy { find<T>(overrideScope, params) }
         override fun getValue(thisRef: Component, property: KProperty<*>): T = fragment
@@ -574,7 +593,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         target.onGoto(this)
     }
 
-    inline fun <reified T : UIComponent> goto(params: Map<String, Any?>) = find<T>(params).onGoto(this)
+    inline fun <reified T : UIComponent> goto(params: Map<String, Any?>? = null) = find<T>(params).onGoto(this)
+    inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any?>) { goto<T>(params.toMap()) }
 
     internal fun callOnDock() {
         if (!isInitialized) init()
@@ -682,22 +702,82 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     fun <T> ComboBox<T>.cellFormat(formatButtonCell: Boolean = true, formatter: ListCell<T>.(T) -> Unit) = cellFormat(scope, formatButtonCell, formatter)
 
-    inline fun <reified T : UIComponent> Drawer.item(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, noinline op: DrawerItem.() -> Unit = {}) = item(T::class, scope, params, expanded, showHeader, op)
+    inline fun <reified T : UIComponent> Drawer.item(
+            scope: Scope = this@UIComponent.scope,
+            vararg params: Pair<*, Any?>,
+            expanded: Boolean = false,
+            showHeader: Boolean = false,
+            noinline op: DrawerItem.() -> Unit = {}
+    ) = item(T::class, scope, params.toMap(), expanded, showHeader, op)
 
-    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+    inline fun <reified T : UIComponent> Drawer.item(
+            scope: Scope = this@UIComponent.scope,
+            params: Map<*, Any?>? = null,
+            expanded: Boolean = false,
+            showHeader: Boolean = false,
+            noinline op: DrawerItem.() -> Unit = {}
+    ) = item(T::class, scope, params, expanded, showHeader, op)
+
+    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            params: Map<*, Any?>? = null,
+            noinline op: T.() -> Unit = {}
+    ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
 
-    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            vararg params: Pair<*, Any?>,
+            noinline op: T.() -> Unit = {}
+    ) { placeholder(scope, params.toMap(), op) }
+
+
+    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            params: Map<*, Any?>? = null,
+            noinline op: T.() -> Unit = {}
+    ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
+    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            vararg params: Pair<*, Any?>,
+            noinline op: T.() -> Unit = {}
+    ) { placeholder(scope, params.toMap(), op) }
 
-    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}) {
+    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            params: Map<*, Any?>? = null,
+            noinline op: T.() -> Unit = {}
+    ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
+    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(
+            scope: Scope = this@UIComponent.scope,
+            vararg params: Pair<*, Any?>,
+            noinline op: T.() -> Unit = {}
+    ) {
+        placeholder(scope, params.toMap(), op)
+    }
 
-    fun Drawer.item(uiComponent: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, params: Map<*, Any?>? = null, expanded: Boolean = false, showHeader: Boolean = false, op: DrawerItem.() -> Unit = {}) =
-            item(find(uiComponent, scope, params), expanded, showHeader, op)
+    fun Drawer.item(
+            uiComponent: KClass<out UIComponent>,
+            scope: Scope = this@UIComponent.scope,
+            params: Map<*, Any?>? = null,
+            expanded: Boolean = false,
+            showHeader: Boolean = false,
+            op: DrawerItem.() -> Unit = {}
+    ) = item(find(uiComponent, scope, params), expanded, showHeader, op)
+
+    fun Drawer.item(
+            uiComponent: KClass<out UIComponent>,
+            scope: Scope = this@UIComponent.scope,
+            vararg params: Pair<*, Any?>,
+            expanded: Boolean = false,
+            showHeader: Boolean = false,
+            op: DrawerItem.() -> Unit = {}
+    ) {item(uiComponent, scope, params.toMap(),expanded, showHeader, op) }
 
     fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) {
         val view = find(type, scope, params)
@@ -706,7 +786,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     inline fun <reified T : UIComponent> EventTarget.add(vararg params: Pair<*, Any?>, noinline op: T.() -> Unit = {}) = add(T::class, params.toMap(), op)
-
     fun <T : UIComponent> EventTarget.add(uiComponent: Class<T>) = add(find(uiComponent))
 
     fun EventTarget.add(uiComponent: UIComponent) = plusAssign(uiComponent.root)
@@ -725,17 +804,71 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             params: Map<*, Any?>? = null
     ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params)
 
-    protected fun openInternalWindow(view: KClass<out UIComponent>, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), params: Map<*, Any?>? = null) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
+    protected inline fun <reified T : UIComponent> openInternalWindow(
+            scope: Scope = this@UIComponent.scope,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4),
+            vararg params: Pair<*, Any?>
+    ) {openInternalWindow<T>(scope,icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())}
 
-    protected fun openInternalWindow(view: UIComponent, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4)) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
+    protected fun openInternalWindow(
+            view: KClass<out UIComponent>,
+            scope: Scope = this@UIComponent.scope,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4),
+            params: Map<*, Any?>? = null
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
 
-    protected fun openInternalBuilderWindow(title: String, scope: Scope = this@UIComponent.scope, icon: Node? = null, modal: Boolean = true, owner: Node = root, escapeClosesWindow: Boolean = true, closeButton: Boolean = true, overlayPaint: Paint = c("#000", 0.4), rootBuilder: UIComponent.() -> Parent) =
-            InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
+    protected fun openInternalWindow(
+            view: KClass<out UIComponent>,
+            scope: Scope = this@UIComponent.scope,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4),
+            vararg params: Pair<*, Any?>
+    ) {openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap()) }
+
+    protected fun openInternalWindow(
+            view: UIComponent,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4)
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
+
+    protected fun openInternalBuilderWindow(
+            title: String,
+            scope: Scope = this@UIComponent.scope,
+            icon: Node? = null,
+            modal: Boolean = true,
+            owner: Node = root,
+            escapeClosesWindow: Boolean = true,
+            closeButton: Boolean = true,
+            overlayPaint: Paint = c("#000", 0.4),
+            rootBuilder: UIComponent.() -> Parent
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     @JvmOverloads
-    fun openWindow(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.NONE, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null) = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
+    fun openWindow(
+            stageStyle: StageStyle = StageStyle.DECORATED,
+            modality: Modality = Modality.NONE,
+            escapeClosesWindow: Boolean = true,
+            owner: Window? = currentWindow,
+            block: Boolean = false,
+            resizable: Boolean? = null) = openModal(stageStyle, modality, escapeClosesWindow, owner, block, resizable)
 
     @JvmOverloads
     fun openModal(stageStyle: StageStyle = StageStyle.DECORATED, modality: Modality = Modality.APPLICATION_MODAL, escapeClosesWindow: Boolean = true, owner: Window? = currentWindow, block: Boolean = false, resizable: Boolean? = null): Stage? {
@@ -894,13 +1027,32 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * to an existing node hierarchy using `add()` or `this += inlineFragment {}`, or you can specify the behavior inside it using `Platform.runLater {}` before
      * you return the root node for the builder fragment.
      */
-    fun builderFragment(title: String = "", scope: Scope = this@UIComponent.scope, rootBuilder: UIComponent.() -> Parent) = BuilderFragment(scope, title, rootBuilder)
+    fun builderFragment(
+            title: String = "",
+            scope: Scope = this@UIComponent.scope,
+            rootBuilder: UIComponent.() -> Parent
+    ) = BuilderFragment(scope, title, rootBuilder)
 
-    fun builderWindow(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, rootBuilder: UIComponent.() -> Parent) = builderFragment(title, scope, rootBuilder).apply {
+    fun builderWindow(
+            title: String = "",
+            modality: Modality = Modality.APPLICATION_MODAL,
+            stageStyle: StageStyle = StageStyle.DECORATED,
+            scope: Scope = this@UIComponent.scope,
+            owner: Window? = currentWindow,
+            rootBuilder: UIComponent.() -> Parent
+    ) = builderFragment(title, scope, rootBuilder).apply {
         openWindow(modality = modality, stageStyle = stageStyle, owner = owner)
     }
 
-    fun dialog(title: String = "", modality: Modality = Modality.APPLICATION_MODAL, stageStyle: StageStyle = StageStyle.DECORATED, scope: Scope = this@UIComponent.scope, owner: Window? = currentWindow, labelPosition: Orientation = Orientation.HORIZONTAL, builder: StageAwareFieldset.() -> Unit): Stage? {
+    fun dialog(
+            title: String = "",
+            modality: Modality = Modality.APPLICATION_MODAL,
+            stageStyle: StageStyle = StageStyle.DECORATED,
+            scope: Scope = this@UIComponent.scope,
+            owner: Window? = currentWindow,
+            labelPosition: Orientation = Orientation.HORIZONTAL,
+            builder: StageAwareFieldset.() -> Unit
+    ): Stage? {
         val fragment = builderFragment(title, scope, { form() })
         val fieldset = StageAwareFieldset(title, labelPosition)
         fragment.root.add(fieldset)
@@ -910,10 +1062,18 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fieldset.stage
     }
 
-    inline fun <reified T : UIComponent> replaceWith(transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
+    inline fun <reified T : UIComponent> replaceWith(
+            transition: ViewTransition? = null,
+            sizeToScene: Boolean = false,
+            centerOnScreen: Boolean = false
+    ) = replaceWith(T::class, transition, sizeToScene, centerOnScreen)
 
-    fun <T : UIComponent> replaceWith(component: KClass<T>, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false) =
-            replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
+    fun <T : UIComponent> replaceWith(
+            component: KClass<T>,
+            transition: ViewTransition? = null,
+            sizeToScene: Boolean = false,
+            centerOnScreen: Boolean = false
+    ) = replaceWith(find(component, scope), transition, sizeToScene, centerOnScreen)
 
     /**
      * Replace this component with another, optionally using a transition animation.
@@ -922,10 +1082,13 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * @param transition The [ViewTransition] used to animate the transition
      * @return Whether or not the transition will run
      */
-    fun replaceWith(replacement: UIComponent, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false): Boolean {
-        return root.replaceWith(replacement.root, transition, sizeToScene, centerOnScreen) {
-            if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
-        }
+    fun replaceWith(
+            replacement: UIComponent,
+            transition: ViewTransition? = null,
+            sizeToScene: Boolean = false,
+            centerOnScreen: Boolean = false
+    ) = root.replaceWith(replacement.root, transition, sizeToScene, centerOnScreen) {
+        if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
     }
 
     private fun undockFromParent(replacement: UIComponent) {
