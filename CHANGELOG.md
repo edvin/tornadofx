@@ -1,6 +1,16 @@
 # Change Log
 
-## [1.7.15-SNAPSHOT]
+## [1.7.16-SNAPSHOT]
+
+
+### Fixed
+
+### Changes
+
+### Additions
+
+
+## [1.7.15]
 
 ### Fixed
 
@@ -30,6 +40,7 @@
 - ValidationContext.validate has a new parameter failFast, which can optimize the validation-process.
 - (Linked)HashMaps are generalized to (Mutable)Map
 - ArrayList are generalized to (Mutable)List
+
 ### Additions
 
 - StackPane.connectWorkspaceActions() along with StackPane.contentProperty and various Workspace related functions and properties (https://github.com/edvin/tornadofx/issues/604)
@@ -44,6 +55,7 @@
 - Insets.copy(), Intsets.horizontal, Intsets.vertical, Intsets.all
 - SortedFilteredList forwards setAll() to backing list
 - withEach/mapEach/mapEachTo are the receiver-functions of forEach/map/mapTo.
+
 ## [1.7.14]
 
 ### Fixed

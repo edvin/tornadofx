@@ -6,7 +6,7 @@
 
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.15</version>
+    <version>1.7.16-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>TornadoFX</name>
     <description>Lightweight JavaFX Framework for Kotlin</description>
@@ -251,7 +251,7 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-                        <phase>deploy</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>

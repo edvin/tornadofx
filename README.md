@@ -7,6 +7,8 @@ JavaFX Framework for Kotlin
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
+** Important: TornadoFX is not yet compatible with Java 9 **
+
 ## Features
 
 - Supports both MVC, MVP and their derivatives
@@ -68,7 +70,7 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.14
+  -DarchetypeVersion=1.7.15
 ```
 
 ### Add TornadoFX to your project
@@ -79,14 +81,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.14</version>
+    <version>1.7.15</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.14'
+compile 'no.tornado:tornadofx:1.7.15'
 ```
 
 ### Snapshots are published to Sonatype
