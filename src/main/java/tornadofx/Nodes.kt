@@ -454,6 +454,28 @@ fun Node.onDoubleClick(action: () -> Unit) {
 }
 
 /**
+ * Adds an action to be executed when the mouse is clicked while not overwriting previous actions
+
+ * @param action The action to execute
+ */
+fun Node.addOnMouseClick(action: (click: MouseEvent) -> Unit) {
+    val old = onMouseClicked
+
+    val eventHandler = if (old != null) {
+        EventHandler<MouseEvent> {
+            old.handle(it)
+            action(it)
+        }
+    } else {
+        EventHandler {
+            action(it)
+        }
+    }
+
+    onMouseClicked = eventHandler
+}
+
+/**
  * Execute action when the enter key is pressed or the mouse is clicked
 
  * @param clickCount The number of mouse clicks to trigger the action
