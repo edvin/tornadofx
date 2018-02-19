@@ -9,6 +9,7 @@
 
 ### Additions
 
+- ContextMenu.radiomenuitem (https://github.com/edvin/tornadofx/issues/646)
 
 ## [1.7.15]
 
