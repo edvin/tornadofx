@@ -204,13 +204,6 @@ fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceSet: ObservableS
     return listener
 }
 
-fun main(args: Array<String>) {
-    val map = FXCollections.observableHashMap<String, Int>()
-    val list = observableList<Char>()
-    map["0123456"] = 3
-    list.bind(map){k,v-> k[v]}
-    println(list)
-}
 fun <SourceTypeKey, SourceTypeValue, TargetType> MutableList<TargetType>.bind(
         sourceMap: ObservableMap<SourceTypeKey, SourceTypeValue>,
         converter: (SourceTypeKey, SourceTypeValue) -> TargetType
