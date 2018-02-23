@@ -10,7 +10,7 @@
 ### Additions
 
 - ContextMenu.radiomenuitem (https://github.com/edvin/tornadofx/issues/646)
-
+- mutableList can now be bound to an ObservableMap
 ## [1.7.15]
 
 ### Fixed
