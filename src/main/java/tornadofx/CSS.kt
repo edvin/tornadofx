@@ -430,6 +430,8 @@ open class Stylesheet(vararg val imports: KClass<out Stylesheet>) : SelectionHol
         val top by csspseudoclass()
         val vertical by csspseudoclass()
         val visited by csspseudoclass()
+        val readonly by csspseudoclass()
+        val cancel by csspseudoclass()
 
         init {
             if (!FX.osgiAvailable) {
