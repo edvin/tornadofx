@@ -6,6 +6,7 @@ import javafx.collections.FXCollections
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableView
 import javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY
+import javafx.scene.text.FontWeight
 import tornadofx.*
 import java.util.*
 
@@ -20,7 +21,14 @@ class TableViewDirtyTest : View("Dirty Tables") {
             tableview(customers) {
                 table = this
                 prefHeight = 200.0
-                column("First Name", Customer::firstNameProperty).makeEditable()
+                column("First Name", Customer::firstNameProperty) {
+                    makeEditable()
+                    cellDecorator {
+                        style {
+                            fontWeight = FontWeight.BOLD
+                        }
+                    }
+                }
                 column("Last Name", Customer::lastNameProperty).makeEditable()
                 enableCellEditing()
                 regainFocusAfterEdit()
