@@ -7,6 +7,8 @@
 
 ### Changes
 
+- Workspace.navigateForward() made public
+
 ### Additions
 
 - `readonly` and `cancel` pseudoclasses added to type safe CSS
