@@ -19,6 +19,7 @@ import tornadofx.Stylesheet.Companion.barChart
 import tornadofx.Stylesheet.Companion.hover
 import tornadofx.Stylesheet.Companion.imageView
 import tornadofx.Stylesheet.Companion.label
+import tornadofx.Stylesheet.Companion.pannable
 import tornadofx.Stylesheet.Companion.star
 import java.net.URI
 import kotlin.test.assertEquals
@@ -186,8 +187,8 @@ class StylesheetTest {
         assert(8.px == base - num)
         assert(20.px == base * num)
         assert(5.px == base / num)
-        assert(0.px == base.mod(num))
-        assert(3.px == base.mod(7))
+        assert(0.px == base % num)
+        assert(3.px == base % 7)
 
         assert(12.px == base + dim)
         assert(8.px == base - dim)
@@ -427,10 +428,10 @@ class StylesheetTest {
             }
         } shouldEqual {
             """
-        .label:hover, .label:armed, .text:hover, .text:armed {
-            -fx-background-color: rgba(0, 0, 255, 0.25);
-        }
-        """
+            .label:hover, .label:armed, .text:hover, .text:armed {
+                -fx-background-color: rgba(0, 0, 255, 0.25);
+            }
+            """
         }
     }
 
@@ -537,7 +538,7 @@ class StylesheetTest {
     @Test
     fun barFillTest() {
         stylesheet {
-            s(barChart) {
+            barChart {
                 barFill = Color.RED
             }
         } shouldEqual {
@@ -549,9 +550,30 @@ class StylesheetTest {
         }
     }
 
+    @Test
+    fun testNameCollisions() {
+        stylesheet {
+            pannable {
+                pannable = false
+                pannable {
+                    pannable = true
+                }
+            }
+        } shouldEqual {
+            """
+            :pannable {
+                -fx-pannable: false;
+            }
+            :pannable :pannable {
+                -fx-pannable: true;
+            }
+            """
+        }
+    }
+
     private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
-    infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
-    infix fun Color.shouldEqual(other: Color) = Assert.assertEquals(other.toString(), toString())
+    private infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
+    private infix fun Color.shouldEqual(other: Color) = Assert.assertEquals(other.toString(), toString())
     private fun String.strip() = replace(Regex("\\s+"), " ").trim()
 
     /**
