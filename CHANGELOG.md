@@ -15,8 +15,9 @@
 - Added add/remove/toggle class for Tab
 - ContextMenu.radiomenuitem (https://github.com/edvin/tornadofx/issues/646)
 - mutableList can now be bound to an ObservableMap
+
 ## [1.7.15]
-y
+
 ### Fixed
 
 - onEditCommit {} listens for changes in nested columns
