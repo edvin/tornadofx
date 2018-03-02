@@ -8,6 +8,7 @@
 ### Changes
 
 - Workspace.navigateForward() made public
+- Added missing pseudoclasses to CSS DSL
 
 ### Additions
 
