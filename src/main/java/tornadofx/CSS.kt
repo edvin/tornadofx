@@ -1197,6 +1197,11 @@ fun loadFont(path: String, size: Number): Font? {
 fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
 
 /**
+ * Check if this Node has the given type safe css class. Pseudo classes are also supported.
+ */
+fun Tab.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+
+/**
  * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
  */
 fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
@@ -1204,11 +1209,28 @@ fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
         if (prefix == ":") addPseudoClass(name) else addClass(name)
     }
 }
+/**
+ * Add one or more type safe css classes to this Tab. Pseudo classes are also supported.
+ */
+fun <T : Tab> T.addClass(vararg cssClass: CssRule) = apply {
+    cssClass.withEach {
+        if (prefix == ":") addPseudoClass(name) else addClass(name)
+    }
+}
 
 /**
- * Remove the given given type safe css class(es) from this node. Pseudo classes are also supported.
+ * Remove the given given type safe css class(es) from this Node. Pseudo classes are also supported.
  */
 fun <T : Node> T.removeClass(vararg cssClass: CssRule) = apply {
+    cssClass.withEach {
+        if (prefix == ":") removePseudoClass(name) else removeClass(name)
+    }
+}
+
+/**
+ * Remove the given given type safe css class(es) from this Tab. Pseudo classes are also supported.
+ */
+fun <T : Tab> T.removeClass(vararg cssClass: CssRule) = apply {
     cssClass.withEach {
         if (prefix == ":") removePseudoClass(name) else removeClass(name)
     }
@@ -1220,11 +1242,27 @@ fun <T : Node> T.removeClass(vararg cssClass: CssRule) = apply {
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
 
 /**
+ * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
+ */
+fun <T : Tab> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+
+/**
  * Toggle the given type safe css class based on the given predicate observable value.
  * Whenever the observable value changes, the class is added or removed.
  * Pseudo classes are also supported.
  */
 fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
+    toggleClass(cssClass, observablePredicate.value ?: false)
+    observablePredicate.onChange {
+        toggleClass(cssClass, it ?: false)
+    }
+}
+/**
+ * Toggle the given type safe css class based on the given predicate observable value.
+ * Whenever the observable value changes, the class is added or removed.
+ * Pseudo classes are also supported.
+ */
+fun <T : Tab> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
     toggleClass(cssClass, observablePredicate.value ?: false)
     observablePredicate.onChange {
         toggleClass(cssClass, it ?: false)

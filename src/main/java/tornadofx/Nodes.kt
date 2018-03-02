@@ -101,6 +101,34 @@ fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = appl
     }
 }
 
+fun <T : Tab> T.addPseudoClass(className: String) = apply {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    if (!pseudoClassStates.contains(pseudoClass))
+        pseudoClassStates.add(pseudoClass)
+}
+fun <T : Tab> T.removePseudoClass(className: String) = apply {
+    val pseudoClass = PseudoClass.getPseudoClass(className)
+    pseudoClassStates.remove(pseudoClass)
+}
+fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
+    if (predicate) {
+        if (!hasPseudoClass(className)) addPseudoClass(className)
+    } else {
+        removePseudoClass(className)
+    }
+}
+fun Tab.hasClass(className: String) = styleClass.contains(className)
+fun Tab.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
+fun <T : Tab> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
+fun <T : Tab> T.removeClass(className: String) = apply { styleClass.remove(className) }
+fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
+    if (predicate) {
+        if (!hasClass(className)) addClass(className)
+    } else {
+        removeClass(className)
+    }
+}
+
 fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
 fun Node.tooltip(text: String? = null, graphic: Node? = null, op: Tooltip.() -> Unit = {}): Tooltip {
