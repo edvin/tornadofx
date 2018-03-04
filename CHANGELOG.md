@@ -5,6 +5,8 @@
 
 ### Fixed
 
+- Calling `close()` inside `InternalWindow` would also close the parent
+
 ### Changes
 
 - Workspace.navigateForward() made public

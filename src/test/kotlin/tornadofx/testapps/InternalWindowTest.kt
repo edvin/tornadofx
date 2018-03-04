@@ -36,7 +36,6 @@ class Editor : View("Editor") {
     }
 
     private fun save() {
-        alert(CONFIRMATION, "Saved!", "You did it!")
         close()
     }
 }

@@ -939,11 +939,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun closeModal() = close()
 
     fun close() {
+        val internalWindow = root.findParent<InternalWindow>()
+        if (internalWindow != null) {
+            internalWindow.close()
+            return
+        }
+
         (modalStage ?: currentStage)?.apply {
             close()
             modalStage = null
         }
-        root.findParent<InternalWindow>()?.close()
         (root.properties["tornadofx.tab"] as? Tab)?.apply {
             tabPane?.tabs?.remove(this)
         }
