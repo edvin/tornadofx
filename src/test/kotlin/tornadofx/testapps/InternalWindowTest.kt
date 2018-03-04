@@ -1,6 +1,5 @@
 package tornadofx.testapps
 
-import javafx.scene.control.Alert.AlertType.CONFIRMATION
 import tornadofx.*
 
 class InternalWindowTestApp : App(InternalWindowTest::class)
