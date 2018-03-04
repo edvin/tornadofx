@@ -9,6 +9,7 @@
 
 ### Changes
 
+- Kotlin 1.2.30
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
 
