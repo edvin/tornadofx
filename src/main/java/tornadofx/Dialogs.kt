@@ -1,5 +1,7 @@
 package tornadofx
 
+import javafx.event.EventTarget
+import javafx.scene.Node
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.Dialog
@@ -98,3 +100,28 @@ fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner
 }
 
 fun Dialog<*>.toFront() = (dialogPane.scene.window as? Stage)?.toFront()
+
+/**
+ * This function creates a dialog of type <T>. The body of the function will be the ui displayed as the content of dialog.
+ * The user must then implement what happens on closing of the dialog using setResultConverter function.
+ * See DialogAppTest for an example.
+ */
+fun <T> dialog(title: String = "", headerText: String = "", buttonTypes: List<ButtonType>? = null, op: Dialog<T>.() -> Unit = {}): Dialog<T> {
+    val dialog = Dialog<T>()
+    val interceptor = object: ChildInterceptor {
+        override fun invoke(parent: EventTarget, node: Node, index: Int?): Boolean {
+            if(parent == dialog) {
+                dialog.dialogPane.content = node
+                return true
+            }
+            return false
+        }
+    }
+    dialog.title = title
+    dialog.headerText = headerText
+    buttonTypes?.let { dialog.dialogPane.buttonTypes.setAll(it) }
+    FX.addChildInterceptor(interceptor)
+    dialog.op()
+    FX.removeChildInterceptor(interceptor)
+    return dialog
+}
