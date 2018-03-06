@@ -718,7 +718,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             noinline op: DrawerItem.() -> Unit = {}
     ) = item(T::class, scope, params, expanded, showHeader, op)
 
-    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(
+    inline fun <reified T : UIComponent> TableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             params: Map<*, Any?>? = null,
             noinline op: T.() -> Unit = {}
@@ -726,34 +726,34 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         placeholder = find(T::class, scope, params).apply(op).root
     }
 
-    inline fun <S, reified T : UIComponent> TableView<S>.placeholder(
+    inline fun <reified T : UIComponent> TableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
             noinline op: T.() -> Unit = {}
     ) { placeholder(scope, params.toMap(), op) }
 
 
-    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(
+    inline fun <reified T : UIComponent> ListView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             params: Map<*, Any?>? = null,
             noinline op: T.() -> Unit = {}
     ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
-    inline fun <S, reified T : UIComponent> ListView<S>.placeholder(
+    inline fun <reified T : UIComponent> ListView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
             noinline op: T.() -> Unit = {}
     ) { placeholder(scope, params.toMap(), op) }
 
-    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(
+    inline fun <reified T : UIComponent> TreeTableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             params: Map<*, Any?>? = null,
             noinline op: T.() -> Unit = {}
     ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
-    inline fun <S, reified T : UIComponent> TreeTableView<S>.placeholder(
+    inline fun <reified T : UIComponent> TreeTableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
             noinline op: T.() -> Unit = {}

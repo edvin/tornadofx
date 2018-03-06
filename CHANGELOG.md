@@ -6,6 +6,7 @@
 ### Fixed
 
 - Calling `close()` inside `InternalWindow` would also close the parent
+- `placeholder` for list type controls should not require list type parameter
 
 ### Changes
 
