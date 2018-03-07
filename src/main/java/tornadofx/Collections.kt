@@ -374,4 +374,4 @@ fun <T> ObservableList<T>.invalidate() {
 }
 
 
-fun <T> observableList(vararg entries: T) = FXCollections.observableArrayList<T>(entries.toList())
+fun <T> observableList(vararg entries: T) : ObservableList<T> = FXCollections.observableArrayList<T>(entries.toList())
