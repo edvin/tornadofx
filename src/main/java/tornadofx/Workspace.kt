@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
 import tornadofx.Workspace.NavigationMode.Stack
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 class HeadingContainer : HBox() {
     init {
@@ -445,6 +446,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 }
 
 open class WorkspaceApp(val initiallyDockedView: KClass<out UIComponent>, vararg stylesheet: KClass<out Stylesheet>) : App(Workspace::class, *stylesheet) {
+    init {
+        if (initiallyDockedView.isSubclassOf(Workspace::class))
+            log.warning("WorkspaceApp called with a Workspace as parameter! Change to App($initiallyDockedView::class) instead.")
+    }
+
     override fun onBeforeShow(view: UIComponent) {
         workspace.dock(find(initiallyDockedView))
     }

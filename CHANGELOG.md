@@ -7,10 +7,11 @@
 
 - Calling `close()` inside `InternalWindow` would also close the parent
 - `placeholder` for list type controls should not require list type parameter
+- Added warning log message when `WorkspaceApp` is called with a `Workspace` subclass as main view paramter
 
 ### Changes
 
-- Kotlin 1.2.30
+- Kotlin 1.2.31
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
 
