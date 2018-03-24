@@ -2,7 +2,6 @@
 
 ## [1.7.16-SNAPSHOT]
 
-
 ### Fixed
 
 - Calling `close()` inside `InternalWindow` would also close the parent
