@@ -884,10 +884,10 @@ open class PropertyHolder {
 class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) : Rendered {
     val block = CssSelectionBlock(op)
 
-    override fun render() = render(emptyList(), false)
+    override fun render() = render(emptyList(), CssSubRule.Relation.DESCENDANT)
 
-    fun render(parents: List<String>, refine: Boolean): String = buildString {
-        val ruleStrings = selector.strings(parents, refine)
+    fun render(parents: List<String>, relation: CssSubRule.Relation): String = buildString {
+        val ruleStrings = selector.strings(parents, relation)
         block.mergedProperties.let {
             // TODO: Handle custom renderer
             if (it.isNotEmpty()) {
@@ -898,21 +898,21 @@ class CssSelection(val selector: CssSelector, op: CssSelectionBlock.() -> Unit) 
                 append("}\n")
             }
         }
-        for ((selection, refine) in block.selections) {
-            append(selection.render(ruleStrings, refine))
+        for ((selection, relation) in block.selections) {
+            append(selection.render(ruleStrings, relation))
         }
     }
 }
 
 class CssSelector(vararg val rule: CssRuleSet) : Selectable {
     companion object {
-        fun String.merge(other: String, refine: Boolean) = if (refine) "$this$other" else "$this $other"
-        fun List<String>.cartesian(parents: List<String>, refine: Boolean) = if (parents.isEmpty()) this else
-            parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, refine) } }.toList()
+        fun String.merge(other: String, relation: CssSubRule.Relation) = "$this${relation.render()}$other"
+        fun List<String>.cartesian(parents: List<String>, relation: CssSubRule.Relation) = if (parents.isEmpty()) this else
+            parents.asSequence().flatMap { parent -> asSequence().map { child -> parent.merge(child, relation) } }.toList()
     }
 
     override fun toSelection() = this
-    fun strings(parents: List<String>, refine: Boolean) = rule.mapEach { render() }.cartesian(parents, refine)
+    fun strings(parents: List<String>, relation: CssSubRule.Relation) = rule.mapEach { render() }.cartesian(parents, relation)
 
     fun simpleRender() = rule.joinToString { it.render() }
 }
@@ -920,7 +920,7 @@ class CssSelector(vararg val rule: CssRuleSet) : Selectable {
 class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), SelectionHolder {
 
     val log = Logger.getLogger("ErrorHandler")
-    val selections = mutableMapOf<CssSelection, Boolean>()  // If the boolean is true, this is a refine selection
+    val selections = mutableMapOf<CssSelection, CssSubRule.Relation>()
 
     init {
         val currentScope = PropertyHolder.selectionScope.get()
@@ -936,7 +936,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     }
 
     override fun addSelection(selection: CssSelection) {
-        selections[selection] = false
+        selections[selection] = CssSubRule.Relation.DESCENDANT
     }
 
     override fun removeSelection(selection: CssSelection) {
@@ -956,7 +956,35 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     fun and(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector.toSelector(), op = op)
     fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
         val s = select(selector, *selectors)(op)
-        selections[s] = true
+        selections[s] = CssSubRule.Relation.REFINE
+        return s
+    }
+
+    fun child(selector: String, op: CssSelectionBlock.() -> Unit) = child(selector.toSelector(), op = op)
+    fun child(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+        val s = select(selector, *selectors)(op)
+        selections[s] = CssSubRule.Relation.CHILD
+        return s
+    }
+
+    fun desc(selector: String, op: CssSelectionBlock.() -> Unit) = desc(selector.toSelector(), op = op)
+    fun desc(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+        val s = select(selector, *selectors)(op)
+        selections[s] = CssSubRule.Relation.DESCENDANT
+        return s
+    }
+
+    fun adjacent(selector: String, op: CssSelectionBlock.() -> Unit) = adjacent(selector.toSelector(), op = op)
+    fun adjacent(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+        val s = select(selector, *selectors)(op)
+        selections[s] = CssSubRule.Relation.ADJACENT
+        return s
+    }
+
+    fun sibling(selector: String, op: CssSelectionBlock.() -> Unit) = sibling(selector.toSelector(), op = op)
+    fun sibling(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
+        val s = select(selector, *selectors)(op)
+        selections[s] = CssSubRule.Relation.SIBLING
         return s
     }
 
