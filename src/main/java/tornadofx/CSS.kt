@@ -24,7 +24,6 @@ import java.lang.invoke.MethodHandles
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
-import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -953,40 +952,68 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
     @Deprecated("Use and() instead as it's clearer", ReplaceWith("and(selector, *selectors, op = op)"))
     fun add(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit) = and(selector, *selectors, op = op)
 
+    private fun addRelation(
+        relation: CssSubRule.Relation,
+        selector: Selectable, selectors: Array<out Selectable>,
+        op: CssSelectionBlock.() -> Unit
+    ): CssSelection {
+        val s = select(selector, *selectors)(op)
+        selections[s] = relation
+        return s
+    }
+
+    /**
+     * [CssSubRule.Relation.REFINE]
+     */
     fun and(selector: String, op: CssSelectionBlock.() -> Unit) = and(selector.toSelector(), op = op)
-    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = select(selector, *selectors)(op)
-        selections[s] = CssSubRule.Relation.REFINE
-        return s
-    }
 
+    /**
+     * [CssSubRule.Relation.REFINE]
+     */
+    fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
+        addRelation(CssSubRule.Relation.REFINE, selector, selectors, op = op)
+
+    /**
+     * [CssSubRule.Relation.CHILD]
+     */
     fun child(selector: String, op: CssSelectionBlock.() -> Unit) = child(selector.toSelector(), op = op)
-    fun child(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = select(selector, *selectors)(op)
-        selections[s] = CssSubRule.Relation.CHILD
-        return s
-    }
 
-    fun desc(selector: String, op: CssSelectionBlock.() -> Unit) = desc(selector.toSelector(), op = op)
-    fun desc(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = select(selector, *selectors)(op)
-        selections[s] = CssSubRule.Relation.DESCENDANT
-        return s
-    }
+    /**
+     * [CssSubRule.Relation.CHILD]
+     */
+    fun child(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
+        addRelation(CssSubRule.Relation.CHILD, selector, selectors, op = op)
 
-    fun adjacent(selector: String, op: CssSelectionBlock.() -> Unit) = adjacent(selector.toSelector(), op = op)
-    fun adjacent(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = select(selector, *selectors)(op)
-        selections[s] = CssSubRule.Relation.ADJACENT
-        return s
-    }
+    /**
+     * [CssSubRule.Relation.DESCENDANT]
+     */
+    fun contains(selector: String, op: CssSelectionBlock.() -> Unit) = contains(selector.toSelector(), op = op)
 
+    /**
+     * [CssSubRule.Relation.DESCENDANT]
+     */
+    fun contains(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
+        addRelation(CssSubRule.Relation.DESCENDANT, selector, selectors, op = op)
+
+    /**
+     * [CssSubRule.Relation.ADJACENT]
+     */
+    fun next(selector: String, op: CssSelectionBlock.() -> Unit) = next(selector.toSelector(), op = op)
+    /**
+     * [CssSubRule.Relation.ADJACENT]
+     */
+    fun next(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
+        addRelation(CssSubRule.Relation.ADJACENT, selector, selectors, op = op)
+
+    /**
+     * [CssSubRule.Relation.SIBLING]
+     */
     fun sibling(selector: String, op: CssSelectionBlock.() -> Unit) = sibling(selector.toSelector(), op = op)
-    fun sibling(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection {
-        val s = select(selector, *selectors)(op)
-        selections[s] = CssSubRule.Relation.SIBLING
-        return s
-    }
+    /**
+     * [CssSubRule.Relation.SIBLING]
+     */
+    fun sibling(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
+        addRelation(CssSubRule.Relation.SIBLING, selector, selectors, op = op)
 
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
