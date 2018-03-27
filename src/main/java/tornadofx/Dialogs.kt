@@ -70,10 +70,11 @@ enum class FileChooserMode { None, Single, Multi, Save }
  *
  * If the user cancels, the returnedfile list will be empty.
  */
-fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter>, mode: FileChooserMode = Single, owner: Window? = null, op: FileChooser.() -> Unit = {}): List<File> {
+fun chooseFile(title: String? = null, initialDirectory: File? = null, filters: Array<FileChooser.ExtensionFilter>, mode: FileChooserMode = Single, owner: Window? = null, op: FileChooser.() -> Unit = {}): List<File> {
     val chooser = FileChooser()
     if (title != null) chooser.title = title
     chooser.extensionFilters.addAll(filters)
+	if (initialDirectory != null) chooser.initialDirectory = initialDirectory
     op(chooser)
     return when (mode) {
         Single -> {
@@ -88,6 +89,9 @@ fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter
         else -> emptyList()
     }
 }
+
+// This one is for compatibility reasons
+fun chooseFile(title: String? = null, filters: Array<FileChooser.ExtensionFilter>, mode: FileChooserMode = Single, owner: Window? = null, op: FileChooser.() -> Unit = {}) =  chooseFile(title, null, filters, mode, owner, op)
 
 fun chooseDirectory(title: String? = null, initialDirectory: File? = null, owner: Window? = null, op: DirectoryChooser.() -> Unit = {}): File? {
     val chooser = DirectoryChooser()
