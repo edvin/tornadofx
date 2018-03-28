@@ -436,6 +436,25 @@ class StylesheetTest {
     }
 
     @Test
+    fun nestedModifier_2() {
+        stylesheet {
+            vbox {
+                child(label) { textFill = c("#ff0000") }
+                contains(label) { textFill = c("#00ff00") }
+                next(label) { textFill = c("#0000ff") }
+                sibling(label) { textFill = c("#ffff00") }
+            }
+        } shouldEqual {
+            """
+            .vbox > .label { -fx-text-fill: rgba(255, 0, 0, 1); }
+            .vbox .label { -fx-text-fill: rgba(0, 255, 0, 1); }
+            .vbox + .label { -fx-text-fill: rgba(0, 0, 255, 1); }
+            .vbox ~ .label { -fx-text-fill: rgba(255, 255, 0, 1); }
+            """
+        }
+    }
+
+    @Test
     fun gradientsWithErrorColor() {
         stylesheet {
             val hover = mixin {

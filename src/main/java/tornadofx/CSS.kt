@@ -954,10 +954,10 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
 
     private fun addRelation(
         relation: CssSubRule.Relation,
-        selector: Selectable, selectors: Array<out Selectable>,
+        selector: Selectable, vararg selectors: Selectable,
         op: CssSelectionBlock.() -> Unit
     ): CssSelection {
-        val s = select(selector, *selectors)(op)
+        val s = select(selector, *selectors, op = op)
         selections[s] = relation
         return s
     }
@@ -971,7 +971,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
      * [CssSubRule.Relation.REFINE]
      */
     fun and(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
-        addRelation(CssSubRule.Relation.REFINE, selector, selectors, op = op)
+        addRelation(CssSubRule.Relation.REFINE, selector, *selectors, op = op)
 
     /**
      * [CssSubRule.Relation.CHILD]
@@ -982,7 +982,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
      * [CssSubRule.Relation.CHILD]
      */
     fun child(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
-        addRelation(CssSubRule.Relation.CHILD, selector, selectors, op = op)
+        addRelation(CssSubRule.Relation.CHILD, selector, *selectors, op = op)
 
     /**
      * [CssSubRule.Relation.DESCENDANT]
@@ -993,7 +993,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
      * [CssSubRule.Relation.DESCENDANT]
      */
     fun contains(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
-        addRelation(CssSubRule.Relation.DESCENDANT, selector, selectors, op = op)
+        addRelation(CssSubRule.Relation.DESCENDANT, selector, *selectors, op = op)
 
     /**
      * [CssSubRule.Relation.ADJACENT]
@@ -1003,7 +1003,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
      * [CssSubRule.Relation.ADJACENT]
      */
     fun next(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
-        addRelation(CssSubRule.Relation.ADJACENT, selector, selectors, op = op)
+        addRelation(CssSubRule.Relation.ADJACENT, selector, *selectors, op = op)
 
     /**
      * [CssSubRule.Relation.SIBLING]
@@ -1013,7 +1013,7 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
      * [CssSubRule.Relation.SIBLING]
      */
     fun sibling(selector: Selectable, vararg selectors: Selectable, op: CssSelectionBlock.() -> Unit): CssSelection =
-        addRelation(CssSubRule.Relation.SIBLING, selector, selectors, op = op)
+        addRelation(CssSubRule.Relation.SIBLING, selector, *selectors, op = op)
 
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
