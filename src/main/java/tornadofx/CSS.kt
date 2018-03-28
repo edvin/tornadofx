@@ -530,8 +530,7 @@ open class PropertyHolder {
                 BorderStrokeStyle.DOTTED -> "dotted"
                 BorderStrokeStyle.SOLID -> "solid"
                 else -> buildString {
-                    // FIXME: This may not actually render what the user expects, but I can't find documentation to fix it
-                    append("segments(${value.dashArray.joinToString(separator = " ")}) ")
+                    append("segments(${value.dashArray.joinToString()}) ")
                     append(toCss(value.type))
                     append(" line-join ${toCss(value.lineJoin)} ")
                     if (value.lineJoin == StrokeLineJoin.MITER) {
@@ -541,7 +540,7 @@ open class PropertyHolder {
                 }
             }
             is BorderImageSlice -> toCss(value.widths) + if (value.filled) " fill" else ""
-            is Array<*> -> value.joinToString { toCss(it) }
+            is List<*> -> value.joinToString(" ") { toCss(it) }
             is Pair<*, *> -> "${toCss(value.first)} ${toCss(value.second)}"
             is KClass<*> -> "\"${value.qualifiedName}\""
             is CssProperty<*> -> value.name
@@ -658,7 +657,7 @@ open class PropertyHolder {
     var smooth: Boolean by cssprop("-fx-smooth")
     var stroke: Paint by cssprop("-fx-stroke")
     var strokeType: StrokeType by cssprop("-fx-stroke-type")
-    var strokeDashArray: Array<Dimension<Dimension.LinearUnits>> by cssprop("-fx-stroke-dash-array")
+    var strokeDashArray: List<Dimension<Dimension.LinearUnits>> by cssprop("-fx-stroke-dash-array")
     var strokeDashOffset: Dimension<Dimension.LinearUnits> by cssprop("-fx-stroke-dash-offset")
     var strokeLineCap: StrokeLineCap by cssprop("-fx-stroke-line-cap")
     var strokeLineJoin: StrokeLineJoin by cssprop("-fx-stroke-line-join")

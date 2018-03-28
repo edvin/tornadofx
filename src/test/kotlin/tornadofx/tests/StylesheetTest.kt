@@ -5,8 +5,12 @@ import javafx.css.Styleable
 import javafx.scene.control.*
 import javafx.scene.effect.BlurType
 import javafx.scene.effect.InnerShadow
+import javafx.scene.layout.BorderStrokeStyle
 import javafx.scene.layout.Pane
 import javafx.scene.paint.*
+import javafx.scene.shape.StrokeLineCap
+import javafx.scene.shape.StrokeLineJoin
+import javafx.scene.shape.StrokeType
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import javafx.stage.Stage
@@ -585,6 +589,30 @@ class StylesheetTest {
             }
             :pannable :pannable {
                 -fx-pannable: true;
+            }
+            """
+        }
+    }
+
+    @Test
+    fun testBrokenLines() {
+        stylesheet {
+            label {
+                borderStyle += BorderStrokeStyle(
+                    StrokeType.CENTERED,
+                    StrokeLineJoin.MITER,
+                    StrokeLineCap.BUTT,
+                    10.0,
+                    15.0,
+                    listOf(2.0, 4.0, 6.0)
+                )
+                strokeDashArray = listOf(5.px, 7.px, 9.px)
+            }
+        }.shouldEqual {
+            """
+            .label {
+                -fx-border-style: segments(2.0, 4.0, 6.0) centered line-join miter 10.0 line-cap butt;
+                -fx-stroke-dash-array: 5px 7px 9px;
             }
             """
         }
