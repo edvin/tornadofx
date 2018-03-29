@@ -877,15 +877,11 @@ inline fun <reified T : UIComponent> Parent.lookup(noinline op: T.() -> Unit = {
 inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
 fun EventTarget.removeFromParent() {
-    if (this is UIComponent) {
-        root.removeFromParent()
-    } else if (this is DrawerItem) {
-        drawer.items.remove(this)
-    } else if (this is Tab) {
-        tabPane?.tabs?.remove(this)
-    } else if (this is Node) {
-        (parent?.parent as? ToolBar)?.items?.remove(this)
-                ?: parent?.getChildList()?.remove(this)
+    when(this) {
+        is UIComponent -> root.removeFromParent()
+        is DrawerItem -> drawer.items.remove(this)
+        is Tab -> tabPane?.tabs?.remove(this)
+        is Node -> parent?.getChildList()?.remove(this)
     }
 }
 
