@@ -62,6 +62,11 @@ fun Slider.bind(property: ObservableValue<Number>, readonly: Boolean = false) {
     if (readonly || (property !is Property<*>)) valueProperty().bind(property) else valueProperty().bindBidirectional(property as Property<Number>)
 }
 
+fun <T> Spinner<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) {
+    ViewModel.register(valueFactory.valueProperty(), property)
+    if (readonly || (property !is Property<*>)) valueFactory.valueProperty().bind(property) else valueFactory.valueProperty().bindBidirectional(property as Property<T>)
+}
+
 inline fun <reified S : T, reified T : Any> Labeled.bind(property: ObservableValue<S>, readonly: Boolean = false, converter: StringConverter<T>? = null, format: Format? = null) {
     bindStringProperty(textProperty(), converter, format, property, readonly)
 }
