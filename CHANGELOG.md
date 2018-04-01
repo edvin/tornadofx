@@ -7,6 +7,7 @@
 - Calling `close()` inside `InternalWindow` would also close the parent
 - `placeholder` for list type controls should not require list type parameter
 - Added warning log message when `WorkspaceApp` is called with a `Workspace` subclass as main view paramter
+- Fix bug caused by not properly removing nodes from `ToolBar`
 
 ### Changes
 
