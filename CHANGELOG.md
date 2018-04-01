@@ -8,6 +8,7 @@
 - `placeholder` for list type controls should not require list type parameter
 - Added warning log message when `WorkspaceApp` is called with a `Workspace` subclass as main view paramter
 - Fix bug caused by not properly removing nodes from `ToolBar`
+- Fixed issues generating CSS for dashed strokes in shapes and borders
 
 ### Changes
 
