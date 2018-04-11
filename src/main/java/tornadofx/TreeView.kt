@@ -206,3 +206,28 @@ fun <T> TreeView<T>.multiSelect(enable: Boolean = true) {
 fun <T> TreeTableView<T>.multiSelect(enable: Boolean = true) {
     selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE
 }
+
+// -- TreeItem helpers
+/**
+ * Expand this [TreeItem] and children down to `depth`.
+ */
+fun <T> TreeItem<T>.expandTo(depth: Int)  {
+	if ( depth > 0 ) {
+		this.isExpanded = true
+		this.children.forEach { it.expandTo(depth - 1) }
+	}
+}
+
+/**
+ * Expand this `[TreeItem] and all it's children.
+ */
+fun <T> TreeItem<T>.expandAll()  = expandTo(Int.MAX_VALUE)
+
+/**
+ * Collapse this [TreeItem] and all it's children.
+ */
+
+fun <T> TreeItem<T>.collapseAll()  {
+	this.isExpanded = false
+	this.children.forEach { it.collapseAll() }
+}
