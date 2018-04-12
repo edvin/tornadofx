@@ -237,7 +237,6 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
             }
         }
     } else {
-        println("Parent of $this is $parent")
         val paddingHorizontal = (this as? Region)?.paddingHorizontal?.toDouble() ?: 0.0
         val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
         (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
