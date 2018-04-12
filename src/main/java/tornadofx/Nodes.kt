@@ -881,7 +881,9 @@ fun EventTarget.removeFromParent() {
         is UIComponent -> root.removeFromParent()
         is DrawerItem -> drawer.items.remove(this)
         is Tab -> tabPane?.tabs?.remove(this)
-        is Node -> parent?.getChildList()?.remove(this)
+        is Node -> {
+            (parent?.parent as? ToolBar)?.items?.remove(this) ?: parent?.getChildList()?.remove(this)
+        }
     }
 }
 
