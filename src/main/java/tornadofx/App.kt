@@ -108,13 +108,13 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
             val dic = try {
                 Class.forName(diContainerClassName).newInstance()
             } catch (ex: Exception) {
-                log.warning("Unable to instantiate --di-container=${parameters.named?.get("di-container")}: ${ex.message}")
+                log.warning("Unable to instantiate --di-container=$diContainerClassName: ${ex.message}")
                 null
             }
             if (dic is DIContainer)
                 FX.dicontainer = dic
             else
-                log.warning("--di-container=${parameters.named?.get("di-container")} did not resolve to an instance of tornadofx.DIContainer, ignoring assignment")
+                log.warning("--di-container=$diContainerClassName did not resolve to an instance of tornadofx.DIContainer, ignoring assignment")
         }
     }
 
