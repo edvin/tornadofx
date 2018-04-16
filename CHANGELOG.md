@@ -19,6 +19,7 @@
 
 ### Additions
 
+- `--dicontainer=diContainerClass` parameter allows assignment of DIContainer from command line (https://github.com/edvin/tornadofx-idea-plugin/issues/56)
 - `readonly` and `cancel` pseudoclasses added to type safe CSS
 - Added add/remove/toggle class for Tab
 - ContextMenu.radiomenuitem (https://github.com/edvin/tornadofx/issues/646)

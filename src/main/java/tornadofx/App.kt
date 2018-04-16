@@ -71,6 +71,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
 
     override fun start(stage: Stage) {
         FX.registerApplication(scope, this, stage)
+        detectDiContainerArgument()
 
         try {
             val primaryViewType = determinePrimaryView()
@@ -94,6 +95,26 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
             FX.initialized.value = true
         } catch (ex: Exception) {
             Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), ex)
+        }
+    }
+
+    /**
+     * Detect if --di-container= argument was given on the command line and assign it to FX.dicontainer
+     *
+     * Another implementation can still be assigned to FX.dicontainer programmatically
+     */
+    private fun detectDiContainerArgument() {
+        parameters.named?.get("di-container")?.let { diContainerClassName ->
+            val dic = try {
+                Class.forName(diContainerClassName).newInstance()
+            } catch (ex: Exception) {
+                log.warning("Unable to instantiate --di-container=${parameters.named?.get("di-container")}: ${ex.message}")
+                null
+            }
+            if (dic is DIContainer)
+                FX.dicontainer = dic
+            else
+                log.warning("--di-container=${parameters.named?.get("di-container")} did not resolve to an instance of tornadofx.DIContainer, ignoring assignment")
         }
     }
 
