@@ -267,7 +267,7 @@ fun MenuButton.checkmenuitem(
     items += it
 }
 
-fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
+fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}): ContextMenu {
     val menu = (this as? Control)?.contextMenu ?: ContextMenu()
     op(menu)
     if (this is Control) {
@@ -278,6 +278,7 @@ fun EventTarget.contextmenu(op: ContextMenu.() -> Unit = {}) = apply {
             event.consume()
         }
     }
+    return menu
 }
 
 /**

@@ -10,6 +10,7 @@
 - Added warning log message when `WorkspaceApp` is called with a `Workspace` subclass as main view paramter
 - Fix bug caused by not properly removing nodes from `ToolBar`
 - Fixed issues generating CSS for dashed strokes in shapes and borders
+- `contextmenu` builder returns `ContextMenu` instance instead of `EventTarget` (https://github.com/edvin/tornadofx/issues/702)
 
 ### Changes
 
