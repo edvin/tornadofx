@@ -26,6 +26,7 @@
 - ContextMenu.radiomenuitem (https://github.com/edvin/tornadofx/issues/646)
 - mutableList can now be bound to an ObservableMap
 - CssSelectionBlock now has all relation selectors (see `CssSubRule.Relation`)
+- TableView DND Reorder testapp
 
 ## [1.7.15]
 
