@@ -14,9 +14,10 @@
 
 ### Changes
 
-- Kotlin 1.2.31
+- Kotlin 1.2.40
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
+- HostServices is now retrieved from `Application.getHostServices()` instead of sun/internal API
 
 ### Additions
 

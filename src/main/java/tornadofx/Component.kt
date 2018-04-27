@@ -2,9 +2,7 @@
 
 package tornadofx
 
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory
-import com.sun.javafx.application.HostServicesDelegate
-import com.sun.xml.internal.ws.streaming.XMLStreamReaderUtil.close
+import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -102,7 +100,7 @@ abstract class Component : Configurable {
     override val config: ConfigProperties by lazy { loadConfig() }
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
-    val hostServices: HostServicesDelegate get() = HostServicesFactory.getInstance(FX.application)
+    val hostServices: HostServices by lazy { FX.application.hostServices }
 
     inline fun <reified T : Component> find(vararg params: Pair<*, Any?>, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params.toMap()).apply(op)
     inline fun <reified T : Component> find(params: Map<*, Any?>? = null, noinline op: T.() -> Unit = {}): T = find(T::class, scope, params).apply(op)
