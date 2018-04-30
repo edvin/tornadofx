@@ -31,6 +31,12 @@ class CustomerWizard : Wizard("Create customer", "Provide customer information")
         enableStepLinks = true
         enterProgresses = true
     }
+
+    override fun onCancel() {
+        confirm("Confirm cancel", "Do you really want to loose your progress?") {
+            cancel()
+        }
+    }
 }
 
 class WizardStep1 : View("Customer Data") {

@@ -14,7 +14,7 @@
 
 ### Changes
 
-- Kotlin 1.2.40
+- Kotlin 1.2.41
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
 - HostServices is now retrieved from `Application.getHostServices()` instead of sun/internal API
@@ -28,6 +28,7 @@
 - mutableList can now be bound to an ObservableMap
 - CssSelectionBlock now has all relation selectors (see `CssSubRule.Relation`)
 - TableView DND Reorder testapp
+- `onCancel` callback in `Wizard` (https://github.com/edvin/tornadofx/issues/712)
 
 ## [1.7.15]
 

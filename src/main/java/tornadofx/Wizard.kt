@@ -73,6 +73,14 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
     open fun getNextPage() = pages.indexOf(currentPage) + 1
     open fun getPreviousPage() = pages.indexOf(currentPage) - 1
 
+    open fun onCancel() {
+        cancel()
+    }
+
+    fun cancel() {
+        close()
+    }
+
     fun next() {
         currentPage.onSave()
         if (currentPage.isComplete) {
@@ -163,7 +171,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
                 }
                 button(type = ButtonBar.ButtonData.CANCEL_CLOSE) {
                     textProperty().bind(cancelButtonTextProperty)
-                    action { close() }
+                    action { onCancel() }
                 }
                 button(type = ButtonBar.ButtonData.FINISH) {
                     textProperty().bind(finishButtonTextProperty)
