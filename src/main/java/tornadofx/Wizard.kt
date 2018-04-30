@@ -218,6 +218,13 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
             }
             oldPage?.callOnUndock()
         }
+
+        runLater {
+            currentStage?.setOnCloseRequest {
+                it.consume()
+                onCancel()
+            }
+        }
     }
 
     override fun onDock() {
