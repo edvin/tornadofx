@@ -129,7 +129,7 @@ fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
     }
 }
 
-fun Node.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
+fun EventTarget.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
 fun Node.tooltip(text: String? = null, graphic: Node? = null, op: Tooltip.() -> Unit = {}): Tooltip {
     val newToolTip = Tooltip(text)

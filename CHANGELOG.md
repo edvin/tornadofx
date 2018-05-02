@@ -11,6 +11,7 @@
 - Fix bug caused by not properly removing nodes from `ToolBar`
 - Fixed issues generating CSS for dashed strokes in shapes and borders
 - `contextmenu` builder returns `ContextMenu` instance instead of `EventTarget` (https://github.com/edvin/tornadofx/issues/702)
+- `togglebutton` and `radiobutton` builders moved from `Node` to `EventTarget` (https://github.com/edvin/tornadofx/issues/716)
 
 ### Changes
 

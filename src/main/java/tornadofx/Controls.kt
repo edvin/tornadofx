@@ -261,7 +261,7 @@ fun <T> ToggleGroup.selectedValueProperty(): ObjectProperty<T> = properties.getO
  * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
  * togglebutton, it will be automatically selected.
  */
-fun Node.togglebutton(
+fun EventTarget.togglebutton(
         text: String? = null,
         group: ToggleGroup? = getToggleGroup(),
         selectFirst: Boolean = true,
@@ -286,7 +286,7 @@ fun ToggleButton.whenSelected(op: () -> Unit) {
  * Likewise, if the `selectedValueProperty` of the ToggleGroup is updated to a value that matches the value for this
  * radiobutton, it will be automatically selected.
  */
-fun Node.radiobutton(
+fun EventTarget.radiobutton(
         text: String? = null,
         group: ToggleGroup? = getToggleGroup(),
         value: Any? = null,
