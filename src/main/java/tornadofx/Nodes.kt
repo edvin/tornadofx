@@ -1184,6 +1184,10 @@ fun TextInputControl.editableWhen(predicate: ObservableValue<Boolean>) = apply {
     editableProperty().bind(predicate)
 }
 
+fun ComboBoxBase<*>.editableWhen(predicate: ObservableValue<Boolean>) = apply {
+    editableProperty().bind(predicate)
+}
+
 /**
  * This extension function will make sure that the given [onHover] function will always be calles
  * when ever the hoverProperty of the given node changes.

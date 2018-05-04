@@ -31,6 +31,7 @@
 - CssSelectionBlock now has all relation selectors (see `CssSubRule.Relation`)
 - TableView DND Reorder testapp
 - `onCancel` callback in `Wizard` (https://github.com/edvin/tornadofx/issues/712)
+- combobox.editableWhen() - also works for DatePicker since it extends ComboBoxBase (https://github.com/edvin/tornadofx/issues/717)
 
 ## [1.7.15]
 
