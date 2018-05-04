@@ -32,6 +32,7 @@
 - TableView DND Reorder testapp
 - `onCancel` callback in `Wizard` (https://github.com/edvin/tornadofx/issues/712)
 - combobox.editableWhen() - also works for DatePicker since it extends ComboBoxBase (https://github.com/edvin/tornadofx/issues/717)
+- editableWhen() added for TableView, TreeTableView, ListView
 
 ## [1.7.15]
 
