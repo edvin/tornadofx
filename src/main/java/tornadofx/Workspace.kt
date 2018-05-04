@@ -266,6 +266,11 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 setAsCurrentlyDocked(newCmp)
             }
             if (oldCmp != newCmp) oldCmp?.callOnUndock()
+            if (newCmp == null) {
+                headingContainer.children.clear()
+                clearDynamicComponents()
+                dockedComponentProperty.value = null
+            }
         }
         dockedComponentProperty.onChange { child ->
             if (child != null) {
