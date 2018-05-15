@@ -16,7 +16,7 @@ enum class ValidationSeverity { Error, Warning, Info, Success }
 
 sealed class ValidationTrigger {
     object OnBlur : ValidationTrigger()
-    class OnChange(val delay: Long = 0) : ValidationTrigger()
+    data class OnChange(val delay: Long = 0) : ValidationTrigger()
     object None : ValidationTrigger()
 }
 
