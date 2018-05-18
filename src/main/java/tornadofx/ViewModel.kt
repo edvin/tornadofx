@@ -109,7 +109,6 @@ open class ViewModel : Component(), ScopedInstance {
             val propertyType = PropertyType::class.java
             val typeParam = T::class.java
 
-            println(propertyType)
             // Match PropertyType against known Property types first
             when {
                 IntegerProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleIntegerProperty(this, prop?.name)
@@ -172,7 +171,6 @@ open class ViewModel : Component(), ScopedInstance {
         if (property in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
-        // Remove from dirty, but assume Lists are always dirty (too expensive to check)
         if (sourceValue == newValue && sourceValue !is List<*>) {
             dirtyProperties.remove(property)
         } else if (property !in autocommitProperties && property !in dirtyProperties) {
