@@ -6,7 +6,7 @@
 
 ### Changes
 
-- ViewModel bindings towards List will always be marked dirty on reassignment (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
+- ViewModel binding dirty tracking for ListProperty (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
 
 ### Additions
 

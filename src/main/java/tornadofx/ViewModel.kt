@@ -9,10 +9,7 @@ import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
-import javafx.collections.ObservableMap
-import javafx.collections.ObservableSet
+import javafx.collections.*
 import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.paint.Paint
@@ -146,6 +143,9 @@ open class ViewModel : Component(), ScopedInstance {
         assignValue(facade, prop, defaultValue)
 
         facade.addListener(dirtyListener)
+        if (facade is ObservableList<*>)
+            facade.addListener(dirtyListListener)
+
         propertyMap[facade] = propertyProducer
         propertyCache[facade] = prop
 
@@ -171,10 +171,20 @@ open class ViewModel : Component(), ScopedInstance {
         if (property in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
-        if (sourceValue == newValue && sourceValue !is List<*>) {
+        if (sourceValue == newValue) {
             dirtyProperties.remove(property)
         } else if (property !in autocommitProperties && property !in dirtyProperties) {
             dirtyProperties.add(property)
+        }
+    }
+
+    val dirtyListListener: ListChangeListener<Any> = ListChangeListener { c ->
+        while (c.next()) {
+            val property = c.list as ObservableValue<out Any>
+
+            if (property !in ignoreDirtyStateProperties && property !in autocommitProperties && property !in dirtyProperties) {
+                dirtyProperties.add(property)
+            }
         }
     }
 
