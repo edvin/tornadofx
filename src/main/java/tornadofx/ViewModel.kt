@@ -109,6 +109,7 @@ open class ViewModel : Component(), ScopedInstance {
             val propertyType = PropertyType::class.java
             val typeParam = T::class.java
 
+            println(propertyType)
             // Match PropertyType against known Property types first
             when {
                 IntegerProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleIntegerProperty(this, prop?.name)
@@ -118,6 +119,7 @@ open class ViewModel : Component(), ScopedInstance {
                 BooleanProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleBooleanProperty(this, prop?.name)
                 StringProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleStringProperty(this, prop?.name)
                 ObservableList::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
+                SimpleListProperty::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
                 List::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleListProperty<T>(this, prop?.name)
                 ObservableSet::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
                 Set::class.java.isAssignableFrom(propertyType) -> BindingAwareSimpleSetProperty<T>(this, prop?.name)
@@ -149,7 +151,7 @@ open class ViewModel : Component(), ScopedInstance {
         propertyCache[facade] = prop
 
         // Listener that can track external changes for this facade
-        externalChangeListeners[facade] = ChangeListener<Any> { _, _, nv ->
+        externalChangeListeners[facade] = ChangeListener { _, _, nv ->
             val facadeProperty = (facade as Property<Any>)
             if (!facadeProperty.isBound)
                 facadeProperty.value = nv
@@ -170,7 +172,8 @@ open class ViewModel : Component(), ScopedInstance {
         if (property in ignoreDirtyStateProperties) return@ChangeListener
 
         val sourceValue = propertyMap[property]!!.invoke()?.value
-        if (sourceValue == newValue) {
+        // Remove from dirty, but assume Lists are always dirty (too expensive to check)
+        if (sourceValue == newValue && sourceValue !is List<*>) {
             dirtyProperties.remove(property)
         } else if (property !in autocommitProperties && property !in dirtyProperties) {
             dirtyProperties.add(property)
