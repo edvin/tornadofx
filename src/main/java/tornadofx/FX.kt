@@ -374,7 +374,7 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 }
 
 
-fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope) = FX.getComponents(scope).put(value.javaClass.kotlin, value)
+fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope, kclass : KClass<T> = value.javaClass.kotlin) = FX.getComponents(scope).put(kclass, value)
 @Suppress("UNCHECKED_CAST")
 fun <T : ScopedInstance> Scope.set(vararg value: T) = value.associateByTo(FX.getComponents(this)) { it::class }
 @Deprecated("is now included in the stdlib", ReplaceWith("params.toMap()"))
@@ -410,7 +410,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
             }
         }
         val cmp = components[type] as T
-        cmp.paramsProperty.value = stringKeyedMap
+        cmp.paramsProperty?.value = stringKeyedMap
         return cmp
     }
 
