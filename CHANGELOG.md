@@ -10,6 +10,8 @@
 
 ### Additions
 
+- `onTabSelected` callback in UIComponent when connected to a TabPane
+
 ## [1.7.16]
 
 ### Fixed

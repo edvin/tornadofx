@@ -523,9 +523,10 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
         is UIComponent -> root?.addChildIfPossible(node)
         is ScrollPane -> content = node
         is Tab -> {
-            content = node
             // Map the tab to the UIComponent for later retrieval. Used to close tab with UIComponent.close()
+            // and to connect the onTabSelected callback
             node.uiComponent<UIComponent>()?.properties?.set("tornadofx.tab", this)
+            content = node
         }
         is ButtonBase -> {
             graphic = node
@@ -536,6 +537,7 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
             val uicmp = node.uiComponent<UIComponent>()
             val tab = if (uicmp != null) {
                 Tab().apply {
+                    node.uiComponent<UIComponent>()?.properties?.set("tornadofx.tab", this)
                     content = node
                     textProperty().bind(uicmp.titleProperty)
                     closableProperty().bind(uicmp.closeable)

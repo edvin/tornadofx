@@ -161,8 +161,7 @@ abstract class Component : Configurable {
             overrideScope: Scope = scope,
             vararg params: Pair<String, Any?>
     ): ReadOnlyProperty<Component, T>
-            where T : Component, T : ScopedInstance
-            = inject(overrideScope, params.toMap())
+            where T : Component, T : ScopedInstance = inject(overrideScope, params.toMap())
 
     inline fun <reified T> inject(
             overrideScope: Scope = scope,
@@ -479,7 +478,17 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         root.parentProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null) return@addListener
             if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) callOnDock()
+            if (newParent != null && newParent != oldParent && !isDocked) {
+                callOnDock()
+                // Call `onTabSelected` if/when we are connected to a Tab and it's selected
+                // Note that this only works for builder constructed tabpanes
+                owningTab?.let {
+                    it.selectedProperty()?.onChange { if (it) onTabSelected() }
+                    if (it.isSelected) onTabSelected()
+                }
+
+                println("Owning tab was $owningTab")
+            }
         })
         root.sceneProperty().addListener({ _, oldParent, newParent ->
             if (modalStage != null || root.parent != null) return@addListener
@@ -553,6 +562,13 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open fun onDock() {
     }
 
+    /**
+     * Called when this Component is hosted by a Tab and the corresponding tab is selected
+     */
+    open fun onTabSelected() {
+
+    }
+
     open fun onRefresh() {
         (properties["tornadofx.onRefresh"] as? () -> Unit)?.invoke()
     }
@@ -592,7 +608,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     inline fun <reified T : UIComponent> goto(params: Map<String, Any?>? = null) = find<T>(params).onGoto(this)
-    inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any?>) { goto<T>(params.toMap()) }
+    inline fun <reified T : UIComponent> goto(vararg params: Pair<String, Any?>) {
+        goto<T>(params.toMap())
+    }
 
     internal fun callOnDock() {
         if (!isInitialized) init()
@@ -728,7 +746,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
             noinline op: T.() -> Unit = {}
-    ) { placeholder(scope, params.toMap(), op) }
+    ) {
+        placeholder(scope, params.toMap(), op)
+    }
 
 
     inline fun <reified T : UIComponent> ListView<*>.placeholder(
@@ -738,11 +758,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
+
     inline fun <reified T : UIComponent> ListView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
             noinline op: T.() -> Unit = {}
-    ) { placeholder(scope, params.toMap(), op) }
+    ) {
+        placeholder(scope, params.toMap(), op)
+    }
 
     inline fun <reified T : UIComponent> TreeTableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
@@ -751,6 +774,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     ) {
         placeholder = find(T::class, scope, params).apply(op).root
     }
+
     inline fun <reified T : UIComponent> TreeTableView<*>.placeholder(
             scope: Scope = this@UIComponent.scope,
             vararg params: Pair<*, Any?>,
@@ -775,7 +799,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             expanded: Boolean = false,
             showHeader: Boolean = false,
             op: DrawerItem.() -> Unit = {}
-    ) {item(uiComponent, scope, params.toMap(),expanded, showHeader, op) }
+    ) {
+        item(uiComponent, scope, params.toMap(), expanded, showHeader, op)
+    }
 
     fun <T : UIComponent> EventTarget.add(type: KClass<T>, params: Map<*, Any?>? = null, op: T.() -> Unit = {}) {
         val view = find(type, scope, params)
@@ -811,7 +837,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             closeButton: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             vararg params: Pair<*, Any?>
-    ) {openInternalWindow<T>(scope,icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())}
+    ) {
+        openInternalWindow<T>(scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())
+    }
 
     protected fun openInternalWindow(
             view: KClass<out UIComponent>,
@@ -835,7 +863,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             closeButton: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             vararg params: Pair<*, Any?>
-    ) {openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap()) }
+    ) {
+        openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())
+    }
 
     protected fun openInternalWindow(
             view: UIComponent,
@@ -947,10 +977,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             close()
             modalStage = null
         }
-        (root.properties["tornadofx.tab"] as? Tab)?.apply {
+        owningTab?.apply {
             tabPane?.tabs?.remove(this)
         }
     }
+
+    val owningTab: Tab? get() = properties["tornadofx.tab"] as? Tab
 
     open val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
