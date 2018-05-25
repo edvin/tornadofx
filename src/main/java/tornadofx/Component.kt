@@ -486,8 +486,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                     it.selectedProperty()?.onChange { if (it) onTabSelected() }
                     if (it.isSelected) onTabSelected()
                 }
-
-                println("Owning tab was $owningTab")
             }
         })
         root.sceneProperty().addListener({ _, oldParent, newParent ->
