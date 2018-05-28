@@ -382,6 +382,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         clearDynamicComponents()
 
         dockedComponentProperty.value = child
+
+        if (currentWindow?.isShowing != true)
+            FX.log.warning("UIComponent $child docked in invisible workspace $workspace")
     }
 
     private fun clearDynamicComponents() {
