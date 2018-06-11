@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- `onCancel()` is now called when reusing Wizard instance 
+
 ### Changes
 
 - ViewModel binding dirty tracking for ListProperty (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
