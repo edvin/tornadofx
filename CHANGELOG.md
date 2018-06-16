@@ -13,6 +13,8 @@
 
 ### Additions
 
+- `UIComponent.whenUndockedOnce()` and `whenDockedOnce` callbacks
+
 - `onTabSelected` callback in UIComponent when connected to a TabPane
 
 ## [1.7.16]
