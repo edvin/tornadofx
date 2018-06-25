@@ -5,6 +5,7 @@
 ### Fixed
 
 - `onCancel()` is now called when reusing Wizard instance 
+- Observable collection delegates removed because they shadow observable properties (See Properties.kt:L212)
 
 ### Changes
 
