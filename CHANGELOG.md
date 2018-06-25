@@ -5,7 +5,6 @@
 ### Fixed
 
 - `onCancel()` is now called when reusing Wizard instance 
-- ObservableXValue.get/setValue functions should return observable elements, not just mutable
 
 ### Changes
 
