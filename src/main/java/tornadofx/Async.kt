@@ -431,7 +431,7 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
 
 infix fun <T> Task<T>.finally(func: () -> Unit) {
     if (this is FXTask<*>) {
-        completedProperty.onChangeOnce { func() }
+        finally(func)
     } else {
         throw IllegalArgumentException("finally() called on non-FXTask subclass")
     }
@@ -441,6 +441,7 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
     private var internalCompleted = ReadOnlyBooleanWrapper(false)
     val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
     val completed: Boolean get() = completedProperty.value
+    private var finallyListener: (() -> Unit)? = null
 
     override fun call() = func(this)
 
@@ -448,16 +449,23 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
         status?.item = this
     }
 
+    fun finally(func: () -> Unit) {
+        this.finallyListener = func
+    }
+
     override fun succeeded() {
         internalCompleted.value = true
+        finallyListener?.invoke()
     }
 
     override fun failed() {
         internalCompleted.value = true
+        finallyListener?.invoke()
     }
 
     override fun cancelled() {
         internalCompleted.value = true
+        finallyListener?.invoke()
     }
 
     public override fun updateProgress(workDone: Long, max: Long) {
