@@ -35,10 +35,11 @@
 
 ### Changes
 
-- Kotlin 1.2.41
+- Kotlin 1.2.51
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
 - HostServices is now retrieved from `Application.getHostServices()` instead of sun/internal API
+- SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
 
 ### Additions
 

@@ -42,6 +42,9 @@ class SortedFilteredList<T>(
         items.onChange { refilter() }
     }
 
+    // Should setAll be forwarded to the underlying list? This might be needed for full editing capabilities,
+    // but will affect the ordering of the underlying list
+    var setAllPassThrough = false
     override val size: Int get() = sortedItems.size
     override fun contains(element: T) = element in sortedItems
     override fun containsAll(elements: Collection<T>) = sortedItems.containsAll(elements)
@@ -126,7 +129,7 @@ class SortedFilteredList<T>(
         sortedItems.addListener(listener)
     }
 
-    override fun setAll(col: MutableCollection<out T>?) = items.setAll(col)
+    override fun setAll(col: MutableCollection<out T>?) = if (setAllPassThrough) items.setAll(col) else false
 
     override fun setAll(vararg elements: T) = items.setAll(*elements)
 
