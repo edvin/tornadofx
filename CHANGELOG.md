@@ -12,12 +12,13 @@
 - Kotlin 1.2.51
 - ViewModel binding dirty tracking for ListProperty (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
 - Workspace.dock() will log a warning message if a child is docked while the workspace is not showing
+- SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
 
 ### Additions
 
 - `UIComponent.whenUndockedOnce()` and `whenDockedOnce` callbacks
-
 - `onTabSelected` callback in UIComponent when connected to a TabPane
+- `finally(callback)` for runAsync and other task builders
 
 ## [1.7.16]
 
@@ -35,11 +36,10 @@
 
 ### Changes
 
-- Kotlin 1.2.51
+- Kotlin 1.2.41
 - Workspace.navigateForward() made public
 - Added missing pseudoclasses to CSS DSL
 - HostServices is now retrieved from `Application.getHostServices()` instead of sun/internal API
-- SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
 
 ### Additions
 

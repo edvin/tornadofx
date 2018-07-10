@@ -429,6 +429,14 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
     }
 }
 
+infix fun <T> Task<T>.finally(func: () -> Unit) {
+    if (this is FXTask<*>) {
+        completedProperty.onChangeOnce { func() }
+    } else {
+        throw IllegalArgumentException("finally() called on non-FXTask subclass")
+    }
+}
+
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
     private var internalCompleted = ReadOnlyBooleanWrapper(false)
     val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
