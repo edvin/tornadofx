@@ -388,7 +388,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg pa
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
-    val stringKeyedMap = params?.mapKeys { (it.key as? KProperty<*>)?.name ?: it.key.toString() }.orEmpty()
+    val stringKeyedMap = params?.mapKeys { (k, _) -> (k as? KProperty<*>)?.name ?: k.toString() }.orEmpty()
     inheritParamHolder.set(stringKeyedMap)
 
     if (ScopedInstance::class.java.isAssignableFrom(type.java)) {
