@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
+import javafx.stage.Window
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -646,3 +647,7 @@ private fun Parent.getChildrenReflectively(): MutableList<Node>? {
     }
     return null
 }
+
+var Window.aboutToBeShown: Boolean
+    get() = properties["tornadofx.aboutToBeShown"] == true
+    set(value) { properties["tornadofx.aboutToBeShown"] = value }

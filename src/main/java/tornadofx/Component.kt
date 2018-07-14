@@ -903,6 +903,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             modalStage = Stage(stageStyle)
             // modalStage needs to be set before this code to make close() work in blocking mode
             with(modalStage!!) {
+                aboutToBeShown = true
                 if (resizable != null) isResizable = resizable
                 titleProperty().bind(titleProperty)
                 initModality(modality)
@@ -940,6 +941,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                         if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             configureReloading()
                         }
+                        aboutToBeShown = false
                     } else {
                         modalStage = null
                         callOnUndock()
