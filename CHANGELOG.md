@@ -20,6 +20,7 @@
 - `onTabSelected` callback in UIComponent when connected to a TabPane
 - `finally(callback)` for runAsync and other task builders
 - `Window.aboutToBeShown` property avoid false positives for invisible Workspace warning (https://github.com/edvin/tornadofx/issues/755)
+- Slideshow slides supports optional timeout, which will advance to the next slide using the Slide transition
 
 ## [1.7.16]
 

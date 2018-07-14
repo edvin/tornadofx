@@ -31,6 +31,7 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.stage.Window
+import javafx.util.Duration
 import java.io.Closeable
 import java.io.InputStream
 import java.io.StringReader
@@ -702,7 +703,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     fun <S, T> TableColumn<S, T>.cellCache(cachedGraphicProvider: (T) -> Node) = cellCache(scope, cachedGraphicProvider)
 
 
-    fun EventTarget.slideshow(scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope), op)
+    fun EventTarget.slideshow(defaultTimeout: Duration? = null, scope: Scope = this@UIComponent.scope, op: Slideshow.() -> Unit) = opcr(this, Slideshow(scope, defaultTimeout), op)
 
     fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(fragment: KClass<F>) = cellFragment(scope, fragment)
 
@@ -941,7 +942,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                         if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             configureReloading()
                         }
-                        aboutToBeShown = false
+                        aboutToBeShown
                     } else {
                         modalStage = null
                         callOnUndock()
