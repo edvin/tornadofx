@@ -81,6 +81,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
             (view as? Workspace)?.let { FX.defaultWorkspace = primaryViewType as KClass<Workspace> }
 
             stage.apply {
+                stage.aboutToBeShown = true
                 view.muteDocking = true
                 scene = createPrimaryScene(view)
                 view.properties["tornadofx.scene"] = scene
@@ -91,6 +92,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 view.muteDocking = false
                 view.callOnDock()
                 if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage()) show()
+                stage.aboutToBeShown = false
             }
             FX.initialized.value = true
         } catch (ex: Exception) {

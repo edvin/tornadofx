@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
+import javafx.stage.Window
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -388,10 +389,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg pa
 fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
-    val stringKeyedMap = params?.keys?.associate {
-        val stringKey = (it as? KProperty<*>)?.name ?: it.toString()
-        stringKey to params[it]
-    }.orEmpty()
+    val stringKeyedMap = params?.mapKeys { (k, _) -> (k as? KProperty<*>)?.name ?: k.toString() }.orEmpty()
     inheritParamHolder.set(stringKeyedMap)
 
     if (ScopedInstance::class.java.isAssignableFrom(type.java)) {
@@ -649,3 +647,7 @@ private fun Parent.getChildrenReflectively(): MutableList<Node>? {
     }
     return null
 }
+
+var Window.aboutToBeShown: Boolean
+    get() = properties["tornadofx.aboutToBeShown"] == true
+    set(value) { properties["tornadofx.aboutToBeShown"] = value }

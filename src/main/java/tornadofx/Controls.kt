@@ -174,6 +174,18 @@ fun EventTarget.slider(
     if (orientation != null) it.orientation = orientation
 }
 
+fun <T> EventTarget.slider(
+    range: ClosedRange<T>,
+    value: Number? = null,
+    orientation: Orientation? = null,
+    op: Slider.() -> Unit = {}
+): Slider
+        where T : Comparable<T>,
+              T : Number {
+    return slider(range.start, range.endInclusive, value, orientation, op)
+}
+
+
 // Buttons
 fun EventTarget.button(text: String = "", graphic: Node? = null, op: Button.() -> Unit = {}) = Button(text).attachTo(this, op) {
     if (graphic != null) it.graphic = graphic

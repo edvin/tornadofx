@@ -9,15 +9,18 @@
 
 ### Changes
 
-- Kotlin 1.2.50
+- Kotlin 1.2.51
 - ViewModel binding dirty tracking for ListProperty (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
 - Workspace.dock() will log a warning message if a child is docked while the workspace is not showing
+- SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
 
 ### Additions
 
 - `UIComponent.whenUndockedOnce()` and `whenDockedOnce` callbacks
-
 - `onTabSelected` callback in UIComponent when connected to a TabPane
+- `finally(callback)` for runAsync and other task builders
+- `Window.aboutToBeShown` property avoid false positives for invisible Workspace warning (https://github.com/edvin/tornadofx/issues/755)
+- Slideshow slides supports optional timeout, which will advance to the next slide using the Slide transition
 
 ## [1.7.16]
 

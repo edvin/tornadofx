@@ -10,11 +10,17 @@ import javafx.collections.ObservableList
 import javafx.scene.input.KeyCombination
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
+import javafx.util.Duration
 import tornadofx.ViewTransition.Direction.RIGHT
+import java.util.*
+import kotlin.concurrent.timerTask
 import kotlin.reflect.KClass
 
-class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
+class Slideshow(val scope: Scope = DefaultScope, defaultTimeout: Duration? = null) : BorderPane() {
     val slides: ObservableList<Slide> = FXCollections.observableArrayList<Slide>()
+
+    var defaultTimeoutProperty = SimpleObjectProperty<Duration>(defaultTimeout)
+    var defaultTimeout by defaultTimeoutProperty
 
     val defaultTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds))
     var defaultTransition: ViewTransition? by defaultTransitionProperty
@@ -35,11 +41,16 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     val indexProperty: ReadOnlyIntegerProperty = ReadOnlyIntegerProperty.readOnlyIntegerProperty(realIndexProperty)
     val index by indexProperty
 
-    inline fun <reified T:UIComponent> slide(transition: ViewTransition? = null) = slide(T::class,transition)
-    fun slide(view: KClass<out UIComponent>, transition: ViewTransition? = null) = slides.addAll(Slide(view, transition))
+    inline fun <reified T : UIComponent> slide(transition: ViewTransition? = null, timeout: Duration? = defaultTimeout) = slide(T::class, transition, timeout)
+    fun slide(view: KClass<out UIComponent>, transition: ViewTransition? = null, timeout: Duration? = defaultTimeout) = slides.addAll(Slide(view, transition, timeout))
+
+    fun hasNext() = index < (slides.size - 1)
+
+    private var timer: Timer? = null
+    private var task: TimerTask? = null
 
     fun next(): Boolean {
-        if (index + 1 >= slides.size) return false
+        if (!hasNext()) return false
         goto(slides[index + 1], true)
         return true
     }
@@ -53,6 +64,24 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
     init {
         showFirstSlideWhenAvailable()
         hookNavigationShortcuts()
+        listenForNextSlide()
+    }
+
+    private fun listenForNextSlide() {
+        currentSlideProperty.onChange { slide ->
+            slide?.timeout?.let { timeout ->
+                if (timer == null) {
+                    timer = Timer("SlideshowTimer${this@Slideshow}")
+                }
+                task?.cancel()
+                task = timerTask {
+                    runLater {
+                        next()
+                    }
+                }
+                timer!!.schedule(task, timeout.toMillis().toLong())
+            }
+        }
     }
 
     private fun hookNavigationShortcuts() {
@@ -94,7 +123,7 @@ class Slideshow(val scope: Scope = DefaultScope) : BorderPane() {
         realIndexProperty.value = newIndex
     }
 
-    class Slide(val view: KClass<out UIComponent>, val transition: ViewTransition? = null) {
+    class Slide(val view: KClass<out UIComponent>, val transition: ViewTransition? = null, val timeout: Duration? = null) {
         private lateinit var ui: UIComponent
         fun getUI(scope: Scope): UIComponent {
             if (!::ui.isInitialized) ui = find(view, scope)

@@ -383,7 +383,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
         dockedComponentProperty.value = child
 
-        if (currentWindow?.isShowing != true)
+        if (currentWindow?.isShowing != true && currentWindow?.aboutToBeShown != true)
             FX.log.warning("UIComponent $child docked in invisible workspace $workspace")
     }
 

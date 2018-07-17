@@ -90,4 +90,12 @@ class ControlsTest {
         Assert.assertEquals("12718", label.text)
         Assert.assertEquals(NumberFormat.getNumberInstance(Locale.US).format(12718), labelWithConverter.text)
     }
+
+    @Test
+    fun testSliderRange() {
+        val view  = TestView()
+        val slider = view.slider(24..42)
+        Assert.assertEquals(24.0, slider.min, 10e-5)
+        Assert.assertEquals(42.0, slider.max, 10e-5)
+    }
 }
