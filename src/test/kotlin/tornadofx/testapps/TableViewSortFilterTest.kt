@@ -35,6 +35,11 @@ class TableViewSortFilterTest : View("Table Sort and Filter") {
             }
             smartResize()
         }
+
+        hbox(5) {
+            label("Filter count:")
+            label(data.sizeProperty.stringBinding { "$it records matching filter"})
+        }
     }
 
     init {
