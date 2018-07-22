@@ -135,6 +135,23 @@ infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
         runLater { attachFailHandler() }
 }
 
+infix fun <T> Task<T>.cancel(func: () -> Unit) = apply {
+    fun attachCancelHandler() {
+        if (state == Worker.State.CANCELLED) {
+            func()
+        } else {
+            setOnCancelled {
+                func()
+            }
+        }
+    }
+
+    if (Application.isEventThread())
+        attachCancelHandler()
+    else
+        runLater { attachCancelHandler() }
+}
+
 /**
  * Run the specified Runnable on the JavaFX Application Thread at some
  * unspecified time in the future.
