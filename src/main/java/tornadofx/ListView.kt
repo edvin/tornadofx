@@ -140,6 +140,7 @@ open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<
             graphicProperty().unbind()
             text = null
             graphic = null
+            style = null
             clearCellFragment()
         } else {
             FX.ignoreParentBuilder = Once
