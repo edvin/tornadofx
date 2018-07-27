@@ -23,6 +23,7 @@
 - `finally(callback)` for runAsync and other task builders
 - `Window.aboutToBeShown` property avoid false positives for invisible Workspace warning (https://github.com/edvin/tornadofx/issues/755)
 - Slideshow slides supports optional timeout, which will advance to the next slide using the Slide transition
+- `importStylesheet` now supports `file`, `http` and `https` in addition to classpath resources (https://github.com/edvin/tornadofx/issues/762)
 
 ## [1.7.16]
 
