@@ -7,6 +7,7 @@
 - `onCancel()` is now called when reusing Wizard instance 
 - Observable collection delegates removed because they shadow observable properties (See Properties.kt:L212)
 - The `style` property of `ListCell` will be cleared by the framework so it can be manipulated in `cellFormat` without side effects (https://stackoverflow.com/questions/51459371/custom-cell-format-listview-tornadofx-on-delete-item)
+- Escape closes window only works first time for Views (https://github.com/edvin/tornadofx/issues/764)
 
 ### Changes
 
