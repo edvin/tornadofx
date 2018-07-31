@@ -6,6 +6,7 @@ import javafx.application.Platform
 import tornadofx.EventBus.RunOn.ApplicationThread
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.logging.Level
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
@@ -55,25 +56,22 @@ class EventBus {
     private val subscriptions = mutableMapOf<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
     private val eventScopes = mutableMapOf<EventContext.(FXEvent) -> Unit, Scope>()
 
-    inline fun <reified T: FXEvent> subscribe(scope: Scope, registration : FXEventRegistration)
-            = subscribe(T::class, scope, registration)
-    fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration : FXEventRegistration) {
+    inline fun <reified T : FXEvent> subscribe(scope: Scope, registration: FXEventRegistration) = subscribe(T::class, scope, registration)
+    fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration: FXEventRegistration) {
         subscriptions.getOrPut(event, { HashSet() }).add(registration)
         eventScopes[registration.action] = scope
     }
 
-    inline fun <reified T:FXEvent> subscribe(owner: Component? = null, times: Long? = null, scope: Scope, noinline action: (T) -> Unit)
-     = subscribe(owner, times, T::class, scope, action)
+    inline fun <reified T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, scope: Scope, noinline action: (T) -> Unit) = subscribe(owner, times, T::class, scope, action)
 
     fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: KClass<T>, scope: Scope, action: (T) -> Unit) {
         subscribe(event, scope, FXEventRegistration(event, owner, times, action as EventContext.(FXEvent) -> Unit))
     }
 
-    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit)
-            = subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
+    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit) = subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
 
-    inline fun <reified T: FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) = unsubscribe(T::class, action)
-    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit)  = unsubscribe(event.kotlin, action)
+    inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) = unsubscribe(T::class, action)
+    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit) = unsubscribe(event.kotlin, action)
 
     fun <T : FXEvent> unsubscribe(event: KClass<T>, action: EventContext.(T) -> Unit) {
         subscriptions[event]?.removeAll { it.action == action }
@@ -92,7 +90,11 @@ class EventBus {
                     val count = it.count.andIncrement
                     if (it.maxCount == null || count < it.maxCount) {
                         val context = EventContext()
-                        it.action.invoke(context, event)
+                        try {
+                            it.action.invoke(context, event)
+                        } catch (subscriberFailure: Exception) {
+                            log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
+                        }
                         if (context.unsubscribe) unsubscribe(it)
                     } else {
                         unsubscribe(it)
