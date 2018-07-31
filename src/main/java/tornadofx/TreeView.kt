@@ -96,6 +96,7 @@ open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<
         graphicProperty().unbind()
         text = null
         graphic = null
+        style = null
     }
 
     private fun clearCellFragment() {

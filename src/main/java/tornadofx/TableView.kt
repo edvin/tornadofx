@@ -76,6 +76,7 @@ open class SmartTableCell<S, T>(val scope: Scope = DefaultScope, val owningColum
             graphicProperty().unbind()
             text = null
             graphic = null
+            style = null
             clearCellFragment()
         } else {
             FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once

@@ -29,6 +29,9 @@ import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
 import java.lang.ref.WeakReference
+import java.net.MalformedURLException
+import java.net.URL
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.logging.Level
@@ -345,12 +348,19 @@ fun reloadViewsOnFocus() {
     FX.reloadViewsOnFocus = true
 }
 
+fun importStylesheet(stylesheet: Path) = importStylesheet(stylesheet.toUri().toString())
+
 fun importStylesheet(stylesheet: String) {
-    val css = FX::class.java.getResource(stylesheet)
-    if (css != null)
-        stylesheets.add(css.toExternalForm())
-    else
-        FX.log.log(Level.WARNING, "Unable to find stylesheet at $stylesheet - check that the path is correct")
+    try {
+        stylesheets.add(URL(stylesheet).toExternalForm())
+    } catch (noProtocolGiven: MalformedURLException) {
+        // Fallback to loading classpath resource
+        val css = FX::class.java.getResource(stylesheet)
+        if (css != null)
+            stylesheets.add(css.toExternalForm())
+        else
+            FX.log.log(Level.WARNING, "Unable to find stylesheet at $stylesheet - check that the path is correct")
+    }
 }
 
 inline fun <reified T : Stylesheet> importStylesheet() = importStylesheet(T::class)
