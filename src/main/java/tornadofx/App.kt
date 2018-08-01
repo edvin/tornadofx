@@ -88,10 +88,11 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 FX.applyStylesheetsTo(scene)
                 titleProperty().bind(view.titleProperty)
                 hookGlobalShortcuts()
+                view.onBeforeShow()
                 onBeforeShow(view)
                 view.muteDocking = false
-                view.callOnDock()
                 if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage()) show()
+                view.callOnDock()
                 stage.aboutToBeShown = false
             }
             FX.initialized.value = true

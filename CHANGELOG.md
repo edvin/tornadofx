@@ -16,6 +16,7 @@
 - Workspace.dock() will log a warning message if a child is docked while the workspace is not showing
 - SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
 - EventBus deliveries will continue even after a subscriber throws exception
+- UIComponent callback `onBeforeShow` is called for all top level UIComponents
 
 ### Additions
 

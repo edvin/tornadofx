@@ -562,6 +562,15 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     /**
+     * Called right before the stage for this view is shown. You can access
+     * the `currentWindow` property at this stage. This callback is only available
+     * to top level UIComponents
+     */
+    open fun onBeforeShow() {
+
+    }
+
+    /**
      * Called when this Component is hosted by a Tab and the corresponding tab is selected
      */
     open fun onTabSelected() {
@@ -931,6 +940,8 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
                 hookGlobalShortcuts()
 
+                onBeforeShow()
+
                 showingProperty().onChange {
                     if (it) {
                         if (owner != null) {
@@ -941,7 +952,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                         if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
                             configureReloading()
                         }
-                        aboutToBeShown
+                        aboutToBeShown = false
                     } else {
                         modalStage = null
                         callOnUndock()
