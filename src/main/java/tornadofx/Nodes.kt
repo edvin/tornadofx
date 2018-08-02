@@ -507,14 +507,14 @@ fun <T> TreeTableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) 
 val <S, T> TableCell<S, T>.rowItem: S get() = tableView.items[index]
 val <S, T> TreeTableCell<S, T>.rowItem: S get() = treeTableView.getTreeItem(index).value
 
-fun <T> ListProperty<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { value = (it as? ObservableList<T>) ?: observableArrayList(it) }
+fun <T> ListProperty<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
+        task { func(this) } success { value = (it as? ObservableList<T>) ?: observableArrayList(it) }
 
-fun <T> ObservableList<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { setAll(it) }
+fun <T> ObservableList<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
+        task { func(this) } success { setAll(it) }
 
-fun <T> SortedFilteredList<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { items.setAll(it) }
+fun <T> SortedFilteredList<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
+        task { func(this) } success { items.setAll(it) }
 
 fun <T> TableView<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
         task(func = func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }

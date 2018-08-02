@@ -18,6 +18,7 @@
 - EventBus deliveries will continue even after a subscriber throws exception
 - UIComponent callback `onBeforeShow` is called for all top level UIComponents
 - Primary View `onDock` is now called *after* the stage is shown. Now it aligns with the timing for secondary windows.
+- All `asyncItems` function parameters operate on `FXTask`
 
 ### Additions
 

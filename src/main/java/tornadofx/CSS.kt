@@ -568,6 +568,7 @@ open class PropertyHolder {
     var accentColor: Color by cssprop("-fx-accent")
     var focusColor: Paint by cssprop("-fx-focus-color")
     var faintFocusColor: Paint by cssprop("-fx-faint-focus-color")
+    var selectionBarText: Paint by cssprop("-fx-selection-bar-text")
 
     // Font
     var font: Font by cssprop("-fx-font")
