@@ -53,17 +53,19 @@ fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumn
     cssClass.forEach { styleClass.add(it.name) }
 }
 
-fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
-    cssClass.forEach { styleClass.remove(it.name) }
+fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
+    cssClass.forEach { if (removeAll) styleClass.removeAll(it.name) else styleClass.remove(it.name) }
 }
 
-fun <S, T> TableColumnBase<S, T>.removeClass(className: String): TableColumnBase<S, T> = apply { styleClass.remove(className) }
+fun <S, T> TableColumnBase<S, T>.removeClass(className: String, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
+	if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+}
 fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
 fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
     if (predicate) {
-        if (!hasClass(className)) styleClass.add(className)
+        if (!hasClass(className)) addClass(className)
     } else {
-        styleClass.remove(className)
+        removeClass(className)
     }
 }
 
@@ -83,7 +85,9 @@ fun <T : Node> T.removePseudoClass(className: String) = apply {
     pseudoClassStateChanged(pseudoClass, false)
 }
 
-fun <T : Node> T.removeClass(className: String) = apply { styleClass.remove(className) }
+fun <T : Node> T.removeClass(className: String, removeAll: Boolean = true) = apply {
+	if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+}
 
 fun <T : Node> T.toggleClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
@@ -120,7 +124,9 @@ fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply
 fun Tab.hasClass(className: String) = styleClass.contains(className)
 fun Tab.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 fun <T : Tab> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
-fun <T : Tab> T.removeClass(className: String) = apply { styleClass.remove(className) }
+fun <T : Tab> T.removeClass(className: String, removeAll: Boolean = true) = apply {
+	if(removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+}
 fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
