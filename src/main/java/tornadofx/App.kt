@@ -107,7 +107,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
      * Another implementation can still be assigned to FX.dicontainer programmatically
      */
     private fun detectDiContainerArgument() {
-        parameters.named?.get("di-container")?.let { diContainerClassName ->
+        parameters?.named?.get("di-container")?.let { diContainerClassName ->
             val dic = try {
                 Class.forName(diContainerClassName).newInstance()
             } catch (ex: Exception) {
