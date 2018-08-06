@@ -224,10 +224,11 @@ fun Menu.separator() {
 
 fun Menu.radiomenuitem(
         name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null,
-        graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}
+        graphic: Node? = null, value: Any? = null, op: RadioMenuItem.() -> Unit = {}
 )  = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
+    properties["tornadofx.toggleGroupValue"] = value ?: text
     graphic?.apply { it.graphic = graphic }
     op(it)
     this += it
@@ -249,10 +250,11 @@ fun Menu.checkmenuitem(
 
 fun MenuButton.radiomenuitem(
         name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null,
-        graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}
+        graphic: Node? = null, value: Any? = null, op: RadioMenuItem.() -> Unit = {}
 ) = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
+    properties["tornadofx.toggleGroupValue"] = value ?: text
     graphic?.apply { it.graphic = graphic }
     op(it)
     items += it
@@ -299,10 +301,11 @@ fun EventTarget.lazyContextmenu(op: ContextMenu.() -> Unit = {}) = apply {
 
 fun ContextMenu.radiomenuitem(
         name: String, toggleGroup: ToggleGroup? = null, keyCombination: KeyCombination? = null,
-        graphic: Node? = null, op: RadioMenuItem.() -> Unit = {}
+        graphic: Node? = null, value: Any? = null, op: RadioMenuItem.() -> Unit = {}
 )  = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
+    properties["tornadofx.toggleGroupValue"] = value ?: name
     graphic?.apply { it.graphic = graphic }
     op(it)
     this += it

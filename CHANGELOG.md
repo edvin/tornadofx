@@ -30,6 +30,7 @@
 - `Window.aboutToBeShown` property avoid false positives for invisible Workspace warning (https://github.com/edvin/tornadofx/issues/755)
 - Slideshow slides supports optional timeout, which will advance to the next slide using the Slide transition
 - `importStylesheet` now supports `file`, `http` and `https` in addition to classpath resources (https://github.com/edvin/tornadofx/issues/762)
+- `raduimenuiutem` builders now accepts `value` property (https://github.com/edvin/tornadofx/issues/737)
 
 ## [1.7.16]
 
