@@ -218,7 +218,7 @@ fun <T> EventTarget.treetableview(root: TreeItem<T>? = null, op: TreeTableView<T
 }
 
 fun <T : Any> TreeView<T>.lazyPopulate(
-        leafCheck: (LazyTreeItem<T>) -> Boolean = { it.hasChildren() },
+        leafCheck: (LazyTreeItem<T>) -> Boolean = { !it.hasChildren() },
         itemProcessor: (LazyTreeItem<T>) -> Unit = {},
         childFactory: (TreeItem<T>) -> List<T>?
 ) {
