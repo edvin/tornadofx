@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- OnDock Called Twice In openInternalWindow (https://github.com/edvin/tornadofx/issues/772)
 - TreeView.`lazypopulate` leafcheck logic was reversed (https://github.com/edvin/tornadofx/issues/773)
 - `onCancel()` is now called when reusing Wizard instance 
 - Observable collection delegates removed because they shadow observable properties (See Properties.kt:L212)
