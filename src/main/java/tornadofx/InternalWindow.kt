@@ -164,7 +164,6 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
 
         children.add(0, owner)
         fillOverlay()
-//        view.callOnDock()
     }
 
     fun close() {
