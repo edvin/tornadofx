@@ -13,7 +13,7 @@
 
 ### Changes
 
-- Kotlin 1.2.51
+- Kotlin 1.2.60
 - ViewModel binding dirty tracking for ListProperty (https://stackoverflow.com/questions/50364458/tornadofx-bind-dirty-properties-of-different-view-models)
 - Workspace.dock() will log a warning message if a child is docked while the workspace is not showing
 - SortedFilteredList.setAllPassThrough property controls if `setAll` should be forwarded to the underlying list (https://github.com/edvin/tornadofx/issues/344) and (https://github.com/edvin/tornadofx/issues/681)
