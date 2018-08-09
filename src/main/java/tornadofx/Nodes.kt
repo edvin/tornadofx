@@ -887,15 +887,16 @@ inline fun <reified T : UIComponent> Parent.lookup(noinline op: T.() -> Unit = {
  */
 inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
-fun EventTarget.removeFromParent(): Boolean = when(this) {
-    is UIComponent -> root.removeFromParent()
-    is DrawerItem -> drawer.items.remove(this)
-    is Tab -> tabPane?.tabs?.remove(this) == true
-    is Node -> {
-        (parent?.parent as? ToolBar)?.items?.remove(this) ?: parent?.getChildList()?.remove(this) == true
+fun EventTarget.removeFromParent() {
+    when (this) {
+        is UIComponent -> root.removeFromParent()
+        is DrawerItem -> drawer.items.remove(this)
+        is Tab -> tabPane?.tabs?.remove(this)
+        is Node -> {
+            (parent?.parent as? ToolBar)?.items?.remove(this) ?: parent?.getChildList()?.remove(this)
+        }
+        is TreeItem<*> -> this.parent.children.remove(this)
     }
-    is TreeItem<*> -> this.parent.children.remove(this)
-    else -> false
 }
 
 /**

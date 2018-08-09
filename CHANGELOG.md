@@ -21,7 +21,7 @@
 - UIComponent callback `onBeforeShow` is called for all top level UIComponents
 - Primary View `onDock` is now called *after* the stage is shown. Now it aligns with the timing for secondary windows.
 - All `asyncItems` function parameters operate on `FXTask`
-- `removeFromParent` now supports `TreeItem` and returns a boolean indicating if a remove was performed (https://github.com/edvin/tornadofx/issues/776)
+- `removeFromParent` now supports `TreeItem` (https://github.com/edvin/tornadofx/issues/776)
 
 ### Additions
 
