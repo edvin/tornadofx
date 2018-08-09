@@ -58,8 +58,9 @@ fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule, removeAll
 }
 
 fun <S, T> TableColumnBase<S, T>.removeClass(className: String, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
-	if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
 }
+
 fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
 fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
     if (predicate) {
@@ -86,7 +87,7 @@ fun <T : Node> T.removePseudoClass(className: String) = apply {
 }
 
 fun <T : Node> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-	if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
 }
 
 fun <T : Node> T.toggleClass(className: String, predicate: Boolean) = apply {
@@ -110,10 +111,12 @@ fun <T : Tab> T.addPseudoClass(className: String) = apply {
     if (!pseudoClassStates.contains(pseudoClass))
         pseudoClassStates.add(pseudoClass)
 }
+
 fun <T : Tab> T.removePseudoClass(className: String) = apply {
     val pseudoClass = PseudoClass.getPseudoClass(className)
     pseudoClassStates.remove(pseudoClass)
 }
+
 fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
         if (!hasPseudoClass(className)) addPseudoClass(className)
@@ -121,12 +124,14 @@ fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply
         removePseudoClass(className)
     }
 }
+
 fun Tab.hasClass(className: String) = styleClass.contains(className)
 fun Tab.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 fun <T : Tab> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
 fun <T : Tab> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-	if(removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
 }
+
 fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
     if (predicate) {
         if (!hasClass(className)) addClass(className)
@@ -882,15 +887,15 @@ inline fun <reified T : UIComponent> Parent.lookup(noinline op: T.() -> Unit = {
  */
 inline fun <reified T : UIComponent> UIComponent.lookup(noinline op: T.() -> Unit = {}): T? = findAll<T>().getOrNull(0)?.also(op)
 
-fun EventTarget.removeFromParent() {
-    when(this) {
-        is UIComponent -> root.removeFromParent()
-        is DrawerItem -> drawer.items.remove(this)
-        is Tab -> tabPane?.tabs?.remove(this)
-        is Node -> {
-            (parent?.parent as? ToolBar)?.items?.remove(this) ?: parent?.getChildList()?.remove(this)
-        }
+fun EventTarget.removeFromParent(): Boolean = when(this) {
+    is UIComponent -> root.removeFromParent()
+    is DrawerItem -> drawer.items.remove(this)
+    is Tab -> tabPane?.tabs?.remove(this) == true
+    is Node -> {
+        (parent?.parent as? ToolBar)?.items?.remove(this) ?: parent?.getChildList()?.remove(this) == true
     }
+    is TreeItem<*> -> this.parent.children.remove(this)
+    else -> false
 }
 
 /**
@@ -1043,47 +1048,47 @@ val Region.paddingTopProperty: DoubleProperty
 
 val Region.paddingBottomProperty: DoubleProperty
     get() = properties.getOrPut("paddingBottomProperty") {
-            proxypropDouble(paddingProperty(), { value.bottom }) {
-                Insets(value.top, value.right, it, value.left)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { value.bottom }) {
+            Insets(value.top, value.right, it, value.left)
+        }
+    } as DoubleProperty
 
 val Region.paddingLeftProperty: DoubleProperty
     get() = properties.getOrPut("paddingLeftProperty") {
-            proxypropDouble(paddingProperty(), { value.left }) {
-                Insets(value.top, value.right, value.bottom, it)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { value.left }) {
+            Insets(value.top, value.right, value.bottom, it)
+        }
+    } as DoubleProperty
 
 val Region.paddingRightProperty: DoubleProperty
     get() = properties.getOrPut("paddingRightProperty") {
-            proxypropDouble(paddingProperty(), { value.right }) {
-                Insets(value.top, it, value.bottom, value.left)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { value.right }) {
+            Insets(value.top, it, value.bottom, value.left)
+        }
+    } as DoubleProperty
 
 val Region.paddingVerticalProperty: DoubleProperty
     get() = properties.getOrPut("paddingVerticalProperty") {
-            proxypropDouble(paddingProperty(), { paddingVertical.toDouble() }) {
-                val half = it / 2.0
-                Insets(half, value.right, half, value.left)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { paddingVertical.toDouble() }) {
+            val half = it / 2.0
+            Insets(half, value.right, half, value.left)
+        }
+    } as DoubleProperty
 
 val Region.paddingHorizontalProperty: DoubleProperty
     get() = properties.getOrPut("paddingHorizontalProperty") {
-            proxypropDouble(paddingProperty(), { paddingHorizontal.toDouble() }) {
-                val half = it / 2.0
-                Insets(value.top, half, value.bottom, half)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { paddingHorizontal.toDouble() }) {
+            val half = it / 2.0
+            Insets(value.top, half, value.bottom, half)
+        }
+    } as DoubleProperty
 
 val Region.paddingAllProperty: DoubleProperty
     get() = properties.getOrPut("paddingAllProperty") {
-            proxypropDouble(paddingProperty(), { paddingAll.toDouble() }) {
-                Insets(it, it, it, it)
-            }
-        } as DoubleProperty
+        proxypropDouble(paddingProperty(), { paddingAll.toDouble() }) {
+            Insets(it, it, it, it)
+        }
+    } as DoubleProperty
 
 // -- Node helpers
 /**
