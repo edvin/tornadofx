@@ -962,11 +962,14 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 if (block) showAndWait() else show()
             }
         } else {
-            if (!modalStage!!.isShowing)
-                modalStage!!.show()
+            modalStage?.run {
+                if (!isShowing) show()
+            }
         }
 
-        return modalStage
+        return modalStage?.apply {
+            icons += FX.primaryStage.icons
+        }
     }
 
     private fun Stage.configureReloading() {
