@@ -931,12 +931,13 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
                 } else {
                     Scene(getRootWrapper()).apply {
                         FX.applyStylesheetsTo(this)
-                        val primaryStage = FX.getPrimaryStage(scope)
-                        if (primaryStage != null) icons += primaryStage.icons
                         scene = this
                         this@UIComponent.properties["tornadofx.scene"] = this
                     }
                 }
+
+                val primaryStage = FX.getPrimaryStage(scope)
+                if (primaryStage != null) icons += primaryStage.icons
 
                 hookGlobalShortcuts()
 
