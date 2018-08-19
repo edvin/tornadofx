@@ -187,6 +187,7 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
 fun TableView<*>.smartResize() {
     columnResizePolicy = SmartResize.POLICY
+    requestResize()
 }
 
 fun TableView<*>.requestResize() {

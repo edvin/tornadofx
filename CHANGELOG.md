@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- TableView SmartResize Policy now requests resize when applied (https://github.com/edvin/tornadofx/issues/783)
+
 ### Changes
 
 ### Additions
