@@ -75,7 +75,7 @@ You also need a full rebuild of your code after a version upgrade. If you run in
 ```bash
 mvn archetype:generate -DarchetypeGroupId=no.tornado \
   -DarchetypeArtifactId=tornadofx-quickstart-archetype \
-  -DarchetypeVersion=1.7.16
+  -DarchetypeVersion=1.7.17
 ```
 
 ### Add TornadoFX to your project
@@ -86,14 +86,14 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 <dependency>
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.16</version>
+    <version>1.7.17</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.16'
+compile 'no.tornado:tornadofx:1.7.17'
 ```
 
 ### Snapshots are published to Sonatype
@@ -121,23 +121,6 @@ Create a View
 class HelloWorld : View() {
     override val root = hbox {
         label("Hello world")
-    }
-}
-```
-    
-Load the root node from `HelloWorld.fxml` and inject controls by `fx:id`
-  
-```kotlin
-import javafx.scene.control.Label
-import javafx.scene.layout.HBox
-import tornadofx.*
-
-class HelloWorld : View() {
-    override val root: HBox by fxml()
-    val myLabel: Label by fxid()
-    
-    init {
-        myLabel.text = "Hello world"
     }
 }
 ```
@@ -329,13 +312,13 @@ class MyFragment : Fragment() {
 Open it in a Modal Window:
                    
 ```kotlin
-find(MyFragment::class).openModal()
+find<MyFragment>().openModal()
 ``` 
          
 Lookup and embed a `View` inside another `Pane` in one go
            
 ```kotlin
-add(MyFragment::class)
+add<MyFragment>()
 ```
 
 Inject a `View` and embed inside another `Pane`
@@ -353,7 +336,7 @@ Swap a View for another (change Scene root or embedded View)
 ```kotlin
 button("Go to next page") {
     action {
-        replaceWith(PageTwo::class, ViewTransition.Slide(0.3.seconds, Direction.LEFT)
+        replaceWith<PageTwo>(ViewTransition.Slide(0.3.seconds, Direction.LEFT)
     }
 }
 ```
@@ -363,7 +346,7 @@ Open a View in an internal window over the current scene graph
 ```kotlin
 button("Open") {
     action {
-        openInternalWindow(MyOtherView::class)
+        openInternalWindow<MyOtherView>()
     }
 }
 ```
