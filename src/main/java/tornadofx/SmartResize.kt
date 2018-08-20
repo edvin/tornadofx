@@ -187,7 +187,6 @@ class TreeTableSmartResize private constructor() : TreeTableViewResizeCallback {
 
 fun TableView<*>.smartResize() {
     columnResizePolicy = SmartResize.POLICY
-    requestResize()
 }
 
 fun TableView<*>.requestResize() {
@@ -359,8 +358,8 @@ fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean
 
 fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     when (table) {
-        is TableView<*> -> (table as TableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column  as TableColumn<*, *> }, maxRows, afterResize)
-        is TreeTableView<*> -> (table as TreeTableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column  as TreeTableColumn<*, *> }, maxRows, afterResize)
+        is TableView<*> -> (table as TableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column as TableColumn<*, *> }, maxRows, afterResize)
+        is TreeTableView<*> -> (table as TreeTableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column as TreeTableColumn<*, *> }, maxRows, afterResize)
         else -> throw IllegalArgumentException("Unable to resize columns for unknown table type $table")
     }
 }
@@ -510,9 +509,9 @@ fun <TABLE : Any> resizeCall(
 
             val rightCol = param.table.contentColumns
                     .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
-                val newWidth = it.width + rightColDelta
-                newWidth in it.minWidthProperty.value..it.maxWidthProperty.value
-            } ?: return false
+                        val newWidth = it.width + rightColDelta
+                        newWidth in it.minWidthProperty.value..it.maxWidthProperty.value
+                    } ?: return false
 
             // Apply negative delta and set new with for the right column
             with(rightCol) {
