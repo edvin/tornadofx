@@ -26,6 +26,7 @@ import javafx.scene.input.KeyEvent.KEY_PRESSED
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
+import javafx.scene.media.Media
 import javafx.scene.paint.Paint
 import javafx.stage.Modality
 import javafx.stage.Stage
@@ -1181,6 +1182,7 @@ abstract class View @JvmOverloads constructor(title: String? = null, icon: Node?
 class ResourceLookup(val component: Any) {
     operator fun get(resource: String): String = component.javaClass.getResource(resource).toExternalForm()
     fun url(resource: String): URL = component.javaClass.getResource(resource)
+    fun media(resource: String): Media = Media(url(resource).toExternalForm())
     fun stream(resource: String): InputStream = component.javaClass.getResourceAsStream(resource)
     fun image(resource: String): Image = Image(stream(resource))
     fun imageview(resource: String, lazyload: Boolean = false): ImageView = ImageView(Image(url(resource).toExternalForm(), lazyload))

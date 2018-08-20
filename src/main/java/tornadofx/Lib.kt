@@ -12,6 +12,8 @@ import javafx.scene.control.TableView
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.DataFormat
+import javafx.scene.media.Media
+import javafx.scene.media.MediaPlayer
 import java.io.File
 import java.util.function.Predicate
 
@@ -419,3 +421,5 @@ fun <T, R, C : MutableCollection<in R>> Sequence<T>.mapEachTo(destination: C, ac
  * [mapTo] with the element as receiver.
  */
 fun <T, R, C : MutableCollection<in R>> Array<T>.mapEachTo(destination: C, action: T.() -> R) = mapTo(destination, action)
+
+fun Media.play() = MediaPlayer(this).play()
