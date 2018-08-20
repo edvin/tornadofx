@@ -635,6 +635,35 @@ fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S
 }
 
 /**
+ * Add a global edit start handler to the TableView. You can use this callback
+ * to cancel the edit request by calling cancel()
+ */
+fun <S> TableView<S>.onEditStart(onEditStart: TableColumn.CellEditEvent<S, Any?>.(S) -> Unit) {
+    fun addEventHandlerForColumn(column: TableColumn<S, *>) {
+        column.addEventHandler(TableColumn.editStartEvent<S, Any?>()) { event ->
+            onEditStart(event, event.rowValue)
+        }
+        column.columns.forEach(::addEventHandlerForColumn)
+    }
+
+    columns.forEach(::addEventHandlerForColumn)
+
+    columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
+        while (change.next()) {
+            if (change.wasAdded())
+                change.addedSubList.forEach(::addEventHandlerForColumn)
+        }
+    })
+}
+
+/**
+ * Used to cancel an edit event, typically from `onEditStart`
+ */
+fun <S, T> TableColumn.CellEditEvent<S, T>.cancel() {
+    tableView.edit(-1, tableColumn);
+}
+
+/**
  * Create a column with a title specified cell type and operate on it. Inside the code block you can call
  * `value { it.value.someProperty }` to set up a cellValueFactory that must return T or ObservableValue<T>
  */

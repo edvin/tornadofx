@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- TableView.onEditStart() and TableColumn.cancel() functions which can be used to intercept editing events
+
 ### Changes
 
 ### Additions
