@@ -6,6 +6,8 @@
 
 ### Changes
 
+- Kotlin 1.2.61
+
 ### Additions
 
 - TableView.onEditStart() and TableColumn.cancel() functions which can be used to intercept editing events
