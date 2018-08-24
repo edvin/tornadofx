@@ -286,6 +286,19 @@ fun EventTarget.togglebutton(
     if (it.toggleGroup?.selectedToggle == null && selectFirst) it.isSelected = true
 }
 
+fun EventTarget.togglebutton(
+        text: ObservableValue<String>? = null,
+        group: ToggleGroup? = getToggleGroup(),
+        selectFirst: Boolean = true,
+        value: Any? = null,
+        op: ToggleButton.() -> Unit = {}
+) = ToggleButton().attachTo(this, op) {
+    it.textProperty().bind(text)
+    it.properties["tornadofx.toggleGroupValue"] = value ?: text
+    if (group != null) it.toggleGroup = group
+    if (it.toggleGroup?.selectedToggle == null && selectFirst) it.isSelected = true
+}
+
 fun ToggleButton.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
 }
