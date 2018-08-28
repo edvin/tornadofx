@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792)
+
 ### Changes
 
 - Kotlin 1.2.61
