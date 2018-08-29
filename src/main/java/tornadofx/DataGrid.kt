@@ -699,7 +699,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         return if (neededRows > skinnable.maxRows) (skinnable.items.size.toDouble() / skinnable.maxRows).toInt() else maxCellsInRow
     }
 
-    fun computeRowWidth() = skinnable.width + 14 // Account for scrollbar
+    fun computeRowWidth() = skinnable.width - 14 // Account for scrollbar
 
     private fun computeCellWidth() = skinnable.cellWidth + skinnable.horizontalCellSpacing * 2
 
