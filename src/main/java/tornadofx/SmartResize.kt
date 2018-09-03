@@ -12,16 +12,19 @@ import javafx.scene.control.TableView
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.TreeTableView
 import javafx.util.Callback
+import tornadofx.ResizeType.*
 import tornadofx.adapters.*
 
 import kotlin.collections.set
 import kotlin.math.abs
+import kotlin.reflect.KClass
 
 //private const val SMART_RESIZE_INSTALLED = "tornadofx.smartResizeInstalled"
 private const val SMART_RESIZE = "tornadofx.smartResize"
 private const val IS_SMART_RESIZING = "tornadofx.isSmartResizing"
 const val RESIZE_TYPE_KEY = "tornadofx.smartColumnResizeType"
 
+private typealias GroupedColumns = Map<KClass<out ResizeType>, List<TornadoFXColumn<out Any?>>>
 
 sealed class ResizeType(val isResizable: Boolean) {
     class Pref(val width: Number) : ResizeType(true)
@@ -241,22 +244,22 @@ internal var TreeTableColumn<*, *>.resizeType: ResizeType
 
 @Suppress("UNCHECKED_CAST")
 internal fun TableColumn<*, *>.resizeTypeProperty() =
-        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
+        properties.getOrPut(SmartResize.ResizeTypeKey) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
 @Suppress("UNCHECKED_CAST")
 internal fun TreeTableColumn<*, *>.resizeTypeProperty() =
-        properties.getOrPut(TreeTableSmartResize.ResizeTypeKey) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
+        properties.getOrPut(TreeTableSmartResize.ResizeTypeKey) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
 fun <S, T> TableColumn<S, T>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
-    resizeType = ResizeType.Fixed(width.toDouble())
+    resizeType = Fixed(width.toDouble())
 }
 
 fun <S, T> TreeTableColumn<S, T>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
-    resizeType = ResizeType.Fixed(width.toDouble())
+    resizeType = Fixed(width.toDouble())
 }
 
 fun <S, T> TableColumn<S, T>.minWidth(width: Number) = apply { minWidth = width.toDouble() }
@@ -268,37 +271,37 @@ fun <S, T> TreeTableColumn<S, T>.maxWidth(width: Number) = apply { maxWidth = wi
 fun <S, T> TableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = width.toDouble() }
 fun <S, T> TreeTableColumn<S, T>.prefWidth(width: Number) = apply { prefWidth = width.toDouble() }
 
-fun <S, T> TableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
-fun <S, T> TreeTableColumn<S, T>.remainingWidth() = apply { resizeType = ResizeType.Remaining() }
+fun <S, T> TableColumn<S, T>.remainingWidth() = apply { resizeType = Remaining() }
+fun <S, T> TreeTableColumn<S, T>.remainingWidth() = apply { resizeType = Remaining() }
 
 fun <S, T> TableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
+    resizeType = Weight(weight.toDouble(), padding, minContentWidth)
 }
 
 fun <S, T> TreeTableColumn<S, T>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
+    resizeType = Weight(weight.toDouble(), padding, minContentWidth)
 }
 
 fun <S, T> TableColumn<S, T>.pctWidth(pct: Number) = apply {
-    resizeType = ResizeType.Pct(pct.toDouble())
+    resizeType = Pct(pct.toDouble())
 }
 
 fun <S, T> TreeTableColumn<S, T>.pctWidth(pct: Number) = apply {
-    resizeType = ResizeType.Pct(pct.toDouble())
+    resizeType = Pct(pct.toDouble())
 }
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
 fun <S, T> TableColumn<S, T>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
-    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
+    resizeType = Content(padding, useAsMin, useAsMax)
 }
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
 fun <S, T> TreeTableColumn<S, T>.contentWidth(padding: Number = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
-    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
+    resizeType = Content(padding, useAsMin, useAsMax)
 }
 
 internal var TornadoFXColumn<*>.resizeType: ResizeType
@@ -309,7 +312,7 @@ internal var TornadoFXColumn<*>.resizeType: ResizeType
 
 @Suppress("UNCHECKED_CAST")
 internal fun TornadoFXColumn<*>.resizeTypeProperty() =
-        properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(ResizeType.Content()) } as ObjectProperty<ResizeType>
+        properties.getOrPut(RESIZE_TYPE_KEY) { SimpleObjectProperty(Content()) } as ObjectProperty<ResizeType>
 
 var TornadoFXTable<*, *>.isSmartResizing: Boolean
     get() = properties[IS_SMART_RESIZING] == true
@@ -320,7 +323,7 @@ var TornadoFXTable<*, *>.isSmartResizing: Boolean
 fun <S> TornadoFXColumn<S>.fixedWidth(width: Number) = apply {
     minWidth = width.toDouble()
     maxWidth = width.toDouble()
-    resizeType = ResizeType.Fixed(width.toDouble())
+    resizeType = Fixed(width.toDouble())
 }
 
 
@@ -338,25 +341,25 @@ fun <S> TornadoFXColumn<S>.prefWidth(width: Number) = apply {
 }
 
 fun <S> TornadoFXColumn<S>.remainingWidth() = apply {
-    resizeType = ResizeType.Remaining()
+    resizeType = Remaining()
 }
 
 fun <S> TornadoFXColumn<S>.weightedWidth(weight: Number, padding: Double = 0.0, minContentWidth: Boolean = false) = apply {
-    resizeType = ResizeType.Weight(weight.toDouble(), padding, minContentWidth)
+    resizeType = Weight(weight.toDouble(), padding, minContentWidth)
 }
 
 fun <S> TornadoFXColumn<S>.pctWidth(pct: Number) = apply {
-    resizeType = ResizeType.Pct(pct.toDouble())
+    resizeType = Pct(pct.toDouble())
 }
 
 /**
  * Make the column fit the content plus an optional padding width. Optionally constrain the min or max width to be this width.
  */
 fun <S> TornadoFXColumn<S>.contentWidth(padding: Double = 0.0, useAsMin: Boolean = false, useAsMax: Boolean = false) = apply {
-    resizeType = ResizeType.Content(padding, useAsMin, useAsMax)
+    resizeType = Content(padding, useAsMin, useAsMax)
 }
 
-fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<*>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
+fun <S, T : Any> TornadoFXTable<S, T>.resizeColumnsToFitContent(resizeColumns: List<TornadoFXColumn<S>> = contentColumns, maxRows: Int = 50, afterResize: () -> Unit = {}) {
     when (table) {
         is TableView<*> -> (table as TableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column as TableColumn<*, *> }, maxRows, afterResize)
         is TreeTableView<*> -> (table as TreeTableView<*>).resizeColumnsToFitContent(resizeColumns.map { it.column as TreeTableColumn<*, *> }, maxRows, afterResize)
@@ -372,126 +375,10 @@ fun <TABLE : Any> resizeCall(
     val paramColumn = param.column
     try {
         if (paramColumn == null) {
-            // Resize all columns
-
             val contentWidth = param.table.contentWidth
             if (contentWidth == 0.0) return false
-
             installIfNeeded(param.table.table)
-
-            var remainingWidth = contentWidth
-
-            val groupedColumns = param.table.contentColumns.groupBy { it.resizeType::class }
-            // Fixed columns always keep their size
-            groupedColumns[ResizeType.Fixed::class]?.forEach {
-                val rt = it.resizeType as ResizeType.Fixed
-                it.prefWidth = rt.width.toDouble()
-                remainingWidth -= it.width
-            }
-
-            // Preferred sized columns get their size and are adjusted for resize-delta that affected them
-            groupedColumns[ResizeType.Pref::class]?.forEach {
-                val rt = it.resizeType as ResizeType.Pref
-                it.prefWidth = rt.width.toDouble() + rt.delta.toDouble()
-                remainingWidth -= it.width
-            }
-
-            // Content columns are resized to their content and adjusted for resize-delta that affected them
-            groupedColumns[ResizeType.Content::class]?.also { contentColumns ->
-                param.table.resizeColumnsToFitContent(contentColumns)
-                contentColumns.forEach {
-                    val rt = it.resizeType as ResizeType.Content
-
-                    it.prefWidth = it.width + rt.delta + rt.padding.toDouble()
-
-                    // Save minWidth if different from default
-                    if (rt.useAsMin && !rt.minRecorded && it.width != 80.0) {
-                        it.minWidth = it.width
-                        rt.minRecorded = true
-                    }
-
-                    // Save maxWidth if different from default
-                    if (rt.useAsMax && !rt.maxRecorded && it.width != 80.0) {
-                        it.maxWidth = it.width
-                        rt.maxRecorded = true
-                    }
-
-                    remainingWidth -= it.width
-                }
-            }
-
-            // Pct columns share what's left of space from here
-            groupedColumns[ResizeType.Pct::class]?.also { pctColumn ->
-                val widthPerPct = contentWidth / 100.0
-                pctColumn.forEach {
-                    val rt = it.resizeType as ResizeType.Pct
-                    it.prefWidth = (widthPerPct * rt.value.toDouble()) + rt.delta.toDouble()
-                    remainingWidth -= it.width
-                }
-            }
-
-            // Weighted columns shouldn't be combined with Pct. Weight is converted to pct of remaining width
-            // and distributed to weigthed columns + remaining type columns
-            groupedColumns[ResizeType.Weight::class]?.also { weightColumns ->
-                val consideredColumns = weightColumns + param.table.contentColumns.filter { it.resizeType is ResizeType.Remaining }
-                // Combining with "Remaining" typed columns. Remaining columns will get a default weight of 1
-                fun TornadoFXColumn<*>.weight() = (resizeType as? ResizeType.Weight)?.weight?.toDouble() ?: 1.0
-
-                val totalWeight = consideredColumns.sumByDouble { it.weight() }
-                val perWeight = remainingWidth / totalWeight
-
-                consideredColumns.forEach {
-                    val rt = it.resizeType
-                    if (rt is ResizeType.Weight) {
-                        if (rt.minContentWidth && !rt.minRecorded) {
-                            rt.minRecorded = true
-                            it.minWidth = it.width + rt.padding.toDouble()
-                        }
-                        it.prefWidth = Math.max(it.minWidth, (perWeight * rt.weight.toDouble()) + rt.delta + rt.padding.toDouble())
-                    } else {
-                        it.prefWidth = Math.max(it.minWidth, perWeight + rt.delta)
-                    }
-                    remainingWidth -= it.width
-                }
-
-            } ?: run {
-                // If no weighted columns, give the rest of the width to the "Remaining" columns
-                groupedColumns[ResizeType.Remaining::class]?.also { remainingColumns ->
-                    if (remainingWidth > 0) {
-                        val perColumn = remainingWidth / remainingColumns.size.toDouble()
-                        remainingColumns.forEach {
-                            it.prefWidth = perColumn + it.resizeType.delta
-                            remainingWidth -= it.width
-                        }
-                    }
-                }
-            }
-
-            // Adjustment if we didn't assign all width
-            if (remainingWidth > 0.0) {
-                // Give remaining width to the right-most resizable column
-                val rightMostResizable = param.table.contentColumns.lastOrNull { it.resizeType.isResizable }
-                rightMostResizable?.apply {
-                    prefWidth = width + remainingWidth
-                    remainingWidth -= width
-                }
-                // Adjustment for where we assigned more width that we have
-            } else if (remainingWidth < 0.0) {
-                // Reduce from resizable columns, for now we reduce the column with largest reduction potential
-                // We should consider reducing based on the resize type of the column as well
-                param.table.contentColumns.filter { it.resizeType.isResizable }.reduceSorted(
-                        // sort the column by the largest reduction potential: the gap between size and minSize
-                        sorter = { minWidth - width },
-                        filter = { minWidth < width }
-                ) {
-                    val reduceBy = minOf(1.0, abs(remainingWidth))
-                    val toWidth = it.width - reduceBy
-                    it.prefWidth = toWidth
-                    remainingWidth += reduceBy
-
-                    return remainingWidth < 0.0
-                }
-            }
+            resizeAllColumns(param.table, contentWidth)
         } else {
             // Handle specific column size operation
             val rt = paramColumn.resizeType
@@ -500,8 +387,7 @@ fun <TABLE : Any> resizeCall(
 
             val targetWidth = paramColumn.width + param.delta
 
-            // Would resize result in illegal width?
-            if (targetWidth !in paramColumn.minWidthProperty.value..paramColumn.maxWidthProperty.value) return false
+            if (!paramColumn.isLegalWidth(targetWidth)) return false
 
             // Prepare to adjust the right column by the same amount we subtract or add to this column
             val rightColDelta = param.delta * -1.0
@@ -510,7 +396,7 @@ fun <TABLE : Any> resizeCall(
             val rightCol = param.table.contentColumns
                     .filterIndexed { i, c -> i > colIndex && c.resizeType.isResizable }.firstOrNull {
                         val newWidth = it.width + rightColDelta
-                        newWidth in it.minWidthProperty.value..it.maxWidthProperty.value
+                        it.isLegalWidth(newWidth)
                     } ?: return false
 
             // Apply negative delta and set new with for the right column
@@ -530,6 +416,158 @@ fun <TABLE : Any> resizeCall(
     } finally {
         param.table.isSmartResizing = false
     }
+}
+
+private fun <COLUMN, TABLE : Any> resizeAllColumns(table: TornadoFXTable<COLUMN, TABLE>, contentWidth: Double) {
+    fun <S, T : Any> List<TornadoFXColumn<S>>.adjustTo(table: TornadoFXTable<S, T>) = table.resizeColumnsToFitContent(this)
+
+    val groupedColumns = table.contentColumns.groupBy { it.resizeType::class }
+
+    var remainingWidth = contentWidth -
+            groupedColumns.resizeFixedColumns() -
+            groupedColumns.resizePreferredColumns()
+
+    groupedColumns[Content::class]?.adjustTo(table)
+
+    remainingWidth -=
+            groupedColumns.resizeContentColumns() +
+            groupedColumns.resizePctColumns(contentWidth)
+
+
+    val totalWeight = groupedColumns.totalWeightOfWeightedColumns() + groupedColumns.countValues(Remaining::class)
+    val widthPerWeight = remainingWidth/totalWeight
+
+    remainingWidth -=  groupedColumns.resizeWeightedColumns(widthPerWeight) +
+            groupedColumns.resizeRemainingColumns(widthPerWeight)
+
+
+    if (remainingWidth > 0.0) table.divideRemainingWith(remainingWidth)
+    else if (remainingWidth < 0.0) table.takeBackOverflowedWith(remainingWidth)
+}
+
+fun <K> Map<K,Collection<*>>.countValues(key: K) = this[key]?.size ?: 0
+
+
+private fun GroupedColumns.totalWeightOfWeightedColumns() = this[Weight::class]?.run {
+    map { it.resizeType as ResizeType.Weight }.sumByDouble { it.weight as Double }
+} ?: 0.0
+
+
+private fun GroupedColumns.resizeWeightedColumns(widthPerWeight: Double): Double {
+    var spaceNeeded = 0.0
+    this[Weight::class]?.forEach {
+        val rt = it.resizeType as ResizeType.Weight
+        if (rt.minContentWidth && !rt.minRecorded) {
+            it.minWidth = it.width + rt.padding.toDouble()
+            rt.minRecorded = true
+        }
+        it.prefWidth = maxOf(it.minWidth, (widthPerWeight * rt.weight.toDouble()) + rt.delta + rt.padding.toDouble())
+        spaceNeeded += it.width
+    }
+    return spaceNeeded
+}
+
+private fun GroupedColumns.resizeRemainingColumns(widthPerWeight: Double): Double {
+    var spaceNeeded = 0.0
+    this[Remaining::class]?.withEach{
+        prefWidth = maxOf(minWidth, widthPerWeight + resizeType.delta)
+        spaceNeeded += width
+    }
+    return spaceNeeded
+}
+
+private fun <TABLE : Any> TornadoFXTable<out Any?, TABLE>.takeBackOverflowedWith(remainingWidth: Double) {
+    var stillToTake = remainingWidth
+    contentColumns.filter { it.resizeType.isResizable }.reduceSorted(
+            // sort the column by the largest reduction potential: the gap between size and minSize
+            sorter = { minWidth - width },
+            filter = { minWidth < width }
+    ) {
+        val reduceBy = minOf(1.0, abs(stillToTake))
+        val toWidth = it.width - reduceBy
+        it.prefWidth = toWidth
+        stillToTake += reduceBy
+
+        stillToTake < 0.0
+    }
+}
+
+private fun <TABLE : Any> TornadoFXTable<out Any?, TABLE>.divideRemainingWith(remainingWidth: Double) {
+    // Give remaining width to the right-most resizable column
+    val rightMostResizable = contentColumns.lastOrNull { it.resizeType.isResizable }
+    rightMostResizable?.apply {
+        prefWidth = width + remainingWidth
+    }
+}
+
+private fun GroupedColumns.resizePctColumns(contentWidth: Double): Double {
+    var spaceNeeded = 0.0
+    this[Pct::class]?.also { pctColumn ->
+        val widthPerPct = contentWidth / 100.0
+        pctColumn.forEach {
+            val rt = it.resizeType as ResizeType.Pct
+            it.prefWidth = (widthPerPct * rt.value.toDouble()) + rt.delta.toDouble()
+            spaceNeeded += it.width
+        }
+    }
+    return spaceNeeded
+}
+
+private fun GroupedColumns.resizeContentColumns(): Double {
+    // Content columns are resized to their content and adjusted for resize-delta that affected them
+    var spaceNeeded = 0.0
+    this[Content::class]?.also { contentColumns ->
+        contentColumns.forEach {
+            val rt = it.resizeType as ResizeType.Content
+
+            it.prefWidth = it.width + rt.delta + rt.padding.toDouble()
+
+            if (rt.hasUnrecordedMin()) it.recordMinFrom(rt)
+            if (rt.hasUnrecordedMax()) it.recordMaxFrom(rt)
+
+            spaceNeeded += it.width
+        }
+    }
+    return spaceNeeded
+}
+
+private const val DEFAULT_COLUMN_WIDTH = 80.0
+private fun ResizeType.Content.hasUnrecordedMin() = !minRecorded && useAsMin
+private fun TornadoFXColumn<*>.recordMinFrom(content: ResizeType.Content) {
+    if (width != DEFAULT_COLUMN_WIDTH) {
+        minWidth = width
+        content.minRecorded = true
+    }
+}
+
+private fun ResizeType.Content.hasUnrecordedMax() = !maxRecorded && useAsMax
+private fun TornadoFXColumn<*>.recordMaxFrom(content: ResizeType.Content) {
+    if (width != DEFAULT_COLUMN_WIDTH) {
+        maxWidth = width
+        content.maxRecorded = true
+    }
+}
+
+private fun GroupedColumns.resizePreferredColumns(): Double {
+    var spaceNeeded = 0.0
+    this[Pref::class]?.forEach {
+        val rt = it.resizeType as ResizeType.Pref
+        it.prefWidth = rt.width.toDouble() + rt.delta.toDouble()
+        spaceNeeded += it.width
+    }
+    return spaceNeeded
+}
+
+
+
+private fun GroupedColumns.resizeFixedColumns(): Double {
+    var spaceNeeded = 0.0
+    this[Fixed::class]?.forEach {
+        val rt = it.resizeType as Fixed
+        it.prefWidth = rt.width.toDouble()
+        spaceNeeded += it.width
+    }
+    return spaceNeeded
 }
 
 /**

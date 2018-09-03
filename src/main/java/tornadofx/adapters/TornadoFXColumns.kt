@@ -16,6 +16,7 @@ interface TornadoFXColumn<COLUMN> {
     val width: Double
     val minWidthProperty: DoubleProperty
     val maxWidthProperty: DoubleProperty
+    fun isLegalWidth(width: Double) = width in minWidthProperty.get() .. maxWidthProperty.get()
 }
 
 class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : TornadoFXColumn<TreeTableColumn<*, *>> {
