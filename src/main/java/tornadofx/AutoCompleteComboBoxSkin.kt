@@ -1,7 +1,5 @@
 package tornadofx
 
-import com.sun.javafx.scene.control.behavior.ComboBoxListViewBehavior
-import com.sun.javafx.scene.control.skin.ComboBoxPopupControl
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -10,6 +8,7 @@ import javafx.event.EventHandler
 import javafx.scene.AccessibleRole
 import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.control.skin.ComboBoxPopupControl
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.util.Callback
@@ -179,7 +178,7 @@ class FilterInputTextHandler(val editor : TextField, val filterHandler : FilterH
  * Default filter use the string produced by the converter of combobox and search with contains ignore case the occurrence of typed text
  * Created by anouira on 15/02/2017.
  */
-open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?, automaticPopupWidth: Boolean) : ComboBoxPopupControl<T>(comboBox, ComboBoxListViewBehavior(comboBox)), FilterHandler {
+open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFilter: ((String) -> List<T>)?, automaticPopupWidth: Boolean) : ComboBoxPopupControl<T>(comboBox), FilterHandler {
     var autoCompleteFilter_: (String) -> List<T> = autoCompleteFilter ?: {
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
@@ -205,7 +204,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
                 resetFilter()
                 comboBox.hide()
             }}
-            arrowButton.setOnMouseClicked {
+            childrenUnmodifiable.find { it.id == "arrow-button" }?.setOnMouseClicked {
                 if (isShowing) {
                     resetFilter()
                 }
@@ -320,9 +319,9 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
     private val PSEUDO_CLASS_FILLED = PseudoClass.getPseudoClass("filled")
 
     override fun getDisplayNode(): Node? {
-        val displayNode: Node
+        val displayNode: Node?
         if (comboBox.isEditable) {
-            displayNode = editableInputNode
+            displayNode = editor
         } else {
             displayNode = buttonCell as Node
         }
@@ -427,9 +426,9 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
         return index
     }
 
-    override fun updateDisplayNode() {
+    fun updateDisplayNode() {
         if (editor != null) {
-            super.updateDisplayNode()
+            ReflectionUtils.callMethod(this, this.javaClass.superclass, "updateDisplayNode")
         } else {
             val value = comboBox.value
             val index = getIndexOfComboBoxValueInItemsList()
@@ -462,5 +461,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
 
     /* End of Implementation copied from ComboBoxListViewSkin */
 
-
+    fun updateDisplayArea() {
+        ReflectionUtils.callMethod(this, this.javaClass.superclass.superclass, "updateDisplayArea")
+    }
 }

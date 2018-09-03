@@ -8,8 +8,8 @@ import org.junit.Before
 import org.junit.Test
 import org.testfx.api.FxAssert.verifyThat
 import org.testfx.api.FxToolkit
-import org.testfx.matcher.base.NodeMatchers
-import tornadofx.text
+import org.testfx.matcher.control.TextMatchers
+import tornadofx.*
 
 class BuildersTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
@@ -25,9 +25,9 @@ class BuildersTest {
     fun text_builder() {
         // expect:
         verifyThat(pane.text(), Matchers.instanceOf(Text::class.java))
-        verifyThat(pane.text(), NodeMatchers.hasText(""))
-        verifyThat(pane.text("foo"), NodeMatchers.hasText("foo"))
-        verifyThat(pane.text() { text = "bar" }, NodeMatchers.hasText("bar"))
+        verifyThat(pane.text(), TextMatchers.hasText(""))
+        verifyThat(pane.text("foo"), TextMatchers.hasText("foo"))
+        verifyThat(pane.text() { text = "bar" }, TextMatchers.hasText("bar"))
     }
 
 }

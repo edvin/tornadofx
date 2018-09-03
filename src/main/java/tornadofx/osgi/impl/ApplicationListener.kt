@@ -1,6 +1,5 @@
 package tornadofx.osgi.impl
 
-import com.sun.javafx.application.PlatformImpl
 import javafx.application.Application
 import javafx.application.Platform
 import javafx.scene.control.Label
@@ -37,7 +36,7 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
 
         private val fxRuntimeInitialized: Boolean
             get() {
-                val initializedField = PlatformImpl::class.java.getDeclaredField("initialized")
+                val initializedField = Class.forName("com.sun.javafx.application.PlatformImpl").getDeclaredField("initialized")
                 initializedField.isAccessible = true
                 val initialized = initializedField.get(null) as AtomicBoolean
                 return initialized.get()
