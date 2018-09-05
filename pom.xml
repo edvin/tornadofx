@@ -306,4 +306,38 @@
         <maven.compiler.target>10</maven.compiler.target>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>JDK 11</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <jdk>11</jdk>
+            </activation>
+            <properties>
+                <javafx.version>11-ea+24</javafx.version>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-controls</artifactId>
+                    <version>${javafx.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-fxml</artifactId>
+                    <version>${javafx.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-web</artifactId>
+                    <version>${javafx.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-swing</artifactId>
+                    <version>${javafx.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
