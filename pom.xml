@@ -215,20 +215,6 @@
                     </archive>
                 </configuration>
             </plugin>
-            <!--<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven.javadoc.version}</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>javadoc</goal>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -282,7 +268,7 @@
 
     <properties>
         <kotlin.version>1.2.61</kotlin.version>
-        <dokka.version>0.9.9</dokka.version>
+        <dokka.version>0.9.17</dokka.version>
 
         <org.glassfish.javax.json.version>1.1.2</org.glassfish.javax.json.version>
         <org.apache.httpcomponents.httpclient.version>4.5.3</org.apache.httpcomponents.httpclient.version>
