@@ -274,8 +274,8 @@
         <org.apache.httpcomponents.httpclient.version>4.5.3</org.apache.httpcomponents.httpclient.version>
         <org.apache.felix.framework.version>6.0.1</org.apache.felix.framework.version>
         <junit.version>4.12</junit.version>
-        <org.testfx.testfx-core.version>4.0.12-alpha</org.testfx.testfx-core.version>
-        <org.testfx.testfx-junit.version>4.0.12-alpha</org.testfx.testfx-junit.version>
+        <org.testfx.testfx-core.version>4.0.14-alpha</org.testfx.testfx-core.version>
+        <org.testfx.testfx-junit.version>4.0.14-alpha</org.testfx.testfx-junit.version>
         <de.jensd.fontawesomefx.version>4.7.0-9.1.2</de.jensd.fontawesomefx.version>
 
         <maven.release.version>2.1</maven.release.version>
