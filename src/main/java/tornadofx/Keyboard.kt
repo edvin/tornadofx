@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.scene.control.Button
 import javafx.scene.control.Control
@@ -13,7 +14,9 @@ import javafx.scene.paint.Color
 import javax.json.Json
 import javax.json.JsonObject
 
-fun EventTarget.keyboard(op: KeyboardLayout.() -> Unit) = opcr(this, KeyboardLayout(), op)
+
+fun EventTarget.keyboard(op: KeyboardLayout.() -> Unit): KeyboardLayout = opcr(this, KeyboardLayout(), op)
+
 
 class KeyboardStyles : Stylesheet() {
     init {
@@ -38,60 +41,55 @@ class KeyboardStyles : Stylesheet() {
 }
 
 class KeyboardLayout : Control() {
-    val rows = FXCollections.observableArrayList<KeyboardRow>()
+    val rows: ObservableList<KeyboardRow> = FXCollections.observableArrayList()
 
-    val unitSizeProperty = SimpleDoubleProperty(50.0)
-    var unitSize by unitSizeProperty
+    val unitSizeProperty: SimpleDoubleProperty = SimpleDoubleProperty(50.0)
+    var unitSize: Double by unitSizeProperty
 
     init {
         addClass(Stylesheet.keyboard)
     }
 
-    override fun getUserAgentStylesheet() = KeyboardStyles().base64URL.toExternalForm()
+    override fun getUserAgentStylesheet(): String = KeyboardStyles().base64URL.toExternalForm()
+    override fun createDefaultSkin(): KeyboardSkin = KeyboardSkin(this)
 
-    override fun createDefaultSkin() = KeyboardSkin(this)
-
-    fun row(op: KeyboardRow.() -> Unit) = KeyboardRow(this).apply {
+    fun row(op: KeyboardRow.() -> Unit): KeyboardRow = KeyboardRow(this).apply {
         rows.add(this)
         op(this)
     }
 
     fun load(json: JsonObject) {
-        json.getJsonArray("rows").mapTo(rows) {
-            KeyboardRow.fromJSON(this, it as JsonObject)
-        }
+        json.getJsonArray("rows").mapTo(rows) { KeyboardRow.fromJSON(this, it as JsonObject) }
     }
 
-    fun toJSON() = JsonBuilder()
-            .add("rows", Json.createArrayBuilder().let { jsonRows ->
-                rows.forEach { jsonRows.add(it.toJSON()) }
-                jsonRows.build()
-            })
-            .build()
+    fun toJSON(): JsonObject = JsonBuilder()
+        .add("rows", Json.createArrayBuilder().let { jsonRows ->
+            rows.forEach { jsonRows.add(it.toJSON()) }
+            jsonRows.build()
+        })
+        .build()
 
-    fun toKeyboardLayoutEditorFormat(): String {
-        val output = StringBuilder()
+    fun toKeyboardLayoutEditorFormat(): String = buildString {
         rows.forEachIndexed { rowIndex, row ->
-            output.append("[")
+            append("[")
             row.keys.forEachIndexed { colIndex, key ->
-                if (colIndex > 0) output.append(",")
+                if (colIndex > 0) append(",")
                 if (key is SpacerKeyboardKey) {
-                    output.append("{x:${key.keyWidth}}")
+                    append("{x:${key.keyWidth}}")
                 } else {
                     if (key.keyWidth != 1.0 || key.keyHeight != 1.0) {
-                        output.append("{")
-                        if (key.keyWidth != 1.0) output.append("w:${key.keyWidth}")
-                        if (key.keyHeight != 1.0) output.append("h:${key.keyHeight}")
-                        output.append("},")
+                        append("{")
+                        if (key.keyWidth != 1.0) append("w:${key.keyWidth}")
+                        if (key.keyHeight != 1.0) append("h:${key.keyHeight}")
+                        append("},")
                     }
-                    output.append("\"${key.text?.replace("\\", "\\\\") ?: ""}\"")
+                    append("\"${key.text?.replace("\\", "\\\\") ?: ""}\"")
                 }
             }
-            output.append("]")
-            if (rowIndex < rows.size - 1) output.append(",")
-            output.append("\n")
+            append("]")
+            if (rowIndex < rows.lastIndex) append(",")
+            append("\n")
         }
-        return output.toString()
     }
 
 
@@ -118,31 +116,21 @@ class KeyboardSkin(control: KeyboardLayout) : SkinBase<KeyboardLayout>(control) 
         }
     }
 
-    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = keyboard.rows.sumByDouble { row ->
-        if (row.keys.isEmpty()) 0.0 else row.keys.map { it.prefHeight(width) }.min() ?: 0.0
-    } + topInset + bottomInset
+    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        keyboard.rows.sumByDouble { row -> if (row.keys.isEmpty()) 0.0 else row.keys.map { it.prefHeight(width) }.min() ?: 0.0 } + topInset + bottomInset
 
-    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = (keyboard.rows.map { row ->
-        if (row.keys.isEmpty()) 0.0 else row.keys.sumByDouble { it.prefWidth(height) }
-    }.max() ?: 0.0) + leftInset + rightInset
+    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        (keyboard.rows.map { row -> if (row.keys.isEmpty()) 0.0 else row.keys.sumByDouble { it.prefWidth(height) } }.max() ?: 0.0) + leftInset + rightInset
 
-    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = computePrefWidth(height, topInset, rightInset, bottomInset, leftInset)
-    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        computePrefWidth(height, topInset, rightInset, bottomInset, leftInset)
+
+    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
 }
 
 class KeyboardRow(val keyboard: KeyboardLayout) {
-    val keys = FXCollections.observableArrayList<KeyboardKey>()
-
-    fun spacer(width: Number = 1.0, height: Number = 1.0) = SpacerKeyboardKey(keyboard, width, height).apply {
-        keys.add(this)
-    }
-
-    fun key(text: String? = null, svg: String? = null, code: Int? = null, width: Number = 1.0, height: Number = 1.0, op: KeyboardKey.() -> Unit = {}): KeyboardKey {
-        val key = KeyboardKey(keyboard, text, svg, code, width, height)
-        op(key)
-        keys.add(key)
-        return key
-    }
+    val keys: ObservableList<KeyboardKey> = FXCollections.observableArrayList()
 
     init {
         keys.addListener(ListChangeListener {
@@ -153,20 +141,36 @@ class KeyboardRow(val keyboard: KeyboardLayout) {
         })
     }
 
+    fun spacer(width: Number = 1.0, height: Number = 1.0): SpacerKeyboardKey = SpacerKeyboardKey(keyboard, width, height).apply { keys.add(this) }
+
+    fun key(
+        text: String? = null,
+        svg: String? = null,
+        code: Int? = null,
+        width: Number = 1.0,
+        height: Number = 1.0,
+        op: KeyboardKey.() -> Unit = {}
+    ): KeyboardKey {
+        val key = KeyboardKey(keyboard, text, svg, code, width, height)
+        op(key)
+        keys.add(key)
+        return key
+    }
+
+    fun toJSON(): JsonObject = JsonBuilder()
+        .add("keys", Json.createArrayBuilder().let { jsonKeys ->
+            keys.forEach { jsonKeys.add(it.toJSON()) }
+            jsonKeys.build()
+        })
+        .build()
+
     companion object {
-        fun fromJSON(keyboard: KeyboardLayout, json: JsonObject) = KeyboardRow(keyboard).apply {
+        fun fromJSON(keyboard: KeyboardLayout, json: JsonObject): KeyboardRow = KeyboardRow(keyboard).apply {
             json.getJsonArray("keys").mapTo(keys) {
                 KeyboardKey.fromJSON(keyboard, it as JsonObject)
             }
         }
     }
-
-    fun toJSON() = JsonBuilder()
-            .add("keys", Json.createArrayBuilder().let { jsonKeys ->
-                keys.forEach { jsonKeys.add(it.toJSON()) }
-                jsonKeys.build()
-            })
-            .build()
 }
 
 class SpacerKeyboardKey(keyboard: KeyboardLayout, width: Number, height: Number) : KeyboardKey(keyboard, null, null, null, width, height) {
@@ -177,18 +181,26 @@ class SpacerKeyboardKey(keyboard: KeyboardLayout, width: Number, height: Number)
     constructor(keyboard: KeyboardLayout, json: JsonObject) : this(keyboard, json.getDouble("width"), json.getDouble("height"))
 }
 
-open class KeyboardKey(keyboard: KeyboardLayout, text: String?, svg: String?, code: Int? = null, width: Number, height: Number) : Button(text) {
-    val svgProperty = SimpleStringProperty(svg)
-    var svg by svgProperty
+open class KeyboardKey(
+    keyboard: KeyboardLayout,
+    text: String?,
+    svg: String?,
+    code: Int? = null,
+    width: Number,
+    height: Number
+) : Button(text) {
 
-    val keyWidthProperty = SimpleDoubleProperty(width.toDouble())
-    var keyWidth by keyWidthProperty
+    val svgProperty: SimpleStringProperty = SimpleStringProperty(svg)
+    var svg: String? by svgProperty
 
-    val keyHeightProperty = SimpleDoubleProperty(height.toDouble())
-    var keyHeight by keyHeightProperty
+    val keyWidthProperty: SimpleDoubleProperty = SimpleDoubleProperty(width.toDouble())
+    var keyWidth: Double by keyWidthProperty
 
-    val codeProperty = SimpleObjectProperty<Int>(code)
-    var code by codeProperty
+    val keyHeightProperty: SimpleDoubleProperty = SimpleDoubleProperty(height.toDouble())
+    var keyHeight: Double by keyHeightProperty
+
+    val codeProperty: SimpleObjectProperty<Int?> = SimpleObjectProperty(code)
+    var code: Int? by codeProperty
 
     init {
         addClass(Stylesheet.keyboardKey)
@@ -198,23 +210,30 @@ open class KeyboardKey(keyboard: KeyboardLayout, text: String?, svg: String?, co
         updateGraphic()
     }
 
+    constructor(keyboard: KeyboardLayout, json: JsonObject) : this(
+        keyboard,
+        json.string("text"),
+        json.string("svg"),
+        json.int("code"),
+        json.getDouble("width"),
+        json.getDouble("height")
+    )
+
     private fun updateGraphic() {
         graphic = if (svg != null) svgpath(svg) else null
     }
 
-    fun toJSON() = JsonBuilder()
-            .add("type", if (this is SpacerKeyboardKey) "spacer" else null)
-            .add("text", text)
-            .add("svg", svg)
-            .add("code", code)
-            .add("width", keyWidth)
-            .add("height", keyHeight)
-            .build()
-
-    constructor(keyboard: KeyboardLayout, json: JsonObject) : this(keyboard, json.string("text"), json.string("svg"), json.int("code"), json.getDouble("width"), json.getDouble("height"))
+    fun toJSON(): JsonObject = JsonBuilder()
+        .add("type", if (this is SpacerKeyboardKey) "spacer" else null)
+        .add("text", text)
+        .add("svg", svg)
+        .add("code", code)
+        .add("width", keyWidth)
+        .add("height", keyHeight)
+        .build()
 
     companion object {
         fun fromJSON(keyboard: KeyboardLayout, json: JsonObject): KeyboardKey =
-                if (json.getString("type", null) == "spacer") SpacerKeyboardKey(keyboard, json) else KeyboardKey(keyboard, json)
+            if (json.getString("type", null) == "spacer") SpacerKeyboardKey(keyboard, json) else KeyboardKey(keyboard, json)
     }
 }
