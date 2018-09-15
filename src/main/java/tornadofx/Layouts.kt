@@ -10,8 +10,27 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.canvas.Canvas
-import javafx.scene.control.*
-import javafx.scene.layout.*
+import javafx.scene.control.Accordion
+import javafx.scene.control.Label
+import javafx.scene.control.Pagination
+import javafx.scene.control.ScrollPane
+import javafx.scene.control.Separator
+import javafx.scene.control.SplitPane
+import javafx.scene.control.TitledPane
+import javafx.scene.control.ToolBar
+import javafx.scene.layout.AnchorPane
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.ColumnConstraints
+import javafx.scene.layout.ConstraintsBase
+import javafx.scene.layout.FlowPane
+import javafx.scene.layout.GridPane
+import javafx.scene.layout.HBox
+import javafx.scene.layout.Pane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
+import javafx.scene.layout.StackPane
+import javafx.scene.layout.TilePane
+import javafx.scene.layout.VBox
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction1
 import kotlin.reflect.full.createInstance
@@ -50,6 +69,9 @@ fun GridPane.removeRow(node: Node): Int {
         val childRowIndex = GridPane.getRowIndex(child) ?: 0
         if (childRowIndex == rowIndex) {
             nodesToDelete.add(child)
+            // Remove row index property from the node
+            GridPane.setRowIndex(child, null)
+            GridPane.setColumnIndex(child, null)
         } else if (childRowIndex > rowIndex) {
             GridPane.setRowIndex(child, childRowIndex - 1)
         }
@@ -59,6 +81,10 @@ fun GridPane.removeRow(node: Node): Int {
 }
 
 fun GridPane.removeAllRows() {
+    children.forEach {
+        GridPane.setRowIndex(it, null)
+        GridPane.setColumnIndex(it, null)
+    }
     children.clear()
     properties.remove(GridPaneRowIdKey)
 }
