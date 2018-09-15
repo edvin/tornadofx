@@ -64,15 +64,10 @@ class RegionTest {
     }
 
     @Test
-    fun testGridPaneRemoveNoRow() {
-        val label = Label()
+    fun testEmptyGridPane() {
         FxToolkit.setupFixture {
             val root = GridPane().apply {
             }
-
-            assertFalse(root.properties.containsKey(GridPaneRowIdKey))
-
-            root.removeRow(label)
 
             assertFalse(root.properties.containsKey(GridPaneRowIdKey))
             assertEquals(root.children, emptyList<Node>().observable())
@@ -80,31 +75,7 @@ class RegionTest {
     }
 
     @Test
-    fun testGridPaneRemoveSingleRow() {
-        lateinit var label: Label
-        FxToolkit.setupFixture {
-            val root = GridPane().apply {
-                row {
-                    label = label()
-                }
-            }
-
-            assertEquals(root.properties[GridPaneRowIdKey], 0)
-            assertEquals(GridPane.getRowIndex(label), 0)
-            assertEquals(GridPane.getColumnIndex(label), 0)
-            assertEquals(root.children, listOf<Node>(label).observable())
-
-            root.removeRow(label)
-
-            assertEquals(root.properties[GridPaneRowIdKey], -1)
-            assertNull(GridPane.getRowIndex(label))
-            assertNull(GridPane.getColumnIndex(label))
-            assertEquals(root.children, emptyList<Node>().observable())
-        }
-    }
-
-    @Test
-    fun testGridPaneRemoveMiddleRow() {
+    fun testGridPaneAddRows() {
         lateinit var label: Label
         lateinit var text1: Text
         lateinit var text2: Text
@@ -138,6 +109,64 @@ class RegionTest {
             assertEquals(GridPane.getRowIndex(vbox), 2)
             assertEquals(GridPane.getColumnIndex(vbox), 0)
             assertEquals(root.children, listOf(label, text1, text2, text3, vbox).observable())
+        }
+    }
+
+    @Test
+    fun testGridPaneRemoveNoRow() {
+        val label = Label()
+        FxToolkit.setupFixture {
+            val root = GridPane().apply {
+            }
+
+            root.removeRow(label)
+
+            assertFalse(root.properties.containsKey(GridPaneRowIdKey))
+            assertEquals(root.children, emptyList<Node>().observable())
+        }
+    }
+
+    @Test
+    fun testGridPaneRemoveSingleRow() {
+        lateinit var label: Label
+        FxToolkit.setupFixture {
+            val root = GridPane().apply {
+                row {
+                    label = label()
+                }
+            }
+
+            root.removeRow(label)
+
+            assertEquals(root.properties[GridPaneRowIdKey], -1)
+            assertNull(GridPane.getRowIndex(label))
+            assertNull(GridPane.getColumnIndex(label))
+            assertEquals(root.children, emptyList<Node>().observable())
+        }
+    }
+
+    @Test
+    fun testGridPaneRemoveMiddleRow() {
+        lateinit var label: Label
+        lateinit var text1: Text
+        lateinit var text2: Text
+        lateinit var text3: Text
+        lateinit var vbox: VBox
+        FxToolkit.setupFixture {
+            val root = GridPane().apply {
+                row {
+                    label = label()
+                }
+                row {
+                    text1 = text()
+                    text2 = text()
+                    text3 = text()
+                }
+                row {
+                    vbox = vbox()
+                }
+
+            }
 
             root.removeRow(text1)
 
@@ -178,19 +207,6 @@ class RegionTest {
                 }
 
             }
-
-            assertEquals(root.properties[GridPaneRowIdKey], 2)
-            assertEquals(GridPane.getRowIndex(label), 0)
-            assertEquals(GridPane.getColumnIndex(label), 0)
-            assertEquals(GridPane.getRowIndex(text1), 1)
-            assertEquals(GridPane.getColumnIndex(text1), 0)
-            assertEquals(GridPane.getRowIndex(text2), 1)
-            assertEquals(GridPane.getColumnIndex(text2), 1)
-            assertEquals(GridPane.getRowIndex(text3), 1)
-            assertEquals(GridPane.getColumnIndex(text3), 2)
-            assertEquals(GridPane.getRowIndex(vbox), 2)
-            assertEquals(GridPane.getColumnIndex(vbox), 0)
-            assertEquals(root.children, listOf(label, text1, text2, text3, vbox).observable())
 
             root.removeAllRows()
 
