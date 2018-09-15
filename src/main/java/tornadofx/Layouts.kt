@@ -33,6 +33,36 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit = {}) {
     addRow(properties[GridPaneRowIdKey] as Int, *fake.children.toTypedArray())
 }
 
+/**
+ * Removes the corresponding row to which this [node] belongs to.
+ *
+ * It does the opposite of the [GridPane.row] cleaning all internal state properly.
+ *
+ * @return the row index of the removed row.
+ */
+fun GridPane.removeRow(node: Node): Int {
+    if (properties.containsKey(GridPaneRowIdKey)) {
+        properties[GridPaneRowIdKey] = properties[GridPaneRowIdKey] as Int - 1
+    }
+    val rowIndex = GridPane.getRowIndex(node) ?: 0
+    val nodesToDelete = mutableListOf<Node>()
+    children.forEach { child ->
+        val childRowIndex = GridPane.getRowIndex(child) ?: 0
+        if (childRowIndex == rowIndex) {
+            nodesToDelete.add(child)
+        } else if (childRowIndex > rowIndex) {
+            GridPane.setRowIndex(child, childRowIndex - 1)
+        }
+    }
+    children.removeAll(nodesToDelete)
+    return rowIndex
+}
+
+fun GridPane.removeAllRows() {
+    children.clear()
+    properties.remove(GridPaneRowIdKey)
+}
+
 fun GridPane.constraintsForColumn(columnIndex: Int) = constraintsFor(columnConstraints, columnIndex)
 
 fun GridPane.constraintsForRow(rowIndex: Int) = constraintsFor(rowConstraints, rowIndex)
