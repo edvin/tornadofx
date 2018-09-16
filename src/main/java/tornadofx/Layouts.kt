@@ -41,8 +41,12 @@ fun GridPane.row(title: String? = null, op: Pane.() -> Unit = {}) {
  * @return the row index of the removed row.
  */
 fun GridPane.removeRow(node: Node): Int {
-    if (properties.containsKey(GridPaneRowIdKey)) {
-        properties[GridPaneRowIdKey] = properties[GridPaneRowIdKey] as Int - 1
+    val rowIdKey = properties[GridPaneRowIdKey] as Int?
+    if (rowIdKey != null) {
+        when (rowIdKey) {
+            0 -> properties.remove(GridPaneRowIdKey)
+            else -> properties[GridPaneRowIdKey] = rowIdKey - 1
+        }
     }
     val rowIndex = GridPane.getRowIndex(node) ?: 0
     val nodesToDelete = mutableListOf<Node>()

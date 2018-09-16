@@ -138,7 +138,7 @@ class RegionTest {
 
             root.removeRow(label)
 
-            assertEquals(root.properties[GridPaneRowIdKey], -1)
+            assertFalse(root.properties.containsKey(GridPaneRowIdKey))
             assertNull(GridPane.getRowIndex(label))
             assertNull(GridPane.getColumnIndex(label))
             assertEquals(root.children, emptyList<Node>().observable())
