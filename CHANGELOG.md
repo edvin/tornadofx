@@ -8,7 +8,7 @@
 
 ### Changes
 
-- Kotlin 1.2.61
+- Kotlin 1.2.70
 - Specified public & protected declaration types explicitly to ensure API stability.
 
 ### Additions
