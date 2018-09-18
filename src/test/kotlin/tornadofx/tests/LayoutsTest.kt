@@ -17,10 +17,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 /**
- *
  * @author Anindya Chatterjee
  */
-class RegionTest {
+class LayoutsTest {
     val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
@@ -31,7 +30,7 @@ class RegionTest {
         FxToolkit.setupFixture {
             val root = Pane().apply {
                 vbox {
-                    this@RegionTest.vbox = this
+                    this@LayoutsTest.vbox = this
                     fitToParentSize()
                 }
                 setPrefSize(400.0, 160.0)
@@ -49,7 +48,7 @@ class RegionTest {
         FxToolkit.setupFixture {
             val root = ScrollPane().apply {
                 content = vbox {
-                    this@RegionTest.vbox = this
+                    this@LayoutsTest.vbox = this
                 }
                 setPrefSize(400.0, 160.0)
             }
