@@ -13,9 +13,9 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 import kotlin.reflect.jvm.javaMethod
 
-fun <T> ViewModel.property(value: T? = null): PropertyDelegate<T> = PropertyDelegate(SimpleObjectProperty<T>(this, "ViewModelProperty", value))
-fun <T> property(value: T? = null): PropertyDelegate<T> = PropertyDelegate(SimpleObjectProperty<T>(value))
-fun <T> property(block: () -> Property<T>): PropertyDelegate<T> = PropertyDelegate(block())
+fun <T> ViewModel.property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(this, "ViewModelProperty", value)) // FIXME Review to decide correct type
+fun <T> property(value: T? = null) = PropertyDelegate(SimpleObjectProperty<T>(value)) // FIXME Review to decide correct type
+fun <T> property(block: () -> Property<T>) = PropertyDelegate(block()) // FIXME Review to decide correct type
 
 fun <T> Any.getProperty(prop: KMutableProperty1<*, T>): ObjectProperty<T> {
     // avoid kotlin-reflect dependency
@@ -175,7 +175,7 @@ private open class UnsynchronizedSingleAssign<T> : SingleAssign<T> {
     }
 
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        if (isInitialized()) throw Exception("Value has already been assigned!")
+        if (isInitialized()) throw RuntimeException("Value has already been assigned!")
         _value = value
     }
 

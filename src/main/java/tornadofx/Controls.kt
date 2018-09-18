@@ -43,11 +43,6 @@ fun EventTarget.text(observable: ObservableValue<String>, op: Text.() -> Unit = 
     op(this)
 }
 
-fun EventTarget.text(property: Property<String>, op: Text.() -> Unit = {}): Text = text {
-    bind(property)
-    op(this)
-}
-
 fun EventTarget.textflow(op: TextFlow.() -> Unit = {}): TextFlow = TextFlow().attachTo(this, op)
 
 
@@ -74,7 +69,7 @@ inline fun <reified T> EventTarget.label(
         T::class == String::class -> textProperty().bind(observable as ObservableValue<String>)
         else -> textProperty().bind(observable.stringBinding { it?.toString() })
     }
-    if (graphic != null) graphicProperty().bind(graphicProperty)
+    if (graphicProperty != null) graphicProperty().bind(graphicProperty)
     op(this)
 }
 

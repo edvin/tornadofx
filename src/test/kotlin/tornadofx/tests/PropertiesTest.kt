@@ -5,16 +5,17 @@ import javafx.beans.binding.FloatBinding
 import javafx.beans.binding.IntegerBinding
 import javafx.beans.binding.LongBinding
 import javafx.beans.property.*
-import javafx.collections.FXCollections
 import org.junit.Assert
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import tornadofx.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PropertiesTest {
-    @Test
-    fun primitiveOnChange() {
+
+    @Test fun `onChange primitive`() {
         val d = SimpleDoubleProperty()
         // Ensure getting the value does not throw an NPE
         d.onChange { assert((it + 7) is Double) }
@@ -25,19 +26,30 @@ class PropertiesTest {
         d.value = null
     }
 
-    @Test
-    fun property_delegation() {
+    @Test fun `onChange property`() {
+        var called = false
+        val property = SimpleStringProperty("Hello World")
+
+        property.onChange { called = true }
+        property.value = "Changed"
+
+        assertTrue(called)
+    }
+
+
+    @Test fun `property delegation`() {
         // given:
         val fixture = object {
             val nameProperty = SimpleStringProperty("Alice")
             var name by nameProperty
 
             val ageProperty = SimpleDoubleProperty(1.0)
-            var age by ageProperty
+            var age: Double by ageProperty
 
             val dirtyProperty = SimpleBooleanProperty(false)
-            var dirty by dirtyProperty
+            var dirty: Boolean by dirtyProperty
         }
+
         // expect:
         assertEquals("Alice", fixture.name)
         assertEquals("Alice", fixture.nameProperty.value)
@@ -64,8 +76,7 @@ class PropertiesTest {
         assertEquals(true, fixture.dirtyProperty.value)
     }
 
-    @Test
-    fun property_get_should_read_value() {
+    @Test fun `property get should read value`() {
         // given:
         val fixture = object {
             val string by property<String>()
@@ -81,8 +92,7 @@ class PropertiesTest {
         assertEquals(42, fixture.integerDefault)
     }
 
-    @Test
-    fun property_set_should_write_value() {
+    @Test fun `property set should write value`() {
         // given:
         val fixture = object {
             var string by property<String>()
@@ -102,2730 +112,2727 @@ class PropertiesTest {
         assertEquals(42, fixture.integerDefault)
     }
 
-    class TestClass {
+
+    private class TestClass {
         var myProperty: String by singleAssign()
     }
 
-    @Test
-    fun failNoAssignment() {
+    @Test fun `singleAssign no assignment fails`() {
         val instance = TestClass()
-        var failed = false
 
-        try {
-            instance.myProperty
-        } catch (e: Exception) {
-            failed = true
-        }
-        assertTrue(failed)
+        assertFailsWith<UninitializedPropertyAccessException> { instance.myProperty }
     }
 
-    @Test
-    fun succeedAssignment() {
+    @Test fun `singleAssign successful assignment`() {
         val instance = TestClass()
+
         instance.myProperty = "foo"
-        instance.myProperty
+        assertEquals("foo", instance.myProperty)
     }
 
-    @Test
-    fun failDoubleAssignment() {
-
+    @Test fun `singleAssign double assignment fails`() {
         val instance = TestClass()
-        var failed = false
-        instance.myProperty = "foo"
 
-        try {
-            instance.myProperty = "bar"
-        } catch (e: Exception) {
-            failed = true
-        }
-        assertTrue(failed)
+        instance.myProperty = "foo"
+        assertFailsWith<RuntimeException> { instance.myProperty = "bar" }
     }
 
-    @Test
-    fun pojoWritableObservable() {
-        val person = JavaPerson()
-        person.id = 1
-        person.name = "John"
+
+    @Test fun pojoWritableObservable() {
+        val person = JavaPerson().apply {
+            id = 1
+            name = "John"
+        }
 
         val idObservable = person.observable(JavaPerson::getId, JavaPerson::setId)
         val nameObservable = person.observable<String>("name")
 
         idObservable.value = 44
         nameObservable.value = "Doe"
+        assertEquals(44, person.id)
+        assertEquals("Doe", person.name)
 
-        Assert.assertEquals(44, person.id)
-        Assert.assertEquals("Doe", person.name)
-
+        // when:
         person.id = 5
-        Assert.assertEquals(5, idObservable.value)
+        assertEquals(5, idObservable.value)
     }
 
-    @Test
-    fun pojoWritableObservableGetterOnly() {
-        val person = JavaPerson()
-        person.id = 1
-        person.name = "John"
+    @Test fun pojoWritableObservableGetterOnly() {
+        val person = JavaPerson().apply {
+            id = 1
+            name = "John"
+        }
 
         val idObservable = person.observable(JavaPerson::getId)
-        val nameObservable = person.observable<String>("name")
         val idBinding = idObservable.integerBinding { idObservable.value }
+        val nameObservable = person.observable<String>("name")
 
         idObservable.value = 44
         nameObservable.value = "Doe"
-        Assert.assertEquals(44, idBinding.value)
-        Assert.assertEquals(44, person.id)
-        Assert.assertEquals("Doe", person.name)
+        assertEquals(44, person.id)
+        assertEquals(44, idBinding.value)
+        assertEquals("Doe", person.name)
 
         person.id = 5
-        // property change events on the pojo are propogated
-        Assert.assertEquals(5, idBinding.value)
-        Assert.assertEquals(5, idObservable.value)
+        // property change events on the pojo are propagated
+        assertEquals(5, idObservable.value)
+        assertEquals(5, idBinding.value)
     }
 
-    @Test fun property_on_change() {
-        var called = false
-        val property = SimpleStringProperty("Hello World")
-        property.onChange { called = true }
-        property.value = "Changed"
-        assertTrue(called)
-    }
 
-    @Test fun assign_if_null() {
+    @Test fun assignIfNull() {
         val has = SimpleObjectProperty("Hello")
         has.assignIfNull { "World" }
         assertEquals(has.value, "Hello")
+
         val hasNot = SimpleObjectProperty<String>()
         hasNot.assignIfNull { "World" }
         assertEquals(hasNot.value, "World")
     }
 
-    @Test fun testDoubleToProperty() {
-        val property = 5.0.toProperty()
-        Assert.assertTrue(property is DoubleProperty)
-        Assert.assertEquals(5.0, property.get(), .001)
-    }
 
-    @Test fun testFloatToProperty() {
-        val property = 5.0f.toProperty()
-        Assert.assertTrue(property is FloatProperty)
-        Assert.assertEquals(5.0f, property.get(), .001f)
-    }
+    // ================================================================
+    // toProperty
 
-    @Test fun testLongToProperty() {
-        val property = 5L.toProperty()
-        Assert.assertTrue(property is LongProperty)
-        Assert.assertEquals(5, property.get())
-    }
-
-    @Test fun testIntToProperty() {
+    @Test fun `Int toProperty`() {
         val property = 5.toProperty()
-        Assert.assertTrue(property is IntegerProperty)
-        Assert.assertEquals(5, property.get())
+        assertEquals(5, property.get())
     }
 
-    @Test fun testBooleanToProperty() {
+    @Test fun `Long toProperty`() {
+        val property = 5L.toProperty()
+        assertEquals(5, property.get())
+    }
+
+    @Test fun `Float toProperty`() {
+        val property = 5.0f.toProperty()
+        Assert.assertEquals(5.0f, property.get(), 10e-5f)
+    }
+
+    @Test fun `Double toProperty`() {
+        val property = 5.0.toProperty()
+        Assert.assertEquals(5.0, property.get(), 10e-5)
+    }
+
+    @Test fun `Boolean toProperty`() {
         val property = true.toProperty()
-        Assert.assertTrue(property is BooleanProperty)
-        Assert.assertTrue(property.get())
+        assertTrue(property.get())
     }
 
-    @Test fun testStringToProperty() {
+    @Test fun `String toProperty`() {
         val property = "Hello World!".toProperty()
-        Assert.assertTrue(property is StringProperty)
-        Assert.assertEquals("Hello World!", property.get())
+        assertEquals("Hello World!", property.get())
     }
 
-    @Test fun testDoubleExpressionPlusNumber() {
+    @Test fun `Map toProperty`() {
+        val map = mutableMapOf("hello" to "world", "number" to 42)
+        val helloProperty = map.toProperty("hello") { SimpleStringProperty(it as String) }
+        val numberProperty = map.toProperty("number") { SimpleIntegerProperty(it as Int) }
+
+        helloProperty.value = "there"
+        numberProperty.value = 43
+
+        assertEquals("there", map["hello"])
+        assertEquals(43, map["number"])
+    }
+
+
+    // ================================================================
+    // Double Properties
+
+    @Test fun `DoubleExpression plus Number`() {
         val property = 0.0.toProperty()
 
         val binding = property + 5
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property.value -= 5f
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionPlusNumberProperty() {
+    @Test fun `DoubleExpression plus NumberProperty`() {
         val property1 = 0.0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 + property2
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property1.value -= 10
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property2.value = 0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyPlusAssignNumber() {
+    @Test fun `DoubleProperty plusAssign Number`() {
         val property = 0.0.toProperty()
-        property += 5
 
-        Assert.assertEquals(5.0, property.get(), .001)
+        property += 5
+        Assert.assertEquals(5.0, property.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyPlusAssignNumberProperty() {
+    @Test fun `DoubleProperty plusAssign NumberProperty`() {
         val property1 = 0.0.toProperty()
         val property2 = 5.toProperty()
 
         property1 += property2
-        Assert.assertEquals(5.0, property1.get(), .001)
+        Assert.assertEquals(5.0, property1.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionMinusNumber() {
+    @Test fun `DoubleExpression minus Number`() {
         val property = 0.0.toProperty()
 
         val binding = property - 5
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property.value -= 5f
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionMinusNumberProperty() {
+    @Test fun `DoubleExpression minus NumberProperty`() {
         val property1 = 0.0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 - property2
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property1.value -= 10
-        Assert.assertEquals(-15.0, binding.get(), .001)
+        Assert.assertEquals(-15.0, binding.get(), 10e-5)
 
         property2.value = 0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyMinusAssignNumber() {
+    @Test fun `DoubleProperty minusAssign Number`() {
         val property = 0.0.toProperty()
-        property -= 5
 
-        Assert.assertEquals(-5.0, property.get(), .001)
+        property -= 5
+        Assert.assertEquals(-5.0, property.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyMinusAssignNumberProperty() {
+    @Test fun `DoubleProperty minusAssign NumberProperty`() {
         val property1 = 0.0.toProperty()
         val property2 = 5.toProperty()
 
         property1 -= property2
-        Assert.assertEquals(-5.0, property1.get(), .001)
+        Assert.assertEquals(-5.0, property1.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyUnaryMinus() {
+    @Test fun `DoubleProperty unaryMinus`() {
         val property = 1.0.toProperty()
 
         val binding = -property
-        Assert.assertEquals(-1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-1.0, binding.get(), 10e-5)
 
         property += 1
-        Assert.assertEquals(-2.0, binding.get(), .001)
+        Assert.assertEquals(-2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionTimesNumber() {
+    @Test fun `DoubleExpression times Number`() {
         val property = 2.0.toProperty()
 
         val binding = property * 5
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property.value = 5.0
-        Assert.assertEquals(25.0, binding.get(), .001)
+        Assert.assertEquals(25.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionTimesNumberProperty() {
+    @Test fun `DoubleExpression times NumberProperty`() {
         val property1 = 2.0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 * property2
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property1.value = 5.0
-        Assert.assertEquals(25.0, binding.get(), .001)
+        Assert.assertEquals(25.0, binding.get(), 10e-5)
 
         property2.value = 0
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyTimesAssignNumber() {
+    @Test fun `DoubleProperty timesAssign Number`() {
         val property = 1.0.toProperty()
-        property *= 5
 
-        Assert.assertEquals(5.0, property.get(), .001)
+        property *= 5
+        Assert.assertEquals(5.0, property.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyTimesAssignNumberProperty() {
+    @Test fun `DoubleProperty timesAssign NumberProperty`() {
         val property1 = 1.0.toProperty()
         val property2 = 5.toProperty()
 
         property1 *= property2
-        Assert.assertEquals(5.0, property1.get(), .001)
+        Assert.assertEquals(5.0, property1.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionDivNumber() {
+    @Test fun `DoubleExpression div Number`() {
         val property = 5.0.toProperty()
 
         val binding = property / 5
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 10.0
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionDivNumberProperty() {
+    @Test fun `DoubleExpression div NumberProperty`() {
         val property1 = 5.0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 / property2
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 10.0
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 20
-        Assert.assertEquals(0.5, binding.get(), .001)
+        Assert.assertEquals(0.5, binding.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyDivAssignNumber() {
+    @Test fun `DoubleProperty divAssign Number`() {
         val property = 5.0.toProperty()
-        property /= 5
 
-        Assert.assertEquals(1.0, property.get(), .001)
+        property /= 5
+        Assert.assertEquals(1.0, property.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyDivAssignNumberProperty() {
+    @Test fun `DoubleProperty divAssign NumberProperty`() {
         val property1 = 5.0.toProperty()
         val property2 = 5.toProperty()
 
         property1 /= property2
-        Assert.assertEquals(1.0, property1.get(), .001)
+        Assert.assertEquals(1.0, property1.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionRemNumber() {
+    @Test fun `DoubleExpression rem Number`() {
         val property = 6.0.toProperty()
 
         val binding = property % 5
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 12.0
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoubleExpressionRemNumberProperty() {
+    @Test fun `DoubleExpression rem NumberProperty`() {
         val property1 = 6.0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 % property2
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 12.0
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 11
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyRemAssignNumber() {
+    @Test fun `DoubleProperty remAssign Number`() {
         val property = 6.0.toProperty()
-        property %= 5
 
-        Assert.assertEquals(1.0, property.get(), .001)
+        property %= 5
+        Assert.assertEquals(1.0, property.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyRemAssignNumberProperty() {
+    @Test fun `DoubleProperty remAssign NumberProperty`() {
         val property1 = 6.0.toProperty()
         val property2 = 5.toProperty()
 
         property1 %= property2
-        Assert.assertEquals(1.0, property1.get(), .001)
+        Assert.assertEquals(1.0, property1.get(), 10e-5)
     }
 
-    @Test fun testDoublePropertyCompareToNumber() {
+    @Test fun `DoubleProperty compareTo Number`() {
         val property = 5.0.toProperty()
 
-        Assert.assertTrue(property > 4)
-        Assert.assertTrue(property >= 5)
-        Assert.assertTrue(property >= 4)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 6)
-        Assert.assertTrue(property < 6)
+        assertTrue(property > 4)
+        assertTrue(property >= 4)
+        assertTrue(property >= 5)
+        assertTrue(property <= 5)
+        assertTrue(property <= 6)
+        assertTrue(property < 6)
 
-        Assert.assertFalse(property > 6)
-        Assert.assertFalse(property >= 6)
-        Assert.assertFalse(property <= 4)
-        Assert.assertFalse(property < 4)
+        assertFalse(property > 6)
+        assertFalse(property >= 6)
+        assertFalse(property <= 4)
+        assertFalse(property < 4)
     }
 
-    @Test fun testDoublePropertyCompareToNumberProperty() {
+    @Test fun `DoubleProperty compareTo NumberProperty`() {
         val property = 5.0.toProperty()
 
+        assertTrue(property > 4.toProperty())
+        assertTrue(property >= 4.toProperty())
+        assertTrue(property >= 5.toProperty())
+        assertTrue(property <= 5.toProperty())
+        assertTrue(property <= 6.toProperty())
+        assertTrue(property < 6.toProperty())
 
-        Assert.assertTrue(property > 4.toProperty())
-        Assert.assertTrue(property >= 5.toProperty())
-        Assert.assertTrue(property >= 4.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 6.toProperty())
-        Assert.assertTrue(property < 6.toProperty())
-
-        Assert.assertFalse(property > 6.toProperty())
-        Assert.assertFalse(property >= 6.toProperty())
-        Assert.assertFalse(property <= 4.toProperty())
-        Assert.assertFalse(property < 4.toProperty())
+        assertFalse(property > 6.toProperty())
+        assertFalse(property >= 6.toProperty())
+        assertFalse(property <= 4.toProperty())
+        assertFalse(property < 4.toProperty())
     }
 
-    @Test fun testFloatExpressionPlusNumber() {
+
+    // ================================================================
+    // Float Properties
+
+    @Test fun `FloatExpression plus Number`() {
         val property = 0.0f.toProperty()
 
         val binding = property + 5
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5.0f, binding.get(), 10e-5f)
 
         property.value -= 5f
-        Assert.assertEquals(0.0f, binding.get(), .001f)
+        Assert.assertEquals(0.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionPlusDouble() {
+    @Test fun `FloatExpression plus Double`() {
         val property = 0.0f.toProperty()
 
         val binding = property + 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property.value -= 5f
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatExpressionPlusNumberProperty() {
+    @Test fun `FloatExpression plus NumberProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5.0f, binding.get(), 10e-5f)
 
         property1.value -= 10f
-        Assert.assertEquals(-5.0f, binding.get(), .001f)
+        Assert.assertEquals(-5.0f, binding.get(), 10e-5f)
 
         property2.value = 0
-        Assert.assertEquals(-10.0f, binding.get(), .001f)
+        Assert.assertEquals(-10.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionPlusDoubleProperty() {
+    @Test fun `FloatExpression plus DoubleProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property1.value -= 10f
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatPropertyPlusAssignNumber() {
+    @Test fun `FloatProperty plusAssign Number`() {
         val property = 0.0f.toProperty()
         property += 5
 
-        Assert.assertEquals(5.0f, property.get(), .001f)
+        Assert.assertEquals(5.0f, property.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyPlusAssignNumberProperty() {
+    @Test fun `FloatProperty plusAssign NumberProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.toProperty()
 
         property1 += property2
-        Assert.assertEquals(5.0f, property1.get(), .001f)
+        Assert.assertEquals(5.0f, property1.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionMinusNumber() {
+    @Test fun `FloatExpression minus Number`() {
         val property = 0.0f.toProperty()
 
         val binding = property - 5
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5.0f, binding.get(), 10e-5f)
 
         property.value -= 5f
-        Assert.assertEquals(-10.0f, binding.get(), .001f)
+        Assert.assertEquals(-10.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionMinusDouble() {
+    @Test fun `FloatExpression minus Double`() {
         val property = 0.0f.toProperty()
 
         val binding = property - 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property.value -= 5f
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatExpressionMinusNumberProperty() {
+    @Test fun `FloatExpression minus NumberProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5.0f, binding.get(), 10e-5f)
 
         property1.value -= 10f
-        Assert.assertEquals(-15.0f, binding.get(), .001f)
+        Assert.assertEquals(-15.0f, binding.get(), 10e-5f)
 
         property2.value = 0
-        Assert.assertEquals(-10.0f, binding.get(), .001f)
+        Assert.assertEquals(-10.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionMinusDoubleProperty() {
+    @Test fun `FloatExpression minus DoubleProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property1.value -= 10f
-        Assert.assertEquals(-15.0, binding.get(), .001)
+        Assert.assertEquals(-15.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatPropertyMinusAssignNumber() {
+    @Test fun `FloatProperty minusAssign Number`() {
         val property = 0.0f.toProperty()
         property -= 5
 
-        Assert.assertEquals(-5.0f, property.get(), .001f)
+        Assert.assertEquals(-5.0f, property.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyMinusAssignNumberProperty() {
+    @Test fun `FloatProperty minusAssign NumberProperty`() {
         val property1 = 0.0f.toProperty()
         val property2 = 5.toProperty()
 
         property1 -= property2
-        Assert.assertEquals(-5.0f, property1.get(), .001f)
+        Assert.assertEquals(-5.0f, property1.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyUnaryMinus() {
+    @Test fun `FloatProperty unaryMinus`() {
         val property = 1.0f.toProperty()
 
         val binding = -property
-        Assert.assertEquals(-1.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-1.0f, binding.get(), 10e-5f)
 
         property += 1
-        Assert.assertEquals(-2.0f, binding.get(), .001f)
+        Assert.assertEquals(-2.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionTimesNumber() {
+    @Test fun `FloatExpression times Number`() {
         val property = 2.0f.toProperty()
 
         val binding = property * 5
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10.0f, binding.get(), 10e-5f)
 
         property.value = 5f
-        Assert.assertEquals(25.0f, binding.get(), .001f)
+        Assert.assertEquals(25.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionTimesDouble() {
+    @Test fun `FloatExpression times Double`() {
         val property = 2.0f.toProperty()
 
         val binding = property * 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property.value = 5f
-        Assert.assertEquals(25.0, binding.get(), .001)
+        Assert.assertEquals(25.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatExpressionTimesNumberProperty() {
+    @Test fun `FloatExpression times NumberProperty`() {
         val property1 = 2.0f.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10.0f, binding.get(), 10e-5f)
 
         property1.value = 10f
-        Assert.assertEquals(50.0f, binding.get(), .001f)
+        Assert.assertEquals(50.0f, binding.get(), 10e-5f)
 
         property2.value = 0
-        Assert.assertEquals(0.0f, binding.get(), .001f)
+        Assert.assertEquals(0.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionTimesDoubleProperty() {
+    @Test fun `FloatExpression times DoubleProperty`() {
         val property1 = 2.0f.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property1.value = 10f
-        Assert.assertEquals(50.0, binding.get(), .001)
+        Assert.assertEquals(50.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatPropertyTimesAssignNumber() {
+    @Test fun `FloatProperty timesAssign Number`() {
         val property = 1.0f.toProperty()
         property *= 5
 
-        Assert.assertEquals(5.0f, property.get(), .001f)
+        Assert.assertEquals(5.0f, property.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyTimesAssignNumberProperty() {
+    @Test fun `FloatProperty timesAssign NumberProperty`() {
         val property1 = 1.0f.toProperty()
         val property2 = 5.toProperty()
 
         property1 *= property2
-        Assert.assertEquals(5.0f, property1.get(), .001f)
+        Assert.assertEquals(5.0f, property1.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionDivNumber() {
+    @Test fun `FloatExpression div Number`() {
         val property = 5.0f.toProperty()
 
         val binding = property / 5
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1.0f, binding.get(), 10e-5f)
 
         property.value = 10f
-        Assert.assertEquals(2.0f, binding.get(), .001f)
+        Assert.assertEquals(2.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionDivDouble() {
+    @Test fun `FloatExpression div Double`() {
         val property = 5.0f.toProperty()
 
         val binding = property / 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 10f
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatExpressionDivNumberProperty() {
+    @Test fun `FloatExpression div NumberProperty`() {
         val property1 = 5.0f.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1.0f, binding.get(), 10e-5f)
 
         property1.value = 10f
-        Assert.assertEquals(2.0f, binding.get(), .001f)
+        Assert.assertEquals(2.0f, binding.get(), 10e-5f)
 
         property2.value = 20
-        Assert.assertEquals(0.5f, binding.get(), .001f)
+        Assert.assertEquals(0.5f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionDivDoubleProperty() {
+    @Test fun `FloatExpression div DoubleProperty`() {
         val property1 = 5.0f.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 10f
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 20.0
-        Assert.assertEquals(0.5, binding.get(), .001)
+        Assert.assertEquals(0.5, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatPropertyDivAssignNumber() {
+    @Test fun `FloatProperty divAssign Number`() {
         val property = 5.0f.toProperty()
         property /= 5
 
-        Assert.assertEquals(1.0f, property.get(), .001f)
+        Assert.assertEquals(1.0f, property.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyDivAssignNumberProperty() {
+    @Test fun `FloatProperty divAssign NumberProperty`() {
         val property1 = 5.0f.toProperty()
         val property2 = 5.toProperty()
 
         property1 /= property2
-        Assert.assertEquals(1.0f, property1.get(), .001f)
+        Assert.assertEquals(1.0f, property1.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionRemNumber() {
+    @Test fun `FloatExpression rem Number`() {
         val property = 6.0f.toProperty()
 
         val binding = property % 5
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1.0f, binding.get(), 10e-5f)
 
         property.value = 12.0f
-        Assert.assertEquals(2.0f, binding.get(), .001f)
+        Assert.assertEquals(2.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionRemDouble() {
+    @Test fun `FloatExpression rem Double`() {
         val property = 6.0f.toProperty()
 
         val binding = property % 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 12.0f
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatExpressionRemNumberProperty() {
+    @Test fun `FloatExpression rem NumberProperty`() {
         val property1 = 6.0f.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1.0f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1.0f, binding.get(), 10e-5f)
 
         property1.value = 12f
-        Assert.assertEquals(2.0f, binding.get(), .001f)
+        Assert.assertEquals(2.0f, binding.get(), 10e-5f)
 
         property2.value = 11
-        Assert.assertEquals(1.0f, binding.get(), .001f)
+        Assert.assertEquals(1.0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testFloatExpressionRemDoubleProperty() {
+    @Test fun `FloatExpression rem DoubleProperty`() {
         val property1 = 6.0f.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 12f
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 11.0
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testFloatPropertyRemAssignNumber() {
+    @Test fun `FloatProperty remAssign Number`() {
         val property = 6.0f.toProperty()
         property %= 5
 
-        Assert.assertEquals(1.0f, property.get(), .001f)
+        Assert.assertEquals(1.0f, property.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyRemAssignNumberProperty() {
+    @Test fun `FloatProperty remAssign NumberProperty`() {
         val property1 = 6.0f.toProperty()
         val property2 = 5.toProperty()
 
         property1 %= property2
-        Assert.assertEquals(1.0f, property1.get(), .001f)
+        Assert.assertEquals(1.0f, property1.get(), 10e-5f)
     }
 
-    @Test fun testFloatPropertyCompareToNumber() {
+    @Test fun `FloatProperty compareTo Number`() {
         val property = 5.0f.toProperty()
 
-        Assert.assertTrue(property > 4)
-        Assert.assertTrue(property >= 5)
-        Assert.assertTrue(property >= 4)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 6)
-        Assert.assertTrue(property < 6)
+        assertTrue(property > 4)
+        assertTrue(property >= 4)
+        assertTrue(property >= 5)
+        assertTrue(property <= 5)
+        assertTrue(property <= 6)
+        assertTrue(property < 6)
 
-        Assert.assertFalse(property > 6)
-        Assert.assertFalse(property >= 6)
-        Assert.assertFalse(property <= 4)
-        Assert.assertFalse(property < 4)
+        assertFalse(property > 6)
+        assertFalse(property >= 6)
+        assertFalse(property <= 4)
+        assertFalse(property < 4)
     }
 
-    @Test fun testFloatPropertyCompareToNumberProperty() {
+    @Test fun `FloatProperty compareTo NumberProperty`() {
         val property = 5.0f.toProperty()
 
+        assertTrue(property > 4.toProperty())
+        assertTrue(property >= 4.toProperty())
+        assertTrue(property >= 5.toProperty())
+        assertTrue(property <= 5.toProperty())
+        assertTrue(property <= 6.toProperty())
+        assertTrue(property < 6.toProperty())
 
-        Assert.assertTrue(property > 4.toProperty())
-        Assert.assertTrue(property >= 5.toProperty())
-        Assert.assertTrue(property >= 4.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 6.toProperty())
-        Assert.assertTrue(property < 6.toProperty())
-
-        Assert.assertFalse(property > 6.toProperty())
-        Assert.assertFalse(property >= 6.toProperty())
-        Assert.assertFalse(property <= 4.toProperty())
-        Assert.assertFalse(property < 4.toProperty())
+        assertFalse(property > 6.toProperty())
+        assertFalse(property >= 6.toProperty())
+        assertFalse(property <= 4.toProperty())
+        assertFalse(property < 4.toProperty())
     }
 
-    @Test fun testIntegerExpressionPlusInt() {
+
+    // ================================================================
+    // Integer Properties
+
+    @Test fun `IntegerExpression plus Int`() {
         val property = 0.toProperty()
 
         val binding = property + 5
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(5, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(5, binding.get())
 
         property.value -= 5
-        Assert.assertEquals(0, binding.get())
+        assertEquals(0, binding.get())
     }
 
-    @Test fun testIntegerExpressionPlusLong() {
+    @Test fun `IntegerExpression plus Long`() {
         val property = 0.toProperty()
 
         val binding = property + 5L
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(5L, binding.get())
 
         property.value -= 5
-        Assert.assertEquals(0, binding.get())
+        assertEquals(0, binding.get())
     }
 
-    @Test fun testIntegerExpressionPlusFloat() {
+    @Test fun `IntegerExpression plus Float`() {
         val property = 0.toProperty()
 
         val binding = property + 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5f, binding.get(), 10e-5f)
 
         property.value -= 5
-        Assert.assertEquals(0f, binding.get(), .001f)
+        Assert.assertEquals(0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionPlusDouble() {
+    @Test fun `IntegerExpression plus Double`() {
         val property = 0.toProperty()
 
         val binding = property + 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property.value -= 5
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerExpressionPlusIntegerProperty() {
+    @Test fun `IntegerExpression plus IntegerProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(5, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(5, binding.get())
 
         property1.value -= 10
-        Assert.assertEquals(-5, binding.get())
+        assertEquals(-5, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(-10, binding.get())
+        assertEquals(-10, binding.get())
     }
 
-    @Test fun testIntegerExpressionPlusLongProperty() {
+    @Test fun `IntegerExpression plus LongProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5L.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(5L, binding.get())
 
         property1.value -= 10
-        Assert.assertEquals(-5L, binding.get())
+        assertEquals(-5L, binding.get())
 
         property2.value = 0L
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testIntegerExpressionPlusFloatProperty() {
+    @Test fun `IntegerExpression plus FloatProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5f, binding.get(), 10e-5f)
 
         property1.value -= 10
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionPlusDoubleProperty() {
+    @Test fun `IntegerExpression plus DoubleProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property1.value -= 10
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerPropertyPlusAssignNumber() {
+    @Test fun `IntegerProperty plusAssign Number`() {
         val property = 0.toProperty()
         property += 5
 
-        Assert.assertEquals(5, property.get())
+        assertEquals(5, property.get())
     }
 
-    @Test fun testIntegerPropertyPlusAssignNumberProperty() {
+    @Test fun `IntegerProperty plusAssign NumberProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.toProperty()
 
         property1 += property2
-        Assert.assertEquals(5, property1.get())
+        assertEquals(5, property1.get())
     }
 
-    @Test fun testIntegerExpressionMinusInt() {
+    @Test fun `IntegerExpression minus Int`() {
         val property = 0.toProperty()
 
         val binding = property - 5
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(-5, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(-5, binding.get())
 
         property.value -= 5
-        Assert.assertEquals(-10, binding.get())
+        assertEquals(-10, binding.get())
     }
 
-    @Test fun testIntegerExpressionMinusLong() {
+    @Test fun `IntegerExpression minus Long`() {
         val property = 0.toProperty()
 
         val binding = property - 5L
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(-5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(-5L, binding.get())
 
         property.value -= 5
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testIntegerExpressionMinusFloat() {
+    @Test fun `IntegerExpression minus Float`() {
         val property = 0.toProperty()
 
         val binding = property - 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property.value -= 5
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionMinusDouble() {
+    @Test fun `IntegerExpression minus Double`() {
         val property = 0.toProperty()
 
         val binding = property - 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property.value -= 5
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerExpressionMinusIntegerProperty() {
+    @Test fun `IntegerExpression minus IntegerProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(-5, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(-5, binding.get())
 
         property1.value -= 10
-        Assert.assertEquals(-15, binding.get())
+        assertEquals(-15, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(-10, binding.get())
+        assertEquals(-10, binding.get())
     }
 
-    @Test fun testIntegerExpressionMinusLongProperty() {
+    @Test fun `IntegerExpression minus LongProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5L.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(-5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(-5L, binding.get())
 
         property1.value -= 10
-        Assert.assertEquals(-15L, binding.get())
+        assertEquals(-15L, binding.get())
 
         property2.value = 0L
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testIntegerExpressionMinusFloatProperty() {
+    @Test fun `IntegerExpression minus FloatProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property1.value -= 10
-        Assert.assertEquals(-15f, binding.get(), .001f)
+        Assert.assertEquals(-15f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionMinusDoubleProperty() {
+    @Test fun `IntegerExpression minus DoubleProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property1.value -= 10
-        Assert.assertEquals(-15.0, binding.get(), .001)
+        Assert.assertEquals(-15.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerPropertyMinusAssignNumber() {
+    @Test fun `IntegerProperty minusAssign Number`() {
         val property = 0.toProperty()
         property -= 5
 
-        Assert.assertEquals(-5, property.get())
+        assertEquals(-5, property.get())
     }
 
-    @Test fun testIntegerPropertyMinusAssignNumberProperty() {
+    @Test fun `IntegerProperty minusAssign NumberProperty`() {
         val property1 = 0.toProperty()
         val property2 = 5.toProperty()
 
         property1 -= property2
-        Assert.assertEquals(-5, property1.get())
+        assertEquals(-5, property1.get())
     }
 
-    @Test fun testIntegerPropertyUnaryMinus() {
+    @Test fun `IntegerProperty unaryMinus`() {
         val property = 1.toProperty()
 
         val binding = -property
-        Assert.assertEquals(-1, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(-1, binding.get())
 
         property += 1
-        Assert.assertEquals(-2, binding.get())
+        assertEquals(-2, binding.get())
     }
 
-    @Test fun testIntegerExpressionTimesInt() {
+    @Test fun `IntegerExpression times Int`() {
         val property = 2.toProperty()
 
         val binding = property * 5
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(10, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(10, binding.get())
 
         property.value = 5
-        Assert.assertEquals(25, binding.get())
+        assertEquals(25, binding.get())
     }
 
-    @Test fun testIntegerExpressionTimesLong() {
+    @Test fun `IntegerExpression times Long`() {
         val property = 2.toProperty()
 
         val binding = property * 5L
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(10L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(10L, binding.get())
 
         property.value = 5
-        Assert.assertEquals(25L, binding.get())
+        assertEquals(25L, binding.get())
     }
 
-    @Test fun testIntegerExpressionTimesFloat() {
+    @Test fun `IntegerExpression times Float`() {
         val property = 2.toProperty()
 
         val binding = property * 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10f, binding.get(), 10e-5f)
 
         property.value = 5
-        Assert.assertEquals(25f, binding.get(), .001f)
+        Assert.assertEquals(25f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionTimesDouble() {
+    @Test fun `IntegerExpression times Double`() {
         val property = 2.toProperty()
 
         val binding = property * 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property.value = 5
-        Assert.assertEquals(25.0, binding.get(), .001)
+        Assert.assertEquals(25.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerExpressionTimesIntegerProperty() {
+    @Test fun `IntegerExpression times IntegerProperty`() {
         val property1 = 2.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(10, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(10, binding.get())
 
         property1.value = 10
-        Assert.assertEquals(50, binding.get())
+        assertEquals(50, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(0, binding.get())
+        assertEquals(0, binding.get())
     }
 
-    @Test fun testIntegerExpressionTimesLongProperty() {
+    @Test fun `IntegerExpression times LongProperty`() {
         val property1 = 2.toProperty()
         val property2 = 5L.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(10L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(10L, binding.get())
 
         property1.value = 10
-        Assert.assertEquals(50L, binding.get())
+        assertEquals(50L, binding.get())
 
         property2.value = 0L
-        Assert.assertEquals(0L, binding.get())
+        assertEquals(0L, binding.get())
     }
 
-    @Test fun testIntegerExpressionTimesFloatProperty() {
+    @Test fun `IntegerExpression times FloatProperty`() {
         val property1 = 2.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10f, binding.get(), 10e-5f)
 
         property1.value = 10
-        Assert.assertEquals(50f, binding.get(), .001f)
+        Assert.assertEquals(50f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(0f, binding.get(), .001f)
+        Assert.assertEquals(0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionTimesDoubleProperty() {
+    @Test fun `IntegerExpression times DoubleProperty`() {
         val property1 = 2.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property1.value = 10
-        Assert.assertEquals(50.0, binding.get(), .001)
+        Assert.assertEquals(50.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerPropertyTimesAssignNumber() {
+    @Test fun `IntegerProperty timesAssign Number`() {
         val property = 1.toProperty()
         property *= 5
 
-        Assert.assertEquals(5, property.get())
+        assertEquals(5, property.get())
     }
 
-    @Test fun testIntegerPropertyTimesAssignNumberProperty() {
+    @Test fun `IntegerProperty timesAssign NumberProperty`() {
         val property1 = 1.toProperty()
         val property2 = 5.toProperty()
 
         property1 *= property2
-        Assert.assertEquals(5, property1.get())
+        assertEquals(5, property1.get())
     }
 
-    @Test fun testIntegerExpressionDivInt() {
+    @Test fun `IntegerExpression div Int`() {
         val property = 10.toProperty()
 
         val binding = property / 5
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(2, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(2, binding.get())
 
         property.value = 20
-        Assert.assertEquals(4, binding.get())
+        assertEquals(4, binding.get())
     }
 
-    @Test fun testIntegerExpressionDivLong() {
+    @Test fun `IntegerExpression div Long`() {
         val property = 10.toProperty()
 
         val binding = property / 5L
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(2L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(2L, binding.get())
 
         property.value = 20
-        Assert.assertEquals(4L, binding.get())
+        assertEquals(4L, binding.get())
     }
 
-    @Test fun testIntegerExpressionDivFloat() {
+    @Test fun `IntegerExpression div Float`() {
         val property = 10.toProperty()
 
         val binding = property / 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(2f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property.value = 20
-        Assert.assertEquals(4f, binding.get(), .001f)
+        Assert.assertEquals(4f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionDivDouble() {
+    @Test fun `IntegerExpression div Double`() {
         val property = 10.toProperty()
 
         val binding = property / 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(2.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property.value = 20
-        Assert.assertEquals(4.0, binding.get(), .001)
+        Assert.assertEquals(4.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerExpressionDivIntegerProperty() {
+    @Test fun `IntegerExpression div IntegerProperty`() {
         val property1 = 10.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(2, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(2, binding.get())
 
         property1.value = 20
-        Assert.assertEquals(4, binding.get())
+        assertEquals(4, binding.get())
 
         property2.value = 20
-        Assert.assertEquals(1, binding.get())
+        assertEquals(1, binding.get())
     }
 
-    @Test fun testIntegerExpressionDivLongProperty() {
+    @Test fun `IntegerExpression div LongProperty`() {
         val property1 = 10.toProperty()
         val property2 = 5L.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(2L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(2L, binding.get())
 
         property1.value = 20
-        Assert.assertEquals(4L, binding.get())
+        assertEquals(4L, binding.get())
 
         property2.value = 20L
-        Assert.assertEquals(1L, binding.get())
+        assertEquals(1L, binding.get())
     }
 
-    @Test fun testIntegerExpressionDivFloatProperty() {
+    @Test fun `IntegerExpression div FloatProperty`() {
         val property1 = 10.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(2f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property1.value = 20
-        Assert.assertEquals(4f, binding.get(), .001f)
+        Assert.assertEquals(4f, binding.get(), 10e-5f)
 
         property2.value = 20f
-        Assert.assertEquals(1f, binding.get(), .001f)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionDivDoubleProperty() {
+    @Test fun `IntegerExpression div DoubleProperty`() {
         val property1 = 10.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(2.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property1.value = 20
-        Assert.assertEquals(4.0, binding.get(), .001)
+        Assert.assertEquals(4.0, binding.get(), 10e-5)
 
         property2.value = 20.0
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerPropertyDivAssignNumber() {
+    @Test fun `IntegerProperty divAssign Number`() {
         val property = 5.toProperty()
         property /= 5
 
-        Assert.assertEquals(1, property.get())
+        assertEquals(1, property.get())
     }
 
-    @Test fun testIntegerPropertyDivAssignNumberProperty() {
+    @Test fun `IntegerProperty divAssign NumberProperty`() {
         val property1 = 5.toProperty()
         val property2 = 5.toProperty()
 
         property1 /= property2
-        Assert.assertEquals(1, property1.get())
+        assertEquals(1, property1.get())
     }
 
-    @Test fun testIntegerExpressionRemInt() {
+    @Test fun `IntegerExpression rem Int`() {
         val property = 6.toProperty()
 
         val binding = property % 5
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(1, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(1, binding.get())
 
         property.value = 12
-        Assert.assertEquals(2, binding.get())
+        assertEquals(2, binding.get())
     }
 
-    @Test fun testIntegerExpressionRemLong() {
+    @Test fun `IntegerExpression rem Long`() {
         val property = 6.toProperty()
 
         val binding = property % 5L
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(1L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(1L, binding.get())
 
         property.value = 12
-        Assert.assertEquals(2L, binding.get())
+        assertEquals(2L, binding.get())
     }
 
-    @Test fun testIntegerExpressionRemFloat() {
+    @Test fun `IntegerExpression rem Float`() {
         val property = 6.toProperty()
 
         val binding = property % 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
 
         property.value = 12
-        Assert.assertEquals(2f, binding.get(), .001f)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionRemDouble() {
+    @Test fun `IntegerExpression rem Double`() {
         val property = 6.toProperty()
 
         val binding = property % 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 12
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerExpressionRemIntegerProperty() {
+    @Test fun `IntegerExpression rem IntegerProperty`() {
         val property1 = 6.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is IntegerBinding)
-        Assert.assertEquals(1, binding.get())
+        assertTrue(binding is IntegerBinding)
+        assertEquals(1, binding.get())
 
         property1.value = 12
-        Assert.assertEquals(2, binding.get())
+        assertEquals(2, binding.get())
 
         property2.value = 11
-        Assert.assertEquals(1, binding.get())
+        assertEquals(1, binding.get())
     }
 
-    @Test fun testIntegerExpressionRemLongProperty() {
+    @Test fun `IntegerExpression rem LongProperty`() {
         val property1 = 6.toProperty()
         val property2 = 5L.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(1L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(1L, binding.get())
 
         property1.value = 12
-        Assert.assertEquals(2L, binding.get())
+        assertEquals(2L, binding.get())
 
         property2.value = 11L
-        Assert.assertEquals(1L, binding.get())
+        assertEquals(1L, binding.get())
     }
 
-    @Test fun testIntegerExpressionRemFloatProperty() {
+    @Test fun `IntegerExpression rem FloatProperty`() {
         val property1 = 6.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
 
         property1.value = 12
-        Assert.assertEquals(2f, binding.get(), .001f)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property2.value = 11f
-        Assert.assertEquals(1f, binding.get(), .001f)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
     }
 
-    @Test fun testIntegerExpressionRemDoubleProperty() {
+    @Test fun `IntegerExpression rem DoubleProperty`() {
         val property1 = 6.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 12
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 11.0
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testIntegerPropertyRemAssignNumber() {
+    @Test fun `IntegerProperty remAssign Number`() {
         val property = 6.toProperty()
         property %= 5
 
-        Assert.assertEquals(1, property.get())
+        assertEquals(1, property.get())
     }
 
-    @Test fun testIntegerPropertyRemAssignNumberProperty() {
+    @Test fun `IntegerProperty remAssign NumberProperty`() {
         val property1 = 6.toProperty()
         val property2 = 5.toProperty()
 
         property1 %= property2
-        Assert.assertEquals(1, property1.get())
+        assertEquals(1, property1.get())
     }
 
-    @Test fun testIntegerPropertyRangeToInt() {
+    @Test fun `IntegerProperty rangeTo Int`() {
         val property = 0.toProperty()
         val sequence = property..9
 
         var counter = 0
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10, counter)
+        assertEquals(10, counter)
     }
 
-    @Test fun testIntegerPropertyRangeToIntegerProperty() {
+    @Test fun `IntegerProperty rangeTo IntegerProperty`() {
         val property1 = 0.toProperty()
         val property2 = 9.toProperty()
         val sequence = property1..property2
 
         var counter = 0
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10, counter)
+        assertEquals(10, counter)
     }
 
-    @Test fun testIntegerPropertyRangeToLong() {
+    @Test fun `IntegerProperty rangeTo Long`() {
         val property = 0.toProperty()
         val sequence = property..9L
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testIntegerPropertyRangeToLongProperty() {
+    @Test fun `IntegerProperty rangeTo LongProperty`() {
         val property1 = 0.toProperty()
         val property2 = 9L.toProperty()
         val sequence = property1..property2
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testIntegerPropertyCompareToNumber() {
+    @Test fun `IntegerProperty compareTo Number`() {
         val property = 5.toProperty()
 
-        Assert.assertTrue(property > 4)
-        Assert.assertTrue(property >= 5)
-        Assert.assertTrue(property >= 4)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 6)
-        Assert.assertTrue(property < 6)
+        assertTrue(property > 4)
+        assertTrue(property >= 4)
+        assertTrue(property >= 5)
+        assertTrue(property <= 5)
+        assertTrue(property <= 6)
+        assertTrue(property < 6)
 
-        Assert.assertFalse(property > 6)
-        Assert.assertFalse(property >= 6)
-        Assert.assertFalse(property <= 4)
-        Assert.assertFalse(property < 4)
+        assertFalse(property > 6)
+        assertFalse(property >= 6)
+        assertFalse(property <= 4)
+        assertFalse(property < 4)
     }
 
-    @Test fun testIntegerPropertyCompareToNumberProperty() {
+    @Test fun `IntegerProperty compareTo NumberProperty`() {
         val property = 5.toProperty()
 
+        assertTrue(property > 4.toProperty())
+        assertTrue(property >= 4.toProperty())
+        assertTrue(property >= 5.toProperty())
+        assertTrue(property <= 5.toProperty())
+        assertTrue(property <= 6.toProperty())
+        assertTrue(property < 6.toProperty())
 
-        Assert.assertTrue(property > 4.toProperty())
-        Assert.assertTrue(property >= 5.toProperty())
-        Assert.assertTrue(property >= 4.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 6.toProperty())
-        Assert.assertTrue(property < 6.toProperty())
-
-        Assert.assertFalse(property > 6.toProperty())
-        Assert.assertFalse(property >= 6.toProperty())
-        Assert.assertFalse(property <= 4.toProperty())
-        Assert.assertFalse(property < 4.toProperty())
+        assertFalse(property > 6.toProperty())
+        assertFalse(property >= 6.toProperty())
+        assertFalse(property <= 4.toProperty())
+        assertFalse(property < 4.toProperty())
     }
 
-    @Test fun testLongExpressionPlusNumber() {
+
+    @Test fun `LongExpression plus Number`() {
         val property = 0L.toProperty()
 
         val binding = property + 5
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(5L, binding.get())
 
         property.value -= 5L
-        Assert.assertEquals(0L, binding.get())
+        assertEquals(0L, binding.get())
     }
 
-    @Test fun testLongExpressionPlusFloat() {
+    @Test fun `LongExpression plus Float`() {
         val property = 0L.toProperty()
 
         val binding = property + 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5f, binding.get(), 10e-5f)
 
         property.value -= 5L
-        Assert.assertEquals(0f, binding.get(), .001f)
+        Assert.assertEquals(0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionPlusDouble() {
+    @Test fun `LongExpression plus Double`() {
         val property = 0L.toProperty()
 
         val binding = property + 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property.value -= 5L
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongExpressionPlusNumberProperty() {
+    @Test fun `LongExpression plus NumberProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(5L, binding.get())
 
         property1.value -= 10L
-        Assert.assertEquals(-5L, binding.get())
+        assertEquals(-5L, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testLongExpressionPlusFloatProperty() {
+    @Test fun `LongExpression plus FloatProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(5f, binding.get(), 10e-5f)
 
         property1.value -= 10L
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionPlusDoubleProperty() {
+    @Test fun `LongExpression plus DoubleProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 + property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(5.0, binding.get(), 10e-5)
 
         property1.value -= 10L
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongPropertyPlusAssignNumber() {
+    @Test fun `LongProperty plusAssign Number`() {
         val property = 0L.toProperty()
         property += 5
 
-        Assert.assertEquals(5L, property.get())
+        assertEquals(5L, property.get())
     }
 
-    @Test fun testLongPropertyPlusAssignNumberProperty() {
+    @Test fun `LongProperty plusAssign NumberProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.toProperty()
 
         property1 += property2
-        Assert.assertEquals(5L, property1.get())
+        assertEquals(5L, property1.get())
     }
 
-    @Test fun testLongExpressionMinusNumber() {
+    @Test fun `LongExpression minus Number`() {
         val property = 0L.toProperty()
 
         val binding = property - 5
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(-5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(-5L, binding.get())
 
         property.value -= 5L
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testLongExpressionMinusFloat() {
+    @Test fun `LongExpression minus Float`() {
         val property = 0L.toProperty()
 
         val binding = property - 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property.value -= 5L
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionMinusDouble() {
+    @Test fun `LongExpression minus Double`() {
         val property = 0L.toProperty()
 
         val binding = property - 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property.value -= 5L
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongExpressionMinusNumberProperty() {
+    @Test fun `LongExpression minus NumberProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(-5L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(-5L, binding.get())
 
         property1.value -= 10L
-        Assert.assertEquals(-15L, binding.get())
+        assertEquals(-15L, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(-10L, binding.get())
+        assertEquals(-10L, binding.get())
     }
 
-    @Test fun testLongExpressionMinusFloatProperty() {
+    @Test fun `LongExpression minus FloatProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(-5f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(-5f, binding.get(), 10e-5f)
 
         property1.value -= 10L
-        Assert.assertEquals(-15f, binding.get(), .001f)
+        Assert.assertEquals(-15f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(-10f, binding.get(), .001f)
+        Assert.assertEquals(-10f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionMinusDoubleProperty() {
+    @Test fun `LongExpression minus DoubleProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 - property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(-5.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(-5.0, binding.get(), 10e-5)
 
         property1.value -= 10L
-        Assert.assertEquals(-15.0, binding.get(), .001)
+        Assert.assertEquals(-15.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(-10.0, binding.get(), .001)
+        Assert.assertEquals(-10.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongPropertyMinusAssignNumber() {
+    @Test fun `LongProperty minusAssign Number`() {
         val property = 0L.toProperty()
         property -= 5
 
-        Assert.assertEquals(-5L, property.get())
+        assertEquals(-5L, property.get())
     }
 
-    @Test fun testLongPropertyMinusAssignNumberProperty() {
+    @Test fun `LongProperty minusAssign NumberProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 5.toProperty()
 
         property1 -= property2
-        Assert.assertEquals(-5L, property1.get())
+        assertEquals(-5L, property1.get())
     }
 
-    @Test fun testLongPropertyUnaryMinus() {
+    @Test fun `LongProperty unaryMinus`() {
         val property = 1L.toProperty()
 
         val binding = -property
-        Assert.assertEquals(-1L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(-1L, binding.get())
 
         property += 1
-        Assert.assertEquals(-2L, binding.get())
+        assertEquals(-2L, binding.get())
     }
 
-    @Test fun testLongExpressionTimesNumber() {
+    @Test fun `LongExpression times Number`() {
         val property = 2L.toProperty()
 
         val binding = property * 5
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(10L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(10L, binding.get())
 
         property.value = 5L
-        Assert.assertEquals(25L, binding.get())
+        assertEquals(25L, binding.get())
     }
 
-    @Test fun testLongExpressionTimesFloat() {
+    @Test fun `LongExpression times Float`() {
         val property = 2L.toProperty()
 
         val binding = property * 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10f, binding.get(), 10e-5f)
 
         property.value = 5L
-        Assert.assertEquals(25f, binding.get(), .001f)
+        Assert.assertEquals(25f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionTimesDouble() {
+    @Test fun `LongExpression times Double`() {
         val property = 2L.toProperty()
 
         val binding = property * 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property.value = 5L
-        Assert.assertEquals(25.0, binding.get(), .001)
+        Assert.assertEquals(25.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongExpressionTimesNumberProperty() {
+    @Test fun `LongExpression times NumberProperty`() {
         val property1 = 2L.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(10L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(10L, binding.get())
 
         property1.value = 10L
-        Assert.assertEquals(50L, binding.get())
+        assertEquals(50L, binding.get())
 
         property2.value = 0
-        Assert.assertEquals(0L, binding.get())
+        assertEquals(0L, binding.get())
     }
 
-    @Test fun testLongExpressionTimesFloatProperty() {
+    @Test fun `LongExpression times FloatProperty`() {
         val property1 = 2L.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(10f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(10f, binding.get(), 10e-5f)
 
         property1.value = 10L
-        Assert.assertEquals(50f, binding.get(), .001f)
+        Assert.assertEquals(50f, binding.get(), 10e-5f)
 
         property2.value = 0f
-        Assert.assertEquals(0f, binding.get(), .001f)
+        Assert.assertEquals(0f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionTimesDoubleProperty() {
+    @Test fun `LongExpression times DoubleProperty`() {
         val property1 = 2L.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 * property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(10.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(10.0, binding.get(), 10e-5)
 
         property1.value = 10L
-        Assert.assertEquals(50.0, binding.get(), .001)
+        Assert.assertEquals(50.0, binding.get(), 10e-5)
 
         property2.value = 0.0
-        Assert.assertEquals(0.0, binding.get(), .001)
+        Assert.assertEquals(0.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongPropertyTimesAssignNumber() {
+    @Test fun `LongProperty timesAssign Number`() {
         val property = 1L.toProperty()
         property *= 5
 
-        Assert.assertEquals(5L, property.get())
+        assertEquals(5L, property.get())
     }
 
-    @Test fun testLongPropertyTimesAssignNumberProperty() {
+    @Test fun `LongProperty timesAssign NumberProperty`() {
         val property1 = 1L.toProperty()
         val property2 = 5.toProperty()
 
         property1 *= property2
-        Assert.assertEquals(5L, property1.get())
+        assertEquals(5L, property1.get())
     }
 
-    @Test fun testLongExpressionDivNumber() {
+    @Test fun `LongExpression div Number`() {
         val property = 10L.toProperty()
 
         val binding = property / 5
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(2L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(2L, binding.get())
 
         property.value = 20L
-        Assert.assertEquals(4L, binding.get())
+        assertEquals(4L, binding.get())
     }
 
-    @Test fun testLongExpressionDivFloat() {
+    @Test fun `LongExpression div Float`() {
         val property = 10L.toProperty()
 
         val binding = property / 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(2f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property.value = 20L
-        Assert.assertEquals(4f, binding.get(), .001f)
+        Assert.assertEquals(4f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionDivDouble() {
+    @Test fun `LongExpression div Double`() {
         val property = 10L.toProperty()
 
         val binding = property / 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(2.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property.value = 20L
-        Assert.assertEquals(4.0, binding.get(), .001)
+        Assert.assertEquals(4.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongExpressionDivNumberProperty() {
+    @Test fun `LongExpression div NumberProperty`() {
         val property1 = 10L.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(2L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(2L, binding.get())
 
         property1.value = 20L
-        Assert.assertEquals(4L, binding.get())
+        assertEquals(4L, binding.get())
 
         property2.value = 20
-        Assert.assertEquals(1L, binding.get())
+        assertEquals(1L, binding.get())
     }
 
-    @Test fun testLongExpressionDivFloatProperty() {
+    @Test fun `LongExpression div FloatProperty`() {
         val property1 = 10L.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(2f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property1.value = 20L
-        Assert.assertEquals(4f, binding.get(), .001f)
+        Assert.assertEquals(4f, binding.get(), 10e-5f)
 
         property2.value = 20f
-        Assert.assertEquals(1f, binding.get(), .001f)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionDivDoubleProperty() {
+    @Test fun `LongExpression div DoubleProperty`() {
         val property1 = 10L.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 / property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(2.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property1.value = 20L
-        Assert.assertEquals(4.0, binding.get(), .001)
+        Assert.assertEquals(4.0, binding.get(), 10e-5)
 
         property2.value = 20.0
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongPropertyDivAssignNumber() {
+    @Test fun `LongProperty divAssign Number`() {
         val property = 5L.toProperty()
         property /= 5
 
-        Assert.assertEquals(1L, property.get())
+        assertEquals(1L, property.get())
     }
 
-    @Test fun testLongPropertyDivAssignNumberProperty() {
+    @Test fun `LongProperty divAssign NumberProperty`() {
         val property1 = 5L.toProperty()
         val property2 = 5.toProperty()
 
         property1 /= property2
-        Assert.assertEquals(1L, property1.get())
+        assertEquals(1L, property1.get())
     }
 
-    @Test fun testLongExpressionRemNumber() {
+    @Test fun `LongExpression rem Number`() {
         val property = 6L.toProperty()
 
         val binding = property % 5
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(1L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(1L, binding.get())
 
         property.value = 12L
-        Assert.assertEquals(2L, binding.get())
+        assertEquals(2L, binding.get())
     }
 
-    @Test fun testLongExpressionRemFloat() {
+    @Test fun `LongExpression rem Float`() {
         val property = 6L.toProperty()
 
         val binding = property % 5f
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
 
         property.value = 12L
-        Assert.assertEquals(2f, binding.get(), .001f)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionRemDouble() {
+    @Test fun `LongExpression rem Double`() {
         val property = 6L.toProperty()
 
         val binding = property % 5.0
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property.value = 12L
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongExpressionRemNumberProperty() {
+    @Test fun `LongExpression rem NumberProperty`() {
         val property1 = 6L.toProperty()
         val property2 = 5.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is LongBinding)
-        Assert.assertEquals(1L, binding.get())
+        assertTrue(binding is LongBinding)
+        assertEquals(1L, binding.get())
 
         property1.value = 12L
-        Assert.assertEquals(2L, binding.get())
+        assertEquals(2L, binding.get())
 
         property2.value = 11
-        Assert.assertEquals(1L, binding.get())
+        assertEquals(1L, binding.get())
     }
 
-    @Test fun testLongExpressionRemFloatProperty() {
+    @Test fun `LongExpression rem FloatProperty`() {
         val property1 = 6L.toProperty()
         val property2 = 5f.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is FloatBinding)
-        Assert.assertEquals(1f, binding.get(), .001f)
+        assertTrue(binding is FloatBinding)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
 
         property1.value = 12L
-        Assert.assertEquals(2f, binding.get(), .001f)
+        Assert.assertEquals(2f, binding.get(), 10e-5f)
 
         property2.value = 11f
-        Assert.assertEquals(1f, binding.get(), .001f)
+        Assert.assertEquals(1f, binding.get(), 10e-5f)
     }
 
-    @Test fun testLongExpressionRemDoubleProperty() {
+    @Test fun `LongExpression rem DoubleProperty`() {
         val property1 = 6L.toProperty()
         val property2 = 5.0.toProperty()
 
         val binding = property1 % property2
-        Assert.assertTrue(binding is DoubleBinding)
-        Assert.assertEquals(1.0, binding.get(), .001)
+        assertTrue(binding is DoubleBinding)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
 
         property1.value = 12L
-        Assert.assertEquals(2.0, binding.get(), .001)
+        Assert.assertEquals(2.0, binding.get(), 10e-5)
 
         property2.value = 11.0
-        Assert.assertEquals(1.0, binding.get(), .001)
+        Assert.assertEquals(1.0, binding.get(), 10e-5)
     }
 
-    @Test fun testLongPropertyRemAssignNumber() {
+    @Test fun `LongProperty remAssign Number`() {
         val property = 6L.toProperty()
         property %= 5
 
-        Assert.assertEquals(1L, property.get())
+        assertEquals(1L, property.get())
     }
 
-    @Test fun testLongPropertyRemAssignNumberProperty() {
+    @Test fun `LongProperty remAssign NumberProperty`() {
         val property1 = 6L.toProperty()
         val property2 = 5.toProperty()
 
         property1 %= property2
-        Assert.assertEquals(1L, property1.get())
+        assertEquals(1L, property1.get())
     }
 
-    @Test fun testLongPropertyRangeToInt() {
+    @Test fun `LongProperty rangeTo Int`() {
         val property = 0L.toProperty()
         val sequence = property..9
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testLongPropertyRangeToIntegerProperty() {
+    @Test fun `LongProperty rangeTo IntegerProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 9.toProperty()
         val sequence = property1..property2
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testLongPropertyRangeToLong() {
+    @Test fun `LongProperty rangeTo Long`() {
         val property = 0L.toProperty()
         val sequence = property..9L
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testLongPropertyRangeToLongProperty() {
+    @Test fun `LongProperty rangeTo LongProperty`() {
         val property1 = 0L.toProperty()
         val property2 = 9L.toProperty()
         val sequence = property1..property2
 
         var counter = 0L
         for (i in sequence) {
-            Assert.assertEquals(counter++, i.get())
+            assertEquals(counter++, i.get())
         }
 
-        Assert.assertEquals(10L, counter)
+        assertEquals(10L, counter)
     }
 
-    @Test fun testLongPropertyCompareToNumber() {
+    @Test fun `LongProperty compareTo Number`() {
         val property = 5L.toProperty()
 
-        Assert.assertTrue(property > 4)
-        Assert.assertTrue(property >= 5)
-        Assert.assertTrue(property >= 4)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 5)
-        Assert.assertTrue(property <= 6)
-        Assert.assertTrue(property < 6)
+        assertTrue(property > 4)
+        assertTrue(property >= 4)
+        assertTrue(property >= 5)
+        assertTrue(property <= 5)
+        assertTrue(property <= 6)
+        assertTrue(property < 6)
 
-        Assert.assertFalse(property > 6)
-        Assert.assertFalse(property >= 6)
-        Assert.assertFalse(property <= 4)
-        Assert.assertFalse(property < 4)
+        assertFalse(property > 6)
+        assertFalse(property >= 6)
+        assertFalse(property <= 4)
+        assertFalse(property < 4)
     }
 
-    @Test fun testLongPropertyCompareToNumberProperty() {
+    @Test fun `LongProperty compareTo NumberProperty`() {
         val property = 5L.toProperty()
 
+        assertTrue(property > 4.toProperty())
+        assertTrue(property >= 4.toProperty())
+        assertTrue(property >= 5.toProperty())
+        assertTrue(property <= 5.toProperty())
+        assertTrue(property <= 6.toProperty())
+        assertTrue(property < 6.toProperty())
 
-        Assert.assertTrue(property > 4.toProperty())
-        Assert.assertTrue(property >= 5.toProperty())
-        Assert.assertTrue(property >= 4.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 5.toProperty())
-        Assert.assertTrue(property <= 6.toProperty())
-        Assert.assertTrue(property < 6.toProperty())
-
-        Assert.assertFalse(property > 6.toProperty())
-        Assert.assertFalse(property >= 6.toProperty())
-        Assert.assertFalse(property <= 4.toProperty())
-        Assert.assertFalse(property < 4.toProperty())
+        assertFalse(property > 6.toProperty())
+        assertFalse(property >= 6.toProperty())
+        assertFalse(property <= 4.toProperty())
+        assertFalse(property < 4.toProperty())
     }
 
-    @Test fun testNumberExpressionGtInt() {
+
+    @Test fun `NumberExpression gt Int`() {
         val property = (-1).toProperty()
 
         val binding = property gt 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGtLong() {
+    @Test fun `NumberExpression gt Long`() {
         val property = (-1).toProperty()
 
         val binding = property gt 0L
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGtFloat() {
+    @Test fun `NumberExpression gt Float`() {
         val property = (-1).toProperty()
 
         val binding = property gt 0f
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGtDouble() {
+    @Test fun `NumberExpression gt Double`() {
         val property = (-1).toProperty()
 
         val binding = property gt 0.0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGtNumberProperty() {
+    @Test fun `NumberExpression gt NumberProperty`() {
         val property = (-1).toProperty()
 
         val binding = property gt 0.0.toProperty()
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGeInt() {
+    @Test fun `NumberExpression ge Int`() {
         val property = (-1).toProperty()
 
         val binding = property ge 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGeLong() {
+    @Test fun `NumberExpression ge Long`() {
         val property = (-1).toProperty()
 
         val binding = property ge 0L
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGeFloat() {
+    @Test fun `NumberExpression ge Float`() {
         val property = (-1).toProperty()
 
         val binding = property ge 0f
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGeDouble() {
+    @Test fun `NumberExpression ge Double`() {
         val property = (-1).toProperty()
 
         val binding = property ge 0.0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionGeNumberProperty() {
+    @Test fun `NumberExpression ge NumberProperty`() {
         val property = (-1).toProperty()
 
         val binding = property ge 0.0.toProperty()
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testNumberExpressionEqInt() {
+    @Test fun `NumberExpression eq Int`() {
         val property = (-1).toProperty()
 
         val binding = property eq 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionEqLong() {
+    @Test fun `NumberExpression eq Long`() {
         val property = (-1).toProperty()
 
         val binding = property eq 0L
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionEqNumberProperty() {
+    @Test fun `NumberExpression eq NumberProperty`() {
         val property = (-1).toProperty()
 
         val binding = property eq 0.0.toProperty()
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLeInt() {
+    @Test fun `NumberExpression le Int`() {
         val property = (-1).toProperty()
 
         val binding = property le 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLeLong() {
+    @Test fun `NumberExpression le Long`() {
         val property = (-1).toProperty()
 
         val binding = property le 0L
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLeFloat() {
+    @Test fun `NumberExpression le Float`() {
         val property = (-1).toProperty()
 
         val binding = property le 0f
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLeDouble() {
+    @Test fun `NumberExpression le Double`() {
         val property = (-1).toProperty()
 
         val binding = property le 0.0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLeNumberProperty() {
+    @Test fun `NumberExpression le NumberProperty`() {
         val property = (-1).toProperty()
 
         val binding = property le 0.0.toProperty()
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLtInt() {
+    @Test fun `NumberExpression lt Int`() {
         val property = (-1).toProperty()
 
         val binding = property lt 0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLtLong() {
+    @Test fun `NumberExpression lt Long`() {
         val property = (-1).toProperty()
 
         val binding = property lt 0L
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLtFloat() {
+    @Test fun `NumberExpression lt Float`() {
         val property = (-1).toProperty()
 
         val binding = property lt 0f
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLtDouble() {
+    @Test fun `NumberExpression lt Double`() {
         val property = (-1).toProperty()
 
         val binding = property lt 0.0
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testNumberExpressionLtNumberProperty() {
+    @Test fun `NumberExpression lt NumberProperty`() {
         val property = (-1).toProperty()
 
         val binding = property lt 0.0.toProperty()
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = 0
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = 1
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionNot() {
+
+    @Test fun `BooleanExpression not`() {
         val property = true.toProperty()
 
         val binding = !property
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = false
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testBooleanExpressionAndBoolean() {
+    @Test fun `BooleanExpression and Boolean`() {
         val property = true.toProperty()
 
         val binding = property and true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = false
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionAndBooleanProperty() {
+    @Test fun `BooleanExpression and BooleanProperty`() {
         val property1 = true.toProperty()
         val property2 = true.toProperty()
 
         val binding = property1 and property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = false
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property1.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property2.value = false
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionOrBoolean() {
+    @Test fun `BooleanExpression or Boolean`() {
         val property = false.toProperty()
 
         val binding = property or false
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testBooleanExpressionOrBooleanProperty() {
+    @Test fun `BooleanExpression or BooleanProperty`() {
         val property1 = false.toProperty()
         val property2 = false.toProperty()
 
         val binding = property1 or property2
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property1.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property2.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testBooleanExpressionXorBoolean() {
+    @Test fun `BooleanExpression xor Boolean`() {
         val property = false.toProperty()
 
         val binding = property xor true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = true
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionXorBooleanProperty() {
+    @Test fun `BooleanExpression xor BooleanProperty`() {
         val property1 = false.toProperty()
         val property2 = false.toProperty()
 
         val binding = property1 xor property2
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property1.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property2.value = true
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionEqBoolean() {
+    @Test fun `BooleanExpression eq Boolean`() {
         val property = false.toProperty()
 
         val binding = property eq false
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = true
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testBooleanExpressionEqBooleanProperty() {
+    @Test fun `BooleanExpression eq BooleanProperty`() {
         val property1 = false.toProperty()
         val property2 = false.toProperty()
 
         val binding = property1 eq property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = true
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property2.value = true
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testStringExpressionPlusAny() {
-        val property = "Hello ".toProperty()
 
+    @Test fun `StringExpression plus Any`() {
+        val property = "Hello ".toProperty()
         val binding = property + "World!"
-        Assert.assertTrue(binding.get() == "Hello World!")
+
+        assertEquals("Hello World!", binding.get())
 
         property.value = "Bye "
-        Assert.assertTrue(binding.get() == "Bye World!")
+
+        assertEquals("Bye World!", binding.get())
     }
 
-    @Test fun testStringPropertyPlusAssignAny() {
+    @Test fun `StringProperty plusAssign Any`() {
         val property = "Hello ".toProperty()
 
-        Assert.assertTrue(property.get() == "Hello ")
+        assertEquals("Hello ", property.get())
 
         property += "World!"
-        Assert.assertTrue(property.get() == "Hello World!")
+
+        assertEquals("Hello World!", property.get())
     }
 
-    @Test fun testStringExpressionGetInt() {
+    @Test fun `StringExpression unaryMinus`() {
+        val property = "god a ward".toProperty()
+
+        val binding = -property
+        assertEquals("draw a dog", binding.get())
+
+        property.value = "dog a ward"
+        assertEquals("draw a god", binding.get())
+    }
+
+    @Test fun `StringExpression compareTo String`() {
+        val property = "Bravo".toProperty()
+
+        assertTrue(property > "Alpha")
+        assertTrue(property >= "Alpha")
+        assertTrue(property >= "Bravo")
+        assertTrue(property <= "Bravo")
+        assertTrue(property <= "Charlie")
+        assertTrue(property < "Charlie")
+
+        assertFalse(property < "Alpha")
+        assertFalse(property <= "Alpha")
+        assertFalse(property >= "Charlie")
+        assertFalse(property > "Charlie")
+    }
+
+    @Test fun `StringExpression compareTo StringProperty`() {
+        val property = "Bravo".toProperty()
+
+        assertTrue(property > "Alpha".toProperty())
+        assertTrue(property >= "Alpha".toProperty())
+        assertTrue(property >= "Bravo".toProperty())
+        assertTrue(property <= "Bravo".toProperty())
+        assertTrue(property <= "Charlie".toProperty())
+        assertTrue(property < "Charlie".toProperty())
+
+        assertFalse(property < "Alpha".toProperty())
+        assertFalse(property <= "Alpha".toProperty())
+        assertFalse(property >= "Charlie".toProperty())
+        assertFalse(property > "Charlie".toProperty())
+    }
+
+    @Test fun `StringExpression ge tInt`() {
         val property = "Hello World!".toProperty()
 
         val binding = property[0]
-        Assert.assertEquals('H', binding.value)
+        assertEquals('H', binding.value)
 
         property.value = "Bye World!"
-        Assert.assertEquals('B', binding.value)
+        assertEquals('B', binding.value)
     }
 
-    @Test fun testStringExpressionGetIntProperty() {
+    @Test fun `StringExpression ge tIntProperty`() {
         val property = "Hello World!".toProperty()
         val indexProperty = 0.toProperty()
 
         val binding = property[indexProperty]
-        Assert.assertEquals('H', binding.value)
+        assertEquals('H', binding.value)
 
         property.value = "Bye World!"
-        Assert.assertEquals('B', binding.value)
+        assertEquals('B', binding.value)
 
         indexProperty.value = 1
-        Assert.assertEquals('y', binding.value)
+        assertEquals('y', binding.value)
     }
 
-    @Test fun testStringExpressionGetIntToInt() {
+    @Test fun `StringExpression ge tIntToInt`() {
         val property = "foo()".toProperty()
 
         val binding = property[0, 3]
-        Assert.assertEquals("foo", binding.get())
+        assertEquals("foo", binding.get())
 
         property.value = "bar()"
-        Assert.assertEquals("bar", binding.get())
+        assertEquals("bar", binding.get())
     }
 
-    @Test fun testStringExpressionGetIntegerPropertyToInt() {
+    @Test fun `StringExpression ge tIntegerPropertyToInt`() {
         val property = "foo()".toProperty()
         val startIndex = 0.toProperty()
 
         val binding = property[startIndex, 3]
-        Assert.assertEquals("foo", binding.get())
+        assertEquals("foo", binding.get())
 
         property.value = "bar()"
-        Assert.assertEquals("bar", binding.get())
+        assertEquals("bar", binding.get())
 
         startIndex.value = 1
-        Assert.assertEquals("ar", binding.get())
+        assertEquals("ar", binding.get())
     }
 
-    @Test fun testStringExpressionGetIntToIntegerProperty() {
+    @Test fun `StringExpression ge tIntToIntegerProperty`() {
         val property = "foo()".toProperty()
         val endIndex = 3.toProperty()
 
         val binding = property[0, endIndex]
-        Assert.assertEquals("foo", binding.get())
+        assertEquals("foo", binding.get())
 
         property.value = "bar()"
-        Assert.assertEquals("bar", binding.get())
+        assertEquals("bar", binding.get())
 
         endIndex.value = 5
-        Assert.assertEquals("bar()", binding.get())
+        assertEquals("bar()", binding.get())
     }
 
-    @Test fun testStringExpressionGetIntegerPropertyToIntegerProperty() {
+    @Test fun `StringExpression ge tIntegerPropertyToIntegerProperty`() {
         val property = "foo()".toProperty()
         val startIndex = 0.toProperty()
         val endIndex = 3.toProperty()
 
         val binding = property[startIndex, endIndex]
-        Assert.assertEquals("foo", binding.get())
+        assertEquals("foo", binding.get())
 
         property.value = "bar()"
-        Assert.assertEquals("bar", binding.get())
+        assertEquals("bar", binding.get())
 
         startIndex.value = 3
         endIndex.value = 5
-        Assert.assertEquals("()", binding.get())
+        assertEquals("()", binding.get())
     }
 
-    @Test fun testStringExpressionUnaryMinus() {
-        val property = "god a ward".toProperty()
-
-        val binding = -property
-        Assert.assertEquals("draw a dog", binding.get())
-
-        property.value = "dog a ward"
-        Assert.assertEquals("draw a god", binding.get())
-    }
-
-    @Test fun testStringExpressionCompareToString() {
-        val property = "Bravo".toProperty()
-
-        Assert.assertTrue(property > "Alpha")
-        Assert.assertTrue(property >= "Alpha")
-        Assert.assertTrue(property >= "Bravo")
-
-        Assert.assertTrue(property <= "Bravo")
-        Assert.assertTrue(property <= "Charlie")
-        Assert.assertTrue(property < "Charlie")
-
-        Assert.assertFalse(property < "Alpha")
-        Assert.assertFalse(property <= "Alpha")
-
-        Assert.assertFalse(property >= "Charlie")
-        Assert.assertFalse(property > "Charlie")
-    }
-
-    @Test fun testStringExpressionCompareToStringProperty() {
-        val property = "Bravo".toProperty()
-
-        Assert.assertTrue(property > "Alpha".toProperty())
-        Assert.assertTrue(property >= "Alpha".toProperty())
-        Assert.assertTrue(property >= "Bravo".toProperty())
-
-        Assert.assertTrue(property <= "Bravo".toProperty())
-        Assert.assertTrue(property <= "Charlie".toProperty())
-        Assert.assertTrue(property < "Charlie".toProperty())
-
-        Assert.assertFalse(property < "Alpha".toProperty())
-        Assert.assertFalse(property <= "Alpha".toProperty())
-
-        Assert.assertFalse(property >= "Charlie".toProperty())
-        Assert.assertFalse(property > "Charlie".toProperty())
-    }
-
-    @Test fun testStringExpressionGtString() {
+    @Test fun `StringExpression gt String`() {
         val property = "Bravo".toProperty()
 
         val binding = property gt "Alpha"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = "Alpha"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testStringExpressionGtStringProperty() {
+    @Test fun `StringExpression gt StringProperty`() {
         val property1 = "Charlie".toProperty()
         val property2 = "Bravo".toProperty()
 
         val binding = property1 gt property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = "Bravo"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property2.value = "Alpha"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testStringExpressionGeString() {
+    @Test fun `StringExpression ge String`() {
         val property = "Charlie".toProperty()
 
         val binding = property ge "Bravo"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = "Bravo"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = "Alpha"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testStringExpressionGeStringProperty() {
+    @Test fun `StringExpression ge StringProperty`() {
         val property1 = "Charlie".toProperty()
         val property2 = "Bravo".toProperty()
 
         val binding = property1 ge property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = "Bravo"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property2.value = "Alpha"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property2.value = "Charlie"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testStringExpressionEqString() {
+    @Test fun `StringExpression eq String`() {
         val property = "Bravo".toProperty()
 
         val binding = property eq "Bravo"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = "Alpha"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testStringExpressionEqStringProperty() {
+    @Test fun `StringExpression eq StringProperty`() {
         val property1 = "Bravo".toProperty()
         val property2 = "Bravo".toProperty()
 
         val binding = property1 eq property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = "Alpha"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property2.value = "Alpha"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun testStringExpressionLeString() {
-        val property = "Alpha".toProperty()
-
-        val binding = property le "Bravo"
-        Assert.assertTrue(binding.get())
-
-        property.value = "Bravo"
-        Assert.assertTrue(binding.get())
-
-        property.value = "Charlie"
-        Assert.assertFalse(binding.get())
-    }
-
-    @Test fun testStringExpressionLeStringProperty() {
-        val property1 = "Alpha".toProperty()
-        val property2 = "Bravo".toProperty()
-
-        val binding = property1 le property2
-        Assert.assertTrue(binding.get())
-
-        property1.value = "Bravo"
-        Assert.assertTrue(binding.get())
-
-        property2.value = "Charlie"
-        Assert.assertTrue(binding.get())
-
-        property2.value = "Alpha"
-        Assert.assertFalse(binding.get())
-    }
-
-    @Test fun testStringExpressionLtString() {
-        val property = "Alpha".toProperty()
-
-        val binding = property lt "Bravo"
-        Assert.assertTrue(binding.get())
-
-        property.value = "Bravo"
-        Assert.assertFalse(binding.get())
-
-        property.value = "Charlie"
-        Assert.assertFalse(binding.get())
-    }
-
-    @Test fun testStringExpressionLtStringProperty() {
-        val property1 = "Alpha".toProperty()
-        val property2 = "Bravo".toProperty()
-
-        val binding = property1 lt property2
-        Assert.assertTrue(binding.get())
-
-        property1.value = "Bravo"
-        Assert.assertFalse(binding.get())
-
-        property2.value = "Charlie"
-        Assert.assertTrue(binding.get())
-
-        property2.value = "Alpha"
-        Assert.assertFalse(binding.get())
-    }
-
-    @Test fun testStringExpressionEqIgnoreCaseString() {
+    @Test fun `StringExpression eqIgnoreCase String`() {
         val property = "Hello World!".toProperty()
 
         val binding = property eqIgnoreCase "hello world!"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property.value = "Bye World!"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
     }
 
-    @Test fun testStringExpressionEqIgnoreCaseStringProperty() {
+    @Test fun `StringExpression eqIgnoreCase StringProperty`() {
         val property1 = "Hello World!".toProperty()
         val property2 = "hello world!".toProperty()
 
         val binding = property1 eqIgnoreCase property2
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
 
         property1.value = "bye world!"
-        Assert.assertFalse(binding.get())
+        assertFalse(binding.get())
 
         property2.value = "Bye World!"
-        Assert.assertTrue(binding.get())
+        assertTrue(binding.get())
     }
 
-    @Test fun propertyFromMapKey() {
-        val map = mutableMapOf("hello" to "world", "number" to 42)
-        val helloProperty = map.toProperty("hello") { SimpleStringProperty(it as String?) }
-        val numberProperty = map.toProperty("number") { SimpleIntegerProperty(it as Int) }
-        helloProperty.value = "there"
-        numberProperty.value = 43
-        Assert.assertEquals("there", map["hello"])
-        Assert.assertEquals(43, map["number"])
+    @Test fun `StringExpression le String`() {
+        val property = "Alpha".toProperty()
+
+        val binding = property le "Bravo"
+        assertTrue(binding.get())
+
+        property.value = "Bravo"
+        assertTrue(binding.get())
+
+        property.value = "Charlie"
+        assertFalse(binding.get())
+    }
+
+    @Test fun `StringExpression le StringProperty`() {
+        val property1 = "Alpha".toProperty()
+        val property2 = "Bravo".toProperty()
+
+        val binding = property1 le property2
+        assertTrue(binding.get())
+
+        property1.value = "Bravo"
+        assertTrue(binding.get())
+
+        property2.value = "Charlie"
+        assertTrue(binding.get())
+
+        property2.value = "Alpha"
+        assertFalse(binding.get())
+    }
+
+    @Test fun `StringExpression lt String`() {
+        val property = "Alpha".toProperty()
+
+        val binding = property lt "Bravo"
+        assertTrue(binding.get())
+
+        property.value = "Bravo"
+        assertFalse(binding.get())
+
+        property.value = "Charlie"
+        assertFalse(binding.get())
+    }
+
+    @Test fun `StringExpression lt StringProperty`() {
+        val property1 = "Alpha".toProperty()
+        val property2 = "Bravo".toProperty()
+
+        val binding = property1 lt property2
+        assertTrue(binding.get())
+
+        property1.value = "Bravo"
+        assertFalse(binding.get())
+
+        property2.value = "Charlie"
+        assertTrue(binding.get())
+
+        property2.value = "Alpha"
+        assertFalse(binding.get())
     }
 
 //    class ListHolder {
@@ -2833,34 +2840,34 @@ class PropertiesTest {
 //        var list: MutableList<String> by listProperty
 //    }
 //
-//    @Test fun listPropertyDelegateModifyList() {
+//    @fun `listPropertyDelegateModifyList`() {
 //        val listHolder = ListHolder()
 //        var notified = false
 //        listHolder.listProperty.addListener { _, _, _-> notified = true }
 //
 //        listHolder.list.add("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        listHolder.list.remove("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        listHolder.list.addAll(arrayOf("1", "2"))
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        listHolder.list.clear()
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 //
-//    @Test fun listPropertyDelegateChangeList() {
+//    @fun `listPropertyDelegateChangeList`() {
 //        val listHolder = ListHolder()
 //        var notified = false
 //        listHolder.listProperty.addListener { _, _, _-> notified = true }
 //
 //        listHolder.list = mutableListOf("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 //
 //    class SetHolder {
@@ -2868,34 +2875,34 @@ class PropertiesTest {
 //        var set: MutableSet<String> by setProperty
 //    }
 //
-//    @Test fun setPropertyDelegateModifySet() {
+//    @fun `setPropertyDelegateModifySet`() {
 //        val setHolder = SetHolder()
 //        var notified = false
 //        setHolder.setProperty.addListener { _, _, _-> notified = true }
 //
 //        setHolder.set.add("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        setHolder.set.remove("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        setHolder.set.addAll(arrayOf("1", "2"))
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        setHolder.set.clear()
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 //
-//    @Test fun setPropertyDelegateChangeSet() {
+//    @fun `setPropertyDelegateChangeSet`() {
 //        val setHolder = SetHolder()
 //        var notified = false
 //        setHolder.setProperty.addListener { _, _, _-> notified = true }
 //
 //        setHolder.set = mutableSetOf("Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 //
 //    class MapHolder {
@@ -2903,33 +2910,33 @@ class PropertiesTest {
 //        var map: MutableMap<Int, String> by mapProperty
 //    }
 //
-//    @Test fun mapPropertyDelegateModifyMap() {
+//    @fun `mapPropertyDelegateModifyMap`() {
 //        val mapHolder = MapHolder()
 //        var notified = false
 //        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
 //
 //        mapHolder.map.put(0, "Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        mapHolder.map.remove(0)
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        mapHolder.map.putAll(mapOf(1 to "1", 2 to "2"))
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //
 //        notified = false
 //        mapHolder.map.clear()
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 //
-//    @Test fun mapPropertyDelegateChangeMap() {
+//    @fun `mapPropertyDelegateChangeMap`() {
 //        val mapHolder = MapHolder()
 //        var notified = false
 //        mapHolder.mapProperty.addListener { _, _, _-> notified = true }
 //
 //        mapHolder.map = mutableMapOf(0 to "Test")
-//        Assert.assertTrue(notified)
+//        assertTrue(notified)
 //    }
 }
