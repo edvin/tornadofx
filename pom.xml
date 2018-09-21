@@ -95,11 +95,14 @@
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
+<<<<<<< HEAD
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
+=======
+>>>>>>> 41d00901 (Remove profile and add JavaFX dependencies as compiled scoped.)
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
