@@ -7,13 +7,6 @@ JavaFX Framework for Kotlin
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-**Important: TornadoFX is not yet compatible with Java 9/10**
-
-Oracle is intending to decouple JavaFX from the JDK. We will wait
-until the decoupled JavaFX is available and stable before upgrading TornadoFX to support
-it. As of now there is little value and significant effort involved in updating to JDK 9/10,
-while there will be an enormous value in updating to the decoupled version.
-
 ## Features
 
 - Supports both MVC, MVP and their derivatives
@@ -112,6 +105,17 @@ Configure your build environment to use snapshots if you want to try out the lat
 ```
 
 Snapshots are published every day at GMT 16:00 if there has been any changes.
+
+### TornadoFX and JDK 9+
+
+TornadoFX supports JDK 10 and beyond. There is no support for JDK 9. 
+
+**Note:** If your application uses either `DataGrid` or `AutoCompleteComboBox` controls with JDK 10+,
+please make sure to add the following runtime flags:
+
+```bash
+--add-opens javafx.controls/javafx.scene.control.skin=module-name 
+```
 
 ### What does it look like? (Code snippets)
 
