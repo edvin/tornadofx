@@ -69,7 +69,8 @@ class ConfigProperties(val configurable: Configurable) : Properties(), Closeable
         set(pair.first, value)
     }
 
-    fun string(key: String, defaultValue: String? = null) = getProperty(key, defaultValue)
+    fun string(key: String, defaultValue: String): String = getProperty(key, defaultValue)
+    fun string(key: String): String? = getProperty(key)
     fun boolean(key: String, defaultValue: Boolean? = false) = getProperty(key)?.toBoolean() ?: defaultValue
     fun double(key: String, defaultValue: Double? = null) = getProperty(key)?.toDouble() ?: defaultValue
     fun int(key: String, defaultValue: Int? = null) = getProperty(key)?.toInt() ?: defaultValue
