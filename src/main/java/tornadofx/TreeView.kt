@@ -29,7 +29,7 @@ abstract class TreeCellFragment<T> : ItemFragment<T>() {
     open fun onEdit(op: () -> Unit) { editingProperty.onChange { if (it) op() } }
 }
 
-open class SmartTreeCell<T>(val scope: Scope = DefaultScope, treeView: TreeView<T>?): TreeCell<T>() {
+open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeView<T>?): TreeCell<T>() {
     @Suppress("UNCHECKED_CAST") private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)? get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
     @Suppress("UNCHECKED_CAST") private val cellFormat: (TreeCell<T>.(T) -> Unit)? get() = treeView.properties["tornadofx.cellFormat"] as (TreeCell<T>.(T) -> Unit)?
     @Suppress("UNCHECKED_CAST") private val cellCache: TreeCellCache<T>? get() = treeView.properties["tornadofx.cellCache"] as TreeCellCache<T>?
@@ -162,13 +162,13 @@ fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) },
 /**
  * Registers a `Fragment` which should be used to represent a [TreeItem] for the given [TreeView].
  */
-fun <T, F : TreeCellFragment<T>> TreeView<T>.cellFragment(scope: Scope = DefaultScope, fragment: KClass<F>) {
+fun <T, F : TreeCellFragment<T>> TreeView<T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartTreeCell(scope, it) }
 }
 
-fun <S> TreeView<S>.cellFormat(scope: Scope = DefaultScope, formatter: (TreeCell<S>.(S) -> Unit)) {
+fun <S> TreeView<S>.cellFormat(scope: Scope = FX.defaultScope, formatter: (TreeCell<S>.(S) -> Unit)) {
     properties["tornadofx.cellFormat"] = formatter
     if (properties["tornadofx.cellFormatCapable"] != true) {
         cellFactory = Callback { SmartTreeCell(scope, it) }

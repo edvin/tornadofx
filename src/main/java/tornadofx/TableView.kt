@@ -34,7 +34,7 @@ abstract class TableCellFragment<S, T> : RowItemFragment<S, T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartTableCell<S, T>(val scope: Scope = DefaultScope, val owningColumn: TableColumn<S, T>) : TableCell<S, T>() {
+open class SmartTableCell<S, T>(val scope: Scope = FX.defaultScope, val owningColumn: TableColumn<S, T>) : TableCell<S, T>() {
     private val editSupport: (TableCell<S, T>.(EditEventType, T?) -> Unit)? get() = owningColumn.properties["tornadofx.editSupport"] as (TableCell<S, T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (TableCell<S, T>.(T) -> Unit)? get() = owningColumn.properties["tornadofx.cellFormat"] as (TableCell<S, T>.(T) -> Unit)?
     private val cellCache: TableColumnCellCache<T>? get() = owningColumn.properties["tornadofx.cellCache"] as TableColumnCellCache<T>?
@@ -112,13 +112,13 @@ open class SmartTableCell<S, T>(val scope: Scope = DefaultScope, val owningColum
 }
 
 
-fun <S, T> TableColumn<S, T>.cellFormat(scope: Scope = DefaultScope, formatter: TableCell<S, T>.(T) -> Unit) {
+fun <S, T> TableColumn<S, T>.cellFormat(scope: Scope = FX.defaultScope, formatter: TableCell<S, T>.(T) -> Unit) {
     properties["tornadofx.cellFormat"] = formatter
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartTableCell<S, T>(scope, it) }
 }
 
-fun <S, T, F: TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Scope = DefaultScope, fragment: KClass<F>) {
+fun <S, T, F: TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartTableCell<S, T>(scope, it) }
@@ -131,7 +131,7 @@ fun <S, T, F: TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Sco
  * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
  * how to retrieve cached values.
  */
-fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = DefaultScope, cachedGraphicProvider: (T) -> Node) {
+fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = FX.defaultScope, cachedGraphicProvider: (T) -> Node) {
     properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true)
@@ -140,7 +140,7 @@ fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = DefaultScope, cachedGraph
 
 
 fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): TableColumn<T, S?> = apply {
-    cellFormat(DefaultScope) { text = converter.toString(it) }
+    cellFormat(FX.defaultScope) { text = converter.toString(it) }
 }
 
 fun <T> TableView<T>.multiSelect(enable: Boolean = true) {
