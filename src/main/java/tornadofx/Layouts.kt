@@ -17,10 +17,10 @@ import kotlin.reflect.KFunction1
 import kotlin.reflect.full.createInstance
 
 
-private const val BuilderTargetKey = "tornadofx.builderTarget" // FIXME Inconsistent, should be `TornadoFX.BuilderTarget`
+private const val BuilderTargetKey = "tornadofx.builderTarget"
 
-private const val GridPaneRowIdKey = "TornadoFX.GridPaneRowId"
-private const val GridPaneParentObjectKey = "TornadoFX.GridPaneParentObject"
+private const val GridPaneRowIdKey = "TornadoFX.GridPaneRowId" // FIXME Inconsistent, should be in camelCase
+private const val GridPaneParentObjectKey = "TornadoFX.GridPaneParentObject" // FIXME Inconsistent, should be in camelCase
 
 
 @Suppress("UNCHECKED_CAST")
