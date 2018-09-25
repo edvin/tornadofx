@@ -9,7 +9,12 @@
 ### Changes
 
 - Kotlin 1.2.70
+- Refactored code to follow Kotlin Coding Conventions.
 - Specified public & protected declaration types explicitly to ensure API stability.
+- Simplified some code by using Kotlin idioms, and replaced direct platform call with extension functions.
+- Fixed endless recursive function call. (See Animation.kt:L512)
+- Added `inline` modifier to `runLater` top level functions and `crossinline` to `op` parameter. (See Async.kt:L142 & Async.kt:L155)
+- Replaced `Latch.lockedProperty()` function with a property with a custom getter, and renamed private property `Latch.lockedProperty` to `Latch._lockedProperty`. (See Async.kt:L383 & Async.kt:L389)
 
 ### Additions
 

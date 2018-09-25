@@ -17,6 +17,7 @@ import javafx.scene.shape.Shape
 import javafx.scene.transform.Rotate
 import javafx.util.Duration
 
+
 operator fun Timeline.plusAssign(keyFrame: KeyFrame) {
     keyFrames.add(keyFrame)
 }
@@ -25,24 +26,26 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
     values.add(keyValue)
 }
 
-fun SequentialTransition.timeline(op: (Timeline).() -> Unit) = timeline(false, op).also { children += it }
 
-fun ParallelTransition.timeline(op: (Timeline).() -> Unit) = timeline(false, op).also { children += it }
-
-fun sequentialTransition(play: Boolean = true, op: (SequentialTransition.() -> Unit)) = SequentialTransition().apply {
-    op(this)
-    if (play) play()
-}
-
-fun parallelTransition(play: Boolean = true, op: (ParallelTransition.() -> Unit)) = ParallelTransition().apply {
-    op(this)
-    if (play) play()
-}
-
-fun timeline(play: Boolean = true, op: (Timeline).() -> Unit) = Timeline().apply {
+fun sequentialTransition(play: Boolean = true, op: SequentialTransition.() -> Unit): SequentialTransition = SequentialTransition().apply {
     op()
     if (play) play()
 }
+
+fun parallelTransition(play: Boolean = true, op: ParallelTransition.() -> Unit): ParallelTransition = ParallelTransition().apply {
+    op()
+    if (play) play()
+}
+
+
+fun timeline(play: Boolean = true, op: Timeline.() -> Unit): Timeline = Timeline().apply {
+    op()
+    if (play) play()
+}
+
+fun SequentialTransition.timeline(op: Timeline.() -> Unit): Timeline = timeline(false, op).also { children += it }
+fun ParallelTransition.timeline(op: Timeline.() -> Unit): Timeline = timeline(false, op).also { children += it }
+
 
 /**
  * A convenience function for creating a [TranslateTransition] on a [UIComponent].
@@ -56,12 +59,13 @@ fun timeline(play: Boolean = true, op: (Timeline).() -> Unit) = Timeline().apply
  * @return A TranslateTransition on this component
  */
 fun UIComponent.move(
-        time: Duration, destination: Point2D,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: TranslateTransition.() -> Unit = {}
-) = root.move(time, destination, easing, reversed, play, op)
+    time: Duration,
+    destination: Point2D,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: TranslateTransition.() -> Unit = {}
+): TranslateTransition = root.move(time, destination, easing, reversed, play, op)
 
 /**
  * A convenience function for creating a [TranslateTransition] on a [Node].
@@ -74,9 +78,14 @@ fun UIComponent.move(
  * @param op Modify the animation after it is created
  * @return A TranslateTransition on this node
  */
-fun Node.move(time: Duration, destination: Point2D,
-              easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-              op: TranslateTransition.() -> Unit = {}): TranslateTransition {
+fun Node.move(
+    time: Duration,
+    destination: Point2D,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: TranslateTransition.() -> Unit = {}
+): TranslateTransition {
     val target: Point2D
     if (reversed) {
         target = point(translateX, translateY)
@@ -87,12 +96,13 @@ fun Node.move(time: Duration, destination: Point2D,
     }
     return TranslateTransition(time, this).apply {
         interpolator = easing
-        op(this)
+        op()
         toX = target.x
         toY = target.y
         if (play) play()
     }
 }
+
 
 /**
  * A convenience function for creating a [RotateTransition] on a [UIComponent].
@@ -106,13 +116,13 @@ fun Node.move(time: Duration, destination: Point2D,
  * @return A RotateTransition on this component
  */
 fun UIComponent.rotate(
-        time: Duration,
-        angle: Number,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: RotateTransition.() -> Unit = {}
-) = root.rotate(time, angle, easing, reversed, play, op)
+    time: Duration,
+    angle: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: RotateTransition.() -> Unit = {}
+): RotateTransition = root.rotate(time, angle, easing, reversed, play, op)
 
 /**
  * A convenience function for creating a [RotateTransition] on a [Node].
@@ -125,9 +135,14 @@ fun UIComponent.rotate(
  * @param op Modify the animation after it is created
  * @return A RotateTransition on this node
  */
-fun Node.rotate(time: Duration, angle: Number,
-                easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                op: RotateTransition.() -> Unit = {}): RotateTransition {
+fun Node.rotate(
+    time: Duration,
+    angle: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: RotateTransition.() -> Unit = {}
+): RotateTransition {
     val target: Double
     if (reversed) {
         target = rotate
@@ -137,11 +152,12 @@ fun Node.rotate(time: Duration, angle: Number,
     }
     return RotateTransition(time, this).apply {
         interpolator = easing
-        op(this)
+        op()
         toAngle = target
         if (play) play()
     }
 }
+
 
 /**
  * A convenience function for creating a [ScaleTransition] on a [UIComponent].
@@ -155,13 +171,13 @@ fun Node.rotate(time: Duration, angle: Number,
  * @return A ScaleTransition on this component
  */
 fun UIComponent.scale(
-        time: Duration,
-        scale: Point2D,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: ScaleTransition.() -> Unit = {}
-) = root.scale(time, scale, easing, reversed, play, op)
+    time: Duration,
+    scale: Point2D,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: ScaleTransition.() -> Unit = {}
+): ScaleTransition = root.scale(time, scale, easing, reversed, play, op)
 
 /**
  * A convenience function for creating a [ScaleTransition] on a [Node].
@@ -174,9 +190,14 @@ fun UIComponent.scale(
  * @param op Modify the animation after it is created
  * @return A ScaleTransition on this node
  */
-fun Node.scale(time: Duration, scale: Point2D,
-               easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-               op: ScaleTransition.() -> Unit = {}): ScaleTransition {
+fun Node.scale(
+    time: Duration,
+    scale: Point2D,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: ScaleTransition.() -> Unit = {}
+): ScaleTransition {
     val target: Point2D
     if (reversed) {
         target = point(scaleX, scaleY)
@@ -187,12 +208,13 @@ fun Node.scale(time: Duration, scale: Point2D,
     }
     return ScaleTransition(time, this).apply {
         interpolator = easing
-        op(this)
+        op()
         toX = target.x
         toY = target.y
         if (play) play()
     }
 }
+
 
 /**
  * A convenience function for creating a [FadeTransition] on a [UIComponent].
@@ -206,13 +228,13 @@ fun Node.scale(time: Duration, scale: Point2D,
  * @return A FadeTransition on this component
  */
 fun UIComponent.fade(
-        time: Duration,
-        opacity: Number,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: FadeTransition.() -> Unit = {}
-) = root.fade(time, opacity, easing, reversed, play, op)
+    time: Duration,
+    opacity: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: FadeTransition.() -> Unit = {}
+): FadeTransition = root.fade(time, opacity, easing, reversed, play, op)
 
 /**
  * A convenience function for creating a [FadeTransition] on a [Node].
@@ -225,9 +247,14 @@ fun UIComponent.fade(
  * @param op Modify the animation after it is created
  * @return A FadeTransition on this node
  */
-fun Node.fade(time: Duration, opacity: Number,
-              easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-              op: FadeTransition.() -> Unit = {}): FadeTransition {
+fun Node.fade(
+    time: Duration,
+    opacity: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: FadeTransition.() -> Unit = {}
+): FadeTransition {
     val target: Double
     if (reversed) {
         target = this.opacity
@@ -237,11 +264,12 @@ fun Node.fade(time: Duration, opacity: Number,
     }
     return FadeTransition(time, this).apply {
         interpolator = easing
-        op(this)
+        op()
         toValue = target
         if (play) play()
     }
 }
+
 
 /**
  * A convenience function for creating a [TranslateTransition], [RotateTransition], [ScaleTransition], [FadeTransition]
@@ -259,16 +287,16 @@ fun Node.fade(time: Duration, opacity: Number,
  * @return A ParallelTransition on this component
  */
 fun UIComponent.transform(
-        time: Duration,
-        destination: Point2D,
-        angle: Number,
-        scale: Point2D,
-        opacity: Number,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: ParallelTransition.() -> Unit = {}
-) = root.transform(time, destination, angle, scale, opacity, easing, reversed, play, op)
+    time: Duration,
+    destination: Point2D,
+    angle: Number,
+    scale: Point2D,
+    opacity: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: ParallelTransition.() -> Unit = {}
+): ParallelTransition = root.transform(time, destination, angle, scale, opacity, easing, reversed, play, op)
 
 /**
  * A convenience function for creating a [TranslateTransition], [RotateTransition], [ScaleTransition], [FadeTransition]
@@ -286,24 +314,25 @@ fun UIComponent.transform(
  * @return A ParallelTransition on this node
  */
 fun Node.transform(
-        time: Duration,
-        destination: Point2D,
-        angle: Number,
-        scale: Point2D,
-        opacity: Number,
-        easing: Interpolator = Interpolator.EASE_BOTH,
-        reversed: Boolean = false,
-        play: Boolean = true,
-        op: ParallelTransition.() -> Unit = {}
-) = move(time, destination, easing, reversed, play)
-        .and(rotate(time, angle, easing, reversed, play))
-        .and(scale(time, scale, easing, reversed, play))
-        .and(fade(time, opacity, easing, reversed, play))
-        .apply {
-            interpolator = easing
-            op(this)
-            if (play) play()
-        }
+    time: Duration,
+    destination: Point2D,
+    angle: Number,
+    scale: Point2D,
+    opacity: Number,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: ParallelTransition.() -> Unit = {}
+): ParallelTransition = move(time, destination, easing, reversed, play)
+    .and(rotate(time, angle, easing, reversed, play))
+    .and(scale(time, scale, easing, reversed, play))
+    .and(fade(time, opacity, easing, reversed, play))
+    .apply {
+        interpolator = easing
+        op()
+        if (play) play()
+    }
+
 
 /**
  * A convenience function for creating a parallel animation from multiple animations.
@@ -313,14 +342,51 @@ fun Node.transform(
  * @param op Modify the animation after it is created
  * @return A ParallelTransition
  */
-fun Animation.and(vararg animation: Animation, op: ParallelTransition.() -> Unit = {}) = when {
+fun Animation.and(vararg animation: Animation, op: ParallelTransition.() -> Unit = {}): ParallelTransition = when {
     this is ParallelTransition -> this.apply { children += animation }
     else -> ParallelTransition(this, *animation)
 }.also(op)
 
-infix fun Animation.and(animation: Animation) = when {
+infix fun Animation.and(animation: Animation): ParallelTransition = when {
     this is ParallelTransition -> this.apply { children += animation }
     else -> ParallelTransition(this, animation)
+}
+
+
+/**
+ * A convenience function for creating a sequential animation from multiple animations.
+ *
+ * @receiver The base animation
+ * @param animation The animations to play with this one
+ * @param op Modify the animation after it is created
+ * @return A SequentialTransition
+ */
+fun Animation.then(vararg animation: Animation, op: SequentialTransition.() -> Unit = {}): SequentialTransition = when {
+    this is SequentialTransition -> this.apply { children += animation }
+    else -> SequentialTransition(this, *animation)
+}.also(op)
+
+infix fun Animation.then(animation: Animation): SequentialTransition = when {
+    this is SequentialTransition -> this.apply { children += animation }
+    else -> SequentialTransition(this, animation)
+}
+
+
+/**
+ * A convenience function for playing multiple animations in sequence.
+ *
+ * @receiver The animations to play in sequence
+ * @param play Whether to start playing immediately
+ * @param op Modify the animation before playing
+ * @return A SequentialTransition
+ */
+fun Iterable<Animation>.playSequential(
+    play: Boolean = true,
+    op: SequentialTransition.() -> Unit = {}
+): SequentialTransition = SequentialTransition().apply {
+    children.setAll(toList())
+    op()
+    if (play) play()
 }
 
 /**
@@ -332,94 +398,72 @@ infix fun Animation.and(animation: Animation) = when {
  * @return A ParallelTransition
  */
 fun Iterable<Animation>.playParallel(
-        play: Boolean = true,
-        op: ParallelTransition.() -> Unit = {}
-) = ParallelTransition().apply {
+    play: Boolean = true,
+    op: ParallelTransition.() -> Unit = {}
+): ParallelTransition = ParallelTransition().apply {
     children.setAll(toList())
-    op(this)
+    op()
     if (play) play()
 }
 
-/**
- * A convenience function for creating a sequential animation from multiple animations.
- *
- * @receiver The base animation
- * @param animation The animations to play with this one
- * @param op Modify the animation after it is created
- * @return A SequentialTransition
- */
-fun Animation.then(vararg animation: Animation, op: SequentialTransition.() -> Unit = {}) = when {
-    this is SequentialTransition -> this.apply { children += animation }
-    else -> SequentialTransition(this, *animation)
-}.also(op)
 
-infix fun Animation.then(animation: Animation) = when {
-    this is SequentialTransition -> this.apply { children += animation }
-    else -> SequentialTransition(this, animation)
-}
-
-/**
- * A convenience function for playing multiple animations in sequence.
- *
- * @receiver The animations to play in sequence
- * @param play Whether to start playing immediately
- * @param op Modify the animation before playing
- * @return A SequentialTransition
- */
-fun Iterable<Animation>.playSequential(
-        play: Boolean = true,
-        op: SequentialTransition.() -> Unit = {}
-) = SequentialTransition().apply {
-    children.setAll(toList())
-    op(this)
+fun Shape.animateFill(
+    time: Duration,
+    from: Color,
+    to: Color,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: FillTransition.() -> Unit = {}
+): FillTransition = FillTransition(time, this, from, to).apply {
+    interpolator = easing
+    if (reversed) {
+        fromValue = to
+        toValue = from
+    }
+    op()
     if (play) play()
 }
 
-fun Shape.animateFill(time: Duration, from: Color, to: Color,
-                      easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                      op: FillTransition.() -> Unit = {}): FillTransition {
-    return FillTransition(time, this, from, to).apply {
-        interpolator = easing
-        if (reversed) {
-            fromValue = to
-            toValue = from
-        }
-        op(this)
-        if (play) play()
+fun Shape.animateStroke(
+    time: Duration,
+    from: Color,
+    to: Color,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: StrokeTransition.() -> Unit = {}
+): StrokeTransition = StrokeTransition(time, this, from, to).apply {
+    interpolator = easing
+    if (reversed) {
+        fromValue = to
+        toValue = from
     }
-}
-
-fun Shape.animateStroke(time: Duration, from: Color, to: Color,
-                        easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                        op: StrokeTransition.() -> Unit = {}): StrokeTransition {
-    return StrokeTransition(time, this, from, to).apply {
-        interpolator = easing
-        if (reversed) {
-            fromValue = to
-            toValue = from
-        }
-        op(this)
-        if (play) play()
-    }
-}
-
-fun Node.follow(time: Duration, path: Shape,
-                easing: Interpolator = Interpolator.EASE_BOTH, reversed: Boolean = false, play: Boolean = true,
-                op: PathTransition.() -> Unit = {}): PathTransition {
-    return PathTransition(time, path, this).apply {
-        interpolator = easing
-        op(this)
-        if (reversed && rate > 0.0) rate = -rate
-        if (play) play()
-    }
-}
-
-fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit = {}) = PauseTransition(time).apply {
-    op(this)
+    op()
     if (play) play()
 }
 
-fun Timeline.keyframe(duration: Duration, op: (KeyFrameBuilder).() -> Unit): KeyFrame {
+
+fun Node.follow(
+    time: Duration,
+    path: Shape,
+    easing: Interpolator = Interpolator.EASE_BOTH,
+    reversed: Boolean = false,
+    play: Boolean = true,
+    op: PathTransition.() -> Unit = {}
+): PathTransition = PathTransition(time, path, this).apply {
+    interpolator = easing
+    op()
+    if (reversed && rate > 0.0) rate = -rate
+    if (play) play()
+}
+
+fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit = {}): PauseTransition = PauseTransition(time).apply {
+    op()
+    if (play) play()
+}
+
+fun Timeline.keyframe(duration: Duration, op: KeyFrameBuilder.() -> Unit): KeyFrame {
     val keyFrame = KeyFrameBuilder(duration).also(op).build()
     return keyFrame.also { this += it }
 }
@@ -445,7 +489,6 @@ class KeyFrameBuilder(val duration: Duration) {
     }
 
     internal fun build() = KeyFrame(duration, name, _onFinished, keyValues)
-
 }
 
 fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: Interpolator? = null, op: Timeline.() -> Unit = {}) {
@@ -453,9 +496,7 @@ fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: 
     val timeline = Timeline()
 
     timeline.apply {
-        keyframe(duration) {
-            keyvalue(writableValue, endValue, interpolator)
-        }
+        keyframe(duration) { keyvalue(writableValue, endValue, interpolator) }
         op()
         play()
     }
@@ -467,7 +508,7 @@ val Number.minutes: Duration get() = Duration.minutes(this.toDouble())
 val Number.hours: Duration get() = Duration.hours(this.toDouble())
 
 operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
-operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
+operator fun Duration.minus(duration: Duration): Duration = this.subtract(duration)
 
 /**
  * A class that, when used with [replaceWith] or [UIComponent.replaceWith], allows you to replace [View]s, [Fragment]s,
@@ -484,6 +525,15 @@ operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
  * the create method, and there is also a StackPane extension function ([ViewTransition.moveToTop]) for convenience.
  */
 abstract class ViewTransition {
+    var setup: StackPane.() -> Unit = {}
+    /**
+     * This allows users to modify the generated stack after the the ViewTransition is generated (so they can add things
+     * like AnchorPane and VGrow/HGrow constraints).
+     */
+    fun setup(setup: StackPane.() -> Unit) {
+        this.setup = setup
+    }
+
     /**
      * Create an animation to play for the transition between two nodes. The [StackPane] used as a placeholder during
      * the transition is also provided.
@@ -507,16 +557,7 @@ abstract class ViewTransition {
      * @param removed The node that was removed from the scenegraph
      * @param replacement The node now in the scenegraph
      */
-    open fun onComplete(removed: Node, replacement: Node) = Unit
-
-    var setup: StackPane.() -> Unit = {}
-    /**
-     * This allows users to modify the generated stack after the the ViewTransition is generated (so they can add things
-     * like AnchorPane and VGrow/HGrow constraints).
-     */
-    fun setup(setup: StackPane.() -> Unit) {
-        this.setup = setup
-    }
+    open fun onComplete(removed: Node, replacement: Node) {}
 
     internal fun call(current: Node, replacement: Node, attach: (Node) -> Unit) {
         current.isTransitioning = true
@@ -532,7 +573,7 @@ abstract class ViewTransition {
 
         create(current, replacement, stack).apply {
             val oldFinish: EventHandler<ActionEvent>? = onFinished
-            setOnFinished {
+            setOnFinished { event ->
                 stack.children.clear()
                 current.removeFromParent()
                 replacement.removeFromParent()
@@ -543,7 +584,7 @@ abstract class ViewTransition {
                 }
                 replacementUIComponent?.muteDocking = false
                 attach(replacement)
-                oldFinish?.handle(it)
+                oldFinish?.handle(event)
                 onComplete(current, replacement)
                 current.isTransitioning = false
                 replacement.isTransitioning = false
@@ -573,7 +614,7 @@ abstract class ViewTransition {
      * @param replacement The node that will be in the scenegraph after the transition
      * @return The [StackPane] that will be in the scenegraph during the transition
      */
-    open fun stack(current: Node, replacement: Node) = StackPane(replacement, current)
+    open fun stack(current: Node, replacement: Node): StackPane = StackPane(replacement, current)
 
     companion object {
         @Deprecated("Use `Slide(0.2.seconds)`", ReplaceWith("Slide(0.2.seconds)"))
@@ -595,7 +636,7 @@ abstract class ViewTransition {
             replacementSlide.play()
         }
 
-        @Deprecated("Use `Slide(0.2.seconds, Direction.LEFT)`", ReplaceWith("Slide(0.2.seconds, Direction.RIGHT)"))
+        @Deprecated("Use `Slide(0.2.seconds, Direction.RIGHT)`", ReplaceWith("Slide(0.2.seconds, Direction.RIGHT)"))
         val SlideOut = fun(existing: UIComponent, replacement: UIComponent, transitionCompleteCallback: () -> Unit) {
             replacement.root.translateX = -existing.root.boundsInLocal.width
 
@@ -615,9 +656,10 @@ abstract class ViewTransition {
         }
     }
 
+
     enum class Direction { UP, RIGHT, DOWN, LEFT;
 
-        fun reversed() = when (this) {
+        fun reversed(): Direction = when (this) {
             UP -> DOWN
             RIGHT -> LEFT
             DOWN -> UP
@@ -625,13 +667,17 @@ abstract class ViewTransition {
         }
     }
 
+
+    // ================================================================
+    // View Transitions
+
     /**
      * A [ViewTransition] that smoothly fades from one node to another.
      *
      * @param duration How long the transition will take
      */
     class Fade(val duration: Duration) : ViewTransition() {
-        override fun create(current: Node, replacement: Node, stack: StackPane) = current.fade(duration, 0, play = false)
+        override fun create(current: Node, replacement: Node, stack: StackPane): FadeTransition = current.fade(duration, 0, play = false)
 
         override fun onComplete(removed: Node, replacement: Node) {
             removed.opacity = 1.0
@@ -646,22 +692,69 @@ abstract class ViewTransition {
      * @param duration How long the transition will take
      * @param color The color to fade through (can be any [Paint])
      */
-    class FadeThrough(duration: Duration, val color: Paint = Color.TRANSPARENT) : ViewTransition() {
+    class FadeThrough(val duration: Duration, val color: Paint = Color.TRANSPARENT) : ViewTransition() {
         private val bg = Pane().apply { background = Background(BackgroundFill(color, null, null)) }
         val halfTime: Duration = duration.divide(2.0)
-        override fun create(
-                current: Node,
-                replacement: Node,
-                stack: StackPane
-        ) = current.fade(halfTime, 0, easing = Interpolator.EASE_IN, play = false)
+
+        override fun create(current: Node, replacement: Node, stack: StackPane): SequentialTransition =
+            current.fade(halfTime, 0, easing = Interpolator.EASE_IN, play = false)
                 .then(replacement.fade(halfTime, 0, easing = Interpolator.EASE_OUT, reversed = true, play = false))
 
-        override fun stack(current: Node, replacement: Node) = StackPane(bg, replacement, current)
+        override fun stack(current: Node, replacement: Node): StackPane = StackPane(bg, replacement, current)
 
         override fun onComplete(removed: Node, replacement: Node) {
             removed.opacity = 1.0
         }
     }
+
+    /**
+     * A [ViewTransition] similar to flipping a node over to reveal another on its back. The effect has no perspective
+     * (it isn't 3D) due to the limits of JavaFX's affine transformation system.
+     *
+     * @param duration How long the transition will take
+     * @param vertical Whether to flip the card vertically or horizontally
+     */
+    class Flip(val duration: Duration, val vertical: Boolean = false) : ViewTransition() {
+        val halfTime: Duration = duration.divide(2.0)
+        val targetAxis: Point3D = if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS
+
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation =
+            current.rotate(halfTime, 90, easing = Interpolator.EASE_IN, play = false) { axis = targetAxis }
+                .then(replacement.rotate(halfTime, 90, easing = Interpolator.EASE_OUT, reversed = true, play = false) { axis = targetAxis })
+
+        override fun onComplete(removed: Node, replacement: Node) {
+            removed.rotate = 0.0
+            removed.rotationAxis = Rotate.Z_AXIS
+            replacement.rotationAxis = Rotate.Z_AXIS
+        }
+    }
+
+    /**
+     * A [ViewTransition] where a node spins and grows like a newspaper.
+     *
+     * The effect is similar to this: http://www.canstockphoto.com/spinning-news-paper-4032376.html
+     *
+     * @param duration How long the transition will take
+     * @param rotations How many time the paper will rotate (use a negative value for clockwise rotation)
+     */
+    class NewsFlash(val duration: Duration, val rotations: Number = 2) : ViewTransition() {
+        override fun create(current: Node, replacement: Node, stack: StackPane): ParallelTransition = replacement.transform(
+            time = duration,
+            destination = Point2D.ZERO,
+            angle = rotations.toDouble() * 360,
+            scale = Point2D.ZERO,
+            opacity = 1,
+            easing = Interpolator.EASE_IN,
+            reversed = true,
+            play = false
+        )
+
+        override fun stack(current: Node, replacement: Node): StackPane = super.stack(replacement, current)
+    }
+
+
+    // ================================================================
+    // Reversible View Transitions
 
     /**
      * A [ViewTransition] that can be reversed
@@ -677,6 +770,7 @@ abstract class ViewTransition {
 
         fun reversed(op: T.() -> Unit = {}): T = reversed().also(op)
     }
+
 
     /**
      * A [ReversibleViewTransition] that slides one node out (in a given direction) while sliding another in. The effect
@@ -697,18 +791,88 @@ abstract class ViewTransition {
                 Direction.LEFT -> point(-bounds.width, 0)
             }
             return current.move(duration, destination, play = false)
-                    .and(replacement.move(duration, destination.multiply(-1.0), reversed = true, play = false))
+                .and(replacement.move(duration, destination.multiply(-1.0), reversed = true, play = false))
         }
 
-        override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
+        override fun stack(current: Node, replacement: Node): StackPane = super.stack(replacement, current)
 
         override fun onComplete(removed: Node, replacement: Node) {
             removed.translateX = 0.0
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Slide(duration, direction.reversed()).also { it.setup = setup }
+        override fun reversed(): Slide = Slide(duration, direction.reversed()).also { it.setup = setup }
     }
+
+
+    /**
+     * A [ReversibleViewTransition] where a node fades and slides out in a given direction while another node fades and
+     * slides in. The effect is similar to effects commonly used in Windows applications (thus the name).
+     *
+     * The reverse is a Metro in the opposite direction.
+     *
+     * @param duration How long the transition will take
+     * @param direction The direction to slide the nodes
+     * @param distancePercentage The distance to move the nodes as a percentage of the size of the current node
+     */
+    class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition<Metro>() {
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+            val bounds = current.boundsInLocal
+            val destination = when (direction) {
+                Direction.UP -> point(0, -bounds.height * distancePercentage)
+                Direction.RIGHT -> point(bounds.width * distancePercentage, 0)
+                Direction.DOWN -> point(0, bounds.height * distancePercentage)
+                Direction.LEFT -> point(-bounds.width * distancePercentage, 0)
+            }
+            return current.transform(duration.divide(2.0), destination, 0, point(1, 1), 0, play = false)
+                .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, point(1, 1), 0, reversed = true, play = false))
+        }
+
+        override fun onComplete(removed: Node, replacement: Node) {
+            removed.translateX = 0.0
+            removed.translateY = 0.0
+            removed.opacity = 1.0
+        }
+
+        override fun reversed(): Metro = Metro(duration, direction.reversed(), distancePercentage).also { it.setup = setup }
+    }
+
+
+    /**
+     * A [ReversibleViewTransition] that swaps the two nodes in a way that looks like two cards in a deck being swapped.
+     *
+     * The reverse is a Swap in the opposite direction
+     *
+     * @param duration How long the transition will take
+     * @param direction The direction the current node will initially move
+     * @param scale The starting scale of the replacement node and ending scale of the current node
+     */
+    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = point(.75, .75)) : ReversibleViewTransition<Swap>() {
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+            val bounds = current.boundsInLocal
+            val destination = when (direction) {
+                Direction.UP -> point(0, -bounds.height * 0.5)
+                Direction.RIGHT -> point(bounds.width * 0.5, 0)
+                Direction.DOWN -> point(0, bounds.height * 0.5)
+                Direction.LEFT -> point(-bounds.width * 0.5, 0)
+            }
+            val halfTime = duration.divide(2.0)
+            return current.scale(duration, scale, play = false).and(replacement.scale(duration, scale, reversed = true, play = false))
+                .and(current.move(halfTime, destination).and(replacement.move(halfTime, destination.multiply(-1.0))) {
+                    setOnFinished { stack.moveToTop(replacement) }
+                }.then(current.move(halfTime, Point2D.ZERO).and(replacement.move(halfTime, Point2D.ZERO))))
+        }
+
+        override fun onComplete(removed: Node, replacement: Node) {
+            removed.translateX = 0.0
+            removed.translateY = 0.0
+            removed.scaleX = 1.0
+            removed.scaleY = 1.0
+        }
+
+        override fun reversed(): Swap = Swap(duration, direction.reversed(), scale).also { it.setup = setup }
+    }
+
 
     /**
      * A [ReversibleViewTransition] where a node slides in in a given direction covering another node.
@@ -730,11 +894,10 @@ abstract class ViewTransition {
             return replacement.move(duration, destination, reversed = true, play = false)
         }
 
-        override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
+        override fun stack(current: Node, replacement: Node): StackPane = super.stack(replacement, current)
 
-        override fun reversed() = Reveal(duration, direction.reversed()).also { it.setup = setup }
+        override fun reversed(): Reveal = Reveal(duration, direction.reversed()).also { it.setup = setup }
     }
-
 
     /**
      * A [ReversibleViewTransition] where a node slides out in a given direction revealing another node.
@@ -761,125 +924,9 @@ abstract class ViewTransition {
             removed.translateY = 0.0
         }
 
-        override fun reversed() = Cover(duration, direction.reversed()).also { it.setup = setup }
+        override fun reversed(): Cover = Cover(duration, direction.reversed()).also { it.setup = setup }
     }
 
-    /**
-     * A [ReversibleViewTransition] where a node fades and slides out in a given direction while another node fades and
-     * slides in. The effect is similar to effects commonly used in Windows applications (thus the name).
-     *
-     * The reverse is a Metro in the opposite direction.
-     *
-     * @param duration How long the transition will take
-     * @param direction The direction to slide the nodes
-     * @param distancePercentage The distance to move the nodes as a percentage of the size of the current node
-     */
-    class Metro(val duration: Duration, val direction: Direction = Direction.LEFT, val distancePercentage: Double = 0.1) : ReversibleViewTransition<Metro>() {
-        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
-            val bounds = current.boundsInLocal
-            val destination = when (direction) {
-                Direction.UP -> point(0, -bounds.height * distancePercentage)
-                Direction.RIGHT -> point(bounds.width * distancePercentage, 0)
-                Direction.DOWN -> point(0, bounds.height * distancePercentage)
-                Direction.LEFT -> point(-bounds.width * distancePercentage, 0)
-            }
-            return current.transform(duration.divide(2.0), destination, 0, point(1, 1), 0, play = false)
-                    .then(replacement.transform(duration.divide(2.0), destination.multiply(-1.0), 0, point(1, 1), 0,
-                            reversed = true, play = false))
-        }
-
-        override fun onComplete(removed: Node, replacement: Node) {
-            removed.translateX = 0.0
-            removed.translateY = 0.0
-            removed.opacity = 1.0
-        }
-
-        override fun reversed() = Metro(duration, direction.reversed(), distancePercentage).also { it.setup = setup }
-    }
-
-    /**
-     * A [ReversibleViewTransition] that swaps the two nodes in a way that looks like two cards in a deck being swapped.
-     *
-     * The reverse is a Swap in the opposite direction
-     *
-     * @param duration How long the transition will take
-     * @param direction The direction the current node will initially move
-     * @param scale The starting scale of the replacement node and ending scale of the current node
-     */
-    class Swap(val duration: Duration, val direction: Direction = Direction.LEFT, val scale: Point2D = point(.75, .75)) : ReversibleViewTransition<Swap>() {
-        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
-            val bounds = current.boundsInLocal
-            val destination = when (direction) {
-                Direction.UP -> point(0, -bounds.height * 0.5)
-                Direction.RIGHT -> point(bounds.width * 0.5, 0)
-                Direction.DOWN -> point(0, bounds.height * 0.5)
-                Direction.LEFT -> point(-bounds.width * 0.5, 0)
-            }
-            val halfTime = duration.divide(2.0)
-            return current.scale(duration, scale, play = false).and(replacement.scale(duration, scale, reversed = true, play = false))
-                    .and(current.move(halfTime, destination).and(replacement.move(halfTime, destination.multiply(-1.0))) {
-                        setOnFinished { stack.moveToTop(replacement) }
-                    }.then(current.move(halfTime, Point2D.ZERO).and(replacement.move(halfTime, Point2D.ZERO))))
-        }
-
-        override fun onComplete(removed: Node, replacement: Node) {
-            removed.translateX = 0.0
-            removed.translateY = 0.0
-            removed.scaleX = 1.0
-            removed.scaleY = 1.0
-        }
-
-        override fun reversed() = Swap(duration, direction.reversed(), scale).also { it.setup = setup }
-    }
-
-    /**
-     * A [ViewTransition] similar to flipping a node over to reveal another on its back. The effect has no perspective
-     * (it isn't 3D) due to the limits of JavaFX's affine transformation system.
-     *
-     * @param duration How long the transition will take
-     * @param vertical Whether to flip the card vertically or horizontally
-     */
-    class Flip(duration: Duration, vertical: Boolean = false) : ViewTransition() {
-        val halfTime: Duration = duration.divide(2.0)
-        val targetAxis: Point3D = (if (vertical) Rotate.X_AXIS else Rotate.Y_AXIS)
-
-        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
-            return current.rotate(halfTime, 90, easing = Interpolator.EASE_IN, play = false) { axis = targetAxis}.then(
-                    replacement.rotate(halfTime, 90, easing = Interpolator.EASE_OUT, reversed = true, play = false) {
-                        axis = targetAxis
-                    }
-            )
-        }
-
-        override fun onComplete(removed: Node, replacement: Node) {
-            removed.rotate = 0.0
-            removed.rotationAxis = Rotate.Z_AXIS
-            replacement.rotationAxis = Rotate.Z_AXIS
-        }
-    }
-
-    /**
-     * A [ViewTransition] where a node spins and grows like a newspaper.
-     *
-     * The effect is similar to this: http://www.canstockphoto.com/spinning-news-paper-4032376.html
-     *
-     * @param duration How long the transition will take
-     * @param rotations How many time the paper will rotate (use a negative value for clockwise rotation)
-     */
-    class NewsFlash(val duration: Duration, val rotations: Number = 2) : ViewTransition() {
-        override fun create(current: Node, replacement: Node, stack: StackPane) = replacement.transform(
-                time = duration,
-                destination = Point2D.ZERO,
-                angle = rotations.toDouble() * 360,
-                scale = Point2D.ZERO,
-                opacity = 1,
-                easing = Interpolator.EASE_IN,
-                reversed = true,
-                play = false
-        )
-
-        override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
-    }
 
     /**
      * A [ReversibleViewTransition] where a node grows and fades out revealing another node.
@@ -890,11 +937,8 @@ abstract class ViewTransition {
      * @param scale How big to scale the node as it fades out
      */
     class Explode(val duration: Duration, val scale: Point2D = point(2, 2)) : ReversibleViewTransition<Implode>() {
-        override fun create(
-                current: Node,
-                replacement: Node,
-                stack: StackPane
-        ) = current.transform(duration, Point2D.ZERO, 0, scale, 0, play = false)
+        override fun create(current: Node, replacement: Node, stack: StackPane): ParallelTransition =
+            current.transform(duration, Point2D.ZERO, 0, scale, 0, play = false)
 
         override fun onComplete(removed: Node, replacement: Node) {
             removed.scaleX = 1.0
@@ -902,7 +946,7 @@ abstract class ViewTransition {
             removed.opacity = 1.0
         }
 
-        override fun reversed() = Implode(duration, scale).also { it.setup = setup }
+        override fun reversed(): Implode = Implode(duration, scale).also { it.setup = setup }
     }
 
     /**
@@ -914,14 +958,11 @@ abstract class ViewTransition {
      * @param scale The initial size the node shrinks from
      */
     class Implode(val duration: Duration, val scale: Point2D = point(2, 2)) : ReversibleViewTransition<Explode>() {
-        override fun create(
-                current: Node,
-                replacement: Node,
-                stack: StackPane
-        ) = replacement.transform(duration, Point2D.ZERO, 0, scale, 0, reversed = true, play = false)
+        override fun create(current: Node, replacement: Node, stack: StackPane): ParallelTransition =
+            replacement.transform(duration, Point2D.ZERO, 0, scale, 0, reversed = true, play = false)
 
-        override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
+        override fun stack(current: Node, replacement: Node): StackPane = super.stack(replacement, current)
 
-        override fun reversed() = Explode(duration, scale).also { it.setup = setup }
+        override fun reversed(): Explode = Explode(duration, scale).also { it.setup = setup }
     }
 }

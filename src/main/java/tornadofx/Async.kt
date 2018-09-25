@@ -22,9 +22,11 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 internal val log = Logger.getLogger("tornadofx.async")
-internal val dummyUncaughtExceptionHandler = Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
+internal val dummyUncaughtExceptionHandler =
+    Thread.UncaughtExceptionHandler { t, e -> log.log(Level.WARNING, e) { "Exception in ${t?.name ?: "?"}: ${e?.message ?: "?"}" } }
 
 private enum class ThreadPoolType { NoDaemon, Daemon }
+
 private val threadPools = mutableMapOf<ThreadPoolType, ExecutorService>()
 
 internal val tfxThreadPool: ExecutorService
@@ -37,126 +39,91 @@ internal val tfxDaemonThreadPool: ExecutorService
         Executors.newCachedThreadPool(TFXThreadFactory(daemon = true))
     }
 
+private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
+    private val threadCounter = AtomicLong(0L)
+    override fun newThread(runnable: Runnable?) = Thread(runnable, threadName()).apply { isDaemon = daemon }
+    private fun threadName() = "tornadofx-thread-${threadCounter.incrementAndGet()}" + if (daemon) "-daemon" else ""
+}
 
 internal fun shutdownThreadPools() {
     threadPools.values.forEach { it.shutdown() }
     threadPools.clear()
 }
 
-private class TFXThreadFactory(val daemon: Boolean) : ThreadFactory {
-    private val threadCounter = AtomicLong(0L)
-    override fun newThread(runnable: Runnable?) = Thread(runnable, threadName()).apply {
-        isDaemon = daemon
-    }
-
-    private fun threadName() = "tornadofx-thread-${threadCounter.incrementAndGet()}" + if (daemon) "-daemon" else ""
+fun terminateAsyncExecutors(timeoutMillis: Long) {
+    threadPools.values.forEach { awaitTermination(it, timeoutMillis) }
+    threadPools.clear()
 }
 
 private fun awaitTermination(pool: ExecutorService, timeout: Long) {
-    synchronized(pool) {
-        // Disable new tasks from being submitted
-        pool.shutdown()
-    }
+    // Disable new tasks from being submitted
+    synchronized(pool) { pool.shutdown() }
     try {
         // Wait a while for existing tasks to terminate
         if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
-            synchronized(pool) {
-                pool.shutdownNow() // Cancel currently executing tasks
-            }
+            // Cancel currently executing tasks
+            synchronized(pool) { pool.shutdownNow() }
             // Wait a while for tasks to respond to being cancelled
-            if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
+            if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS))
                 log.log(Level.SEVERE, "Executor did not terminate")
-            }
         }
     } catch (ie: InterruptedException) {
         // (Re-)Cancel if current thread also interrupted
-        synchronized(pool) {
-            pool.shutdownNow()
-        }
+        synchronized(pool) { pool.shutdownNow() }
         // Preserve interrupt status
         Thread.currentThread().interrupt()
     }
 }
 
-fun terminateAsyncExecutors(timeoutMillis: Long) {
-    awaitTermination(tfxThreadPool, timeoutMillis)
-    awaitTermination(tfxDaemonThreadPool, timeoutMillis)
-    threadPools.clear()
-}
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)
 
-fun <T> task(daemon: Boolean = false, taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = FXTask(taskStatus, func = func).apply {
-    setOnFailed({ (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) })
-    if (daemon) {
-        tfxDaemonThreadPool.execute(this)
-    } else {
-        tfxThreadPool.execute(this)
-    }
-}
-
-fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(status, func)
-
-fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTask<*>.() -> T) = task(daemon, status, func)
-
-infix fun <T> Task<T>.ui(func: (T) -> Unit) = success(func)
-
-infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
-    fun attachSuccessHandler() {
-        if (state == Worker.State.SUCCEEDED) {
-            func(value)
+fun <T> task(daemon: Boolean = false, taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> =
+    FXTask(taskStatus, func = func).apply {
+        setOnFailed { (Thread.getDefaultUncaughtExceptionHandler() ?: dummyUncaughtExceptionHandler).uncaughtException(Thread.currentThread(), exception) }
+        if (daemon) {
+            tfxDaemonThreadPool.execute(this)
         } else {
-            setOnSucceeded {
-                func(value)
-            }
+            tfxThreadPool.execute(this)
         }
     }
 
-    if (Application.isEventThread())
-        attachSuccessHandler()
-    else
-        runLater { attachSuccessHandler() }
+
+infix fun <T> Task<T>.ui(func: (T) -> Unit): Task<T> = success(func)
+
+infix fun <T> Task<T>.success(func: (T) -> Unit): Task<T> = apply {
+    fun attachSuccessHandler() = if (state == Worker.State.SUCCEEDED) func(value) else setOnSucceeded { func(value) }
+
+    if (Application.isEventThread()) attachSuccessHandler()
+    else runLater { attachSuccessHandler() }
 }
 
-infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
-    fun attachFailHandler() {
-        if (state == Worker.State.FAILED) {
-            func(exception)
-        } else {
-            setOnFailed {
-                func(exception)
-            }
-        }
-    }
+infix fun <T> Task<T>.fail(func: (Throwable) -> Unit): Task<T> = apply {
+    fun attachFailHandler() = if (state == Worker.State.FAILED) func(exception) else setOnFailed { func(exception) }
 
-    if (Application.isEventThread())
-        attachFailHandler()
-    else
-        runLater { attachFailHandler() }
+    if (Application.isEventThread()) attachFailHandler()
+    else runLater { attachFailHandler() }
 }
 
-infix fun <T> Task<T>.cancel(func: () -> Unit) = apply {
-    fun attachCancelHandler() {
-        if (state == Worker.State.CANCELLED) {
-            func()
-        } else {
-            setOnCancelled {
-                func()
-            }
-        }
-    }
+infix fun <T> Task<T>.cancel(func: () -> Unit): Task<T> = apply {
+    fun attachCancelHandler() = if (state == Worker.State.CANCELLED) func() else setOnCancelled { func() }
 
-    if (Application.isEventThread())
-        attachCancelHandler()
-    else
-        runLater { attachCancelHandler() }
+    if (Application.isEventThread()) attachCancelHandler()
+    else runLater { attachCancelHandler() }
 }
+
+infix fun <T> Task<T>.finally(func: () -> Unit) {
+    require(this is FXTask<*>) { "finally() called on non-FXTask subclass" }
+    this as FXTask<*> // TODO Remove on Kotlin 1.3
+    finally(func)
+}
+
 
 /**
  * Run the specified Runnable on the JavaFX Application Thread at some
  * unspecified time in the future.
  */
-fun runLater(op: () -> Unit) = Platform.runLater(op)
+inline fun runLater(crossinline op: () -> Unit): Unit = Platform.runLater { op() }
 
 /**
  * Run the specified Runnable on the JavaFX Application Thread after a
@@ -169,12 +136,13 @@ fun runLater(op: () -> Unit) = Platform.runLater(op)
  * This function returns a TimerTask which includes a runningProperty as well as the owning timer.
  * You can cancel the task before the time is up to abort the execution.
  */
-fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
+inline fun runLater(delay: Duration, crossinline op: () -> Unit): FXTimerTask {
     val timer = Timer(true)
-    val task = FXTimerTask(op, timer)
+    val task = FXTimerTask({ op() }, timer)
     timer.schedule(task, delay.toMillis().toLong())
     return task
 }
+
 
 /**
  * Wait on the UI thread until a certain value is available on this observable.
@@ -182,9 +150,7 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
-        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
-    }
+    check(!Toolkit.getToolkit().canStartNestedEventLoop()) { "awaitUntil is not allowed during animation or layout processing" }
 
     val changeListener = object : ChangeListener<T> {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
@@ -207,9 +173,13 @@ fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
  *
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
-fun ObservableValue<Boolean>.awaitUntil() {
-    this.awaitUntil { it }
-}
+fun ObservableValue<Boolean>.awaitUntil(): Unit = awaitUntil { it }
+
+
+fun <T> runAsync(status: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(status, func)
+
+fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon, status, func)
+
 
 /**
  * Replace this node with a progress node while a long running task
@@ -222,13 +192,13 @@ fun ObservableValue<Boolean>.awaitUntil() {
  *
  * For latch usage see [runAsyncWithOverlay]
  */
-fun Node.runAsyncWithProgress(latch: CountDownLatch, timeout: Duration? = null, progress: Node = ProgressIndicator()): Task<Boolean> {
-    return if (timeout == null) {
-        runAsyncWithProgress(progress) { latch.await(); true }
-    } else {
-        runAsyncWithOverlay(progress) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
-    }
-}
+fun Node.runAsyncWithProgress(
+    latch: CountDownLatch,
+    timeout: Duration? = null,
+    progress: Node = ProgressIndicator()
+): Task<Boolean> =
+    if (timeout == null) runAsyncWithProgress(progress) { latch.await(); true }
+    else runAsyncWithOverlay(progress) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
 
 /**
  * Replace this node with a progress node while a long running task
@@ -248,9 +218,7 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
             try {
                 op()
             } finally {
-                runLater {
-                    this@runAsyncWithProgress.graphic = oldGraphic
-                }
+                runLater { this@runAsyncWithProgress.graphic = oldGraphic }
             }
         }
     } else {
@@ -320,13 +288,13 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
  * runAsync(worker2.work(); latch.countDown())
  */
 @JvmOverloads
-fun Node.runAsyncWithOverlay(latch: CountDownLatch, timeout: Duration? = null, overlayNode: Node = MaskPane()): Task<Boolean> {
-    return if (timeout == null) {
-        runAsyncWithOverlay(overlayNode) { latch.await(); true }
-    } else {
-        runAsyncWithOverlay(overlayNode) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
-    }
-}
+fun Node.runAsyncWithOverlay(
+    latch: CountDownLatch,
+    timeout: Duration? = null,
+    overlayNode: Node = MaskPane()
+): Task<Boolean> =
+    if (timeout == null) runAsyncWithOverlay(overlayNode) { latch.await(); true }
+    else runAsyncWithOverlay(overlayNode) { latch.await(timeout.toMillis().toLong(), TimeUnit.MILLISECONDS) }
 
 /**
  * Runs given task in background thread, covering node with overlay (default one is [MaskPane]) until task is done.
@@ -360,6 +328,46 @@ fun <T : Any> Node.runAsyncWithOverlay(overlayNode: Node = MaskPane(), op: () ->
 }
 
 /**
+ * Adds some superpowers to good old [CountDownLatch], like exposed [lockedProperty] or ability to release latch
+ * immediately.
+ *
+ * All documentation of superclass applies here. Default behavior has not been altered.
+ */
+class Latch(count: Int) : CountDownLatch(count) {
+    /**
+     * Initializes latch with count of `1`, which means that the first invocation of [countDown] will allow all
+     * waiting threads to proceed.
+     */
+    constructor() : this(1) // TODO Maybe merge to primary constructor by adding default value?
+
+    private val _lockedProperty by lazy { ReadOnlyBooleanWrapper(locked) }
+
+    /**
+     * Locked state of this latch exposed as a property. Keep in mind that latch instance can be used only once, so
+     * this property has to rebound every time.
+     */
+    val lockedProperty: ReadOnlyBooleanProperty get() = _lockedProperty.readOnlyProperty
+
+    /**
+     * Locked state of this latch. `true` if and only if [CountDownLatch.getCount] is greater than `0`.
+     * Once latch is released it changes to `false` permanently.
+     */
+    val locked: Boolean get() = count > 0L
+
+    /**
+     * Releases latch immediately and allows waiting thread(s) to proceed. Can be safely used if this latch has been
+     * initialized with `count` of `1`, should be used with care otherwise - [countDown] invocations ar preferred in
+     * such cases.
+     */
+    fun release(): Unit = repeat(count.toInt()) { countDown() }
+
+    override fun countDown() {
+        super.countDown()
+        _lockedProperty.set(locked)
+    }
+}
+
+/**
  * A basic mask pane, intended for blocking gui underneath. Styling example:
  *
  * ```css
@@ -376,136 +384,70 @@ fun <T : Any> Node.runAsyncWithOverlay(overlayNode: Node = MaskPane(), op: () ->
  */
 class MaskPane : BorderPane() {
     init {
-        addClass("mask-pane")
+        addClass("mask-pane") // TODO CSS DSL?
         center = progressindicator()
     }
 
-    override fun getUserAgentStylesheet(): String =
-            MaskPane::class.java.getResource("maskpane.css").toExternalForm()
+    override fun getUserAgentStylesheet(): String = MaskPane::class.java.getResource("maskpane.css").toExternalForm()
 }
 
-/**
- * Adds some superpowers to good old [CountDownLatch], like exposed [lockedProperty] or ability to release latch
- * immediately.
- *
- * All documentation of superclass applies here. Default behavior has not been altered.
- */
-class Latch(count: Int) : CountDownLatch(count) {
-    /**
-     * Initializes latch with count of `1`, which means that the first invocation of [countDown] will allow all
-     * waiting threads to proceed.
-     */
-    constructor() : this(1)
+class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() { // TODO Review unused property. If used change order of parameters
 
-    private val lockedProperty by lazy { ReadOnlyBooleanWrapper(locked) }
+    private val _runningProperty = ReadOnlyBooleanWrapper(false)
+    val runningProperty: ReadOnlyBooleanProperty get() = _runningProperty.readOnlyProperty
+    val running: Boolean by runningProperty
 
-    /**
-     * Locked state of this latch exposed as a property. Keep in mind that latch instance can be used only once, so
-     * this property has to rebound every time.
-     */
-    fun lockedProperty(): ReadOnlyBooleanProperty = lockedProperty.readOnlyProperty
-
-    /**
-     * Locked state of this latch. `true` if and only if [CountDownLatch.getCount] is greater than `0`.
-     * Once latch is released it changes to `false` permanently.
-     */
-    val locked get() = count > 0L
-
-    /**
-     * Releases latch immediately and allows waiting thread(s) to proceed. Can be safely used if this latch has been
-     * initialized with `count` of `1`, should be used with care otherwise - [countDown] invocations ar preferred in
-     * such cases.
-     */
-    fun release() = (1..count).forEach { countDown() } //maybe not the prettiest way, but works fine
-
-    override fun countDown() {
-        super.countDown()
-        lockedProperty.set(locked)
-    }
-}
-
-class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
-    private val internalRunning = ReadOnlyBooleanWrapper(false)
-    val runningProperty: ReadOnlyBooleanProperty get() = internalRunning.readOnlyProperty
-    val running: Boolean get() = runningProperty.value
-
-    private val internalCompleted = ReadOnlyBooleanWrapper(false)
-    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
-    val completed: Boolean get() = completedProperty.value
+    private val _completedProperty = ReadOnlyBooleanWrapper(false)
+    val completedProperty: ReadOnlyBooleanProperty get() = _completedProperty.readOnlyProperty
+    val completed: Boolean by completedProperty
 
     override fun run() {
-        internalRunning.value = true
-        Platform.runLater {
+        _runningProperty.value = true
+        runLater {
             try {
                 op()
             } finally {
-                internalRunning.value = false
-                internalCompleted.value = true
+                _runningProperty.value = false
+                _completedProperty.value = true
             }
         }
     }
 }
 
-infix fun <T> Task<T>.finally(func: () -> Unit) {
-    if (this is FXTask<*>) {
-        finally(func)
-    } else {
-        throw IllegalArgumentException("finally() called on non-FXTask subclass")
-    }
-}
+class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() { // FIXME Why use wildcard?
 
-class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
-    private var internalCompleted = ReadOnlyBooleanWrapper(false)
-    val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
-    val completed: Boolean get() = completedProperty.value
+    private val _completedProperty = ReadOnlyBooleanWrapper(false)
+    val completedProperty: ReadOnlyBooleanProperty get() = _completedProperty.readOnlyProperty
+    val completed: Boolean by completedProperty
+
     private var finallyListener: (() -> Unit)? = null
-
-    override fun call() = func(this)
 
     init {
         status?.item = this
     }
 
+    override fun call(): T = func(this)
+
     fun finally(func: () -> Unit) {
         this.finallyListener = func
     }
 
-    override fun succeeded() {
-        internalCompleted.value = true
+    override fun succeeded(): Unit = finish()
+    override fun cancelled(): Unit = finish()
+    override fun failed(): Unit = finish()
+
+    private fun finish() {
+        _completedProperty.value = true
         finallyListener?.invoke()
     }
 
-    override fun failed() {
-        internalCompleted.value = true
-        finallyListener?.invoke()
-    }
-
-    override fun cancelled() {
-        internalCompleted.value = true
-        finallyListener?.invoke()
-    }
-
-    public override fun updateProgress(workDone: Long, max: Long) {
-        super.updateProgress(workDone, max)
-    }
-
-    public override fun updateProgress(workDone: Double, max: Double) {
-        super.updateProgress(workDone, max)
-    }
+    public override fun updateTitle(t: String?): Unit = super.updateTitle(t)
+    public override fun updateMessage(m: String?): Unit = super.updateMessage(m)
+    public override fun updateProgress(workDone: Long, max: Long): Unit = super.updateProgress(workDone, max)
+    public override fun updateProgress(workDone: Double, max: Double): Unit = super.updateProgress(workDone, max)
 
     @Suppress("UNCHECKED_CAST")
-    fun value(v: Any) {
-        super.updateValue(v as T)
-    }
-
-    public override fun updateTitle(t: String?) {
-        super.updateTitle(t)
-    }
-
-    public override fun updateMessage(m: String?) {
-        super.updateMessage(m)
-    }
-
+    fun value(v: Any): Unit = super.updateValue(v as T)
 }
 
 open class TaskStatus : ItemViewModel<FXTask<*>>() {
