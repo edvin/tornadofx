@@ -68,12 +68,12 @@ class AsyncTest {
         assertFalse(button.disabledProperty().value)
 
         //Button should stay disabled until all tasks are over
-        button.disableWhen(latch.lockedProperty())
+        button.disableWhen(latch.lockedProperty)
 
         (1..count).forEach {
             assertTrue(button.disabledProperty().value)
             assertTrue(latch.locked)
-            assertTrue(latch.lockedProperty().value)
+            assertTrue(latch.lockedProperty.value)
             latch.countDown()
             //Latch count should decrease after each iteration
             Assert.assertEquals(count, (it + latch.count).toInt())
