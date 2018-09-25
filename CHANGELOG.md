@@ -8,7 +8,7 @@
 
 ### Changes
 
-- Kotlin 1.2.61
+- Kotlin 1.2.70
 
 ### Additions
 
