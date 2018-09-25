@@ -9,6 +9,7 @@
 ### Changes
 
 - Kotlin 1.2.71
+- UIComponents docked in a Workspace will have that workspace set into it's Scope to avoid confusion (https://github.com/edvin/tornadofx/issues/806)
 
 ### Additions
 

@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class, vararg stylesheet: KClass<out Stylesheet>) : Application(), Configurable {
-    var scope: Scope = DefaultScope
+    open var scope: Scope = FX.defaultScope
     val workspace: Workspace get() = scope.workspace
 
     constructor() : this(NoPrimaryViewSpecified::class)

@@ -80,12 +80,18 @@ open class Scope() {
 // Fix this component types to the given scope
 fun KClass<out Component>.scope(scope: Scope) = scope.invoke(this)
 
-var DefaultScope = Scope()
+// This is here for backwards compatibility. Will be removed in 2.0
+var DefaultScope: Scope
+    get() = FX.defaultScope
+    set(value) {
+        FX.defaultScope = value
+    }
 
 class FX {
     enum class IgnoreParentBuilder { No, Once }
     companion object {
         var defaultWorkspace: KClass<out Workspace> = Workspace::class
+        var defaultScope: Scope = Scope()
         internal val fixedScopes = mutableMapOf<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = object : ThreadLocal<Scope>() {
             override fun initialValue() = DefaultScope

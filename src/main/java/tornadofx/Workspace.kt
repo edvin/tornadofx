@@ -367,6 +367,10 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun setAsCurrentlyDocked(child: UIComponent) {
+        // Make sure any docked component use this Workspace - see https://github.com/edvin/tornadofx/issues/806
+        if (child.workspace != workspace)
+            child.scope.workspace(workspace)
+
         titleProperty.bind(child.titleProperty)
         refreshButton.disableProperty().cleanBind(!child.refreshable)
         saveButton.disableProperty().cleanBind(!child.savable)
