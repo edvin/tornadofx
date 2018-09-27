@@ -15,12 +15,15 @@
 - Fixed endless recursive function call. (See Animation.kt:L512)
 - Added `inline` modifier to `runLater` top level functions and `crossinline` to `op` parameter. (See Async.kt:L142 & Async.kt:L155)
 - Replaced `Latch.lockedProperty()` function with a property with a custom getter, and renamed private property `Latch.lockedProperty` to `Latch._lockedProperty`. (See Async.kt:L383 & Async.kt:L389)
+- Unified all the style class related functions from `Nodes.kt` and `CSS.kt`, also improved to avoid adding duplicates.
 
 ### Additions
 
 - TableView.onEditStart() and TableColumn.cancel() functions which can be used to intercept editing events
 - resources.media() to load a Media instance from resources
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
+- Added `toggleClass` variant with `Iterable<Styleable>` as receiver and `ObservableValue<Boolean>` as predicate.
+- Added `TreeTableView<T>.onUserDelete()` function.
 
 ## [1.7.17]
 

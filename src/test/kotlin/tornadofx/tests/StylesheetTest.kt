@@ -14,7 +14,6 @@ import javafx.scene.shape.StrokeType
 import javafx.scene.text.Font
 import javafx.scene.text.FontWeight
 import javafx.stage.Stage
-import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
@@ -27,7 +26,7 @@ import tornadofx.Stylesheet.Companion.pannable
 import tornadofx.Stylesheet.Companion.star
 import java.net.URI
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -70,23 +69,25 @@ class StylesheetTest {
     @Test
     fun colorLadderTest() {
         val stops = arrayOf(
-                Stop(0.0, Color.TRANSPARENT),
-                Stop(1.0, Color.WHITE),
-                Stop(0.5, Color.RED),  // Should be left side of 0.2
-                Stop(0.5, Color.GREEN),  // Should be ignored
-                Stop(0.5, Color.BLUE)  // Should be right side of 0.2
+            Stop(0.0, Color.TRANSPARENT),
+            Stop(1.0, Color.WHITE),
+            Stop(0.5, Color.RED),  // Should be left side of 0.2
+            Stop(0.5, Color.GREEN),  // Should be ignored
+            Stop(0.5, Color.BLUE)  // Should be right side of 0.2
         )
-        Color.hsb(0.0, 1.0, 0.3).ladder(*stops) shouldEqual Color(0.6, 0.0, 0.0, 0.6)
-        Color.hsb(0.0, 1.0, 0.6).ladder(*stops) shouldEqual Color(0.2, 0.2, 1.0, 1.0)
-        Color.hsb(0.0, 1.0, 0.4999).ladder(*stops) shouldEqual Color.RED
-        Color.hsb(0.0, 1.0, 0.5).ladder(*stops) shouldEqual Color.BLUE
+
+        assertEquals(Color(0.6, 0.0, 0.0, 0.6), Color.hsb(0.0, 1.0, 0.3).ladder(*stops))
+        assertEquals(Color(0.2, 0.2, 1.0, 1.0), Color.hsb(0.0, 1.0, 0.6).ladder(*stops))
+        assertEquals(Color.RED, Color.hsb(0.0, 1.0, 0.4999).ladder(*stops))
+        assertEquals(Color.BLUE, Color.hsb(0.0, 1.0, 0.5).ladder(*stops))
     }
 
     @Test
     fun colorDeriveTest() {
         val color = Color.hsb(0.0, 1.0, 0.5, 0.8)
-        color.derive(0.5) shouldEqual Color(0.75, 0.5, 0.5, 0.8)
-        color.derive(-0.5) shouldEqual Color(0.25, 0.0, 0.0, 0.8)
+
+        assertEquals(Color(0.75, 0.5, 0.5, 0.8), color.derive(0.5))
+        assertEquals(Color(0.25, 0.0, 0.0, 0.8), color.derive(-0.5))
     }
 
     @Test
@@ -100,7 +101,7 @@ class StylesheetTest {
                 renderedMulti.value += "van"
                 renderedMulti.value += "suv"
             }
-        }.shouldEqual {
+        } shouldEqual {
             """
             .label {
                 rendered-prop: BANG!!!;
@@ -130,7 +131,7 @@ class StylesheetTest {
             "HBox > .labelThing" {
                 textFill = c("red")
             }
-        }.shouldEqual {
+        } shouldEqual {
             """
             HBox > .labelThing {
                 -fx-text-fill: rgba(255, 0, 0, 1);
@@ -185,24 +186,24 @@ class StylesheetTest {
         val dim = 2.px
         val disjoint = 5.mm
 
-        assert((-10).px == -base)
+        assertEquals((-10).px, -base)
 
-        assert(12.px == base + num)
-        assert(8.px == base - num)
-        assert(20.px == base * num)
-        assert(5.px == base / num)
-        assert(0.px == base % num)
-        assert(3.px == base % 7)
+        assertEquals(12.px, base + num)
+        assertEquals(8.px, base - num)
+        assertEquals(20.px, base * num)
+        assertEquals(5.px, base / num)
+        assertEquals(0.px, base % num)
+        assertEquals(3.px, base % 7)
 
-        assert(12.px == base + dim)
-        assert(8.px == base - dim)
+        assertEquals(12.px, base + dim)
+        assertEquals(8.px, base - dim)
 
-        assert(12.px == num + base)
-        assert(-8.px == num - base)
-        assert(20.px == num * base)
+        assertEquals(12.px, num + base)
+        assertEquals((-8).px, num - base)
+        assertEquals(20.px, num * base)
 
-        assertFails { base + disjoint }
-        assertFails { base - disjoint }
+        assertFailsWith<IllegalArgumentException> { base + disjoint }
+        assertFailsWith<IllegalArgumentException> { base - disjoint }
     }
 
     @Test
@@ -314,7 +315,6 @@ class StylesheetTest {
             label > .lab #la:l, .label, .-la-la ~ *:red, #fred {
                 -fx-text-fill: rgba(255, 235, 205, 1);
             }
-
             label > .lab #la:l:hover, .label:hover, .-la-la ~ *:red:hover, #fred:hover {
                 -fx-background-color: rgba(127, 255, 0, 1);
                 -fx-base: rgba(0, 128, 0, 1);
@@ -381,7 +381,11 @@ class StylesheetTest {
                 backgroundColor = multi(Color.WHITE, Color.BLUE)
             }
         } shouldEqual {
-            ".label { -fx-background-color: rgba(255, 255, 255, 1), rgba(0, 0, 255, 1); }"
+            """
+            .label {
+                -fx-background-color: rgba(255, 255, 255, 1), rgba(0, 0, 255, 1);
+            }
+            """
         }
     }
 
@@ -392,7 +396,11 @@ class StylesheetTest {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
-            ".label { -fx-background-color: rgba(255, 255, 255, 1); }"
+            """
+            .label {
+                -fx-background-color: rgba(255, 255, 255, 1);
+            }
+            """
         }
     }
 
@@ -403,7 +411,11 @@ class StylesheetTest {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
-            ".vbox > .wrapper .label { -fx-background-color: rgba(255, 255, 255, 1); }"
+            """
+            .vbox > .wrapper .label {
+                -fx-background-color: rgba(255, 255, 255, 1);
+            }
+            """
         }
     }
 
@@ -450,10 +462,18 @@ class StylesheetTest {
             }
         } shouldEqual {
             """
-            .vbox > .label { -fx-text-fill: rgba(255, 0, 0, 1); }
-            .vbox .label { -fx-text-fill: rgba(0, 255, 0, 1); }
-            .vbox + .label { -fx-text-fill: rgba(0, 0, 255, 1); }
-            .vbox ~ .label { -fx-text-fill: rgba(255, 255, 0, 1); }
+            .vbox > .label {
+                -fx-text-fill: rgba(255, 0, 0, 1);
+            }
+            .vbox .label {
+                -fx-text-fill: rgba(0, 255, 0, 1);
+            }
+            .vbox + .label {
+                -fx-text-fill: rgba(0, 0, 255, 1);
+            }
+            .vbox ~ .label {
+                -fx-text-fill: rgba(255, 255, 0, 1);
+            }
             """
         }
     }
@@ -463,7 +483,18 @@ class StylesheetTest {
         stylesheet {
             val hover = mixin {
                 and(hover) {
-                    backgroundColor += RadialGradient(90.0, 0.5, 0.5, 0.5, 0.25, true, CycleMethod.REPEAT, Stop(0.0, Color.WHITE), Stop(0.5, c("error")), Stop(1.0, Color.BLACK))
+                    backgroundColor += RadialGradient(
+                        90.0,
+                        0.5,
+                        0.5,
+                        0.5,
+                        0.25,
+                        true,
+                        CycleMethod.REPEAT,
+                        Stop(0.0, Color.WHITE),
+                        Stop(0.5, c("error")),
+                        Stop(1.0, Color.BLACK)
+                    )
                 }
             }
             val wrap = mixin {
@@ -608,7 +639,7 @@ class StylesheetTest {
                 )
                 strokeDashArray = listOf(5.px, 7.px, 9.px)
             }
-        }.shouldEqual {
+        } shouldEqual {
             """
             .label {
                 -fx-border-style: segments(2.0, 4.0, 6.0) centered line-join miter 10.0 line-cap butt;
@@ -618,10 +649,12 @@ class StylesheetTest {
         }
     }
 
+
+    // Requires `toString` because `Color.equals()` compares the float value of each channel (RGBA) instead of the HEX value.
+    private fun assertEquals(expected: Color, actual: Color) = assertEquals(expected.toString(), actual.toString())
+
     private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
-    private infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
-    private infix fun Color.shouldEqual(other: Color) = Assert.assertEquals(other.toString(), toString())
-    private fun String.strip() = replace(Regex("\\s+"), " ").trim()
+    private infix fun Stylesheet.shouldEqual(op: () -> String) = assertEquals(op().trimIndent(), render().trim())
 
     /**
      * This is just a compile test to make sure box and c are not moved

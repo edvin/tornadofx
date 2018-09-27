@@ -13,12 +13,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class NodeTest {
-    val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     lateinit var pane: StackPane
 
     @Before
     fun setup() {
+        FxToolkit.registerPrimaryStage()
         pane = StackPane()
     }
 
