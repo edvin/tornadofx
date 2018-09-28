@@ -5,7 +5,6 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.stage.Stage
-import org.junit.Assert
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
@@ -19,7 +18,7 @@ class AsyncTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     @Test
-    fun runAsyncWithOverlay() {
+    fun `test runAsyncWithOverlay`() {
         //Initially container has embedded node
         val container = BorderPane()
         val node = Pane()
@@ -59,7 +58,7 @@ class AsyncTest {
     }
 
     @Test
-    fun latch() {
+    fun `test Latch`() {
         //Latch set for 5 concurrent tasks
         val count = 5
         val latch = Latch(count)
@@ -70,13 +69,13 @@ class AsyncTest {
         //Button should stay disabled until all tasks are over
         button.disableWhen(latch.lockedProperty)
 
-        (1..count).forEach {
+        repeat(count) {
             assertTrue(button.disabledProperty().value)
             assertTrue(latch.locked)
             assertTrue(latch.lockedProperty.value)
             latch.countDown()
             //Latch count should decrease after each iteration
-            Assert.assertEquals(count, (it + latch.count).toInt())
+            assertEquals(count, (it + latch.count).toInt() + 1)
         }
 
         assertFalse(button.disabledProperty().value)
@@ -89,11 +88,11 @@ class AsyncTest {
     }
 
     @Test
-    fun runAsync() {
-        tornadofx.runAsync(daemon = true) {
+    fun `test runAsync`() {
+        runAsync(daemon = true) {
             assertTrue { Thread.currentThread().isDaemon }
         }
-        tornadofx.runAsync {
+        runAsync {
             assertFalse { Thread.currentThread().isDaemon }
         }
     }

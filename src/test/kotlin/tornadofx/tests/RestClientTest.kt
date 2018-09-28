@@ -1,9 +1,8 @@
 package tornadofx.tests
 
 import com.sun.net.httpserver.HttpServer
-import javafx.stage.Stage
 import org.junit.AfterClass
-import org.junit.Assert
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.testfx.api.FxToolkit
@@ -11,9 +10,10 @@ import tornadofx.*
 import java.net.InetSocketAddress
 import javax.json.Json
 import javax.json.JsonObject
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class RestClientTest {
-    val primaryStage: Stage = FxToolkit.registerPrimaryStage()
 
     companion object {
         lateinit var httpServer: HttpServer
@@ -61,38 +61,37 @@ class RestClientTest {
         fun stopWebserver() {
             httpServer.stop(0)
         }
+    }
 
+    @Before
+    fun setupFX() {
+        FxToolkit.registerPrimaryStage()
     }
 
     @Test
     fun testGet() {
         val categories = api.get("category").list()
-        Assert.assertEquals(2, categories.size)
+        assertEquals(2, categories.size)
     }
 
     @Test
     fun testPost() {
         val result = api.post("/item", JsonBuilder().add("name", "test").build()).one()
-        Assert.assertNotNull(itemPostPayload)
-        Assert.assertEquals(true, result.boolean("success"))
+        assertNotNull(itemPostPayload)
+        assertEquals(true, result.boolean("success"))
     }
 
     @Test
     fun testAutoclose() {
         val hangingResponse = api.get("/category")
-        FX.runAndWait {
-            Assert.assertEquals(1, Rest.ongoingRequests.size)
-        }
-        hangingResponse.use {
-        }
-        FX.runAndWait {
-            Assert.assertEquals(0, Rest.ongoingRequests.size)
-        }
+        FX.runAndWait { assertEquals(1, Rest.ongoingRequests.size) }
+        hangingResponse.use { }
+        FX.runAndWait { assertEquals(0, Rest.ongoingRequests.size) }
     }
 
     @Test
     fun encodeQueryString() {
         val params = mapOf("name" to "Edvin Syse", "street" to "Møllegaten 12")
-        Assert.assertEquals("?name=Edvin+Syse&street=M%C3%B8llegaten+12", params.queryString)
+        assertEquals("?name=Edvin+Syse&street=M%C3%B8llegaten+12", params.queryString)
     }
 }

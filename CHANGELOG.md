@@ -16,6 +16,8 @@
 - Added `inline` modifier to `runLater` top level functions and `crossinline` to `op` parameter. (See Async.kt:L142 & Async.kt:L155)
 - Replaced `Latch.lockedProperty()` function with a property with a custom getter, and renamed private property `Latch.lockedProperty` to `Latch._lockedProperty`. (See Async.kt:L383 & Async.kt:L389)
 - Unified all the style class related functions from `Nodes.kt` and `CSS.kt`, also improved to avoid adding duplicates.
+- Fixed recursive loop in `JsonObject.float()`. (See Json.kt:L117)
+- Added support for some missing types when creating a JsonArray, also when an unsupported type is found a warning is logged. (See Json.kt:L215-L239)
 
 ### Additions
 
@@ -24,6 +26,7 @@
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
 - Added `toggleClass` variant with `Iterable<Styleable>` as receiver and `ObservableValue<Boolean>` as predicate.
 - Added `TreeTableView<T>.onUserDelete()` function.
+- Added missing BigInteger getters from a JsonObject.
 
 ## [1.7.17]
 

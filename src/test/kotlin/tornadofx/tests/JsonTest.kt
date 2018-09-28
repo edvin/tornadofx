@@ -1,10 +1,10 @@
 package tornadofx.tests
 
 import javafx.beans.property.SimpleStringProperty
-import org.junit.Assert
 import org.junit.Test
 import tornadofx.*
 import java.time.LocalDate
+import kotlin.test.assertEquals
 
 class JsonTest {
 
@@ -22,13 +22,13 @@ class JsonTest {
         var global = false
     }
 
-    class AutoPerson2 (
+    class AutoPerson2(
         firstName: String? = null,
         lastName: String? = null,
         dob: LocalDate? = null,
         type: Int? = null,
         global: Boolean? = null
-    ): JsonModelAuto {
+    ) : JsonModelAuto {
 
         var firstName by property(firstName)
         fun firstNameProperty() = getProperty(AutoPerson2::firstName)
@@ -57,14 +57,15 @@ class JsonTest {
             global = true
         }
         val json = """{"dob":"1970-06-12","firstName":"John","global":true,"lastName":"Doe","type":42}"""
-        Assert.assertEquals(json, p.toJSON().toString())
+        assertEquals(json, p.toJSON().toString())
+
         val l = loadJsonModel<AutoPerson>(json)
-        Assert.assertEquals("John", l.firstName)
-        Assert.assertEquals("Doe", l.lastName)
-        Assert.assertEquals(LocalDate.of(1970, 6, 12), l.dob)
-        Assert.assertEquals(42, l.type)
-        Assert.assertEquals(true, l.global)
-        Assert.assertEquals(json, l.toJSON().toString())
+        assertEquals("John", l.firstName)
+        assertEquals("Doe", l.lastName)
+        assertEquals(LocalDate.of(1970, 6, 12), l.dob)
+        assertEquals(42, l.type)
+        assertEquals(true, l.global)
+        assertEquals(json, l.toJSON().toString())
     }
 
     @Test
@@ -80,13 +81,12 @@ class JsonTest {
         val readP = loadJsonModel<AutoPerson>(j)
         val rewrittenJ = readP.toJSON().toString()
 
-        Assert.assertEquals("John", readP.firstName)
-        Assert.assertEquals("Doe", readP.lastName)
-        Assert.assertEquals(LocalDate.of(1970, 6, 12), readP.dob)
-        Assert.assertEquals(42, readP.type)
-        Assert.assertEquals(true, readP.global)
-        Assert.assertEquals(j, rewrittenJ)
-
+        assertEquals("John", readP.firstName)
+        assertEquals("Doe", readP.lastName)
+        assertEquals(LocalDate.of(1970, 6, 12), readP.dob)
+        assertEquals(42, readP.type)
+        assertEquals(true, readP.global)
+        assertEquals(j, rewrittenJ)
     }
 
     @Test
@@ -99,14 +99,15 @@ class JsonTest {
             global = true
         }
         val json = """{"dob":"1970-06-12","firstName":"John","global":true,"lastName":"Doe","type":42}"""
-        Assert.assertEquals(json, p.toJSON().toString())
+        assertEquals(json, p.toJSON().toString())
+
         val l = loadJsonModel<AutoPerson2>(json)
-        Assert.assertEquals("John", l.firstName)
-        Assert.assertEquals("Doe", l.lastName)
-        Assert.assertEquals(LocalDate.of(1970, 6, 12), l.dob)
-        Assert.assertEquals(42, l.type)
-        Assert.assertEquals(true, l.global)
-        Assert.assertEquals(json, l.toJSON().toString())
+        assertEquals("John", l.firstName)
+        assertEquals("Doe", l.lastName)
+        assertEquals(LocalDate.of(1970, 6, 12), l.dob)
+        assertEquals(42, l.type)
+        assertEquals(true, l.global)
+        assertEquals(json, l.toJSON().toString())
     }
 
     @Test
@@ -122,19 +123,18 @@ class JsonTest {
         val readP = loadJsonModel<AutoPerson2>(j)
         val rewrittenJ = readP.toJSON().toString()
 
-        Assert.assertEquals("John", readP.firstName)
-        Assert.assertEquals("Doe", readP.lastName)
-        Assert.assertEquals(LocalDate.of(1970, 6, 12), readP.dob)
-        Assert.assertEquals(42, readP.type)
-        Assert.assertEquals(true, readP.global)
-        Assert.assertEquals(j, rewrittenJ)
-
+        assertEquals("John", readP.firstName)
+        assertEquals("Doe", readP.lastName)
+        assertEquals(LocalDate.of(1970, 6, 12), readP.dob)
+        assertEquals(42, readP.type)
+        assertEquals(true, readP.global)
+        assertEquals(j, rewrittenJ)
     }
 
     @Test
     fun firstAvailable() {
         val json = loadJsonObject("""{"dob":"1970-06-12","firstName":"John","global":true,"lastName":"Doe","type":42}""")
         val dob = json.date("date_of_birth", "dob")
-        Assert.assertEquals(LocalDate.of(1970, 6, 12),dob)
+        assertEquals(LocalDate.of(1970, 6, 12), dob)
     }
 }

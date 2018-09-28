@@ -102,6 +102,7 @@ class StylesheetTest {
                 renderedMulti.value += "suv"
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 rendered-prop: BANG!!!;
@@ -132,6 +133,7 @@ class StylesheetTest {
                 textFill = c("red")
             }
         } shouldEqual {
+            //language=CSS
             """
             HBox > .labelThing {
                 -fx-text-fill: rgba(255, 0, 0, 1);
@@ -150,6 +152,7 @@ class StylesheetTest {
                 textFill = c("green")
             }
         } shouldEqual {
+            //language=CSS
             """
             .test-box {
                 -fx-text-fill: rgba(255, 0, 0, 1);
@@ -170,6 +173,7 @@ class StylesheetTest {
                 backgroundImage += URI("/back2.gif")
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-image: url("/image.png");
@@ -217,6 +221,7 @@ class StylesheetTest {
                 multiProp force base
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-text-fill: rgba(0, 128, 0, 1);
@@ -236,6 +241,7 @@ class StylesheetTest {
                 textFill = Color.BLUE
             }
         } shouldEqual {
+            //language=CSS
             """
             .box > * {
                 -fx-text-fill: rgba(0, 0, 255, 1);
@@ -251,6 +257,7 @@ class StylesheetTest {
                 multiProp.value += Color.RED
             }
         } shouldEqual {
+            //language=CSS
             """
             lumpy-element, #lumpy-id, .lumpy-class, :lumpy-pseudo-class {
                 multi-prop: rgba(255, 0, 0, 1);
@@ -271,6 +278,7 @@ class StylesheetTest {
                 multiProp.value += Color.BLUE
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 multi-prop: rgba(255, 0, 0, 1), rgba(0, 128, 0, 1), rgba(0, 0, 255, 1);
@@ -289,6 +297,7 @@ class StylesheetTest {
                 base.value = c("red")
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-base: rgba(255, 0, 0, 1);
@@ -311,6 +320,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             label > .lab #la:l, .label, .-la-la ~ *:red, #fred {
                 -fx-text-fill: rgba(255, 235, 205, 1);
@@ -334,6 +344,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             .a .d .g, .a .d .h, .a .d .i, .a .e .g, .a .e .h, .a .e .i, .a .f .g, .a .f .h, .a .f .i, .b .d .g, .b .d .h, .b .d .i, .b .e .g, .b .e .h, .b .e .i, .b .f .g, .b .f .h, .b .f .i, .c .d .g, .c .d .h, .c .d .i, .c .e .g, .c .e .h, .c .e .i, .c .f .g, .c .f .h, .c .f .i {
                 -fx-text-fill: rgba(0, 0, 255, 1);
@@ -350,6 +361,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             .a.d.g, .a.d.h, .a.d.i, .a.e.g, .a.e.h, .a.e.i, .a.f.g, .a.f.h, .a.f.i, .b.d.g, .b.d.h, .b.d.i, .b.e.g, .b.e.h, .b.e.i, .b.f.g, .b.f.h, .b.f.i, .c.d.g, .c.d.h, .c.d.i, .c.e.g, .c.e.h, .c.e.i, .c.f.g, .c.f.h, .c.f.i {
                 -fx-text-fill: rgba(0, 0, 255, 1);
@@ -366,6 +378,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             .a.d .g, .a.d .h, .a.d .i, .a.e .g, .a.e .h, .a.e .i, .a.f .g, .a.f .h, .a.f .i, .b.d .g, .b.d .h, .b.d .i, .b.e .g, .b.e .h, .b.e .i, .b.f .g, .b.f .h, .b.f .i, .c.d .g, .c.d .h, .c.d .i, .c.e .g, .c.e .h, .c.e .i, .c.f .g, .c.f .h, .c.f .i {
                 -fx-text-fill: rgba(0, 0, 255, 1);
@@ -381,6 +394,7 @@ class StylesheetTest {
                 backgroundColor = multi(Color.WHITE, Color.BLUE)
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-background-color: rgba(255, 255, 255, 1), rgba(0, 0, 255, 1);
@@ -396,6 +410,7 @@ class StylesheetTest {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-background-color: rgba(255, 255, 255, 1);
@@ -411,6 +426,7 @@ class StylesheetTest {
                 backgroundColor += Color.WHITE
             }
         } shouldEqual {
+            //language=CSS
             """
             .vbox > .wrapper .label {
                 -fx-background-color: rgba(255, 255, 255, 1);
@@ -426,6 +442,7 @@ class StylesheetTest {
                 textFill = Color.BLUE
             }
         } shouldEqual {
+            //language=CSS
             """
             .vbox > .wrapper .label, .label {
                 -fx-text-fill: rgba(0, 0, 255, 1);
@@ -443,6 +460,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             .label:hover, .label:armed, .text:hover, .text:armed {
                 -fx-background-color: rgba(0, 0, 255, 0.25);
@@ -461,6 +479,7 @@ class StylesheetTest {
                 sibling(label) { textFill = c("#ffff00") }
             }
         } shouldEqual {
+            //language=CSS
             """
             .vbox > .label {
                 -fx-text-fill: rgba(255, 0, 0, 1);
@@ -524,6 +543,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             .box {
                 -fx-padding: 1em 1em 1em 1em;
@@ -581,6 +601,7 @@ class StylesheetTest {
                 effect = InnerShadow(BlurType.GAUSSIAN, Color.GREENYELLOW, 7.0, 1.0, 1.0, 1.0)
             }
         } shouldEqual {
+            //language=CSS
             """
             .image-view {
                 -fx-effect: innershadow(gaussian, rgba(173, 255, 47, 1), 7.0, 1.0, 1.0, 1.0);
@@ -596,6 +617,7 @@ class StylesheetTest {
                 barFill = Color.RED
             }
         } shouldEqual {
+            //language=CSS
             """
             .bar-chart {
                 -fx-bar-fill: rgba(255, 0, 0, 1);
@@ -614,6 +636,7 @@ class StylesheetTest {
                 }
             }
         } shouldEqual {
+            //language=CSS
             """
             :pannable {
                 -fx-pannable: false;
@@ -640,6 +663,7 @@ class StylesheetTest {
                 strokeDashArray = listOf(5.px, 7.px, 9.px)
             }
         } shouldEqual {
+            //language=CSS
             """
             .label {
                 -fx-border-style: segments(2.0, 4.0, 6.0) centered line-join miter 10.0 line-cap butt;

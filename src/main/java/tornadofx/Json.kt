@@ -33,17 +33,13 @@ interface JsonModel {
      * Fetch JSON values and update the model properties
      * @param json The json to extract values from
      */
-    fun updateModel(json: JsonObject) {
-
-    }
+    fun updateModel(json: JsonObject) {} // FIXME Default No-op implementation?
 
     /**
      * Build a JSON representation of the model properties
      * @param json A builder that should be filled with the model properties
      */
-    fun toJSON(json: JsonBuilder) {
-
-    }
+    fun toJSON(json: JsonBuilder) {} // FIXME Default No-op implementation?
 
     /**
      * Build a JSON representation of the model directly to JsonObject
@@ -94,13 +90,11 @@ interface JsonModel {
         } catch (e: IllegalAccessException) {
             throw RuntimeException(e)
         }
-
     }
-
 }
 
 object JsonConfig {
-    var DefaultDateTimeMillis = false
+    var DefaultDateTimeMillis: Boolean = false
 }
 
 /**
@@ -111,48 +105,53 @@ object JsonConfig {
 
 fun JsonObject.isNotNullOrNULL(key: String): Boolean = containsKey(key) && get(key)?.valueType != NULL
 
-fun <T> JsonObject.firstNonNull(vararg keys: String, extractor: (key: String) -> T): T? = keys
-        .firstOrNull { isNotNullOrNULL(it) }
-        ?.let { extractor(it) }
+fun <T> JsonObject.firstNonNull(vararg keys: String, extractor: (key: String) -> T): T? = keys.firstOrNull { isNotNullOrNULL(it) }?.let { extractor(it) }
 
-fun JsonObject.string(vararg key: String): String? = firstNonNull(*key) { getString(it) }
-fun JsonObject.getString(vararg key: String): String = string(*key)!!
-
-fun JsonObject.double(vararg key: String): Double? = jsonNumber(*key)?.doubleValue()
-fun JsonObject.getDouble(vararg key: String): Double = double(*key)!!
-
-fun JsonObject.jsonNumber(vararg key: String): JsonNumber? = firstNonNull(*key) { getJsonNumber(it) }
-fun JsonObject.getJsonNumber(vararg key: String): JsonNumber = jsonNumber(*key)!!
-
-fun JsonObject.float(vararg key: String): Float? = firstNonNull(*key) { getFloat(it) }
-fun JsonObject.getFloat(vararg key: String): Float = float(*key)!!
-
-fun JsonObject.bigdecimal(vararg key: String): BigDecimal? = jsonNumber(*key)?.bigDecimalValue()
-fun JsonObject.getBigDecimal(vararg key: String): BigDecimal = bigdecimal(*key)!!
-
-fun JsonObject.long(vararg key: String): Long? = jsonNumber(*key)?.longValue()
-fun JsonObject.getLong(vararg key: String) = long(*key)!!
-
-fun JsonObject.bool(vararg key: String): Boolean? = firstNonNull(*key) { getBoolean(it) }
-fun JsonObject.boolean(vararg key: String) = bool(*key) // Alias
-
-fun JsonObject.date(vararg key: String): LocalDate? = string(*key)?.let { LocalDate.parse(it) }
-fun JsonObject.getDate(vararg key: String): LocalDate = date(*key)!!
-
-fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
-fun JsonObject.datetime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime? = jsonNumber(*key)?.datetime(millis)
-fun JsonObject.getDateTime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(*key).datetime(millis)
-
-fun JsonObject.uuid(vararg key: String): UUID? = string(*key)?.let { UUID.fromString(it) }
-fun JsonObject.getUUID(vararg key: String) = uuid(*key)!!
 
 fun JsonObject.int(vararg key: String): Int? = firstNonNull(*key) { getInt(it) }
 fun JsonObject.getInt(vararg key: String): Int = int(*key)!!
 
-fun JsonObject.jsonObject(vararg key: String): JsonObject? = firstNonNull(*key) { getJsonObject(it) }
-inline fun <reified T : JsonModel> JsonObject.jsonModel(vararg key: String) = firstNonNull(*key) { T::class.java.newInstance().apply { updateModel(getJsonObject(it)) } }
+fun JsonObject.long(vararg key: String): Long? = jsonNumber(*key)?.longValue()
+fun JsonObject.getLong(vararg key: String): Long = long(*key)!!
 
+fun JsonObject.float(vararg key: String): Float? = double(*key)?.toFloat()
+fun JsonObject.getFloat(vararg key: String): Float = float(*key)!!
+
+fun JsonObject.double(vararg key: String): Double? = jsonNumber(*key)?.doubleValue()
+fun JsonObject.getDouble(vararg key: String): Double = double(*key)!!
+
+fun JsonObject.biginteger(vararg key: String): BigInteger? = jsonNumber(*key)?.bigIntegerValue()
+fun JsonObject.getBigInteger(vararg key: String): BigInteger = biginteger(*key)!!
+
+fun JsonObject.bigdecimal(vararg key: String): BigDecimal? = jsonNumber(*key)?.bigDecimalValue()
+fun JsonObject.getBigDecimal(vararg key: String): BigDecimal = bigdecimal(*key)!!
+
+fun JsonObject.jsonNumber(vararg key: String): JsonNumber? = firstNonNull(*key) { getJsonNumber(it) }
+fun JsonObject.getJsonNumber(vararg key: String): JsonNumber = jsonNumber(*key)!!
+
+fun JsonObject.bool(vararg key: String): Boolean? = firstNonNull(*key) { getBoolean(it) }
+fun JsonObject.boolean(vararg key: String): Boolean? = bool(*key) // Alias
+
+fun JsonObject.string(vararg key: String): String? = firstNonNull(*key) { getString(it) }
+fun JsonObject.getString(vararg key: String): String = string(*key)!!
+
+fun JsonObject.uuid(vararg key: String): UUID? = string(*key)?.let { UUID.fromString(it) }
+fun JsonObject.getUUID(vararg key: String): UUID = uuid(*key)!!
+
+fun JsonObject.date(vararg key: String): LocalDate? = string(*key)?.let { LocalDate.parse(it) }
+fun JsonObject.getDate(vararg key: String): LocalDate = date(*key)!!
+
+fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime =
+    LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
+
+fun JsonObject.datetime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime? = jsonNumber(*key)?.datetime(millis)
+fun JsonObject.getDateTime(vararg key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(*key).datetime(millis)
+
+fun JsonObject.jsonObject(vararg key: String): JsonObject? = firstNonNull(*key) { getJsonObject(it) }
 fun JsonObject.jsonArray(vararg key: String): JsonArray? = firstNonNull(*key) { getJsonArray(it) }
+inline fun <reified T : JsonModel> JsonObject.jsonModel(vararg key: String): T? =
+    firstNonNull(*key) { T::class.java.newInstance().apply { updateModel(getJsonObject(it)) } }
+
 
 class JsonBuilder {
     private val delegate: JsonObjectBuilder = Json.createObjectBuilder()
@@ -162,73 +161,48 @@ class JsonBuilder {
             when (this) {
                 is Number -> add(key, this)
                 is Boolean -> add(key, this)
+                is String -> add(key, this)
                 is UUID -> add(key, this)
                 is LocalDate -> add(key, this)
                 is LocalDateTime -> add(key, this)
-                is String -> add(key, this)
                 is JsonModel -> add(key, this)
             }
         }
     }
 
-    fun add(key: String, value: Number?) = apply {
+    fun add(key: String, value: Number?): JsonBuilder = apply {
         when (value) {
             is Int -> delegate.add(key, value)
-            is BigDecimal -> delegate.add(key, value)
-            is BigInteger -> delegate.add(key, value)
+            is Long -> delegate.add(key, value)
             is Float -> delegate.add(key, value.toDouble())
             is Double -> delegate.add(key, value)
-            is Long -> delegate.add(key, value)
+            is BigInteger -> delegate.add(key, value)
+            is BigDecimal -> delegate.add(key, value)
         }
     }
 
-    fun add(key: String, value: Boolean?) = apply {
-        if (value != null)
-            delegate.add(key, value)
-    }
+    fun add(key: String, value: Boolean?): JsonBuilder = apply { if (value != null) delegate.add(key, value) }
 
-    fun add(key: String, value: UUID?) = apply {
-        if (value != null)
-            delegate.add(key, value.toString())
-    }
+    fun add(key: String, value: String?): JsonBuilder = apply { if (value != null && value.isNotBlank()) delegate.add(key, value) }
 
-    fun add(key: String, value: LocalDate?) = apply {
-        if (value != null)
-            delegate.add(key, value.toString())
-    }
+    fun add(key: String, value: UUID?): JsonBuilder = apply { if (value != null) delegate.add(key, value.toString()) }
 
-    fun add(key: String, value: LocalDateTime?, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = apply {
+    fun add(key: String, value: LocalDate?): JsonBuilder = apply { if (value != null) delegate.add(key, value.toString()) }
+
+    fun add(key: String, value: LocalDateTime?, millis: Boolean = JsonConfig.DefaultDateTimeMillis): JsonBuilder = apply {
         if (value != null)
             delegate.add(key, value.toEpochSecond(ZoneOffset.UTC) * (if (millis) 1000 else 1))
     }
 
-    fun add(key: String, value: String?) = apply {
-        if (value != null && value.isNotBlank())
-            delegate.add(key, value)
-    }
+    fun add(key: String, value: JsonModel?): JsonBuilder = apply { if (value != null) add(key, value.toJSON()) }
 
-    fun add(key: String, value: JsonBuilder?) = apply {
-        if (value != null)
-            delegate.add(key, value.build())
-    }
+    fun add(key: String, value: JsonBuilder?): JsonBuilder = apply { if (value != null) delegate.add(key, value.build()) }
 
-    fun add(key: String, value: JsonObjectBuilder?) = apply {
-        if (value != null)
-            delegate.add(key, value.build())
-    }
+    fun add(key: String, value: JsonObjectBuilder?): JsonBuilder = apply { if (value != null) delegate.add(key, value.build()) }
 
-    fun add(key: String, value: JsonObject?) = apply {
-        if (value != null)
-            delegate.add(key, value)
-    }
+    fun add(key: String, value: JsonObject?): JsonBuilder = apply { if (value != null) delegate.add(key, value) }
 
-    fun add(key: String, value: JsonModel?) = apply {
-        if (value != null)
-            add(key, value.toJSON())
-
-    }
-
-    fun add(key: String, value: JsonArrayBuilder?) = apply {
+    fun add(key: String, value: JsonArrayBuilder?): JsonBuilder = apply {
         if (value != null) {
             val built = value.build()
             if (built.isNotEmpty())
@@ -236,77 +210,69 @@ class JsonBuilder {
         }
     }
 
-    fun add(key: String, value: JsonArray?) = apply {
-        if (value != null && value.isNotEmpty())
-            delegate.add(key, value)
-    }
+    fun add(key: String, value: JsonArray?): JsonBuilder = apply { if (value != null && value.isNotEmpty()) delegate.add(key, value) }
 
-    fun add(key: String, value: Iterable<Any>?) = apply {
+    fun add(key: String, value: Iterable<Any>?): JsonBuilder = apply {
         if (value != null) {
             val builder = Json.createArrayBuilder()
             value.forEach {
                 when (it) {
                     is Int -> builder.add(it)
-                    is String -> builder.add(it)
-                    is Float -> builder.add(it.toDouble())
                     is Long -> builder.add(it)
+                    is Float -> builder.add(it.toDouble())
+                    is Double -> builder.add(it)
+                    is BigInteger -> builder.add(it)
                     is BigDecimal -> builder.add(it)
                     is Boolean -> builder.add(it)
+                    is String -> builder.add(it)
                     is JsonModel -> builder.add(it.toJSON())
-                    is JsonArray -> builder.add(it)
-                    is JsonArrayBuilder -> builder.add(it)
                     is JsonObject -> builder.add(it)
                     is JsonObjectBuilder -> builder.add(it)
+                    is JsonArray -> builder.add(it)
+                    is JsonArrayBuilder -> builder.add(it)
                     is JsonValue -> builder.add(it)
+                    else -> FX.log.warning("Could not add $it to JsonArray, values of type ${it::class} are unsupported.")
                 }
             }
             delegate.add(key, builder.build())
         }
-
-        return this
     }
 
-    fun build(): JsonObject {
-        return delegate.build()
-    }
-
+    fun build(): JsonObject = delegate.build()
 }
 
 
-/**
- * Requires kotlin-reflect on classpath
- */
-private fun <T> KProperty<T>.generic(): Class<*> =
-        (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
+/** Requires kotlin-reflect on classpath */
+private fun <T> KProperty<T>.generic(): Class<*> = (this.javaField?.genericType as ParameterizedType).actualTypeArguments[0] as Class<*>
 
-/**
- * Requires kotlin-reflect on classpath
- */
+/** Requires kotlin-reflect on classpath */
 @Suppress("UNCHECKED_CAST")
 interface JsonModelAuto : JsonModel {
-    val jsonProperties: Collection<KProperty1<JsonModelAuto, *>> get() {
-        val props = javaClass.kotlin.memberProperties
-        val propNames = props.map { it.name }
-        return props.filterNot { it.name.endsWith("Property") && it.name.substringBefore("Property") in propNames }.filterNot { it.name == "jsonProperties" }
-    }
+    val jsonProperties: Collection<KProperty1<JsonModelAuto, *>>
+        get() {
+            val props = javaClass.kotlin.memberProperties
+            val propNames = props.map { it.name }
+            return props.filterNot { it.name.endsWith("Property") && it.name.substringBefore("Property") in propNames }
+                .filterNot { it.name == "jsonProperties" }
+        }
 
     override fun updateModel(json: JsonObject) {
         jsonProperties.forEach {
             val pr = it.get(this)
             when (pr) {
-                is BooleanProperty -> pr.value = json.bool(it.name)
-                is LongProperty -> pr.value = json.long(it.name)
                 is IntegerProperty -> pr.value = json.int(it.name)
-                is DoubleProperty -> pr.value = json.double(it.name)
+                is LongProperty -> pr.value = json.long(it.name)
                 is FloatProperty -> pr.value = json.double(it.name)?.toFloat()
+                is DoubleProperty -> pr.value = json.double(it.name)
+                is BooleanProperty -> pr.value = json.bool(it.name)
                 is StringProperty -> pr.value = json.string(it.name)
                 is ObjectProperty<*> -> {
                     when (it.generic()) {
-                        Boolean::class.java -> (pr as ObjectProperty<Boolean>).value = json.bool(it.name)
+                        Int::class.java -> (pr as ObjectProperty<Int>).value = json.int(it.name)
                         Long::class.java -> (pr as ObjectProperty<Long>).value = json.long(it.name)
-                        Integer::class.java -> (pr as ObjectProperty<Int>).value = json.int(it.name)
-                        Double::class.java -> (pr as ObjectProperty<Double>).value = json.double(it.name)
                         Float::class.java -> (pr as ObjectProperty<Float>).value = json.float(it.name)
+                        Double::class.java -> (pr as ObjectProperty<Double>).value = json.double(it.name)
+                        Boolean::class.java -> (pr as ObjectProperty<Boolean>).value = json.bool(it.name)
                         String::class.java -> (pr as ObjectProperty<String>).value = json.string(it.name)
                         LocalDate::class.java -> (pr as ObjectProperty<LocalDate>).value = json.date(it.name)
                         LocalDateTime::class.java -> (pr as ObjectProperty<LocalDateTime>).value = json.datetime(it.name)
@@ -325,22 +291,20 @@ interface JsonModelAuto : JsonModel {
                 else -> {
                     if (it is KMutableProperty1<*, *>) {
                         when (it.returnType.javaType) {
-                            Boolean::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
-                            Boolean::class.javaObjectType -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
+                            Int::class.javaPrimitiveType,
+                            Int::class.javaObjectType -> (it as KMutableProperty1<Any?, Int?>).set(this, json.int(it.name))
+                            Long::class.javaPrimitiveType,
                             Long::class.javaObjectType -> (it as KMutableProperty1<Any?, Long?>).set(this, json.long(it.name))
-                            Long::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Long?>).set(this, json.long(it.name))
-                            Integer::class.javaObjectType -> (it as KMutableProperty1<Any?, Int?>).set(this, json.int(it.name))
-                            Integer::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Int?>).set(this, json.int(it.name))
-                            Double::class.javaObjectType -> (it as KMutableProperty1<Any?, Double?>).set(this, json.double(it.name))
-                            Double::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Double?>).set(this, json.double(it.name))
+                            Float::class.javaPrimitiveType,
                             Float::class.javaObjectType -> (it as KMutableProperty1<Any?, Float?>).set(this, json.float(it.name))
-                            Float::class.javaPrimitiveType -> (it as KMutableProperty1<Any?, Float?>).set(this, json.float(it.name))
+                            Double::class.javaPrimitiveType,
+                            Double::class.javaObjectType -> (it as KMutableProperty1<Any?, Double?>).set(this, json.double(it.name))
+                            Boolean::class.javaPrimitiveType,
+                            Boolean::class.javaObjectType -> (it as KMutableProperty1<Any?, Boolean?>).set(this, json.bool(it.name))
                             String::class.java -> (it as KMutableProperty1<Any?, String?>).set(this, json.string(it.name))
                             LocalDate::class.java -> (it as KMutableProperty1<Any?, LocalDate?>).set(this, json.date(it.name))
                             LocalDateTime::class.java -> (it as KMutableProperty1<Any?, LocalDateTime?>).set(this, json.datetime(it.name))
-                            else -> {
-                                log.warning("AutoModel doesn't know how to handle ${it.returnType}/${it.returnType.javaType}")
-                            }
+                            else -> log.warning("AutoModel doesn't know how to handle ${it.returnType}/${it.returnType.javaType}")
                         }
                     }
                 }
@@ -353,29 +317,29 @@ interface JsonModelAuto : JsonModel {
             jsonProperties.forEach {
                 val pr = it.get(this@JsonModelAuto)
                 when (pr) {
-                    is BooleanProperty -> add(it.name, pr.value)
-                    is LongProperty -> add(it.name, pr.value)
                     is IntegerProperty -> add(it.name, pr.value)
-                    is DoubleProperty -> add(it.name, pr.value)
+                    is LongProperty -> add(it.name, pr.value)
                     is FloatProperty -> add(it.name, pr.value.toDouble())
+                    is DoubleProperty -> add(it.name, pr.value)
+                    is BooleanProperty -> add(it.name, pr.value)
                     is StringProperty -> add(it.name, pr.value)
                     is ObjectProperty<*> -> {
                         when (it.generic()) {
-                            Boolean::class.java -> add(it.name, (pr as ObjectProperty<Boolean>).value)
+                            Int::class.java -> add(it.name, (pr as ObjectProperty<Int>).value)
                             Long::class.java -> add(it.name, (pr as ObjectProperty<Long>).value)
-                            Integer::class.java -> add(it.name, (pr as ObjectProperty<Int>).value)
-                            Double::class.java -> add(it.name, (pr as ObjectProperty<Double>).value)
                             Float::class.java -> add(it.name, (pr as ObjectProperty<Float>).value)
+                            Double::class.java -> add(it.name, (pr as ObjectProperty<Double>).value)
+                            Boolean::class.java -> add(it.name, (pr as ObjectProperty<Boolean>).value)
                             String::class.java -> add(it.name, (pr as ObjectProperty<String>).value)
                             LocalDate::class.java -> add(it.name, (pr as ObjectProperty<LocalDate>).value)
                             LocalDateTime::class.java -> add(it.name, (pr as ObjectProperty<LocalDateTime>).value)
                         }
                     }
-                    is Boolean -> add(it.name, pr)
-                    is Long -> add(it.name, pr)
                     is Int -> add(it.name, pr)
-                    is Double -> add(it.name, pr)
+                    is Long -> add(it.name, pr)
                     is Float -> add(it.name, pr.toDouble())
+                    is Double -> add(it.name, pr)
+                    is Boolean -> add(it.name, pr)
                     is String -> add(it.name, pr)
                     is LocalDate -> add(it.name, pr)
                     is LocalDateTime -> add(it.name, pr)
@@ -391,13 +355,11 @@ interface JsonModelAuto : JsonModel {
     }
 }
 
-fun JsonStructure.toPrettyString(): String {
-    return toString(JsonGenerator.PRETTY_PRINTING)
-}
+fun JsonStructure.toPrettyString(): String = toString(JsonGenerator.PRETTY_PRINTING)
 
 fun JsonStructure.toString(vararg options: String): String {
     val stringWriter = StringWriter()
-    val config = options.associate { it to  true }
+    val config = options.associate { it to true }
     val writerFactory = Json.createWriterFactory(config)
     val jsonWriter = writerFactory.createWriter(stringWriter)
     jsonWriter.write(this)
@@ -405,92 +367,65 @@ fun JsonStructure.toString(vararg options: String): String {
     return stringWriter.toString()
 }
 
-fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
+fun <T : JsonModel> Iterable<T>.toJSON(): JsonArray = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
 
 fun InputStream.toJSONArray(): JsonArray = Json.createReader(this).use { it.readArray() }
 fun InputStream.toJSON(): JsonObject = Json.createReader(this).use { it.readObject() }
 
-fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true) =
-        if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
 
-fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true) = this?.toJSON()?.contains(text, ignoreCase) ?: false
+fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true): Boolean =
+    this != null && text != null && toString().toLowerCase().contains(text, ignoreCase)
 
-/**
- * Save this Json structure (JsonObject or JsonArray) to the given output stream and close it.
- */
-fun JsonStructure.save(output: OutputStream) = Json.createWriter(output).use { it.write(this) }
+fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true): Boolean = this?.toJSON()?.contains(text, ignoreCase) == true
 
-/**
- * Save this Json structure (JsonObject or JsonArray) to the given output path.
- */
-fun JsonStructure.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = this.save(Files.newOutputStream(output, *options))
 
-/**
- * Save this JsonModel to the given output stream and close it.
- */
-fun JsonModel.save(output: OutputStream) = toJSON().save(output)
+/** Save this Json structure (JsonObject or JsonArray) to the given [output] stream and close it. */
+fun JsonStructure.save(output: OutputStream): Unit = Json.createWriter(output).use { it.write(this) }
 
-/**
- * Save this JsonModel to the given output path.
- */
-fun JsonModel.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)) = toJSON().save(output, *options)
+/** Save this Json structure (JsonObject or JsonArray) to the given [output] path with the specified [options]. */
+fun JsonStructure.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)): Unit = save(Files.newOutputStream(output, *options))
 
-/**
- * Load a JsonObject from the given URL
- */
-fun loadJsonObject(url: URL) = loadJsonObject(url.openStream())
+/** Save this JsonModel to the given [output] stream and close it. */
+fun JsonModel.save(output: OutputStream): Unit = toJSON().save(output)
 
-/**
- * Load a JsonObject from the given InputStream
- */
-fun loadJsonObject(input: InputStream) = Json.createReader(input).use { it.readObject() }
+/** Save this JsonModel to the given [output] path with the specified [options]. */
+fun JsonModel.save(output: Path, vararg options: OpenOption = arrayOf(CREATE, TRUNCATE_EXISTING)): Unit = toJSON().save(output, *options)
 
-/**
- * Load a JsonObject from the given path with the optional OpenOptions
- */
-fun loadJsonObject(path: Path, vararg options: OpenOption = arrayOf(READ)) = Files.newInputStream(path, *options).use { loadJsonObject(it) }
 
-/**
- * Load a JsonObject from the string source.
- */
-fun loadJsonObject(source: String) = loadJsonObject(source.byteInputStream())
+/** Load a JsonObject from the given [url] */
+fun loadJsonObject(url: URL): JsonObject = loadJsonObject(url.openStream())
 
-/**
- * Load a JsonArray from the given URL
- */
-fun loadJsonArray(url: URL) = loadJsonArray(url.openStream())
+/** Load a JsonObject from the string [source]. */
+fun loadJsonObject(source: String): JsonObject = loadJsonObject(source.byteInputStream())
 
-/**
- * Load a JsonArray from the given string source
- */
-fun loadJsonArray(source: String) = loadJsonArray(source.byteInputStream())
+/** Load a JsonObject from the given [input] */
+fun loadJsonObject(input: InputStream): JsonObject = Json.createReader(input).use { it.readObject() }
 
-/**
- * Load a JsonArray from the given InputStream
- */
-fun loadJsonArray(input: InputStream) = Json.createReader(input).use { it.readArray() }
+/** Load a JsonObject from the given [path] with the specified [options] */
+fun loadJsonObject(path: Path, vararg options: OpenOption = arrayOf(READ)): JsonObject = Files.newInputStream(path, *options).use { loadJsonObject(it) }
 
-/**
- * Load a JsonArray from the given path with the optional OpenOptions
- */
-fun loadJsonArray(path: Path, vararg options: OpenOption = arrayOf(READ)) = Files.newInputStream(path, *options).use { loadJsonArray(it) }
 
-/**
- * Load a JsonModel of the given type from the given URL
- */
-inline fun <reified T : JsonModel> loadJsonModel(url: URL) = loadJsonObject(url).toModel<T>()
+/** Load a JsonArray from the given [url] */
+fun loadJsonArray(url: URL): JsonArray = loadJsonArray(url.openStream())
 
-/**
- * Load a JsonModel of the given type from the given InputStream
- */
-inline fun <reified T : JsonModel> loadJsonModel(input: InputStream) = loadJsonObject(input).toModel<T>()
+/** Load a JsonArray from the given [source] */
+fun loadJsonArray(source: String): JsonArray = loadJsonArray(source.byteInputStream())
 
-/**
- * Load a JsonModel of the given type from the given path with the optional OpenOptions
- */
-inline fun <reified T : JsonModel> loadJsonModel(path: Path, vararg options: OpenOption = arrayOf(READ)) = loadJsonObject(path, *options).toModel<T>()
+/** Load a JsonArray from the given [input] */
+fun loadJsonArray(input: InputStream): JsonArray = Json.createReader(input).use { it.readArray() }
 
-/**
- * Load a JsonModel from the given String source
- */
-inline fun <reified T : JsonModel> loadJsonModel(source: String) = loadJsonObject(source).toModel<T>()
+/** Load a JsonArray from the given [path] with the specified [options] */
+fun loadJsonArray(path: Path, vararg options: OpenOption = arrayOf(READ)): JsonArray = Files.newInputStream(path, *options).use { loadJsonArray(it) }
+
+
+/** Load a JsonModel of the given type from the given [url] */
+inline fun <reified T : JsonModel> loadJsonModel(url: URL): T = loadJsonObject(url).toModel()
+
+/** Load a JsonModel of the given type from the given [source] */
+inline fun <reified T : JsonModel> loadJsonModel(source: String): T = loadJsonObject(source).toModel()
+
+/** Load a JsonModel of the given type from the given [input] */
+inline fun <reified T : JsonModel> loadJsonModel(input: InputStream): T = loadJsonObject(input).toModel()
+
+/** Load a JsonModel of the given type from the given [path] with the specified [options] */
+inline fun <reified T : JsonModel> loadJsonModel(path: Path, vararg options: OpenOption = arrayOf(READ)): T = loadJsonObject(path, *options).toModel()
