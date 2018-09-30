@@ -5,43 +5,35 @@ import javafx.scene.control.*
 import javafx.util.Callback
 import tornadofx.mapEach
 
-fun TreeTableView<*>.toTornadoFXTable() = TornadoFXTreeTable(this)
-fun TableView<*>.toTornadoFXTable() : TornadoFXTable<TableColumn<*,*>, TableView<*>> = TornadoFXNormalTable(this)
+fun TableView<*>.toTornadoFXTable(): TornadoFXTable<TableColumn<*, *>, TableView<*>> = TornadoFXNormalTable(this)
+fun TreeTableView<*>.toTornadoFXTable(): TornadoFXTable<TreeTableColumn<*, *>, TreeTableView<*>> = TornadoFXTreeTable(this)
 
 interface TornadoFXTable<COLUMN, out TABLE : Any> {
     val table: TABLE
-    val contentWidth: Double
     val properties: Properties
+    val contentWidth: Double
     val contentColumns: List<TornadoFXColumn<COLUMN>>
 
-    var skin: Skin<*>?
-
     val skinProperty: ObjectProperty<Skin<*>>
+    var skin: Skin<*>?
 }
 
 class TornadoFXTreeTable(override val table: TreeTableView<*>) : TornadoFXTable<TreeTableColumn<*, *>, TreeTableView<*>> {
-    override val skinProperty = table.skinProperty()
+    override val properties: Properties = table.properties
+    override val contentWidth: Double get() = contentWidthField.get(table) as Double
+    override val contentColumns: List<TornadoFXColumn<TreeTableColumn<*, *>>>
+        get() = table.columns.flatMap { if (it.columns.isEmpty()) listOf(it) else it.columns }.mapEach { toTornadoFXColumn() }
 
-    override var skin
+    private val contentWidthField by lazy { TreeTableView::class.java.getDeclaredField("contentWidth").also { it.isAccessible = true } }
+
+    override val skinProperty: ObjectProperty<Skin<*>> = table.skinProperty()
+    override var skin: Skin<*>?
         get() = table.skin
         set(value) {
             table.skin = value
         }
 
-    override val contentColumns get() = table.columns.flatMap {
-        if (it.columns.isEmpty()) listOf(it) else it.columns
-    }.mapEach { toTornadoFXColumn() }
-
-    override val properties = table.properties
-
-    private val contentWidthField by lazy {
-        TreeTableView::class.java.getDeclaredField("contentWidth").also {
-            it.isAccessible  = true
-        }
-    }
-
-    override val contentWidth get() = contentWidthField.get(table) as Double
-
+    // TODO Review
     var columnResizePolicy: Callback<TreeTableView.ResizeFeatures<Any>, Boolean>
         get() = table.columnResizePolicy
         set(value) {
@@ -50,24 +42,17 @@ class TornadoFXTreeTable(override val table: TreeTableView<*>) : TornadoFXTable<
 }
 
 class TornadoFXNormalTable(override val table: TableView<*>) : TornadoFXTable<TableColumn<*, *>, TableView<*>> {
+    override val properties: Properties = table.properties
+    override val contentWidth: Double get() = contentWidthField.get(table) as Double
+    override val contentColumns: List<TornadoFXColumn<TableColumn<*, *>>>
+        get() = table.columns.flatMap { if (it.columns.isEmpty()) listOf(it) else it.columns }.mapEach { toTornadoFXColumn() }
+
+    private val contentWidthField by lazy { TableView::class.java.getDeclaredField("contentWidth").also { it.isAccessible = true } }
+
     override val skinProperty: ObjectProperty<Skin<*>> get() = table.skinProperty()
-
-    override val contentColumns get() = table.columns.flatMap {
-        if (it.columns.isEmpty()) listOf(it) else it.columns
-    }.mapEach { toTornadoFXColumn() }
-
-    override var skin
+    override var skin: Skin<*>?
         get() = table.skin
         set(value) {
             table.skin = value
         }
-
-    private val contentWidthField by lazy {
-        TableView::class.java.getDeclaredField("contentWidth").also {
-            it.isAccessible = true
-        }
-    }
-
-    override val contentWidth get() = contentWidthField.get(table) as Double
-    override val properties = table.properties
 }
