@@ -2,6 +2,7 @@ package tornadofx
 
 import javafx.event.EventTarget
 import javafx.scene.Node
+
 /**
  * An interceptor that can veto or provide another mechanism for adding children to their parent.
  *
