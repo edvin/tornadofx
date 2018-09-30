@@ -80,15 +80,22 @@ open class Scope() {
 // Fix this component types to the given scope
 fun KClass<out Component>.scope(scope: Scope) = scope.invoke(this)
 
-var DefaultScope = Scope()
+// This is here for backwards compatibility. Will be removed in 2.0
+@Deprecated("Use FX.defaultScope instead", ReplaceWith("FX.defaultScope"))
+var DefaultScope: Scope
+    get() = FX.defaultScope
+    set(value) {
+        FX.defaultScope = value
+    }
 
 class FX {
     enum class IgnoreParentBuilder { No, Once }
     companion object {
         var defaultWorkspace: KClass<out Workspace> = Workspace::class
+        var defaultScope: Scope = Scope()
         internal val fixedScopes = mutableMapOf<KClass<out Component>, Scope>()
         internal val inheritScopeHolder = object : ThreadLocal<Scope>() {
-            override fun initialValue() = DefaultScope
+            override fun initialValue() = FX.defaultScope
         }
         internal val inheritParamHolder = ThreadLocal<Map<String, Any?>>()
         internal var ignoreParentBuilder: IgnoreParentBuilder = IgnoreParentBuilder.No
@@ -107,23 +114,23 @@ class FX {
         val initialized = SimpleBooleanProperty(false)
 
         internal val primaryStages = mutableMapOf<Scope, Stage>()
-        val primaryStage: Stage get() = primaryStages[DefaultScope]!!
-        fun getPrimaryStage(scope: Scope = DefaultScope) = primaryStages[scope] ?: primaryStages[DefaultScope]
-        fun setPrimaryStage(scope: Scope = DefaultScope, stage: Stage) {
+        val primaryStage: Stage get() = primaryStages[FX.defaultScope]!!
+        fun getPrimaryStage(scope: Scope = FX.defaultScope) = primaryStages[scope] ?: primaryStages[FX.defaultScope]
+        fun setPrimaryStage(scope: Scope = FX.defaultScope, stage: Stage) {
             primaryStages[scope] = stage
         }
 
         internal val applications = mutableMapOf<Scope, Application>()
-        val application: Application get() = applications[DefaultScope]!!
-        fun getApplication(scope: Scope = DefaultScope) = applications[scope] ?: applications[DefaultScope]
-        fun setApplication(scope: Scope = DefaultScope, application: Application) {
+        val application: Application get() = applications[FX.defaultScope]!!
+        fun getApplication(scope: Scope = FX.defaultScope) = applications[scope] ?: applications[FX.defaultScope]
+        fun setApplication(scope: Scope = FX.defaultScope, application: Application) {
             applications[scope] = application
         }
 
         val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
 
         internal val components = mutableMapOf<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
-        fun getComponents(scope: Scope = DefaultScope) = components.getOrPut(scope) { HashMap() }
+        fun getComponents(scope: Scope = FX.defaultScope) = components.getOrPut(scope) { HashMap() }
 
         val lock = Any()
 
@@ -183,7 +190,7 @@ class FX {
 
         init {
             locale = Locale.getDefault()
-            inheritScopeHolder.set(DefaultScope)
+            inheritScopeHolder.set(FX.defaultScope)
             importChildInterceptors()
         }
 
@@ -220,18 +227,18 @@ class FX {
 
         @JvmStatic
         fun registerApplication(application: Application, primaryStage: Stage) {
-            registerApplication(DefaultScope, application, primaryStage)
+            registerApplication(FX.defaultScope, application, primaryStage)
         }
 
         @JvmStatic
-        fun registerApplication(scope: Scope = DefaultScope, application: Application, primaryStage: Stage) {
+        fun registerApplication(scope: Scope = FX.defaultScope, application: Application, primaryStage: Stage) {
             FX.installErrorHandler()
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
 
-            // If custom scope is activated for application itself, change DefaultScope to be the supplised scope
-            if (applications[DefaultScope] == null) {
-                DefaultScope = scope
+            // If custom scope is activated for application itself, change FX.defaultScope to be the supplised scope
+            if (applications[FX.defaultScope] == null) {
+                FX.defaultScope = scope
             }
 
             if (application.parameters?.unnamed != null) {
@@ -253,9 +260,9 @@ class FX {
 
         @JvmStatic
         @JvmOverloads
-        fun <T : Component> find(componentType: Class<T>, scope: Scope = DefaultScope): T = find(componentType.kotlin, scope)
+        fun <T : Component> find(componentType: Class<T>, scope: Scope = FX.defaultScope): T = find(componentType.kotlin, scope)
 
-        inline fun <reified T : Component> find(scope: Scope = DefaultScope): T = find(T::class, scope)
+        inline fun <reified T : Component> find(scope: Scope = FX.defaultScope): T = find(T::class, scope)
 
         fun replaceComponent(obsolete: UIComponent) {
             val replacement: UIComponent
@@ -326,12 +333,12 @@ private class MyListChangeListener(scene: Scene) : ListChangeListener<String> {
     }
 }
 
-fun setStageIcon(icon: Image, scope: Scope = DefaultScope) {
+fun setStageIcon(icon: Image, scope: Scope = FX.defaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.apply { clear(); add(icon) } }
     if (FX.initialized.value) adder() else FX.initialized.onChange { adder() }
 }
 
-fun addStageIcon(icon: Image, scope: Scope = DefaultScope) {
+fun addStageIcon(icon: Image, scope: Scope = FX.defaultScope) {
     val adder = { FX.getPrimaryStage(scope)?.icons?.add(icon) }
     if (FX.initialized.value) adder() else FX.initialized.onChange { adder() }
 }
@@ -385,18 +392,18 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 }
 
 
-fun <T : ScopedInstance> setInScope(value: T, scope: Scope = DefaultScope, kclass : KClass<T> = value.javaClass.kotlin) = FX.getComponents(scope).put(kclass, value)
+fun <T : ScopedInstance> setInScope(value: T, scope: Scope = FX.defaultScope, kclass : KClass<T> = value.javaClass.kotlin) = FX.getComponents(scope).put(kclass, value)
 @Suppress("UNCHECKED_CAST")
 fun <T : ScopedInstance> Scope.set(vararg value: T) = value.associateByTo(FX.getComponents(this)) { it::class }
 @Deprecated("is now included in the stdlib", ReplaceWith("params.toMap()"))
 fun varargParamsToMap(params: Array<out Pair<String, Any?>>) = params.toMap()
 
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
-inline fun <reified T : Component> find(scope: Scope = DefaultScope, vararg params: Pair<*, Any?>): T = find(scope, params.toMap())
+inline fun <reified T : Component> find(scope: Scope = FX.defaultScope, params: Map<*, Any?>? = null): T = find(T::class, scope, params)
+inline fun <reified T : Component> find(scope: Scope = FX.defaultScope, vararg params: Pair<*, Any?>): T = find(scope, params.toMap())
 
-fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, vararg params: Pair<*, Any?>): T = find(type, scope, params.toMap())
+fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, vararg params: Pair<*, Any?>): T = find(type, scope, params.toMap())
 @Suppress("UNCHECKED_CAST")
-fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: Map<*, Any?>? = null): T {
+fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
     inheritScopeHolder.set(useScope)
     val stringKeyedMap = params?.mapKeys { (k, _) -> (k as? KProperty<*>)?.name ?: k.toString() }.orEmpty()

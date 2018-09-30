@@ -28,7 +28,7 @@ import kotlin.reflect.KProperty
 open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class, vararg stylesheet: KClass<out Stylesheet>) : Application(),
     Configurable {
 
-    var scope: Scope = DefaultScope
+    open var scope: Scope = FX.defaultScope
     val workspace: Workspace get() = scope.workspace
 
     /**
@@ -63,7 +63,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     constructor(
         primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class,
         stylesheet: KClass<out Stylesheet>,
-        scope: Scope = DefaultScope
+        scope: Scope = FX.defaultScope
     ) : this(primaryView, *arrayOf(stylesheet)) {
         this.scope = scope
     }
@@ -157,7 +157,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance =
+    inline fun <reified T> inject(scope: Scope = FX.defaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance =
         object : ReadOnlyProperty<App, T> {
             override fun getValue(thisRef: App, property: KProperty<*>) = find<T>(scope)
         }

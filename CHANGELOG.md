@@ -8,6 +8,9 @@
 
 ### Changes
 
+- `App.scope` is overridable
+- `DefaultScope` deprecated, use `FX.defaultScope` instead
+- The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
 - Kotlin 1.2.70
 - Refactored code to follow Kotlin Coding Conventions.
 - Specified public & protected declaration types explicitly to ensure API stability.
