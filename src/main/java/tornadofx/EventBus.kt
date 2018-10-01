@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package tornadofx
 
 import javafx.application.Platform
@@ -11,8 +9,8 @@ import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
 open class FXEvent(
-        open val runOn: EventBus.RunOn = ApplicationThread,
-        open val scope: Scope? = null
+    open val runOn: EventBus.RunOn = ApplicationThread,
+    open val scope: Scope? = null
 )
 
 class EventContext {
@@ -23,13 +21,13 @@ class EventContext {
 }
 
 class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Component?, val maxCount: Long? = null, val action: EventContext.(FXEvent) -> Unit) {
-    val count = AtomicLong()
+    val count: AtomicLong = AtomicLong()
+
+    fun unsubscribe(): Unit = FX.eventbus.unsubscribe(this)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other?.javaClass != javaClass) return false
-
-        other as FXEventRegistration
+        if (other !is FXEventRegistration) return false
 
         if (eventType != other.eventType) return false
         if (owner != other.owner) return false
@@ -44,44 +42,47 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
         result = 31 * result + action.hashCode()
         return result
     }
-
-    fun unsubscribe() {
-        FX.eventbus.unsubscribe(this)
-    }
 }
 
+@Suppress("UNCHECKED_CAST")
 class EventBus {
     enum class RunOn { ApplicationThread, BackgroundThread }
 
     private val subscriptions = mutableMapOf<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
     private val eventScopes = mutableMapOf<EventContext.(FXEvent) -> Unit, Scope>()
 
-    inline fun <reified T : FXEvent> subscribe(scope: Scope, registration: FXEventRegistration) = subscribe(T::class, scope, registration)
+
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration: FXEventRegistration) {
-        subscriptions.getOrPut(event, { HashSet() }).add(registration)
+        subscriptions.getOrPut(event) { HashSet() }.add(registration)
         eventScopes[registration.action] = scope
     }
 
-    inline fun <reified T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, scope: Scope, noinline action: (T) -> Unit) = subscribe(owner, times, T::class, scope, action)
-
-    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: KClass<T>, scope: Scope, action: (T) -> Unit) {
+    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: KClass<T>, scope: Scope, action: (T) -> Unit): Unit =
         subscribe(event, scope, FXEventRegistration(event, owner, times, action as EventContext.(FXEvent) -> Unit))
-    }
 
-    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit) = subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
+    fun <T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, event: Class<T>, scope: Scope, action: (T) -> Unit): Unit =
+        subscribe(event.kotlin, scope, FXEventRegistration(event.kotlin, owner, times, action as EventContext.(FXEvent) -> Unit))
 
-    inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) = unsubscribe(T::class, action)
-    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit) = unsubscribe(event.kotlin, action)
+    inline fun <reified T : FXEvent> subscribe(scope: Scope, registration: FXEventRegistration): Unit = subscribe(T::class, scope, registration)
+
+    inline fun <reified T : FXEvent> subscribe(owner: Component? = null, times: Long? = null, scope: Scope, noinline action: (T) -> Unit): Unit =
+        subscribe(owner, times, T::class, scope, action)
+
 
     fun <T : FXEvent> unsubscribe(event: KClass<T>, action: EventContext.(T) -> Unit) {
         subscriptions[event]?.removeAll { it.action == action }
         eventScopes.remove(action)
     }
 
+    fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit): Unit = unsubscribe(event.kotlin, action)
+
+    inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit): Unit = unsubscribe(T::class, action)
+
     fun unsubscribe(registration: FXEventRegistration) {
         unsubscribe(registration.eventType, registration.action)
         registration.owner?.subscribedEvents?.get(registration.eventType)?.remove(registration)
     }
+
 
     fun fire(event: FXEvent) {
         fun fireEvents() {
@@ -92,8 +93,8 @@ class EventBus {
                         val context = EventContext()
                         try {
                             it.action.invoke(context, event)
-                        } catch (subscriberFailure: Exception) {
-                            log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
+                        } catch (e: Exception) {
+                            log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", e)
                         }
                         if (context.unsubscribe) unsubscribe(it)
                     } else {
@@ -103,23 +104,13 @@ class EventBus {
             }
         }
 
-        if (Platform.isFxApplicationThread()) {
-            if (event.runOn == ApplicationThread) {
-                fireEvents()
-            } else {
-                thread(true) {
-                    fireEvents()
-                }
-            }
-        } else {
-            if (event.runOn == ApplicationThread) {
-                Platform.runLater {
-                    fireEvents()
-                }
-            } else {
-                fireEvents()
-            }
+        val isOnFx = Platform.isFxApplicationThread()
+        val runOnFx = event.runOn == ApplicationThread
+
+        when {
+            !(isOnFx xor runOnFx) -> fireEvents()
+            isOnFx -> thread { fireEvents() }
+            runOnFx -> runLater { fireEvents() }
         }
     }
-
 }
