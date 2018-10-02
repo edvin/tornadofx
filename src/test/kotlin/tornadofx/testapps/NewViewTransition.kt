@@ -116,6 +116,7 @@ class NewViewTransitionController : Controller() {
             *"Reveal" eachWay { ViewTransition.Reveal(time, it) },
             *"Metro" eachWay { ViewTransition.Metro(time, it) },
             *"Swap" eachWay { ViewTransition.Swap(doubleTime, it) },
+            *"Wipe" eachWay { ViewTransition.Wipe(time, it) },
             *"Custom" eachWay { CustomViewTransition(doubleTime, it) },
             "Flip Horizontal" to ViewTransition.Flip(time, false),
             "Flip Vertical" to ViewTransition.Flip(time, true),
