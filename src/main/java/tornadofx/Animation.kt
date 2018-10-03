@@ -1002,9 +1002,8 @@ abstract class ViewTransition {
                 override fun interpolate(frac: Double) {
                     if (indices.isEmpty()) return
                     val count = (frac * originalSize).toInt() - originalSize + indices.size - 1
-                    for (i in 0 until count) {
-                        val index = indices.last()
-                        indices.removeAt(indices.lastIndex)
+                    repeat(count) {
+                        val index = indices.removeAt(indices.lastIndex)
                         gc.clearRect(index % hChunks * width, index / hChunks * height, width, height)
                     }
                 }
