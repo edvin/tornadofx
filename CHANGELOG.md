@@ -18,6 +18,7 @@
 - TableView.onEditStart() and TableColumn.cancel() functions which can be used to intercept editing events
 - resources.media() to load a Media instance from resources
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
+- Wipe and Dissolve view transitions
 
 ## [1.7.17]
 

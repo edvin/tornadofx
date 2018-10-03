@@ -122,7 +122,8 @@ class NewViewTransitionController : Controller() {
             "Flip Vertical" to ViewTransition.Flip(time, true),
             "Explode" to ViewTransition.Explode(time),
             "Implode" to ViewTransition.Implode(time),
-            "NewsFlash" to ViewTransition.NewsFlash(doubleTime, 2.0)
+            "NewsFlash" to ViewTransition.NewsFlash(doubleTime, 2.0),
+            "Dissolve" to ViewTransition.Dissolve(doubleTime)
     )
     val firstTransition = transitions[0].first
     private var currentTransition = 0

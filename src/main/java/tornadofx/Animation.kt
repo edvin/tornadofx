@@ -931,7 +931,6 @@ abstract class ViewTransition {
         override fun reversed() = Explode(duration, scale).also { it.setup = setup }
     }
 
-
     /**
      * A [ReversibleViewTransition] where a node is wiped away in a given direction revealing another node.
      *
@@ -941,9 +940,8 @@ abstract class ViewTransition {
      * @param direction The direction the node is wiped away
      */
     class Wipe(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition<Wipe>() {
-        override fun stack(current: Node, replacement: Node): StackPane {
-            return StackPane(replacement, current.snapshot(null, null).toCanvas())
-        }
+        override fun stack(current: Node, replacement: Node) =
+            StackPane(replacement, current.snapshot(null, null).toCanvas())
 
         override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
             val canvas = stack.children[1] as Canvas
@@ -975,5 +973,40 @@ abstract class ViewTransition {
         }
 
         override fun reversed() = Wipe(duration, direction.reversed()).also { it.setup = setup }
+    }
+
+    /**
+     * A [ViewTransition] where a node is dissolved revealing another node.
+     *
+     * @param duration How long the transition will take
+     * @param hChunks The number of horizontal chunks the current node will be broken into
+     * @param vChunks The number of vertical chunks the current node will be broken into
+     */
+    class Dissolve(val duration: Duration, val hChunks: Int = 50, val vChunks: Int = 50) : ViewTransition() {
+        override fun stack(current: Node, replacement: Node) =
+            StackPane(replacement, current.snapshot(null, null).toCanvas())
+
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+            val canvas = stack.children[1] as Canvas
+            val width = canvas.width / hChunks
+            val height = canvas.height / vChunks
+            val gc = canvas.graphicsContext2D
+            val originalSize = hChunks * vChunks
+            val indices = MutableList(originalSize) { it }
+            indices.shuffle()
+            return object : Transition() {
+                init {
+                    cycleDuration = duration
+                }
+
+                override fun interpolate(frac: Double) {
+                    if (indices.isEmpty()) return
+                    repeat((frac * originalSize).toInt() - originalSize + indices.lastIndex) {
+                        val index = indices.removeAt(indices.lastIndex)
+                        gc.clearRect(index % hChunks * width, index / hChunks * height, width, height)
+                    }
+                }
+            }
+        }
     }
 }
