@@ -349,7 +349,7 @@ class SortedFilteredList<T>(
         val item = sortedItems[fromIndex]
         val backingFromIndex = items.indexOf(item)
         if (backingFromIndex > -1) {
-            return items.subList(backingFromIndex, items.indexOf(sortedItems[toIndex]))
+            return items.subList(backingFromIndex, items.indexOf(sortedItems[toIndex - 1]))
         }
         return mutableListOf()
     }
