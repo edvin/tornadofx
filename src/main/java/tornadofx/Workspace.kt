@@ -1,10 +1,8 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleIntegerProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Node
@@ -47,25 +45,25 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     enum class NavigationMode { Stack, Tabs }
 
     val navigationModeProperty: ObjectProperty<NavigationMode> = SimpleObjectProperty(navigationMode)
-    var navigationMode by navigationModeProperty
+    var navigationMode: NavigationMode by navigationModeProperty
 
-    val viewStack = FXCollections.observableArrayList<UIComponent>()
+    val viewStack: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
 
-    val maxViewStackDepthProperty = SimpleIntegerProperty(DefaultViewStackDepth)
-    var maxViewStackDepth by maxViewStackDepthProperty
+    val maxViewStackDepthProperty: IntegerProperty = SimpleIntegerProperty(DefaultViewStackDepth)
+    var maxViewStackDepth: Int by maxViewStackDepthProperty
 
-    val headingContainer = HeadingContainer()
-    val tabContainer = TabPane().addClass("editor-container")
-    val stackContainer = StackPane().addClass("editor-container")
+    val headingContainer: HeadingContainer = HeadingContainer()
+    val tabContainer: TabPane = TabPane().addClass("editor-container")
+    val stackContainer: StackPane = StackPane().addClass("editor-container")
 
-    val contentContainerProperty = SimpleObjectProperty<Parent>(stackContainer)
-    var contentContainer by contentContainerProperty
+    val contentContainerProperty: ObjectProperty<Parent> = SimpleObjectProperty(stackContainer)
+    var contentContainer: Parent by contentContainerProperty
 
-    val showHeadingLabelProperty = SimpleBooleanProperty(true)
-    var showHeadingLabel by showHeadingLabelProperty
+    val showHeadingLabelProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var showHeadingLabel: Boolean by showHeadingLabelProperty
 
     val dockedComponentProperty: ObjectProperty<UIComponent> = SimpleObjectProperty()
-    val dockedComponent: UIComponent? get() = dockedComponentProperty.value
+    val dockedComponent: UIComponent? by dockedComponentProperty
 
     private val viewPos = integerBinding(viewStack, dockedComponentProperty) { viewStack.indexOf(dockedComponent) }
 
@@ -88,24 +86,21 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         }
 
     companion object {
-        val activeWorkspaces = FXCollections.observableArrayList<Workspace>()
-        val DefaultViewStackDepth = 10
+        val activeWorkspaces: ObservableList<Workspace> = FXCollections.observableArrayList()
+        const val DefaultViewStackDepth: Int = 10
 
-        fun closeAll() {
-            activeWorkspaces.forEach(Workspace::close)
-        }
-
-        var defaultSavable = true
-        var defaultDeletable = true
-        var defaultRefreshable = true
-        var defaultCloseable = true
-        var defaultComplete = true
-        var defaultCreatable = true
+        var defaultSavable: Boolean = true
+        var defaultDeletable: Boolean = true
+        var defaultRefreshable: Boolean = true
+        var defaultCloseable: Boolean = true
+        var defaultComplete: Boolean = true
+        var defaultCreatable: Boolean = true
 
         init {
             importStylesheet("/tornadofx/workspace.css")
         }
 
+        fun closeAll(): Unit = activeWorkspaces.forEach(Workspace::close)
     }
 
     fun disableNavigation() {
@@ -136,7 +131,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         activeWorkspaces -= this
     }
 
-    override val root = WorkspaceArea().apply {
+    override val root: WorkspaceArea = WorkspaceArea().apply {
         top {
             vbox {
                 header = toolbar {
@@ -145,8 +140,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                     skinProperty().onChange {
                         (lookup(".container") as? HBox)?.apply {
                             alignment = Pos.CENTER_LEFT
-                            alignmentProperty().onChange {
-                                if (it != Pos.CENTER_LEFT) alignment = Pos.CENTER_LEFT
+                            alignmentProperty().onChange { pos ->
+                                if (pos != Pos.CENTER_LEFT) alignment = Pos.CENTER_LEFT
                             }
                         }
                     }
@@ -155,9 +150,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         backButton = this
                         graphic = label { addClass("icon", "back") }
                         action {
-                            if (dockedComponent?.onNavigateBack() ?: true) {
-                                navigateBack()
-                            }
+                            if (dockedComponent?.onNavigateBack() != false) navigateBack()
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value < 1 })
                     }
@@ -166,9 +159,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                         forwardButton = this
                         graphic = label { addClass("icon", "forward") }
                         action {
-                            if (dockedComponent?.onNavigateForward() ?: true) {
-                                navigateForward()
-                            }
+                            if (dockedComponent?.onNavigateForward() != false) navigateForward()
                         }
                         disableProperty().bind(booleanBinding(viewPos, viewStack) { value == viewStack.size - 1 })
                     }
@@ -236,8 +227,8 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     init {
-//        @Suppress("LeakingThis")
-//        if (!scope.hasActiveWorkspace) scope.workspaceInstance = this
+        // @Suppress("LeakingThis")
+        // if (!scope.hasActiveWorkspace) scope.workspaceInstance = this
         navigationModeProperty.addListener { _, ov, nv -> navigationModeChanged(ov, nv) }
         tabContainer.tabs.onChange { change ->
             while (change.next()) {
@@ -259,7 +250,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                 }
             }
         }
-        tabContainer.selectionModel.selectedItemProperty().addListener { observableValue, ov, nv ->
+        tabContainer.selectionModel.selectedItemProperty().addListener { _, ov, nv ->
             val newCmp = nv?.content?.uiComponent<UIComponent>()
             val oldCmp = ov?.content?.uiComponent<UIComponent>()
             if (newCmp != null && newCmp != dockedComponent) {
@@ -324,36 +315,36 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     override fun onSave() {
         dockedComponentProperty.value
-                ?.takeIf { it.savable.value }
-                ?.onSave()
+            ?.takeIf { it.savable.value }
+            ?.onSave()
     }
 
     override fun onDelete() {
         dockedComponentProperty.value
-                ?.takeIf { it.deletable.value }
-                ?.onDelete()
+            ?.takeIf { it.deletable.value }
+            ?.onDelete()
     }
 
     override fun onCreate() {
         dockedComponentProperty.value
-                ?.takeIf { it.creatable.value }
-                ?.onCreate()
+            ?.takeIf { it.creatable.value }
+            ?.onCreate()
     }
 
     override fun onRefresh() {
         dockedComponentProperty.value
-                ?.takeIf { it.refreshable.value }
-                ?.onRefresh()
+            ?.takeIf { it.refreshable.value }
+            ?.onRefresh()
     }
 
-    inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null) = dock(find<T>(scope, params))
-    inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, vararg params: Pair<*, Any?>) { dock<T>(scope, params.toMap()) }
+    inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, vararg params: Pair<*, Any?>): Unit = dock<T>(scope, params.toMap())
+    inline fun <reified T : UIComponent> dock(scope: Scope = this@Workspace.scope, params: Map<*, Any?>? = null): Unit = dock(find<T>(scope, params))
 
     fun dock(child: UIComponent, forward: Boolean = true) {
         if (child == dockedComponent) return
 
         // Remove everything after viewpos if moving forward
-        if (forward) while (viewPos.get() < viewStack.size -1) viewStack.removeAt(viewPos.get() + 1)
+        if (forward) while (viewPos.get() < viewStack.size - 1) viewStack.removeAt(viewPos.get() + 1)
 
         val addToStack = contentContainer == stackContainer && maxViewStackDepth > 0 && child !in viewStack
 
@@ -413,16 +404,14 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * }
      * </pre>
      */
-    fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit) = op(this, Scope(this, *setInScope))
+    fun withNewScope(vararg setInScope: ScopedInstance, op: Workspace.(Scope) -> Unit): Unit = op(this, Scope(this, *setInScope))
 
     /**
      * Create a new scope and associate it with this Workspace and dock the given UIComponent type into
      * the scope, passing the given parameters on to the UIComponent and optionally injecting the given Injectables into the new scope.
      */
     inline fun <reified T : UIComponent> dockInNewScope(params: Map<*, Any?>, vararg setInScope: ScopedInstance) {
-        withNewScope(*setInScope) { newScope ->
-            dock<T>(newScope, params)
-        }
+        withNewScope(*setInScope) { newScope -> dock<T>(newScope, params) }
     }
 
     /**
@@ -430,9 +419,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * the scope, optionally injecting the given Injectables into the new scope.
      */
     inline fun <reified T : UIComponent> dockInNewScope(vararg setInScope: ScopedInstance) {
-        withNewScope(*setInScope) { newScope ->
-            dock<T>(newScope)
-        }
+        withNewScope(*setInScope) { newScope -> dock<T>(newScope) }
     }
 
     /**
@@ -440,9 +427,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
      * the scope and optionally injecting the given Injectables into the new scope.
      */
     fun <T : UIComponent> dockInNewScope(uiComponent: T, vararg setInScope: ScopedInstance) {
-        withNewScope(*setInScope) {
-            dock(uiComponent)
-        }
+        withNewScope(*setInScope) { dock(uiComponent) }
     }
 
     /**

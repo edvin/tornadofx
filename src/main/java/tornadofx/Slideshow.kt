@@ -2,7 +2,7 @@ package tornadofx
 
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.ReadOnlyIntegerProperty
-import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.ReadOnlyIntegerWrapper
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
@@ -19,13 +19,13 @@ import kotlin.reflect.KClass
 class Slideshow(val scope: Scope = FX.defaultScope, defaultTimeout: Duration? = null) : BorderPane() {
     val slides: ObservableList<Slide> = FXCollections.observableArrayList<Slide>()
 
-    var defaultTimeoutProperty = SimpleObjectProperty<Duration>(defaultTimeout)
-    var defaultTimeout by defaultTimeoutProperty
+    var defaultTimeoutProperty: ObjectProperty<Duration?> = SimpleObjectProperty(defaultTimeout)
+    var defaultTimeout: Duration? by defaultTimeoutProperty
 
-    val defaultTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds))
+    val defaultTransitionProperty: ObjectProperty<ViewTransition?> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds))
     var defaultTransition: ViewTransition? by defaultTransitionProperty
 
-    val defaultBackTransitionProperty: ObjectProperty<ViewTransition> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds, RIGHT))
+    val defaultBackTransitionProperty: ObjectProperty<ViewTransition?> = SimpleObjectProperty(ViewTransition.Swap(.3.seconds, RIGHT))
     var defaultBackTransition: ViewTransition? by defaultBackTransitionProperty
 
     val currentSlideProperty: ObjectProperty<Slide?> = SimpleObjectProperty()
@@ -37,14 +37,17 @@ class Slideshow(val scope: Scope = FX.defaultScope, defaultTimeout: Duration? = 
     val previousKeyProperty: ObjectProperty<KeyCombination> = SimpleObjectProperty(KeyCombination.valueOf("Alt+Left"))
     var previousKey: KeyCombination by previousKeyProperty
 
-    private val realIndexProperty = SimpleIntegerProperty(-1)
-    val indexProperty: ReadOnlyIntegerProperty = ReadOnlyIntegerProperty.readOnlyIntegerProperty(realIndexProperty)
-    val index by indexProperty
+    private val _indexProperty = ReadOnlyIntegerWrapper(-1)
+    val indexProperty: ReadOnlyIntegerProperty = _indexProperty.readOnlyProperty
+    val index: Int by indexProperty
 
-    inline fun <reified T : UIComponent> slide(transition: ViewTransition? = null, timeout: Duration? = defaultTimeout) = slide(T::class, transition, timeout)
-    fun slide(view: KClass<out UIComponent>, transition: ViewTransition? = null, timeout: Duration? = defaultTimeout) = slides.addAll(Slide(view, transition, timeout))
+    inline fun <reified T : UIComponent> slide(transition: ViewTransition? = null, timeout: Duration? = defaultTimeout): Boolean =
+        slide(T::class, transition, timeout)
 
-    fun hasNext() = index < (slides.size - 1)
+    fun slide(view: KClass<out UIComponent>, transition: ViewTransition? = null, timeout: Duration? = defaultTimeout): Boolean =
+        slides.addAll(Slide(view, transition, timeout))
+
+    fun hasNext(): Boolean = index < (slides.size - 1)
 
     private var timer: Timer? = null
     private var task: TimerTask? = null
@@ -120,7 +123,7 @@ class Slideshow(val scope: Scope = FX.defaultScope, defaultTimeout: Duration? = 
         val delta = if (forward) 1 else -1
         val newIndex = index + delta
         currentSlide = slides[newIndex]
-        realIndexProperty.value = newIndex
+        _indexProperty.value = newIndex
     }
 
     class Slide(val view: KClass<out UIComponent>, val transition: ViewTransition? = null, val timeout: Duration? = null) {

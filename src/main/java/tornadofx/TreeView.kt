@@ -15,24 +15,42 @@ import kotlin.reflect.KClass
 abstract class TreeCellFragment<T> : ItemFragment<T>() {
 
     val cellProperty: ObjectProperty<TreeCell<T>?> = SimpleObjectProperty()
-    var cell by cellProperty
+    var cell: TreeCell<T>? by cellProperty
 
-    val editingProperty = SimpleBooleanProperty(false)
-    val editing by editingProperty
+    val editingProperty: BooleanProperty = SimpleBooleanProperty(false)
+    val editing: Boolean by editingProperty
 
-    open fun startEdit() { cell?.startEdit() }
+    open fun startEdit() {
+        cell?.startEdit()
+    }
 
-    open fun commitEdit(newValue: T) { cell?.commitEdit(newValue) }
+    open fun commitEdit(newValue: T) {
+        cell?.commitEdit(newValue)
+    }
 
-    open fun cancelEdit() { cell?.cancelEdit() }
+    open fun cancelEdit() {
+        cell?.cancelEdit()
+    }
 
-    open fun onEdit(op: () -> Unit) { editingProperty.onChange { if (it) op() } }
+    open fun onEdit(op: () -> Unit) {
+        editingProperty.onChange { if (it) op() }
+    }
 }
 
-open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeView<T>?): TreeCell<T>() {
-    @Suppress("UNCHECKED_CAST") private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)? get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
-    @Suppress("UNCHECKED_CAST") private val cellFormat: (TreeCell<T>.(T) -> Unit)? get() = treeView.properties["tornadofx.cellFormat"] as (TreeCell<T>.(T) -> Unit)?
-    @Suppress("UNCHECKED_CAST") private val cellCache: TreeCellCache<T>? get() = treeView.properties["tornadofx.cellCache"] as TreeCellCache<T>?
+open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeView<T>?) : TreeCell<T>() {
+
+    @Suppress("UNCHECKED_CAST")
+    private val editSupport: (TreeCell<T>.(EditEventType, T?) -> Unit)?
+        get() = treeView.properties["tornadofx.editSupport"] as (TreeCell<T>.(EditEventType, T?) -> Unit)?
+
+    @Suppress("UNCHECKED_CAST")
+    private val cellFormat: (TreeCell<T>.(T) -> Unit)?
+        get() = treeView.properties["tornadofx.cellFormat"] as (TreeCell<T>.(T) -> Unit)?
+
+    @Suppress("UNCHECKED_CAST")
+    private val cellCache: TreeCellCache<T>?
+        get() = treeView.properties["tornadofx.cellCache"] as TreeCellCache<T>?
+
     private var cellFragment: TreeCellFragment<T>? = null
     private var fresh = true
 
@@ -42,9 +60,7 @@ open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeVi
             treeView.properties["tornadofx.cellCacheCapable"] = true
             treeView.properties["tornadofx.editCapable"] = true
         }
-        indexProperty().onChange {
-            if (it == -1) clearCellFragment()
-        }
+        indexProperty().onChange { if (it == -1) clearCellFragment() }
     }
 
     override fun startEdit() {
@@ -111,7 +127,7 @@ open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeVi
 
 class TreeCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(value: T) = store.getOrPut(value){ cacheProvider(value) }
+    fun getOrCreateNode(value: T): Node = store.getOrPut(value) { cacheProvider(value) }
 }
 
 fun <T> TreeView<T>.bindSelected(property: Property<T>) {
@@ -121,7 +137,7 @@ fun <T> TreeView<T>.bindSelected(property: Property<T>) {
 /**
  * Binds the currently selected object of type [T] in the given [TreeView] to the corresponding [ItemViewModel].
  */
-fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+fun <T> TreeView<T>.bindSelected(model: ItemViewModel<T>): Unit = this.bindSelected(model.itemProperty)
 
 
 fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
@@ -133,9 +149,7 @@ fun <T> TreeView<T>.onUserDelete(action: (T) -> Unit) {
 }
 
 fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
-    selectionModel.selectedItemProperty().addListener { _, _, new ->
-        new?.value?.let { action(it) }
-    }
+    selectionModel.selectedItemProperty().onChange { it?.value?.let(action) }
 }
 
 
@@ -154,10 +168,10 @@ fun <T> TreeView<T>.onUserSelect(action: (T) -> Unit) {
  *
  * ```
  */
-fun <T> TreeView<T>.selectFirst() = selectionModel.selectFirst()
+fun <T> TreeView<T>.selectFirst(): Unit = selectionModel.selectFirst()
 
-fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?) =
-        populateTree(root, itemFactory, childFactory)
+fun <T> TreeView<T>.populate(itemFactory: (T) -> TreeItem<T> = { TreeItem(it) }, childFactory: (TreeItem<T>) -> Iterable<T>?): Unit =
+    populateTree(root, itemFactory, childFactory)
 
 /**
  * Registers a `Fragment` which should be used to represent a [TreeItem] for the given [TreeView].
@@ -212,23 +226,23 @@ fun <T> TreeTableView<T>.multiSelect(enable: Boolean = true) {
 /**
  * Expand this [TreeItem] and children down to `depth`.
  */
-fun <T> TreeItem<T>.expandTo(depth: Int)  {
-	if ( depth > 0 ) {
-		this.isExpanded = true
-		this.children.forEach { it.expandTo(depth - 1) }
-	}
+fun <T> TreeItem<T>.expandTo(depth: Int) {
+    if (depth > 0) {
+        this.isExpanded = true
+        this.children.forEach { it.expandTo(depth - 1) }
+    }
 }
 
 /**
  * Expand this `[TreeItem] and all it's children.
  */
-fun <T> TreeItem<T>.expandAll()  = expandTo(Int.MAX_VALUE)
+fun <T> TreeItem<T>.expandAll(): Unit = expandTo(Int.MAX_VALUE)
 
 /**
  * Collapse this [TreeItem] and all it's children.
  */
 
-fun <T> TreeItem<T>.collapseAll()  {
-	this.isExpanded = false
-	this.children.forEach { it.collapseAll() }
+fun <T> TreeItem<T>.collapseAll() {
+    this.isExpanded = false
+    this.children.forEach { it.collapseAll() }
 }

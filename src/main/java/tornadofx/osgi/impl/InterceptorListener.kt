@@ -4,10 +4,10 @@ import org.osgi.framework.BundleContext
 import org.osgi.framework.ServiceEvent
 import org.osgi.framework.ServiceListener
 import org.osgi.util.tracker.ServiceTracker
-import tornadofx.*
+import tornadofx.FX
 import tornadofx.osgi.ChildInterceptorProvider
 
-class InterceptorListener(val context: BundleContext) : ServiceListener {
+internal class InterceptorListener(val context: BundleContext) : ServiceListener {
     val tracker = ServiceTracker<ChildInterceptorProvider, Any>(context, context.createFilter("(&(objectClass=${ChildInterceptorProvider::class.java.name}))"), null)
 
     init {
@@ -29,6 +29,5 @@ class InterceptorListener(val context: BundleContext) : ServiceListener {
         }
     }
 
-    private fun ServiceEvent.isChildInterceptorProviderEvent() = objectClass == ChildInterceptorProvider::class.qualifiedName
-
+    private fun ServiceEvent.isChildInterceptorProviderEvent(): Boolean = objectClass == ChildInterceptorProvider::class.qualifiedName
 }

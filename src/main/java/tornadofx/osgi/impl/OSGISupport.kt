@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package tornadofx.osgi.impl
 
 import org.osgi.framework.Bundle
@@ -12,6 +10,7 @@ import tornadofx.withEach
 import java.util.logging.Level
 import kotlin.reflect.KClass
 
+@Suppress("UNCHECKED_CAST")
 val ServiceEvent.objectClass: String
     get() = (serviceReference.getProperty("objectClass") as Array<String>)[0]
 
@@ -23,15 +22,17 @@ val fxBundleContext: BundleContext get() = fxBundle.bundleContext
  * if OSGi is available on the classpath.
  */
 fun getBundleId(classFromBundle: KClass<*>): Long? {
-    try {
-        return FrameworkUtil.getBundle(classFromBundle.java)?.bundleId
+    return try {
+        FrameworkUtil.getBundle(classFromBundle.java)?.bundleId
     } catch (ex: Exception) {
         FX.log.log(Level.WARNING, "OSGi was on the classpath but no Framework did not respond correctly", ex)
-        return null
+        null
     }
 }
-inline fun <reified T:Any?> getBundleId(): Long? = getBundleId(T::class)
 
+inline fun <reified T : Any?> getBundleId(): Long? = getBundleId(T::class)
+
+@Suppress("UNCHECKED_CAST")
 inline fun <S, T> ServiceTracker<S, T>.withEach(fn: (S) -> Unit) {
-    services?.withEach {fn(this as S) }
+    services?.withEach { fn(this as S) }
 }

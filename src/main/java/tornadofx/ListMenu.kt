@@ -1,8 +1,5 @@
-@file:Suppress("unused", "UNCHECKED_CAST")
-
 package tornadofx
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallerImpl.FACTORY
 import javafx.beans.DefaultProperty
 import javafx.beans.property.*
 import javafx.collections.ObservableList
@@ -19,24 +16,25 @@ import javafx.scene.image.ImageView
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.Region
 import javafx.scene.text.Text
-import tornadofx.WizardStyles.Companion.graphic
 
 @DefaultProperty("children")
 class ListMenu : Control() {
-    private val graphicFixedSizeInternal = FACTORY.createStyleableNumberProperty(this, "graphicFixedSize", "-fx-graphic-fixed-size", { it.graphicFixedSizeProperty })
+    private val graphicFixedSizeInternal =
+        FACTORY.createStyleableNumberProperty(this, "graphicFixedSize", "-fx-graphic-fixed-size") { it.graphicFixedSizeProperty }
     val graphicFixedSizeProperty: StyleableProperty<Number> get() = graphicFixedSizeInternal
-    var graphicFixedSized: Number get() = graphicFixedSizeInternal.value; set(value) {
-        graphicFixedSizeInternal.value = value
-    }
+    var graphicFixedSized: Number
+        get() = graphicFixedSizeInternal.value
+        set(value) {
+            graphicFixedSizeInternal.value = value
+        }
 
-    val themeProperty = SimpleStringProperty()
-    var theme by themeProperty
+    val themeProperty: StringProperty = SimpleStringProperty()
+    var theme: String? by themeProperty
 
     val activeItemProperty: ObjectProperty<ListMenuItem?> = object : SimpleObjectProperty<ListMenuItem?>(this, "active") {
         override fun set(item: ListMenuItem?) {
             val previouslyActive = get()
-            if (item === previouslyActive)
-                return
+            if (item === previouslyActive) return
 
             previouslyActive?.pseudoClassStateChanged(ACTIVE_PSEUDOCLASS_STATE, false)
             previouslyActive?.internalActiveProperty?.value = false
@@ -75,20 +73,20 @@ class ListMenu : Control() {
 
     override fun getControlCssMetaData(): List<CssMetaData<out Styleable, *>> = FACTORY.cssMetaData
 
-    override fun createDefaultSkin() = ListMenuSkin(this)
+    override fun createDefaultSkin(): ListMenuSkin = ListMenuSkin(this)
 
-    val items: ObservableList<ListMenuItem> get() = children as ObservableList<ListMenuItem>
+    @Suppress("UNCHECKED_CAST")
+    val items: ObservableList<ListMenuItem>
+        get() = children as ObservableList<ListMenuItem>
 
     override fun getUserAgentStylesheet(): String = ListMenu::class.java.getResource("listmenu.css").toExternalForm()
 
     fun item(
-            text : String? = null,
-            graphic : Node? = null,
-            tag : Any? = null,
-            op : ListMenuItem.() -> Unit = {}
-    ) = ListMenuItem(text ?: tag?.toString(), graphic).attachTo(this, op){
-        it.tag = tag
-    }
+        text: String? = null,
+        graphic: Node? = null,
+        tag: Any? = null,
+        op: ListMenuItem.() -> Unit = {}
+    ): ListMenuItem = ListMenuItem(text ?: tag?.toString(), graphic).attachTo(this, op) { it.tag = tag }
 
     companion object {
         private val ACTIVE_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("active")
@@ -97,15 +95,15 @@ class ListMenu : Control() {
 }
 
 class ListMenuItem(text: String? = null, graphic: Node? = null) : Control() {
-    val graphicProperty: ObjectProperty<Node> = SimpleObjectProperty(this, "graphic", graphic)
+    val graphicProperty: ObjectProperty<Node?> = SimpleObjectProperty(this, "graphic", graphic)
     var graphic: Node? by graphicProperty
 
     val textProperty: StringProperty = SimpleStringProperty(text)
     var text: String? by textProperty
 
-    internal val internalActiveProperty = ReadOnlyBooleanWrapper()
+    internal val internalActiveProperty: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper()
     val activeProperty: ReadOnlyBooleanProperty = internalActiveProperty.readOnlyProperty
-    val active by activeProperty
+    val active: Boolean by activeProperty
 
     init {
         styleClass.add("list-item")
@@ -135,11 +133,11 @@ class ListMenuSkin(control: ListMenu) : SkinBase<ListMenu>(control) {
 
     private fun biggest(fn: (Node) -> Double) = children.map { fn(it) }.max() ?: 0.0
 
-    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            if (skinnable.orientation == VERTICAL) biggest { it.minWidth(height) } else acc { it.minWidth(height) }
+    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        if (skinnable.orientation == VERTICAL) biggest { it.minWidth(height) } else acc { it.minWidth(height) }
 
-    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            if (skinnable.orientation == VERTICAL) acc { it.minHeight(width) } else biggest { it.minHeight(width) }
+    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        if (skinnable.orientation == VERTICAL) acc { it.minHeight(width) } else biggest { it.minHeight(width) }
 
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
         val prefWidth = if (skinnable.orientation == VERTICAL)
@@ -159,11 +157,11 @@ class ListMenuSkin(control: ListMenu) : SkinBase<ListMenu>(control) {
         return Math.max(prefHeight, skinnable.prefHeight)
     }
 
-    override fun computeMaxWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            if (skinnable.maxWidth == Region.USE_COMPUTED_SIZE) computePrefWidth(height, topInset, rightInset, bottomInset, leftInset) else skinnable.maxWidth
+    override fun computeMaxWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        if (skinnable.maxWidth == Region.USE_COMPUTED_SIZE) computePrefWidth(height, topInset, rightInset, bottomInset, leftInset) else skinnable.maxWidth
 
-    override fun computeMaxHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            if (skinnable.maxHeight == Region.USE_COMPUTED_SIZE) computePrefHeight(width, topInset, rightInset, bottomInset, leftInset) else skinnable.maxHeight
+    override fun computeMaxHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        if (skinnable.maxHeight == Region.USE_COMPUTED_SIZE) computePrefHeight(width, topInset, rightInset, bottomInset, leftInset) else skinnable.maxHeight
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         var currentX = x
@@ -183,13 +181,7 @@ class ListMenuSkin(control: ListMenu) : SkinBase<ListMenu>(control) {
 }
 
 class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) {
-    val text = Text().addClass("text")
-
-    private fun registerGraphic(node: Node) {
-        children.add(node)
-        node.addClass("graphic")
-        (node as? ImageView)?.isMouseTransparent = true
-    }
+    val text: Text = Text().addClass("text")
 
     init {
         text.textProperty().bind(control.textProperty)
@@ -206,6 +198,12 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
             control.requestFocus()
             control.menu.activeItem = control
         }
+    }
+
+    private fun registerGraphic(node: Node) {
+        children.add(node)
+        node.addClass("graphic")
+        (node as? ImageView)?.isMouseTransparent = true
     }
 
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
@@ -243,11 +241,11 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
         return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
     }
 
-    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            computePrefWidth(height, topInset, rightInset, bottomInset, leftInset)
+    override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        computePrefWidth(height, topInset, rightInset, bottomInset, leftInset)
 
-    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) =
-            computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
+    override fun computeMinHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double =
+        computePrefHeight(width, topInset, rightInset, bottomInset, leftInset)
 
     private val iconPosition: Side get() = skinnable.menu.iconPosition
 
@@ -322,12 +320,12 @@ class ListMenuItemSkin(control: ListMenuItem) : SkinBase<ListMenuItem>(control) 
 }
 
 fun EventTarget.listmenu(
-        orientation: Orientation = VERTICAL,
-        iconPosition: Side = Side.LEFT,
-        theme: String? = null,
-        tag: Any? = null,
-        op: ListMenu.() -> Unit = {}
-)= ListMenu().attachTo(this, op) {
+    orientation: Orientation = VERTICAL,
+    iconPosition: Side = Side.LEFT,
+    theme: String? = null,
+    tag: Any? = null,
+    op: ListMenu.() -> Unit = {}
+): ListMenu = ListMenu().attachTo(this, op) {
     it.orientation = orientation
     it.iconPosition = iconPosition
     it.theme = theme

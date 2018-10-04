@@ -29,5 +29,5 @@ import javafx.scene.Node
  *
  */
 interface ChildInterceptor {
-    operator fun invoke(parent: EventTarget, node: Node, index: Int?):Boolean
+    operator fun invoke(parent: EventTarget, node: Node, index: Int?): Boolean
 }

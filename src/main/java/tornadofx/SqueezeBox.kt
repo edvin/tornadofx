@@ -15,10 +15,10 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
     internal val panes = FXCollections.observableArrayList<TitledPane>()
 
     val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
-    var multiselect by multiselectProperty
+    var multiselect: Boolean by multiselectProperty
 
     val fillHeightProperty: BooleanProperty = SimpleBooleanProperty(fillHeight)
-    var fillHeight by fillHeightProperty
+    var fillHeight: Boolean by fillHeightProperty
 
     init {
         addClass(SqueezeBoxStyles.squeezeBox)
@@ -36,9 +36,9 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
         }
     }
 
-    override fun getUserAgentStylesheet() = SqueezeBoxStyles().base64URL.toExternalForm()
+    override fun getUserAgentStylesheet(): String = SqueezeBoxStyles().base64URL.toExternalForm()
 
-    override fun createDefaultSkin() = SqueezeBoxSkin(this)
+    override fun createDefaultSkin(): SqueezeBoxSkin = SqueezeBoxSkin(this)
 
     internal fun addChild(child: Node) {
         children.add(child)
@@ -47,9 +47,9 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
     internal fun updateExpanded(pane: TitledPane) {
         if (!multiselect && pane.isExpanded) {
             panes.asSequence()
-                    .filterNot { it == pane }
-                    .filter {  it.isExpanded }
-                    .withEach{ isExpanded = false }
+                .filterNot { it == pane }
+                .filter { it.isExpanded }
+                .withEach { isExpanded = false }
         }
     }
 }
@@ -69,19 +69,18 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
     }
 
     override fun computeMinWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.mapEach { minWidth(height) }.max() ?: 0.0 + leftInset + rightInset
+        return (children.mapEach { minWidth(height) }.max() ?: 0.0) + leftInset + rightInset
     }
 
-
     override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double {
-        return children.mapEach { prefWidth(height) }.max() ?: 0.0 + leftInset + rightInset
+        return (children.mapEach { prefWidth(height) }.max() ?: 0.0) + leftInset + rightInset
     }
 
     override fun layoutChildren(contentX: Double, contentY: Double, contentWidth: Double, contentHeight: Double) {
         var currentY = contentY
         var extraHeightPerExpandedPane = 0.0
         if (skinnable.fillHeight) {
-            var totalPrefHeight: Double = 0.0
+            var totalPrefHeight = 0.0
             var expandedCount = 0
             control.panes.forEach {
                 if (it.isExpanded) expandedCount += 1
@@ -115,12 +114,14 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
         }
     }
 
+    @Suppress("RedundantOverride")
     override fun handleControlPropertyChanged(propertyReference: String?) {
         super.handleControlPropertyChanged(propertyReference)
     }
 }
 
-fun EventTarget.squeezebox(multiselect: Boolean = true, fillHeight: Boolean = true, op: SqueezeBox.() -> Unit) = SqueezeBox(multiselect, fillHeight).attachTo(this, op)
+fun EventTarget.squeezebox(multiselect: Boolean = true, fillHeight: Boolean = true, op: SqueezeBox.() -> Unit): SqueezeBox =
+    SqueezeBox(multiselect, fillHeight).attachTo(this, op)
 
 fun SqueezeBox.fold(title: String? = null, expanded: Boolean = false, icon: Node? = null, closeable: Boolean = false, op: TitledPane.() -> Unit): TitledPane {
     val fold = TitledPane(title, null)
@@ -137,8 +138,8 @@ class SqueezeBoxBehavior(control: SqueezeBox) : BehaviorBase<SqueezeBox>(control
 
 class SqueezeBoxStyles : Stylesheet() {
     companion object {
-        val squeezeBox by cssclass()
-        val closeButton by cssclass()
+        val squeezeBox: CssRule by cssclass()
+        val closeButton: CssRule by cssclass()
     }
 
     init {

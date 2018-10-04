@@ -1,16 +1,12 @@
-@file:Suppress("unused")
-
 package tornadofx
 
-import javafx.application.Platform
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.binding.BooleanExpression
-import javafx.beans.property.BooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.Node
+import javafx.scene.Parent
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
@@ -23,76 +19,55 @@ import java.util.*
 abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: String? = null) : View(title) {
     private val wizardBundle: ResourceBundle = ResourceBundle.getBundle("tornadofx/i18n/Wizard")
 
-    val pages: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
+    val pages: ObservableList<UIComponent> = FXCollections.observableArrayList()
 
-    val currentPageProperty = SimpleObjectProperty<UIComponent>()
+    val currentPageProperty: ObjectProperty<UIComponent> = SimpleObjectProperty()
     var currentPage: UIComponent by currentPageProperty
 
     val enterProgressesProperty: BooleanProperty = SimpleBooleanProperty(false)
-    var enterProgresses by enterProgressesProperty
+    var enterProgresses: Boolean by enterProgressesProperty
 
-    val hasNext = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
-    val hasPrevious = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
+    val hasNext: BooleanBinding = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) < pages.size - 1 }
+    val hasPrevious: BooleanBinding = booleanBinding(currentPageProperty, pages) { value != null && pages.indexOf(value) > 0 }
     val allPagesComplete: BooleanExpression get() = booleanListBinding(pages) { complete }
 
-    val currentPageComplete: BooleanExpression = SimpleBooleanProperty(false)
+    val currentPageComplete: BooleanExpression = SimpleBooleanProperty(false) // TODO Review type
 
-    override val complete = SimpleBooleanProperty(false)
+    override val complete: BooleanProperty = SimpleBooleanProperty(false)
+    private val completeListeners = mutableListOf<() -> Unit>()
 
     open val canFinish: BooleanExpression = SimpleBooleanProperty(true)
     open val canGoNext: BooleanExpression = hasNext
     open val canGoBack: BooleanExpression = hasPrevious
 
-    val stepsTextProperty = SimpleStringProperty(wizardBundle["steps"])
-    val backButtonTextProperty = SimpleStringProperty(wizardBundle["back"])
-    val nextButtonTextProperty = SimpleStringProperty(wizardBundle["next"])
-    val finishButtonTextProperty = SimpleStringProperty(wizardBundle["finish"])
-    val cancelButtonTextProperty = SimpleStringProperty(wizardBundle["cancel"])
+    val stepsTextProperty: StringProperty = SimpleStringProperty(wizardBundle["steps"])
+    val backButtonTextProperty: StringProperty = SimpleStringProperty(wizardBundle["back"])
+    val nextButtonTextProperty: StringProperty = SimpleStringProperty(wizardBundle["next"])
+    val finishButtonTextProperty: StringProperty = SimpleStringProperty(wizardBundle["finish"])
+    val cancelButtonTextProperty: StringProperty = SimpleStringProperty(wizardBundle["cancel"])
 
-    val showStepsHeaderProperty = SimpleBooleanProperty(true)
-    var showStepsHeader by showStepsHeaderProperty
+    val showStepsHeaderProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var showStepsHeader: Boolean by showStepsHeaderProperty
 
-    val stepLinksCommitsProperty = SimpleBooleanProperty(true)
-    var stepLinksCommits by stepLinksCommitsProperty
+    val stepLinksCommitsProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var stepLinksCommits: Boolean by stepLinksCommitsProperty
 
-    val showStepsProperty = SimpleBooleanProperty(true)
-    var showSteps by showStepsProperty
+    val showStepsProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var showSteps: Boolean by showStepsProperty
 
-    val numberedStepsProperty = SimpleBooleanProperty(true)
-    var numberedSteps by numberedStepsProperty
+    val numberedStepsProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var numberedSteps: Boolean by numberedStepsProperty
 
-    val enableStepLinksProperty = SimpleBooleanProperty(false)
-    var enableStepLinks by enableStepLinksProperty
+    val enableStepLinksProperty: BooleanProperty = SimpleBooleanProperty(false)
+    var enableStepLinks: Boolean by enableStepLinksProperty
 
-    val showHeaderProperty = SimpleBooleanProperty(true)
-    var showHeader by showHeaderProperty
+    val showHeaderProperty: BooleanProperty = SimpleBooleanProperty(true)
+    var showHeader: Boolean by showHeaderProperty
 
-    val graphicProperty = SimpleObjectProperty<Node>()
+    val graphicProperty: ObjectProperty<Node> = SimpleObjectProperty()
     var graphic: Node by graphicProperty
 
-    open fun getNextPage() = pages.indexOf(currentPage) + 1
-    open fun getPreviousPage() = pages.indexOf(currentPage) - 1
-
-    open fun onCancel() {
-        cancel()
-    }
-
-    fun cancel() {
-        close()
-    }
-
-    fun next() {
-        currentPage.onSave()
-        if (currentPage.isComplete) {
-            currentPage = pages[getNextPage()]
-        }
-    }
-
-    fun back() {
-        currentPage = pages[getPreviousPage()]
-    }
-
-    override val root = borderpane {
+    override val root: Parent = borderpane {
         addClass(WizardStyles.wizard)
         top {
             hbox {
@@ -190,28 +165,13 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
         }
     }
 
-    private val completeListeners = mutableListOf<() -> Unit>()
-
-    fun onComplete(resultListener: () -> Unit) {
-        completeListeners.add(resultListener)
-    }
-
-    fun onComplete(resultListener: Runnable) {
-        completeListeners.add({ resultListener.run() })
-    }
-
-    override fun onSave() {
-        super.onSave()
-        isComplete = true
-    }
-
     init {
         importStylesheet<WizardStyles>()
-        this.heading = heading ?: ""
+        this.heading = heading.orEmpty()
         currentPageProperty.addListener { _, oldPage, newPage ->
             if (newPage != null) {
                 (currentPageComplete as BooleanProperty).bind(newPage.complete)
-                Platform.runLater {
+                runLater {
                     newPage.root.lookupAll("*").find { it.isFocusTraversable }?.requestFocus()
                     newPage.callOnDock()
                 }
@@ -233,6 +193,35 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
                 }
             }
         }
+    }
+
+    open fun getNextPage(): Int = pages.indexOf(currentPage) + 1
+    open fun getPreviousPage(): Int = pages.indexOf(currentPage) - 1
+
+    fun next() {
+        currentPage.onSave()
+        if (currentPage.isComplete) {
+            currentPage = pages[getNextPage()]
+        }
+    }
+
+    fun back() {
+        currentPage = pages[getPreviousPage()]
+    }
+
+    fun cancel(): Unit = close()
+
+    open fun onCancel(): Unit = cancel()
+
+    fun onComplete(resultListener: () -> Unit) {
+        completeListeners.add(resultListener)
+    }
+
+    fun onComplete(resultListener: Runnable): Unit = onComplete { resultListener.run() }
+
+    override fun onSave() {
+        super.onSave()
+        isComplete = true
     }
 
     override fun onDock() {
@@ -259,15 +248,15 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
 
 class WizardStyles : Stylesheet() {
     companion object {
-        val wizard by cssclass()
-        val header by cssclass()
-        val stepInfo by cssclass()
-        val stepsHeading by cssclass()
-        val heading by cssclass()
-        val graphic by cssclass()
-        val content by cssclass()
-        val buttons by cssclass()
-        val bold by cssclass()
+        val wizard: CssRule by cssclass()
+        val header: CssRule by cssclass()
+        val stepInfo: CssRule by cssclass()
+        val stepsHeading: CssRule by cssclass()
+        val heading: CssRule by cssclass()
+        val graphic: CssRule by cssclass()
+        val content: CssRule by cssclass()
+        val buttons: CssRule by cssclass()
+        val bold: CssRule by cssclass()
     }
 
     init {

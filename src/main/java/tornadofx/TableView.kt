@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -14,19 +15,16 @@ import kotlin.reflect.KClass
 
 abstract class TableCellFragment<S, T> : RowItemFragment<S, T>() {
     val cellProperty: ObjectProperty<TableCell<S, T>?> = SimpleObjectProperty()
-    var cell by cellProperty
+    var cell: TableCell<S, T>? by cellProperty
 
-    val editingProperty = SimpleBooleanProperty(false)
-    val editing by editingProperty
+    val editingProperty: BooleanProperty = SimpleBooleanProperty(false)
+    val editing: Boolean by editingProperty
 
-    open fun startEdit() {
-    }
+    open fun startEdit() {}
 
-    open fun commitEdit(newValue: T) {
-    }
+    open fun commitEdit(newValue: T) {}
 
-    open fun cancelEdit() {
-    }
+    open fun cancelEdit() {}
 
     open fun onEdit(op: () -> Unit) {
         editingProperty.onChange { if (it) op() }
@@ -118,7 +116,7 @@ fun <S, T> TableColumn<S, T>.cellFormat(scope: Scope = FX.defaultScope, formatte
         cellFactory = Callback { SmartTableCell<S, T>(scope, it) }
 }
 
-fun <S, T, F: TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
+fun <S, T, F : TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartTableCell<S, T>(scope, it) }
@@ -131,7 +129,7 @@ fun <S, T, F: TableCellFragment<S, T>> TableColumn<S, T>.cellFragment(scope: Sco
  * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
  * how to retrieve cached values.
  */
-fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = FX.defaultScope, cachedGraphicProvider: (T) -> Node) {
+fun <S, T> TableColumn<S, T>.cellCache(scope: Scope = FX.defaultScope, cachedGraphicProvider: (T) -> Node) {
     properties["tornadofx.cellCache"] = TableColumnCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true)
@@ -139,9 +137,8 @@ fun <S, T> TableColumn<S, T>.cellCache(scope: Scope  = FX.defaultScope, cachedGr
 }
 
 
-fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): TableColumn<T, S?> = apply {
-    cellFormat(FX.defaultScope) { text = converter.toString(it) }
-}
+fun <T, S> TableColumn<T, S?>.converter(converter: StringConverter<in S>): TableColumn<T, S?> =
+    apply { cellFormat(FX.defaultScope) { text = converter.toString(it) } }
 
 fun <T> TableView<T>.multiSelect(enable: Boolean = true) {
     selectionModel.selectionMode = if (enable) SelectionMode.MULTIPLE else SelectionMode.SINGLE

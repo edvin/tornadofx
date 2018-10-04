@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import javafx.application.Platform
 import javafx.application.Platform.isFxApplicationThread
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
@@ -277,19 +276,19 @@ open class Command<in T>(
     val isRunning: Boolean by running
     val isEnabled: Boolean by enabled
 
-    internal val disabledProperty = enabled.not() or running
+    internal val disabledProperty = !enabled or running
 
     fun execute(): Unit = execute(null)
 
     fun execute(param: T?) {
         if (isRunning || disabledProperty.value) return
-        if (async) thread(true) { doRun(param) } else doRun(param)
+        if (async) thread { doRun(param) } else doRun(param)
     }
 
     private fun doRun(param: T?) {
         if (ui && !isFxApplicationThread()) {
             if (async) {
-                Platform.runLater { setRunningAndRun(param) }
+                runLater { setRunningAndRun(param) }
             } else {
                 FX.runAndWait { setRunningAndRun(param) }
             }

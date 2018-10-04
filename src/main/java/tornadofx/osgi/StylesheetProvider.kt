@@ -9,7 +9,7 @@ interface StylesheetProvider {
     val stylesheet: KClass<out Stylesheet>
 }
 
-inline fun <reified T: Stylesheet> BundleContext.registerStylesheet() = registerStylesheet(T::class)
+inline fun <reified T : Stylesheet> BundleContext.registerStylesheet(): Unit = registerStylesheet(T::class)
 fun BundleContext.registerStylesheet(stylesheet: KClass<out Stylesheet>) {
     val provider = object : StylesheetProvider {
         override val stylesheet = stylesheet

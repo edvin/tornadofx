@@ -2,8 +2,10 @@ package tornadofx.osgi.impl
 
 import org.osgi.service.url.URLStreamHandlerService
 import org.osgi.service.url.URLStreamHandlerSetter
-import tornadofx.*
+import tornadofx.FX
+import tornadofx.Stylesheet
 import java.io.InputStream
+import java.net.InetAddress
 import java.net.URL
 import java.net.URLConnection
 import java.net.URLStreamHandler
@@ -16,8 +18,7 @@ internal class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandler
     override fun openConnection(url: URL): URLConnection = CSSURLConnection(url)
 
     class CSSURLConnection(url: URL) : URLConnection(url) {
-        override fun connect() {
-        }
+        override fun connect() {}
 
         override fun getInputStream(): InputStream {
             if (url.port == 64) return Base64.getDecoder().decode(url.host).inputStream()
@@ -34,15 +35,23 @@ internal class CSSURLStreamHandlerService : URLStreamHandler(), URLStreamHandler
         parseURL(u, spec, start, limit)
     }
 
-    override fun setURL(u: URL?, protocol: String?, host: String?, port: Int, authority: String?, userInfo: String?, path: String?, query: String?, ref: String?) {
-        realHandler.setURL(u, protocol, host, port, authority, userInfo, path, query, ref)
-    }
+    override fun setURL(
+        u: URL?,
+        protocol: String?,
+        host: String?,
+        port: Int,
+        authority: String?,
+        userInfo: String?,
+        path: String?,
+        query: String?,
+        ref: String?
+    ): Unit = realHandler.setURL(u, protocol, host, port, authority, userInfo, path, query, ref)
 
-    override fun hashCode(u: URL) = super.hashCode(u)
-    override fun toExternalForm(u: URL?) = super.toExternalForm(u)
-    override fun equals(u1: URL?, u2: URL?) = super.equals(u1, u2)
-    override fun sameFile(u1: URL?, u2: URL?) = super.sameFile(u1, u2)
-    override fun getDefaultPort() = super.getDefaultPort()
-    override fun getHostAddress(u: URL?) = super.getHostAddress(u)
-    override fun hostsEqual(u1: URL?, u2: URL?) = super.hostsEqual(u1, u2)
+    override fun hashCode(u: URL): Int = super.hashCode(u)
+    override fun toExternalForm(u: URL?): String = super.toExternalForm(u)
+    override fun equals(u1: URL?, u2: URL?): Boolean = super.equals(u1, u2)
+    override fun sameFile(u1: URL?, u2: URL?): Boolean = super.sameFile(u1, u2)
+    override fun getDefaultPort(): Int = super.getDefaultPort()
+    override fun getHostAddress(u: URL?): InetAddress = super.getHostAddress(u)
+    override fun hostsEqual(u1: URL?, u2: URL?): Boolean = super.hostsEqual(u1, u2)
 }

@@ -1,7 +1,6 @@
 package tornadofx
 
 import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.Control
@@ -25,7 +24,8 @@ fun Node.removeDecorator(decorator: Decorator) {
 }
 
 @Suppress("UNCHECKED_CAST")
-val Node.decorators: MutableList<Decorator> get() = properties.getOrPut("tornadofx.decorators", { mutableListOf<Decorator>() }) as MutableList<Decorator>
+val Node.decorators: MutableList<Decorator>
+    get() = properties.getOrPut("tornadofx.decorators") { mutableListOf<Decorator>() } as MutableList<Decorator>
 
 class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity) : Decorator {
     val color: Color = when (severity) {
@@ -38,7 +38,7 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
     var tooltip: Tooltip? = null
     var attachedToNode: Node? = null
 
-    var focusListener = ChangeListener<Boolean> { _, _, newValue ->
+    var focusListener: ChangeListener<Boolean> = ChangeListener { _, _, newValue ->
         if (newValue == true) showTooltip(attachedToNode!!) else tooltip?.hide()
     }
 
@@ -51,7 +51,7 @@ class SimpleMessageDecorator(val message: String?, severity: ValidationSeverity)
             }
         }
 
-        if (message?.isNotBlank() ?: false) {
+        if (message?.isNotBlank() == true) {
             tooltip = Tooltip(message)
             if (node is Control) node.tooltip = tooltip else Tooltip.install(node, tooltip)
             if (node.isFocused) showTooltip(node)

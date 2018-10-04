@@ -24,6 +24,58 @@ interface BindingAwareProperty<T> : BindingAware, Property<T> {
     }
 }
 
+class BindingAwareSimpleIntegerProperty(viewModel: ViewModel, name: String?) : SimpleIntegerProperty(viewModel, name), BindingAwareProperty<Number> {
+
+    override fun bind(rawObservable: ObservableValue<out Number>?) {
+        super.bind(rawObservable)
+        recordBinding(rawObservable)
+    }
+
+    override fun bindBidirectional(other: Property<Number>?) {
+        super.bindBidirectional(other)
+        recordBinding(other)
+    }
+}
+
+class BindingAwareSimpleLongProperty(viewModel: ViewModel, name: String?) : SimpleLongProperty(viewModel, name), BindingAwareProperty<Number> {
+
+    override fun bind(rawObservable: ObservableValue<out Number>?) {
+        super.bind(rawObservable)
+        recordBinding(rawObservable)
+    }
+
+    override fun bindBidirectional(other: Property<Number>?) {
+        super.bindBidirectional(other)
+        recordBinding(other)
+    }
+}
+
+class BindingAwareSimpleFloatProperty(viewModel: ViewModel, name: String?) : SimpleFloatProperty(viewModel, name), BindingAwareProperty<Number> {
+
+    override fun bind(rawObservable: ObservableValue<out Number>?) {
+        super.bind(rawObservable)
+        recordBinding(rawObservable)
+    }
+
+    override fun bindBidirectional(other: Property<Number>?) {
+        super.bindBidirectional(other)
+        recordBinding(other)
+    }
+}
+
+class BindingAwareSimpleDoubleProperty(viewModel: ViewModel, name: String?) : SimpleDoubleProperty(viewModel, name), BindingAwareProperty<Number> {
+
+    override fun bind(rawObservable: ObservableValue<out Number>?) {
+        super.bind(rawObservable)
+        recordBinding(rawObservable)
+    }
+
+    override fun bindBidirectional(other: Property<Number>?) {
+        super.bindBidirectional(other)
+        recordBinding(other)
+    }
+}
+
 class BindingAwareSimpleBooleanProperty(viewModel: ViewModel, name: String?) : SimpleBooleanProperty(viewModel, name), BindingAwareProperty<Boolean> {
 
     override fun bind(rawObservable: ObservableValue<out Boolean>?) {
@@ -83,8 +135,9 @@ class BindingAwareSimpleListProperty<T>(viewModel: ViewModel, name: String?) : S
      * Return a unique id for this object instead of the default hashCode which is dependent on the children.
      * Without this override we wouldn't be able to identify the facade in our internal maps.
      */
-    override fun hashCode() = System.identityHashCode(this)
-    override fun equals(other: Any?) = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
+
+    override fun equals(other: Any?): Boolean = this === other
 }
 
 class BindingAwareSimpleSetProperty<T>(viewModel: ViewModel, name: String?) : SimpleSetProperty<T>(viewModel, name) {
@@ -109,8 +162,9 @@ class BindingAwareSimpleSetProperty<T>(viewModel: ViewModel, name: String?) : Si
      * Return a unique id for this object instead of the default hashCode which is dependent on the children.
      * Without this override we wouldn't be able to identify the facade in our internal maps.
      */
-    override fun hashCode() = System.identityHashCode(this)
-    override fun equals(other: Any?) = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
+
+    override fun equals(other: Any?): Boolean = this === other
 }
 
 class BindingAwareSimpleMapProperty<S, T>(viewModel: ViewModel, name: String?) : SimpleMapProperty<S, T>(viewModel, name) {
@@ -135,58 +189,7 @@ class BindingAwareSimpleMapProperty<S, T>(viewModel: ViewModel, name: String?) :
      * Return a unique id for this object instead of the default hashCode which is dependent on the children.
      * Without this override we wouldn't be able to identify the facade in our internal maps.
      */
-    override fun hashCode() = System.identityHashCode(this)
-    override fun equals(other: Any?) = this === other
-}
+    override fun hashCode(): Int = System.identityHashCode(this)
 
-class BindingAwareSimpleFloatProperty(viewModel: ViewModel, name: String?) : SimpleFloatProperty(viewModel, name), BindingAwareProperty<Number> {
-
-    override fun bind(rawObservable: ObservableValue<out Number>?) {
-        super.bind(rawObservable)
-        recordBinding(rawObservable)
-    }
-
-    override fun bindBidirectional(other: Property<Number>?) {
-        super.bindBidirectional(other)
-        recordBinding(other)
-    }
-}
-
-class BindingAwareSimpleDoubleProperty(viewModel: ViewModel, name: String?) : SimpleDoubleProperty(viewModel, name), BindingAwareProperty<Number> {
-
-    override fun bind(rawObservable: ObservableValue<out Number>?) {
-        super.bind(rawObservable)
-        recordBinding(rawObservable)
-    }
-
-    override fun bindBidirectional(other: Property<Number>?) {
-        super.bindBidirectional(other)
-        recordBinding(other)
-    }
-}
-
-class BindingAwareSimpleLongProperty(viewModel: ViewModel, name: String?) : SimpleLongProperty(viewModel, name), BindingAwareProperty<Number> {
-
-    override fun bind(rawObservable: ObservableValue<out Number>?) {
-        super.bind(rawObservable)
-        recordBinding(rawObservable)
-    }
-
-    override fun bindBidirectional(other: Property<Number>?) {
-        super.bindBidirectional(other)
-        recordBinding(other)
-    }
-}
-
-class BindingAwareSimpleIntegerProperty(viewModel: ViewModel, name: String?) : SimpleIntegerProperty(viewModel, name), BindingAwareProperty<Number> {
-
-    override fun bind(rawObservable: ObservableValue<out Number>?) {
-        super.bind(rawObservable)
-        recordBinding(rawObservable)
-    }
-
-    override fun bindBidirectional(other: Property<Number>?) {
-        super.bindBidirectional(other)
-        recordBinding(other)
-    }
+    override fun equals(other: Any?): Boolean = this === other
 }

@@ -1,7 +1,6 @@
 package tornadofx
 
 import com.sun.javafx.scene.control.skin.TableRowSkin
-import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
 import javafx.beans.binding.Bindings
@@ -902,9 +901,7 @@ fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S
     fun addEventHandlerForColumn(column: TableColumn<S, *>) {
         column.addEventHandler(TableColumn.editCommitEvent<S, Any>()) { event ->
             // Make sure the domain object gets the new value before we notify our handler
-            Platform.runLater {
-                onCommit(event, event.rowValue)
-            }
+            runLater { onCommit(event, event.rowValue) }
         }
         column.columns.forEach(::addEventHandlerForColumn)
     }
@@ -1151,7 +1148,6 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
                 children.remove(polygon)
             }
         }
-
     }
 }
 
@@ -1179,7 +1175,7 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
         addClass("expander-pane")
     }
 
-    fun expandedProperty(): SimpleBooleanProperty = expanderColumn.getCellObservableValue(tableRow.index) as SimpleBooleanProperty
+    fun expandedProperty(): BooleanProperty = expanderColumn.getCellObservableValue(tableRow.index) as SimpleBooleanProperty
     var expanded: Boolean
         get() = expandedProperty().value
         set(value) {
@@ -1303,5 +1299,3 @@ class ExpandableTableRowSkin<S>(val tableRow: TableRow<S>, val expander: Expande
         if (expanded) getContent()?.resizeRelocate(0.0, tableRowPrefHeight, w, h - tableRowPrefHeight)
     }
 }
-
-

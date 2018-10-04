@@ -1,16 +1,13 @@
 package tornadofx
 
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ObservableMap
+import javafx.concurrent.Task
 import javafx.scene.Node
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.control.SelectionMode
-import javafx.scene.control.TableView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.input.MouseEvent
@@ -18,7 +15,6 @@ import javafx.util.Callback
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import kotlin.reflect.KClass
-
 
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
@@ -42,8 +38,8 @@ fun <T> ListView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
 val <T> ListView<T>.selectedItem: T?
     get() = selectionModel.selectedItem
 
-fun <T> ListView<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { if (items == null) items = FXCollections.observableArrayList(it) else items.setAll(it) }
+fun <T> ListView<T>.asyncItems(func: () -> Collection<T>): Task<Collection<T>> =
+    task { func() } success { if (items == null) items = FXCollections.observableArrayList(it) else items.setAll(it) }
 
 fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
     addEventFilter(KeyEvent.KEY_PRESSED) { event ->
@@ -55,24 +51,24 @@ fun <T> ListView<T>.onUserDelete(action: (T) -> Unit) {
 
 class ListCellCache<T>(private val cacheProvider: (T) -> Node) {
     private val store = mutableMapOf<T, Node>()
-    fun getOrCreateNode(value: T) = store.getOrPut(value, { cacheProvider(value) })
+    fun getOrCreateNode(value: T): Node = store.getOrPut(value) { cacheProvider(value) }
 }
 
 abstract class ItemFragment<T> : Fragment() {
     val itemProperty: ObjectProperty<T> = SimpleObjectProperty(this, "item")
-    val item by itemProperty
+    val item: T by itemProperty
 }
 
 abstract class RowItemFragment<S, T> : ItemFragment<T>() {
     val rowItemProperty: ObjectProperty<S> = SimpleObjectProperty(this, "rowItem")
-    val rowItem by rowItemProperty
+    val rowItem: S by rowItemProperty
 }
 
 abstract class ListCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<ListCell<T>?> = SimpleObjectProperty()
-    var cell by cellProperty
-    val editingProperty = SimpleBooleanProperty(false)
-    val editing by editingProperty
+    var cell: ListCell<T>? by cellProperty
+    val editingProperty: BooleanProperty = SimpleBooleanProperty(false)
+    val editing: Boolean by editingProperty
 
     open fun startEdit() {
         cell?.startEdit()
@@ -92,13 +88,13 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListView<T>?, properties: Map<Any,Any>? = null) : ListCell<T>() {
+open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListView<T>?, properties: Map<Any, Any>? = null) : ListCell<T>() {
     /**
      * A convenience constructor allowing to omit `listView` completely, if needed.
      */
-    constructor(scope: Scope = FX.defaultScope, properties : Map<Any,Any>? = null) : this(scope, null, properties)
+    constructor(scope: Scope = FX.defaultScope, properties: Map<Any, Any>? = null) : this(scope, null, properties)
 
-    private val smartProperties: ObservableMap<Any,Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
+    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = smartProperties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = smartProperties["tornadofx.cellCache"] as ListCellCache<T>?
@@ -172,7 +168,6 @@ open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListVi
             editingProperty.value = false
         }
     }
-
 }
 
 fun <T> ListView<T>.bindSelected(property: Property<T>) {
@@ -181,7 +176,7 @@ fun <T> ListView<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>): Unit = this.bindSelected(model.itemProperty)
 
 fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment

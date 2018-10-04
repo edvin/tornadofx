@@ -1,13 +1,9 @@
 package tornadofx.osgi
 
-import javafx.application.Platform
 import javafx.event.EventTarget
 import org.osgi.framework.BundleContext
 import org.osgi.framework.FrameworkUtil
-import tornadofx.FX
-import tornadofx.UIComponent
-import tornadofx.find
-import tornadofx.plusAssign
+import tornadofx.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -31,7 +27,8 @@ fun BundleContext.registerView(viewType: KClass<out UIComponent>, discriminator:
     }
     registerService(ViewProvider::class.java, provider, Hashtable<String, String>())
 }
-inline fun <reified T:UIComponent> BundleContext.registerView(discriminator: Any? = null) = registerView(T::class, discriminator)
+
+inline fun <reified T : UIComponent> BundleContext.registerView(discriminator: Any? = null): Unit = registerView(T::class, discriminator)
 
 /**
  * Subscribe to ViewProvider events from other OSGi bundles and
@@ -42,7 +39,7 @@ fun EventTarget.addViewsWhen(acceptor: (ViewProvider) -> Boolean) {
     val context = FrameworkUtil.getBundle(acceptor.javaClass).bundleContext
     val receiver = object : ViewReceiver {
         override fun viewProvided(provider: ViewProvider) {
-            Platform.runLater {
+            runLater {
                 if (acceptor.invoke(provider))
                     plusAssign(provider.getView())
             }

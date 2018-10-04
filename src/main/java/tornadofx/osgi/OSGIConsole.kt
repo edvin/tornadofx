@@ -1,18 +1,19 @@
 package tornadofx.osgi
 
+import javafx.scene.Parent
 import javafx.scene.control.TableView
 import javafx.scene.control.TextInputDialog
 import javafx.scene.input.TransferMode
 import javafx.stage.FileChooser
 import org.osgi.framework.Bundle
-import org.osgi.framework.Bundle.ACTIVE
+import org.osgi.framework.Bundle.*
 import org.osgi.framework.startlevel.BundleStartLevel
 import tornadofx.*
 import tornadofx.osgi.impl.fxBundleContext
 import java.nio.file.Files
 
 class OSGIConsole : View() {
-    override val root = borderpane {
+    override val root: Parent = borderpane {
         title = "TornadoFX OSGi Console"
         prefWidth = 800.0
         prefHeight = 600.0
@@ -25,7 +26,6 @@ class OSGIConsole : View() {
                     value { it.value.bundleId }
                     fixedWidth(75.0)
                 }
-
                 column("State", String::class) {
                     value { it.value.stateDescription }
                     fixedWidth(120.0)
@@ -58,7 +58,8 @@ class OSGIConsole : View() {
                         selectedItem?.update()
                     }
                     item("Update from...").action {
-                        val result = chooseFile("Select file to replace ${selectedItem!!.symbolicName}", arrayOf(FileChooser.ExtensionFilter("OSGi Bundle Jar", "jar")))
+                        val result =
+                            chooseFile("Select file to replace ${selectedItem!!.symbolicName}", arrayOf(FileChooser.ExtensionFilter("OSGi Bundle Jar", "jar")))
                         if (result.isNotEmpty()) selectedItem?.update(Files.newInputStream(result.first().toPath()))
                     }
                     item("Set start level...").action {
@@ -71,7 +72,7 @@ class OSGIConsole : View() {
                 setOnContextMenuRequested {
                     val stop = contextMenu.items.first { it.text == "Stop" }
                     val start = contextMenu.items.first { it.text == "Start" }
-                    stop.isDisable = selectedItem?.state != Bundle.ACTIVE
+                    stop.isDisable = selectedItem?.state != ACTIVE
                     start.isDisable = !stop.isDisable
                 }
 
@@ -93,22 +94,22 @@ class OSGIConsole : View() {
                 }
             }
         }
-
     }
 
-    val Bundle.stateDescription : String get() = when (state) {
-        ACTIVE -> "Active"
-        Bundle.INSTALLED -> "Installed"
-        Bundle.RESOLVED -> "Resolved"
-        Bundle.STARTING -> "Starting"
-        Bundle.STOPPING -> "Stopping"
-        Bundle.UNINSTALLED -> "Uninstalled"
-        else -> "Unknown"
-    }
+    val Bundle.stateDescription: String
+        get() = when (state) {
+            ACTIVE -> "Active"
+            INSTALLED -> "Installed"
+            RESOLVED -> "Resolved"
+            STARTING -> "Starting"
+            STOPPING -> "Stopping"
+            UNINSTALLED -> "Uninstalled"
+            else -> "Unknown"
+        }
 
-    val Bundle.description : String get() {
-        val name = headers["Bundle-Name"] ?: symbolicName ?: location ?: "?"
-        return "$name | $version"
-    }
-
+    val Bundle.description: String
+        get() {
+            val name = headers["Bundle-Name"] ?: symbolicName ?: location ?: "?"
+            return "$name | $version"
+        }
 }

@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package tornadofx
 
 import com.sun.javafx.scene.control.behavior.BehaviorBase
@@ -7,6 +5,7 @@ import com.sun.javafx.scene.control.behavior.CellBehaviorBase
 import com.sun.javafx.scene.control.skin.CellSkinBase
 import com.sun.javafx.scene.control.skin.VirtualContainerBase
 import javafx.beans.InvalidationListener
+import javafx.beans.binding.IntegerBinding
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
@@ -14,6 +13,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.collections.WeakListChangeListener
+import javafx.concurrent.Task
 import javafx.css.*
 import javafx.event.EventTarget
 import javafx.geometry.Pos
@@ -28,30 +28,30 @@ import java.util.*
 import kotlin.reflect.KClass
 
 fun <T> EventTarget.datagrid(
-        items: List<T>? = null,
-        scope: Scope = FX.defaultScope,
-        op: DataGrid<T>.() -> Unit = {}
-) = DataGrid<T>().attachTo(this, op){
+    items: List<T>? = null,
+    scope: Scope = FX.defaultScope,
+    op: DataGrid<T>.() -> Unit = {}
+): DataGrid<T> = DataGrid<T>().attachTo(this, op) {
     it.scope = scope
     if (items is ObservableList<T>) it.items = items
     else if (items is List<T>) it.items.setAll(items)
 }
 
-class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerPage: Int = 20): HBox() {
-    val itemsPerPageProperty = SimpleIntegerProperty(itemsPerPage)
-    var itemsPerPage by  itemsPerPageProperty
-
-    val items = FXCollections.observableArrayList<T>()
-
+class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerPage: Int = 20) : HBox() {
     private val listChangeTrigger = SimpleObjectProperty(UUID.randomUUID())
 
-    val pageCountProperty = integerBinding(itemsPerPageProperty, sourceItems) {
+    val items: ObservableList<T> = FXCollections.observableArrayList()
+
+    val itemsPerPageProperty: IntegerProperty = SimpleIntegerProperty(itemsPerPage)
+    var itemsPerPage: Int by itemsPerPageProperty
+
+    val pageCountProperty: IntegerBinding = integerBinding(itemsPerPageProperty, sourceItems) {
         Math.max(1, Math.ceil(sourceItems.size.toDouble() / itemsPerPageProperty.value.toDouble()).toInt())
     }
-    val pageCount by pageCountProperty
+    val pageCount: Int by pageCountProperty
 
-    val currentPageProperty = SimpleIntegerProperty(1)
-    var currentPage by currentPageProperty
+    val currentPageProperty: IntegerProperty = SimpleIntegerProperty(1)
+    var currentPage: Int by currentPageProperty
 
     private val listChangeListener = ListChangeListener<T> {
         listChangeTrigger.value = UUID.randomUUID()
@@ -59,7 +59,7 @@ class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerP
 
         // Check that the current page is still valid, or regenerate buttons
         while (currentPage > pageCount)
-            currentPage -= 1
+            currentPage--
     }
 
     private val currentFromIndex: Int get() = itemsPerPage * (currentPage - 1)
@@ -83,7 +83,7 @@ class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerP
         children.clear()
         togglegroup {
             // TODO: Support pagination for pages
-            IntRange(1, pageCount).forEach { pageNo ->
+            (1..pageCount).forEach { pageNo ->
                 // TODO: Allow customization of togglebutton graphic/text
                 togglebutton(pageNo.toString()) {
                     whenSelected { currentPage = pageNo }
@@ -93,7 +93,6 @@ class DataGridPaginator<T>(private val sourceItems: ObservableList<T>, itemsPerP
     }
 }
 
-@Suppress("unused")
 class DataGrid<T>(items: ObservableList<T>) : Control() {
     constructor() : this(FXCollections.observableArrayList())
     constructor(items: List<T>) : this(FXCollections.observableArrayList(items))
@@ -102,23 +101,23 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
     internal var graphicCache = mutableMapOf<T, Node>()
 
-    val itemsProperty = SimpleListProperty<T>(this, "items", items)
-    var items: ObservableList<T> get() = itemsProperty.get(); set(value) = itemsProperty.set(value)
+    val itemsProperty: ListProperty<T> = SimpleListProperty<T>(this, "items", items)
+    var items: ObservableList<T> by itemsProperty
 
-    val cellFactoryProperty = SimpleObjectProperty<(DataGrid<T>) -> DataGridCell<T>>(this, "cellFactory")
-    var cellFactory: ((DataGrid<T>) -> DataGridCell<T>)? get() = cellFactoryProperty.get(); set(value) = cellFactoryProperty.set(value)
+    val cellFactoryProperty: ObjectProperty<(DataGrid<T>) -> DataGridCell<T>> = SimpleObjectProperty(this, "cellFactory")
+    var cellFactory: ((DataGrid<T>) -> DataGridCell<T>)? by cellFactoryProperty
 
-    val cellFormatProperty by lazy { SimpleObjectProperty<(DataGridCell<T>.(T) -> Unit)>() }
-    var cellFormat: ((DataGridCell<T>).(T) -> Unit)? get() = cellFormatProperty.get(); set(value) = cellFormatProperty.set(value)
-    fun cellFormat(cellFormat: (DataGridCell<T>).(T) -> Unit) {
+    val cellFormatProperty: ObjectProperty<DataGridCell<T>.(T) -> Unit> by lazy { SimpleObjectProperty<(DataGridCell<T>.(T) -> Unit)>() }
+    var cellFormat: (DataGridCell<T>.(T) -> Unit)? by cellFormatProperty
+    fun cellFormat(cellFormat: DataGridCell<T>.(T) -> Unit) {
         this.cellFormat = cellFormat
     }
 
-    val scopeProperty = SimpleObjectProperty<Scope>()
+    val scopeProperty: ObjectProperty<Scope> = SimpleObjectProperty<Scope>()
     var scope: Scope? by scopeProperty
 
-    val cellCacheProperty by lazy { SimpleObjectProperty<((T) -> Node)>() }
-    var cellCache: ((T) -> Node)? get() = cellCacheProperty.get(); set(value) = cellCacheProperty.set(value)
+    val cellCacheProperty: ObjectProperty<(T) -> Node> by lazy { SimpleObjectProperty<((T) -> Node)>() }
+    var cellCache: ((T) -> Node)? by cellCacheProperty
 
     /**
      * Assign a Node to the graphic property of this cell. The graphic is cached and will be reused
@@ -130,68 +129,97 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         this.cellCache = cachedGraphic
     }
 
-    val cellFragmentProperty by lazy { SimpleObjectProperty<KClass<DataGridCellFragment<T>>>() }
-    var cellFragment by cellFragmentProperty
+    val cellFragmentProperty: ObjectProperty<KClass<DataGridCellFragment<T>>> by lazy { SimpleObjectProperty<KClass<DataGridCellFragment<T>>>() }
+    var cellFragment: KClass<DataGridCellFragment<T>>? by cellFragmentProperty
     fun cellFragment(fragment: KClass<DataGridCellFragment<T>>) {
         properties["tornadofx.cellFragment"] = fragment
     }
+
     inline fun <reified C : DataGridCellFragment<T>> cellFragment() {
         properties["tornadofx.cellFragment"] = C::class
     }
 
-    val cellWidthProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0) as StyleableObjectProperty<Number>
-    var cellWidth: Double get() = cellWidthProperty.value as Double; set(value) {
-        cellWidthProperty.value = value
-    }
+    val cellWidthProperty: StyleableObjectProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "cellWidth", "-fx-cell-width", { it.cellWidthProperty }, 150.0)
+                as StyleableObjectProperty<Number>
+    var cellWidth: Double
+        get() = cellWidthProperty.value as Double
+        set(value) {
+            cellWidthProperty.value = value
+        }
 
-    val maxCellsInRowProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxCellsInRow", "-fx-max-cells-in-row", { it.maxCellsInRowProperty }, Int.MAX_VALUE) as StyleableObjectProperty<Number>
-    var maxCellsInRow: Int get() = maxCellsInRowProperty.value.toInt(); set(value) {
-        maxCellsInRowProperty.value = value
-    }
+    val maxCellsInRowProperty: StyleableObjectProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "maxCellsInRow", "-fx-max-cells-in-row", { it.maxCellsInRowProperty }, Int.MAX_VALUE)
+                as StyleableObjectProperty<Number>
+    var maxCellsInRow: Int
+        get() = maxCellsInRowProperty.value.toInt()
+        set(value) {
+            maxCellsInRowProperty.value = value
+        }
 
-    val maxRowsProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "maxRows", "-fx-max-rows", { it.maxRowsProperty }, Int.MAX_VALUE) as StyleableObjectProperty<Number>
-    var maxRows: Int get() = maxRowsProperty.value.toInt(); set(value) {
-        maxRowsProperty.value = value
-    }
+    val maxRowsProperty: StyleableObjectProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "maxRows", "-fx-max-rows", { it.maxRowsProperty }, Int.MAX_VALUE)
+                as StyleableObjectProperty<Number>
+    var maxRows: Int
+        get() = maxRowsProperty.value.toInt()
+        set(value) {
+            maxRowsProperty.value = value
+        }
 
-    val cellHeightProperty: StyleableObjectProperty<Number> = FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150.0) as StyleableObjectProperty<Number>
-    var cellHeight: Double get() = cellHeightProperty.value as Double; set(value) {
-        cellHeightProperty.value = value
-    }
+    val cellHeightProperty: StyleableObjectProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "cellHeight", "-fx-cell-height", { it.cellHeightProperty }, 150.0)
+                as StyleableObjectProperty<Number>
+    var cellHeight: Double
+        get() = cellHeightProperty.value as Double
+        set(value) {
+            cellHeightProperty.value = value
+        }
 
-    val horizontalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty }, 8.0)
-    var horizontalCellSpacing: Double get() = horizontalCellSpacingProperty.value as Double; set(value) {
-        horizontalCellSpacingProperty.value = value
-    }
+    val horizontalCellSpacingProperty: StyleableProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "horizontalCellSpacing", "-fx-horizontal-cell-spacing", { it.horizontalCellSpacingProperty }, 8.0)
+    var horizontalCellSpacing: Double
+        get() = horizontalCellSpacingProperty.value as Double
+        set(value) {
+            horizontalCellSpacingProperty.value = value
+        }
 
-    val verticalCellSpacingProperty: StyleableProperty<Number> = FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty }, 8.0)
-    var verticalCellSpacing: Double get() = verticalCellSpacingProperty.value as Double; set(value) {
-        verticalCellSpacingProperty.value = value
-    }
+    val verticalCellSpacingProperty: StyleableProperty<Number> =
+        FACTORY.createStyleableNumberProperty(this, "verticalCellSpacing", "-fx-vertical-cell-spacing", { it.verticalCellSpacingProperty }, 8.0)
+    var verticalCellSpacing: Double
+        get() = verticalCellSpacingProperty.value as Double
+        set(value) {
+            verticalCellSpacingProperty.value = value
+        }
 
-    val selectionModel = DataGridSelectionModel(this)
-    val focusModel = DataGridFocusModel(this)
+    val selectionModel: DataGridSelectionModel<T> = DataGridSelectionModel(this)
+    val focusModel: DataGridFocusModel<T> = DataGridFocusModel(this)
 
-    var singleSelect: Boolean get() = selectionModel.selectionMode == SINGLE; set(value) {
-        selectionModel.selectionMode = if (value) SINGLE else MULTIPLE
-    }
-    var multiSelect: Boolean get() = selectionModel.selectionMode == MULTIPLE; set(value) {
-        selectionModel.selectionMode = if (value) MULTIPLE else SINGLE
-    }
+    var singleSelect: Boolean
+        get() = selectionModel.selectionMode == SINGLE
+        set(value) {
+            selectionModel.selectionMode = if (value) SINGLE else MULTIPLE
+        }
+    var multiSelect: Boolean
+        get() = selectionModel.selectionMode == MULTIPLE
+        set(value) {
+            selectionModel.selectionMode = if (value) MULTIPLE else SINGLE
+        }
 
-    override fun createDefaultSkin() = DataGridSkin(this)
+    override fun createDefaultSkin(): DataGridSkin<T> = DataGridSkin(this)
 
     override fun getUserAgentStylesheet(): String = DataGrid::class.java.getResource("datagrid.css").toExternalForm()
 
     override fun getControlCssMetaData(): MutableList<CssMetaData<out Styleable, *>>? = FACTORY.cssMetaData
 
     // Called when the items list changes structurally
+    @Suppress("UNCHECKED_CAST")
     private val itemsChangeListener = InvalidationListener {
         selectionModel.clearSelectionAndReapply()
         (skin as? DataGridSkin<T>)?.handleControlPropertyChanged("ITEMS")
     }
 
     // Called when the items list is swapped for a new
+    @Suppress("UNCHECKED_CAST")
     private val itemPropertyChangeListener = ChangeListener<ObservableList<T>> { _, oldList, newList ->
         selectionModel.clearSelectionAndReapply()
         if (oldList != null) {
@@ -232,7 +260,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
 
 open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
     var cache: Node? = null
-    var updating = false
+    var updating: Boolean = false
     private var fresh = true
     private var cellFragment: DataGridCellFragment<T>? = null
 
@@ -252,7 +280,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         val cacheProvider = dataGrid.cellCache
         if (item != null) {
             if (cacheProvider != null)
-                cache = dataGrid.graphicCache.getOrPut(item, { cacheProvider(item) })
+                cache = dataGrid.graphicCache.getOrPut(item) { cacheProvider(item) }
 
             updateItem(item, false)
         } else {
@@ -266,6 +294,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         else if (isSelected && !isActuallySelected) updateSelected(false)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun updateItem(item: T?, empty: Boolean) {
         super.updateItem(item, empty)
         if (item == null || empty) {
@@ -304,14 +333,14 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
         }
     }
 
-    override fun createDefaultSkin() = DataGridCellSkin(this)
+    override fun createDefaultSkin(): DataGridCellSkin<T> = DataGridCellSkin(this)
 }
 
 abstract class DataGridCellFragment<T> : ItemFragment<T>() {
     val cellProperty: ObjectProperty<DataGridCell<T>?> = SimpleObjectProperty()
-    var cell by cellProperty
-    val editingProperty = SimpleBooleanProperty(false)
-    val editing by editingProperty
+    var cell: DataGridCell<T>? by cellProperty
+    val editingProperty: BooleanProperty = SimpleBooleanProperty(false)
+    val editing: Boolean by editingProperty
 
     open fun startEdit() {
         cell?.startEdit()
@@ -331,15 +360,13 @@ abstract class DataGridCellFragment<T> : ItemFragment<T>() {
 }
 
 class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataGridCell<T>>(control, emptyList()) {
-    override fun getFocusModel() = control.dataGrid.focusModel
+    override fun getFocusModel(): DataGridFocusModel<T> = control.dataGrid.focusModel
 
-    override fun getCellContainer() = control
+    override fun getCellContainer(): DataGridCell<T> = control
 
-    override fun edit(cell: DataGridCell<T>?) {
-        // No editing support for now
-    }
+    override fun edit(cell: DataGridCell<T>?) {} // No editing support for now
 
-    override fun getSelectionModel() = control.dataGrid.selectionModel
+    override fun getSelectionModel(): DataGridSelectionModel<T> = control.dataGrid.selectionModel
 
     override fun doSelect(x: Double, y: Double, button: MouseButton?, clickCount: Int, shiftDown: Boolean, shortcutDown: Boolean) {
         // I don't understand what the anchor is for yet, so to keep `focusedIndex = getAnchor(cellContainer, fm.getFocusedIndex())`
@@ -353,8 +380,8 @@ class DataGridCellBehavior<T>(control: DataGridCell<T>) : CellBehaviorBase<DataG
 class DataGridCellSkin<T>(control: DataGridCell<T>) : CellSkinBase<DataGridCell<T>, DataGridCellBehavior<T>>(control, DataGridCellBehavior(control))
 
 class DataGridFocusModel<T>(val dataGrid: DataGrid<T>) : FocusModel<T>() {
-    override fun getModelItem(index: Int) = if (index in 0 until itemCount) dataGrid.items[index] else null
-    override fun getItemCount() = dataGrid.items.size
+    override fun getModelItem(index: Int): T? = if (index in 0 until itemCount) dataGrid.items[index] else null
+    override fun getItemCount(): Int = dataGrid.items.size
 }
 
 
@@ -366,7 +393,7 @@ open class DataGridRow<T>(val dataGrid: DataGrid<T>, val dataGridSkin: DataGridS
         indexProperty().addListener(InvalidationListener { updateItem(null, index == -1) })
     }
 
-    override fun createDefaultSkin() = DataGridRowSkin(this)
+    override fun createDefaultSkin(): DataGridRowSkin<T> = DataGridRowSkin(this)
 }
 
 class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>, BehaviorBase<DataGridRow<T>>>(control, BehaviorBase(control, emptyList())) {
@@ -406,7 +433,7 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
             val startCellIndex = rowIndex * maxCellsInRow
             val endCellIndex = startCellIndex + maxCellsInRow - 1
             var cacheIndex = 0
-                
+
             lastUpdatedCells = (startCellIndex..endCellIndex).also { if (it == lastUpdatedCells) return }
 
             var cellIndex = startCellIndex
@@ -434,7 +461,7 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
         }
     }
 
-    private fun createCell() = skinnable.dataGrid.cellFactory?.invoke(skinnable.dataGrid) ?: DataGridCell<T>(skinnable.dataGrid)
+    private fun createCell() = skinnable.dataGrid.cellFactory?.invoke(skinnable.dataGrid) ?: DataGridCell(skinnable.dataGrid)
 
 
     @Suppress("UNCHECKED_CAST")
@@ -480,6 +507,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
     private val selectedIndicies: ObservableList<Int> = FXCollections.observableArrayList()
     private val selectedItems: ObservableList<T> = FXCollections.observableArrayList()
 
+    @Suppress("UNCHECKED_CAST")
     fun getCellAt(index: Int): DataGridCell<T>? {
         val skin = dataGrid.skin as DataGridSkin<T>
         val cellsPerRow = skin.computeMaxCellsInRow()
@@ -518,72 +546,20 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         selectedIndices.addListener(selectedIndicesListener)
     }
 
-    override fun selectPrevious() {
-        select(selectedIndex - 1)
-    }
-
     override fun selectFirst() {
         select(0)
     }
 
-    override fun selectLast() {
-        select(dataGrid.items.lastIndex)
+    override fun selectPrevious() {
+        select(selectedIndex - 1)
     }
-
-    override fun getSelectedIndices() = selectedIndicies
-
-    override fun clearAndSelect(index: Int) {
-        selectedIndicies.clear()
-        selectedItems.clear()
-        select(index)
-    }
-
-    override fun getSelectedItems() = selectedItems
 
     override fun selectNext() {
         select(selectedIndex + 1)
     }
 
-    override fun selectAll() {
-        selectedIndicies.clear()
-        selectedItems.clear()
-        dataGrid.items.forEachIndexed { index, item ->
-            selectedIndicies.add(index)
-            selectedItems.add(item)
-        }
+    override fun selectLast() {
         select(dataGrid.items.lastIndex)
-    }
-
-    override fun clearSelection(index: Int) {
-        if (index in selectedIndicies) {
-            selectedIndicies.remove(index)
-            selectedItems.remove(dataGrid.items[index])
-        }
-        if (selectedIndex == index) {
-            selectedIndex = -1
-            selectedItem = null
-        }
-    }
-
-    override fun clearSelection() {
-        selectedIndicies.clear()
-        selectedItems.clear()
-        selectedItem = null
-        selectedIndex = -1
-    }
-
-    override fun isEmpty() = selectedIndicies.isEmpty()
-
-    override fun selectIndices(index: Int, vararg indices: Int) {
-        select(index)
-        indices.forEach { select(it) }
-    }
-
-    override fun isSelected(index: Int) = index in selectedIndicies
-
-    override fun select(obj: T) {
-        val index = dataGrid.items.indexOf(obj)
-        select(index)
     }
 
     override fun select(index: Int) {
@@ -602,6 +578,58 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
             dataGrid.focusModel.focus(index)
         }
     }
+
+    override fun select(obj: T) {
+        val index = dataGrid.items.indexOf(obj)
+        select(index)
+    }
+
+    override fun selectIndices(index: Int, vararg indices: Int) {
+        select(index)
+        indices.forEach { select(it) }
+    }
+
+    override fun selectAll() {
+        selectedIndicies.clear()
+        selectedItems.clear()
+        dataGrid.items.forEachIndexed { index, item ->
+            selectedIndicies.add(index)
+            selectedItems.add(item)
+        }
+        select(dataGrid.items.lastIndex)
+    }
+
+    override fun isSelected(index: Int): Boolean = index in selectedIndicies
+
+    override fun getSelectedIndices(): ObservableList<Int> = selectedIndicies
+
+    override fun getSelectedItems(): ObservableList<T> = selectedItems
+
+    override fun clearSelection() {
+        selectedIndicies.clear()
+        selectedItems.clear()
+        selectedItem = null
+        selectedIndex = -1
+    }
+
+    override fun clearSelection(index: Int) {
+        if (index in selectedIndicies) {
+            selectedIndicies.remove(index)
+            selectedItems.remove(dataGrid.items[index])
+        }
+        if (selectedIndex == index) {
+            selectedIndex = -1
+            selectedItem = null
+        }
+    }
+
+    override fun clearAndSelect(index: Int) {
+        selectedIndicies.clear()
+        selectedItems.clear()
+        select(index)
+    }
+
+    override fun isEmpty(): Boolean = selectedIndicies.isEmpty()
 
     /**
      * Clear selection and reapply for the items that are still in the list
@@ -623,11 +651,11 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
             }
         }
     }
-
 }
 
 @Suppress("UNCHECKED_CAST")
-class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, BehaviorBase<DataGrid<T>>, DataGridRow<T>>(control, BehaviorBase(control, emptyList())) {
+class DataGridSkin<T>(control: DataGrid<T>) :
+    VirtualContainerBase<DataGrid<T>, BehaviorBase<DataGrid<T>>, DataGridRow<T>>(control, BehaviorBase(control, emptyList())) {
     private val gridViewItemsListener = ListChangeListener<T> {
         updateRowCount()
         skinnable.requestLayout()
@@ -666,7 +694,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
     }
 
 
-    override public fun handleControlPropertyChanged(p: String?) {
+    public override fun handleControlPropertyChanged(p: String?) {
         super.handleControlPropertyChanged(p)
 
         when (p) {
@@ -691,7 +719,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         }
     }
 
-    override fun getItemCount() = Math.ceil(skinnable.items.size.toDouble() / computeMaxCellsInRow()).toInt()
+    override fun getItemCount(): Int = Math.ceil(skinnable.items.size.toDouble() / computeMaxCellsInRow()).toInt()
 
     /**
      * Compute the maximum number of cells per row. If the calculated number of cells would result in
@@ -703,13 +731,13 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         return if (neededRows > skinnable.maxRows) (skinnable.items.size.toDouble() / skinnable.maxRows).toInt() else maxCellsInRow
     }
 
-    fun computeRowWidth() = skinnable.width - 14 // Account for scrollbar
+    fun computeRowWidth(): Double = skinnable.width - 14 // Account for scrollbar
 
-    private fun computeCellWidth() = skinnable.cellWidth + skinnable.horizontalCellSpacing * 2
+    private fun computeCellWidth(): Double = skinnable.cellWidth + skinnable.horizontalCellSpacing * 2
 
-    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = 500.0
+    override fun computePrefHeight(width: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double = 500.0
 
-    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double) = 500.0
+    override fun computePrefWidth(height: Double, topInset: Double, rightInset: Double, bottomInset: Double, leftInset: Double): Double = 500.0
 
     override fun updateRowCount() {
         if (flow == null) return
@@ -726,7 +754,7 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
         updateRows(newCount)
     }
 
-    override fun createCell() = DataGridRow(skinnable, this)
+    override fun createCell(): DataGridRow<T> = DataGridRow(skinnable, this)
 
     private fun updateItems() {
         skinnable.items.removeListener(weakGridViewItemsListener)
@@ -737,11 +765,11 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
     }
 
     private fun updateRows(rowCount: Int) {
-        for (i in 0..rowCount - 1)
+        for (i in 0 until rowCount)
             getRow(i)?.updateIndex(i)
     }
 
-    fun getRow(index: Int) = flow.getVisibleCell(index)
+    fun getRow(index: Int): DataGridRow<T>? = flow.getVisibleCell(index)
 
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         val x1 = skinnable.insets.left
@@ -751,8 +779,8 @@ class DataGridSkin<T>(control: DataGrid<T>) : VirtualContainerBase<DataGrid<T>, 
 
         flow.resizeRelocate(x1, y1, w1, h1)
     }
-
 }
+
 
 fun <T> DataGrid<T>.bindSelected(property: Property<T>) {
     selectionModel.selectedItemProperty().onChange {
@@ -760,8 +788,7 @@ fun <T> DataGrid<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> DataGrid<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
+fun <T> DataGrid<T>.bindSelected(model: ItemViewModel<T>): Unit = this.bindSelected(model.itemProperty)
 
-fun <T> DataGrid<T>.asyncItems(func: () -> Collection<T>) =
-        task { func() } success { items.setAll(it) }
+fun <T> DataGrid<T>.asyncItems(func: () -> Collection<T>): Task<Collection<T>> = task { func() } success { items.setAll(it) }
 

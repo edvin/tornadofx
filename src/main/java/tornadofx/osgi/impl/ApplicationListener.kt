@@ -11,8 +11,11 @@ import org.osgi.framework.ServiceEvent.REGISTERED
 import org.osgi.framework.ServiceEvent.UNREGISTERING
 import org.osgi.framework.ServiceListener
 import org.osgi.util.tracker.ServiceTracker
-import tornadofx.*
+import tornadofx.App
+import tornadofx.FX
+import tornadofx.launch
 import tornadofx.osgi.ApplicationProvider
+import tornadofx.runLater
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
@@ -22,13 +25,11 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
 
     val hasActiveApplication: Boolean get() = delegate != null
 
-    fun isRunningApplication(appClass: KClass<out App>) = appClass == delegate?.javaClass?.kotlin
+    fun isRunningApplication(appClass: KClass<out App>): Boolean = appClass == delegate?.javaClass?.kotlin
 
     init {
         tracker.open()
-        tracker.withEach {
-            startDelegateIfPossible(it)
-        }
+        tracker.withEach(::startDelegateIfPossible)
     }
 
     companion object {
@@ -45,13 +46,13 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
 
         private fun ensureFxRuntimeInitialized() {
             if (!fxRuntimeInitialized) {
-                thread(true) {
+                thread {
                     val originalClassLoader = Thread.currentThread().contextClassLoader
                     Thread.currentThread().contextClassLoader = ApplicationListener::class.java.classLoader
                     launch<ProxyApplication>()
                     Thread.currentThread().contextClassLoader = originalClassLoader
                 }
-                print("Waiting for JavaFX Runtime Startup")
+                FX.log.info("Waiting for JavaFX Runtime Startup")
                 do {
                     Thread.sleep(100)
                     print(".")
@@ -61,14 +62,13 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
         }
 
         fun stopDelegate() {
-            Platform.runLater {
+            runLater {
                 delegate!!.stop()
                 realPrimaryStage!!.close()
                 realPrimaryStage!!.scene.root = Label("No TornadoFX OSGi Bundle running")
                 delegate = null
             }
         }
-
     }
 
     override fun serviceChanged(event: ServiceEvent) {
@@ -95,9 +95,7 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
             FX.installErrorHandler()
         }
 
-        override fun stop() {
-            stopDelegate()
-        }
+        override fun stop(): Unit = stopDelegate()
     }
 
     fun startDelegate(provider: ApplicationProvider) {
@@ -112,12 +110,11 @@ internal class ApplicationListener(val context: BundleContext) : ServiceListener
             println("[Done]")
         }
         delegate!!.init()
-        Platform.runLater {
+        runLater {
             delegate!!.start(realPrimaryStage!!)
             realPrimaryStage!!.toFront()
         }
     }
 
-    private fun ServiceEvent.isApplicationProviderEvent() = objectClass == ApplicationProvider::class.qualifiedName
-
+    private fun ServiceEvent.isApplicationProviderEvent(): Boolean = objectClass == ApplicationProvider::class.qualifiedName
 }

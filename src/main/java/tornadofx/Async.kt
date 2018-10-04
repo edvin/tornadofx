@@ -451,9 +451,9 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
 }
 
 open class TaskStatus : ItemViewModel<FXTask<*>>() {
-    val running: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.runningProperty()) } }
-    val completed: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { if (item != null) bind(item.completedProperty) } }
-    val message: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.messageProperty()) } }
-    val title: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { if (item != null) bind(item.titleProperty()) } }
-    val progress: ReadOnlyDoubleProperty = bind { SimpleDoubleProperty().apply { if (item != null) bind(item.progressProperty()) } }
+    val running: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { item?.let { bind(it.runningProperty()) } } }
+    val completed: ReadOnlyBooleanProperty = bind { SimpleBooleanProperty().apply { item?.let { bind(it.completedProperty) } } }
+    val message: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { item?.let { bind(it.messageProperty()) } } }
+    val title: ReadOnlyStringProperty = bind { SimpleStringProperty().apply { item?.let { bind(it.titleProperty()) } } }
+    val progress: ReadOnlyDoubleProperty = bind { SimpleDoubleProperty().apply { item?.let { bind(it.progressProperty()) } } }
 }

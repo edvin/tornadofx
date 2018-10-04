@@ -1,13 +1,10 @@
-@file:Suppress("unused")
-
 package tornadofx
 
-import javafx.beans.binding.BooleanExpression
-import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
-import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.ReadOnlyBooleanWrapper
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.scene.Node
 import javafx.scene.control.TextInputControl
 import kotlin.concurrent.thread
@@ -23,7 +20,7 @@ sealed class ValidationTrigger {
 class ValidationMessage(val message: String?, val severity: ValidationSeverity)
 
 class ValidationContext {
-    val validators = FXCollections.observableArrayList<Validator<*>>()
+    val validators: ObservableList<Validator<*>> = FXCollections.observableArrayList()
 
     /**
      * The decoration provider decides what kind of decoration should be applied to
@@ -43,10 +40,11 @@ class ValidationContext {
      * tracks focus on the supplied node while OnChange tracks changes to the property itself.
      */
     inline fun <reified T> addValidator(
-            node: Node,
-            property: ObservableValue<T>,
-            trigger: ValidationTrigger = ValidationTrigger.OnChange(),
-            noinline validator: ValidationContext.(T?) -> ValidationMessage?) = addValidator(Validator(node, property, trigger, validator))
+        node: Node,
+        property: ObservableValue<T>,
+        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
+        noinline validator: ValidationContext.(T?) -> ValidationMessage?
+    ): ValidationContext.Validator<T> = addValidator(Validator(node, property, trigger, validator))
 
     fun <T> addValidator(validator: Validator<T>, decorateErrors: Boolean = true): Validator<T> {
         when (validator.trigger) {
@@ -61,20 +59,14 @@ class ValidationContext {
                             delayActive = true
                             thread {
                                 Thread.sleep(validator.trigger.delay)
-                                FX.runAndWait {
-                                    validator.validate(decorateErrors)
-                                }
+                                FX.runAndWait { validator.validate(decorateErrors) }
                                 delayActive = false
                             }
                         }
                     }
                 }
             }
-            ValidationTrigger.OnBlur -> {
-                validator.node.focusedProperty().onChange {
-                    if (!it) validator.validate(decorateErrors)
-                }
-            }
+            ValidationTrigger.OnBlur -> validator.node.focusedProperty().onChange { if (!it) validator.validate(decorateErrors) }
         }
         validators.add(validator)
         return validator
@@ -83,13 +75,14 @@ class ValidationContext {
     /**
      * A boolean indicating the current validation status.
      */
-    val valid: ReadOnlyBooleanProperty = SimpleBooleanProperty(true)
-    val isValid by valid
+    private val _valid: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(true)
+    val valid: ReadOnlyBooleanProperty = _valid.readOnlyProperty
+    val isValid: Boolean by valid
 
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
      */
-    fun validate(vararg fields: ObservableValue<*>) = validate(true, true,false, fields = *fields)
+    fun validate(vararg fields: ObservableValue<*>): Boolean = validate(true, true, false, fields = *fields)
 
     /**
      * Rerun all validators (or just the ones passed in) and return a boolean indicating if validation passed.
@@ -102,7 +95,7 @@ class ValidationContext {
         }
 
         @Suppress("SimplifiableCallChain")
-        val firstFailingNode = when(failFast) {
+        val firstFailingNode = when (failFast) {
             true -> validateThese.firstOrNull { !it.validate(decorateErrors) }
             false -> validateThese.filter { !it.validate(decorateErrors) }.firstOrNull()
         }?.node
@@ -115,40 +108,45 @@ class ValidationContext {
      * Add validator for a TextInputControl and validate the control's textProperty. Useful when
      * you don't bind against a ViewModel or other backing property.
      */
-    fun addValidator(node: TextInputControl, trigger: ValidationTrigger = ValidationTrigger.OnChange(), validator: ValidationContext.(String?) -> ValidationMessage?) =
-            addValidator<String>(node, node.textProperty(), trigger, validator)
+    fun addValidator(
+        node: TextInputControl,
+        trigger: ValidationTrigger = ValidationTrigger.OnChange(),
+        validator: ValidationContext.(String?) -> ValidationMessage?
+    ): Validator<String> = addValidator<String>(node, node.textProperty(), trigger, validator)
 
 
-    fun error(message: String? = null) = ValidationMessage(message, ValidationSeverity.Error)
-    fun info(message: String? = null) = ValidationMessage(message, ValidationSeverity.Info)
-    fun warning(message: String? = null) = ValidationMessage(message, ValidationSeverity.Warning)
-    fun success(message: String? = null) = ValidationMessage(message, ValidationSeverity.Success)
+    fun error(message: String? = null): ValidationMessage = ValidationMessage(message, ValidationSeverity.Error)
+    fun info(message: String? = null): ValidationMessage = ValidationMessage(message, ValidationSeverity.Info)
+    fun warning(message: String? = null): ValidationMessage = ValidationMessage(message, ValidationSeverity.Warning)
+    fun success(message: String? = null): ValidationMessage = ValidationMessage(message, ValidationSeverity.Success)
 
     /**
      * Update the valid property state. If the calling validator was valid we need to see if any of the other properties are invalid.
      * If the calling validator is invalid, we know the state is invalid so no need to check the other validators.
      */
     internal fun updateValidState(callingValidatorState: Boolean) {
-        (valid as BooleanProperty).value = if (callingValidatorState) validators.find { !it.isValid } == null else false
+        _valid.value = if (callingValidatorState) validators.find { !it.isValid } == null else false
     }
 
     inner class Validator<T>(
-            val node: Node,
-            val property: ObservableValue<T>,
-            val trigger: ValidationTrigger = ValidationTrigger.OnChange(),
-            val validator: ValidationContext.(T?) -> ValidationMessage?) {
-
+        val node: Node,
+        val property: ObservableValue<T>,
+        val trigger: ValidationTrigger = ValidationTrigger.OnChange(),
+        val validator: ValidationContext.(T?) -> ValidationMessage?
+    ) {
         var result: ValidationMessage? = null
         var decorator: Decorator? = null
-        val valid: BooleanExpression = SimpleBooleanProperty(true)
-        val isValid: Boolean get() = valid.value
+
+        private val _valid: ReadOnlyBooleanWrapper = ReadOnlyBooleanWrapper(true)
+        val valid: ReadOnlyBooleanProperty = _valid.readOnlyProperty
+        val isValid: Boolean by valid
 
         fun validate(decorateErrors: Boolean = true): Boolean {
             decorator?.apply { undecorate(node) }
             decorator = null
 
             result = validator(this@ValidationContext, property.value).also {
-                (valid as BooleanProperty).value = it == null || it.severity != ValidationSeverity.Error
+                _valid.value = it == null || it.severity != ValidationSeverity.Error
             }
 
             if (decorateErrors) {
@@ -161,7 +159,5 @@ class ValidationContext {
             updateValidState(isValid)
             return isValid
         }
-
     }
-
 }

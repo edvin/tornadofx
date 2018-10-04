@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
 import javafx.geometry.Side
@@ -17,68 +18,34 @@ import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 
 fun EventTarget.drawer(
-        side: Side = Side.LEFT,
-        multiselect: Boolean = false,
-        floatingContent: Boolean = false,
-        op: Drawer.() -> Unit
-) = Drawer(side, multiselect, floatingContent).attachTo(this, op)
+    side: Side = Side.LEFT,
+    multiselect: Boolean = false,
+    floatingContent: Boolean = false,
+    op: Drawer.() -> Unit
+): Drawer = Drawer(side, multiselect, floatingContent).attachTo(this, op)
 
 class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)
-    var dockingSide by dockingSideProperty
+    var dockingSide: Side by dockingSideProperty
 
     val floatingDrawersProperty: BooleanProperty = SimpleBooleanProperty(floatingContent)
-    var floatingDrawers by floatingDrawersProperty
+    var floatingDrawers: Boolean by floatingDrawersProperty
 
     val maxContentSizeProperty: ObjectProperty<Number> = SimpleObjectProperty<Number>()
-    var maxContentSize by maxContentSizeProperty
+    var maxContentSize: Number? by maxContentSizeProperty
 
     val fixedContentSizeProperty: ObjectProperty<Number> = SimpleObjectProperty<Number>()
-    var fixedContentSize by fixedContentSizeProperty
+    var fixedContentSize: Number? by fixedContentSizeProperty
 
-    val buttonArea = ToolBar().addClass(DrawerStyles.buttonArea)
-    val contentArea = ExpandedDrawerContentArea()
+    val buttonArea: ToolBar = ToolBar().addClass(DrawerStyles.buttonArea)
+    val contentArea: ExpandedDrawerContentArea = ExpandedDrawerContentArea()
 
-    val items = FXCollections.observableArrayList<DrawerItem>()
+    val items: ObservableList<DrawerItem> = FXCollections.observableArrayList<DrawerItem>()
 
     val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
-    var multiselect by multiselectProperty
+    var multiselect: Boolean by multiselectProperty
 
-    val contextMenu = ContextMenu()
-
-    override fun getUserAgentStylesheet() = DrawerStyles().base64URL.toExternalForm()
-
-    fun item(title: String? = null, icon: Node? = null, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit) =
-            item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showHeader, op)
-
-    fun item(title: ObservableValue<String?>, icon: ObservableValue<Node?>? = null, expanded: Boolean = multiselect, showHeader: Boolean = true, op: DrawerItem.() -> Unit): DrawerItem {
-        val item = DrawerItem(this, title, icon, showHeader)
-        item.button.textProperty().bind(title)
-        op(item)
-        items.add(item)
-        if (expanded) item.button.isSelected = true
-        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
-            if (root.dynamicComponentMode) {
-                root.dynamicComponents.add(item)
-            }
-        }
-        return item
-    }
-
-    fun item(uiComponent: UIComponent, expanded: Boolean = false, showHeader: Boolean = multiselect, op: DrawerItem.() -> Unit = {}): DrawerItem {
-        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
-        item.button.textProperty().bind(uiComponent.headingProperty)
-        item.children.add(uiComponent.root)
-        op(item)
-        items.add(item)
-        if (expanded) item.button.isSelected = true
-        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
-            if (root.dynamicComponentMode) {
-                root.dynamicComponents.add(item)
-            }
-        }
-        return item
-    }
+    val contextMenu: ContextMenu = ContextMenu()
 
     init {
         addClass(DrawerStyles.drawer)
@@ -97,10 +64,12 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         // Adapt docking behavior to parent
         parentProperty().onChange {
             if (it is BorderPane) {
-                if (it.left == this) dockingSide = Side.LEFT
-                else if (it.right == this) dockingSide = Side.RIGHT
-                else if (it.bottom == this) dockingSide = Side.BOTTOM
-                else if (it.top == this) dockingSide = Side.TOP
+                when {
+                    it.top == this -> dockingSide = Side.TOP
+                    it.bottom == this -> dockingSide = Side.BOTTOM
+                    it.left == this -> dockingSide = Side.LEFT
+                    it.right == this -> dockingSide = Side.RIGHT
+                }
             }
         }
 
@@ -113,7 +82,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence().mapEach { button }.forEach {
                         configureRotation(it)
-                        buttonArea+= Group(it)
+                        buttonArea += Group(it)
                     }
                 }
                 if (change.wasRemoved()) {
@@ -127,6 +96,57 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
             }
         }
     }
+
+    override fun getUserAgentStylesheet(): String = DrawerStyles().base64URL.toExternalForm()
+
+    fun item(
+        title: String? = null,
+        icon: Node? = null,
+        expanded: Boolean = false,
+        showHeader: Boolean = multiselect,
+        op: DrawerItem.() -> Unit = {}
+    ): DrawerItem = item(SimpleStringProperty(title), SimpleObjectProperty(icon), expanded, showHeader, op)
+
+    fun item(
+        title: ObservableValue<String?>,
+        icon: ObservableValue<Node?>? = null,
+        expanded: Boolean = multiselect,
+        showHeader: Boolean = true,
+        op: DrawerItem.() -> Unit = {}
+    ): DrawerItem {
+        val item = DrawerItem(this, title, icon, showHeader)
+        item.button.textProperty().bind(title)
+        op(item)
+        items.add(item)
+        if (expanded) item.button.isSelected = true
+        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
+            if (root.dynamicComponentMode) {
+                root.dynamicComponents.add(item)
+            }
+        }
+        return item
+    }
+
+    fun item(
+        uiComponent: UIComponent,
+        expanded: Boolean = false,
+        showHeader: Boolean = multiselect,
+        op: DrawerItem.() -> Unit = {}
+    ): DrawerItem {
+        val item = DrawerItem(this, uiComponent.titleProperty, uiComponent.iconProperty, showHeader)
+        item.button.textProperty().bind(uiComponent.headingProperty)
+        item.children.add(uiComponent.root)
+        op(item)
+        items.add(item)
+        if (expanded) item.button.isSelected = true
+        (parent?.uiComponent<UIComponent>() as? Workspace)?.apply {
+            if (root.dynamicComponentMode) {
+                root.dynamicComponents.add(item)
+            }
+        }
+        return item
+    }
+
 
     private fun enforceMultiSelect() {
         multiselectProperty.onChange {
@@ -236,12 +256,12 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
             if (fixedContentSize != null) {
                 when (dockingSide) {
                     Side.LEFT, Side.RIGHT -> {
-                        contentArea.maxWidth = fixedContentSize.toDouble()
-                        contentArea.minWidth = fixedContentSize.toDouble()
+                        contentArea.maxWidth = fixedContentSize!!.toDouble()
+                        contentArea.minWidth = fixedContentSize!!.toDouble()
                     }
                     Side.TOP, Side.BOTTOM -> {
-                        contentArea.maxHeight = fixedContentSize.toDouble()
-                        contentArea.minHeight = fixedContentSize.toDouble()
+                        contentArea.maxHeight = fixedContentSize!!.toDouble()
+                        contentArea.minHeight = fixedContentSize!!.toDouble()
                     }
                 }
             } else {
@@ -251,8 +271,8 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                 contentArea.minHeight = USE_COMPUTED_SIZE
                 if (maxContentSize != null) {
                     when (dockingSide) {
-                        Side.LEFT, Side.RIGHT -> contentArea.maxWidth = maxContentSize.toDouble()
-                        Side.TOP, Side.BOTTOM -> contentArea.maxHeight = maxContentSize.toDouble()
+                        Side.LEFT, Side.RIGHT -> contentArea.maxWidth = maxContentSize!!.toDouble()
+                        Side.TOP, Side.BOTTOM -> contentArea.maxHeight = maxContentSize!!.toDouble()
                     }
                 }
             }
@@ -284,13 +304,12 @@ class ExpandedDrawerContentArea : VBox() {
             while (change.next()) {
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence()
-                            .filter { VBox.getVgrow(it) == null }
-                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
+                        .filter { VBox.getVgrow(it) == null }
+                        .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
                 }
             }
         }
     }
-
 }
 
 class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, icon: ObservableValue<Node?>? = null, showHeader: Boolean) : VBox() {
@@ -299,8 +318,8 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
         if (icon != null) graphicProperty().bind(icon)
     }
 
-    val expandedProperty = button.selectedProperty()
-    var expanded by expandedProperty
+    val expandedProperty: BooleanProperty = button.selectedProperty()
+    var expanded: Boolean by expandedProperty
 
     init {
         addClass(DrawerStyles.drawerItem)
@@ -317,8 +336,8 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
             while (change.next()) {
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence()
-                            .filter { VBox.getVgrow(it) == null }
-                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
+                        .filter { VBox.getVgrow(it) == null }
+                        .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
                 }
             }
         }
@@ -327,10 +346,10 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
 
 class DrawerStyles : Stylesheet() {
     companion object {
-        val drawer by cssclass()
-        val drawerItem by cssclass()
-        val buttonArea by cssclass()
-        val contentArea by cssclass()
+        val drawer: CssRule by cssclass()
+        val drawerItem: CssRule by cssclass()
+        val buttonArea: CssRule by cssclass()
+        val contentArea: CssRule by cssclass()
     }
 
     init {

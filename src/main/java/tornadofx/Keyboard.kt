@@ -1,8 +1,6 @@
 package tornadofx
 
-import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -43,7 +41,7 @@ class KeyboardStyles : Stylesheet() {
 class KeyboardLayout : Control() {
     val rows: ObservableList<KeyboardRow> = FXCollections.observableArrayList()
 
-    val unitSizeProperty: SimpleDoubleProperty = SimpleDoubleProperty(50.0)
+    val unitSizeProperty: DoubleProperty = SimpleDoubleProperty(50.0)
     var unitSize: Double by unitSizeProperty
 
     init {
@@ -190,16 +188,16 @@ open class KeyboardKey(
     height: Number
 ) : Button(text) {
 
-    val svgProperty: SimpleStringProperty = SimpleStringProperty(svg)
+    val svgProperty: StringProperty = SimpleStringProperty(svg)
     var svg: String? by svgProperty
 
-    val keyWidthProperty: SimpleDoubleProperty = SimpleDoubleProperty(width.toDouble())
+    val keyWidthProperty: DoubleProperty = SimpleDoubleProperty(width.toDouble())
     var keyWidth: Double by keyWidthProperty
 
-    val keyHeightProperty: SimpleDoubleProperty = SimpleDoubleProperty(height.toDouble())
+    val keyHeightProperty: DoubleProperty = SimpleDoubleProperty(height.toDouble())
     var keyHeight: Double by keyHeightProperty
 
-    val codeProperty: SimpleObjectProperty<Int?> = SimpleObjectProperty(code)
+    val codeProperty: ObjectProperty<Int?> = SimpleObjectProperty(code)
     var code: Int? by codeProperty
 
     init {

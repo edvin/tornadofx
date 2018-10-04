@@ -2,10 +2,7 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.property.ListProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.*
 import javafx.event.EventTarget
 import javafx.scene.Group
@@ -107,7 +104,7 @@ class FX {
 
         val eventbus: EventBus = EventBus()
         val log: Logger = Logger.getLogger("FX")
-        val initialized: SimpleBooleanProperty = SimpleBooleanProperty(false)
+        val initialized: BooleanProperty = SimpleBooleanProperty(false)
 
         internal val primaryStages = mutableMapOf<Scope, Stage>()
         val primaryStage: Stage get() = primaryStages[FX.defaultScope]!!
@@ -157,17 +154,17 @@ class FX {
             }
         }
 
-        val localeProperty: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
+        val localeProperty: ObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
         }
         var locale: Locale by localeProperty
-        @Deprecated("Use the property getter instead", ReplaceWith("localeProperty"))
-        fun localeProperty(): SimpleObjectProperty<Locale> = localeProperty
+        @Deprecated("Please use the new more concise syntax.", ReplaceWith("localeProperty"))
+        fun localeProperty(): ObjectProperty<Locale> = localeProperty
 
-        val messagesProperty: SimpleObjectProperty<ResourceBundle> = SimpleObjectProperty()
+        val messagesProperty: ObjectProperty<ResourceBundle> = SimpleObjectProperty()
         var messages: ResourceBundle by messagesProperty
-        @Deprecated("Use the property getter instead", ReplaceWith("messagesProperty"))
-        fun messagesProperty(): SimpleObjectProperty<ResourceBundle> = messagesProperty
+        @Deprecated("Please use the new more concise syntax.", ReplaceWith("messagesProperty"))
+        fun messagesProperty(): ObjectProperty<ResourceBundle> = messagesProperty
 
         /** Load global resource bundle for the current locale. Triggered when the locale changes. */
         private fun loadMessages() {
@@ -465,7 +462,7 @@ inline fun <T : Node> opcr(parent: EventTarget, node: T, op: T.() -> Unit = {}):
 inline fun <T : Node> T.attachTo(parent: EventTarget, op: T.() -> Unit = {}): T = opcr(parent, this, op)
 
 /**
- * Attaches this node to the given [parent] and invokes the node [operation][op].
+ * Attaches this node to the given [parent] and invokes the node [operation][after].
  * Because the framework sometimes needs to setup the node, another lambda can be provided
  */
 @PublishedApi

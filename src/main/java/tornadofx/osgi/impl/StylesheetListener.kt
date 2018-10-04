@@ -30,6 +30,5 @@ internal class StylesheetListener(val context: BundleContext) : ServiceListener 
         }
     }
 
-    private fun ServiceEvent.isStylesheetProviderEvent() = objectClass == StylesheetProvider::class.qualifiedName
-
+    private fun ServiceEvent.isStylesheetProviderEvent(): Boolean = objectClass == StylesheetProvider::class.qualifiedName
 }

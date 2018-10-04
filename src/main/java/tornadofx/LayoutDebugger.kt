@@ -1,10 +1,6 @@
 package tornadofx
 
-import javafx.application.Platform
-import javafx.beans.property.DoubleProperty
-import javafx.beans.property.Property
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.StringProperty
+import javafx.beans.property.*
 import javafx.event.EventHandler
 import javafx.geometry.Bounds
 import javafx.geometry.Insets
@@ -13,29 +9,30 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
+import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.shape.Shape
 import javafx.stage.Modality
+import javafx.stage.Stage
 import javafx.util.StringConverter
 import javafx.util.converter.DoubleStringConverter
 
-@Suppress("UNCHECKED_CAST")
 class LayoutDebugger : Fragment() {
-    override val root = BorderPane()
+    override val root: BorderPane = BorderPane()
 
     lateinit var debuggingScene: Scene
     private lateinit var debuggingRoot: Parent
 
-    val hoveredNode = SimpleObjectProperty<Node>()
-    val selectedNode = SimpleObjectProperty<Node>()
+    val hoveredNode: ObjectProperty<Node> = SimpleObjectProperty()
+    val selectedNode: ObjectProperty<Node> = SimpleObjectProperty()
     var nodeTree: TreeView<NodeContainer> by singleAssign()
-    val propertyContainer = ScrollPane()
-    val stackpane = StackPane()
-    val overlay = Canvas()
-    val gc = overlay.graphicsContext2D
+    val propertyContainer: ScrollPane = ScrollPane()
+    val stackpane: StackPane = StackPane()
+    val overlay: Canvas = Canvas()
+    val gc: GraphicsContext = overlay.graphicsContext2D
 
     init {
         overlay.isMouseTransparent = true
@@ -52,7 +49,7 @@ class LayoutDebugger : Fragment() {
                         nodeTree = this
                     }
                     this += propertyContainer.apply {
-                        padding = Insets(10.0)
+                        paddingAll = 10.0
                     }
                 }
             }
@@ -67,7 +64,7 @@ class LayoutDebugger : Fragment() {
         }
 
         // Position overlay over hovered node
-        hoveredNode.addListener { observableValue, oldNode, newNode ->
+        hoveredNode.addListener { _, oldNode, newNode ->
             if (oldNode != newNode && newNode != null)
                 positionOverlayOver(newNode)
             else if (newNode == null && oldNode != null)
@@ -85,17 +82,17 @@ class LayoutDebugger : Fragment() {
         gc.clearRect(0.0, 0.0, overlay.width, overlay.height)
     }
 
-    val hoverHandler = EventHandler<MouseEvent> { event ->
+    val hoverHandler: EventHandler<MouseEvent> = EventHandler { event ->
         val newHover = event.target
         if (newHover is Node && hoveredNode.value != newHover)
             hoveredNode.value = newHover
     }
 
-    val sceneExitedHandler = EventHandler<MouseEvent> { event ->
+    val sceneExitedHandler: EventHandler<MouseEvent> = EventHandler {
         hoveredNode.value = null
     }
 
-    val clickHandler = EventHandler<MouseEvent> { event ->
+    val clickHandler: EventHandler<MouseEvent> = EventHandler { event ->
         val clickedTarget = event.target
         if (clickedTarget is Node) setSelectedNode(clickedTarget)
         event.consume()
@@ -112,9 +109,7 @@ class LayoutDebugger : Fragment() {
 
     override fun onDock() {
         // Prevent the debugger from being reloaded
-        Platform.runLater {
-            modalStage!!.scene.properties["tornadofx.layoutdebugger"] = this
-        }
+        runLater { modalStage!!.scene.properties["tornadofx.layoutdebugger"] = this }
 
         title = "Layout Debugger [%s]".format(debuggingScene)
 
@@ -141,8 +136,8 @@ class LayoutDebugger : Fragment() {
         with(nodeTree) {
             root = NodeTreeItem(NodeContainer(debuggingRoot))
             populate(
-                    itemFactory = { NodeTreeItem(it) },
-                    childFactory = { it.value.node.getChildList()?.map(::NodeContainer) }
+                itemFactory = { NodeTreeItem(it) },
+                childFactory = { it.value.node.getChildList()?.map(::NodeContainer) }
             )
 
             // Hover on a node in the tree should visualize in the scene graph
@@ -188,7 +183,7 @@ class LayoutDebugger : Fragment() {
     }
 
     companion object {
-        fun debug(scene: Scene) = with(find<LayoutDebugger>()) {
+        fun debug(scene: Scene): Stage? = with(find<LayoutDebugger>()) {
             debuggingScene = scene
             openModal(modality = Modality.NONE)
         }
@@ -206,7 +201,7 @@ class LayoutDebugger : Fragment() {
      * they might have app bindings already, so we have to jump through some hoops
      * to synchronize values between this editor and the Node properties.
      */
-    fun ScrollPane.nodePropertyView(node: Node) = form {
+    fun ScrollPane.nodePropertyView(node: Node): Form = form {
         fieldset("Node info") {
             field("ClassName") {
                 text(node.javaClass.name)
@@ -233,7 +228,7 @@ class LayoutDebugger : Fragment() {
         fieldset("Properties") {
             if (node is Labeled) {
                 field("Text") {
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.textProperty())
                         prefColumnCount = 30
                     }
@@ -310,7 +305,7 @@ class LayoutDebugger : Fragment() {
 
             if (node is Region) {
                 // Background/fills is immutable, so a new background object must be created with the augmented fill
-                if (node.background?.fills?.isNotEmpty() ?: false) {
+                if (node.background?.fills?.isNotEmpty() == true) {
                     field("Background fill") {
                         vbox(3.0) {
                             node.background.fills.forEachIndexed { i, backgroundFill ->
@@ -332,9 +327,9 @@ class LayoutDebugger : Fragment() {
                 } else {
                     // Add one background color if none present
                     field("Background fill") {
-                        colorpicker() {
+                        colorpicker {
                             isEditable = true
-                            valueProperty().addListener { observableValue, oldColor, newColor ->
+                            valueProperty().addListener { _, _, newColor ->
                                 node.background = Background(BackgroundFill(newColor, null, null))
                             }
                         }
@@ -343,22 +338,22 @@ class LayoutDebugger : Fragment() {
 
                 // Padding
                 field("Padding") {
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.paddingProperty(), InsetsConverter())
                         prefColumnCount = 10
                     }
                 }
 
                 field("Pref/min/max width") {
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.prefWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.minWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }
-                    textfield() {
+                    textfield {
                         textProperty().shadowBindTo(node.maxWidthProperty(), DoubleStringConverter())
                         prefColumnCount = 10
                     }
@@ -378,7 +373,6 @@ class LayoutDebugger : Fragment() {
                         prefColumnCount = 10
                     }
                 }
-
             }
         }
     }
@@ -395,25 +389,33 @@ class LayoutDebugger : Fragment() {
     fun Fieldset.alignmentCombo(property: Property<Pos>) {
         field("Alignment") {
             combobox<Pos> {
-                items = listOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
-                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT).observable()
+                items = observableList(
+                    Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT,
+                    Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT,
+                    Pos.BOTTOM_LEFT, Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT,
+                    Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT
+                )
                 valueProperty().shadowBindTo(property)
             }
         }
     }
 
     class InsetsConverter : StringConverter<Insets>() {
-        override fun toString(v: Insets?) = if (v == null) "" else "${v.top.s()} ${v.right.s()} ${v.bottom.s()} ${v.left.s()}"
+        override fun toString(v: Insets?): String = if (v == null) "" else "${v.top.s()} ${v.right.s()} ${v.bottom.s()} ${v.left.s()}"
         override fun fromString(s: String?): Insets {
-            try {
-                if (s == null || s.isEmpty()) return Insets.EMPTY
-                val parts = s.split(" ")
-                if (parts.size == 1) return Insets(s.toDouble())
-                if (parts.size == 2) return Insets(parts[0].toDouble(), parts[1].toDouble(), parts[0].toDouble(), parts[1].toDouble())
-                if (parts.size == 4) return Insets(parts[0].toDouble(), parts[1].toDouble(), parts[2].toDouble(), parts[3].toDouble())
-            } catch (ignored: Exception) {
+            if (s == null || s.isEmpty()) return Insets.EMPTY
+            val parts = try {
+                s.split(" ").map { it.toDouble() }
+            } catch (_: Exception) {
+                return Insets.EMPTY
             }
-            return Insets.EMPTY
+
+            return when (parts.size) {
+                1 -> Insets(s.toDouble())
+                2 -> Insets(parts[0], parts[1], parts[0], parts[1])
+                4 -> Insets(parts[0], parts[1], parts[2], parts[3])
+                else -> Insets.EMPTY
+            }
         }
 
         private fun Double.s(): String {
@@ -435,6 +437,7 @@ class LayoutDebugger : Fragment() {
         })
     }
 
+    @Suppress("UNCHECKED_CAST")
     inline fun <reified T, reified C : StringConverter<out T>> StringProperty.shadowBindTo(nodeProperty: Property<T>, converter: C) {
         bindBidirectional(object : SimpleObjectProperty<T>(nodeProperty.value) {
             override fun set(newValue: T?) {
@@ -444,5 +447,4 @@ class LayoutDebugger : Fragment() {
             }
         }, converter as StringConverter<T>)
     }
-
 }

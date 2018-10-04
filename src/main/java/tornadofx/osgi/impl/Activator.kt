@@ -25,6 +25,5 @@ internal class Activator : BundleActivator {
         context.registerService(URLStreamHandlerService::class.java, CSSURLStreamHandlerService(), cssOptions)
     }
 
-    override fun stop(context: BundleContext) {
-    }
+    override fun stop(context: BundleContext) {}
 }
