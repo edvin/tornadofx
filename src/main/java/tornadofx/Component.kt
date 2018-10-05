@@ -69,13 +69,18 @@ class ConfigProperties(val configurable: Configurable) : Properties(), Closeable
         set(pair.first, value)
     }
 
-    fun string(key: String, defaultValue: String? = null) = getProperty(key, defaultValue)
-    fun boolean(key: String, defaultValue: Boolean? = false) = getProperty(key)?.toBoolean() ?: defaultValue
-    fun double(key: String, defaultValue: Double? = null) = getProperty(key)?.toDouble() ?: defaultValue
-    fun int(key: String, defaultValue: Int? = null) = getProperty(key)?.toInt() ?: defaultValue
+    fun string(key: String): String? = getProperty(key)
+    fun string(key: String, defaultValue: String): String = getProperty(key, defaultValue)
+    fun boolean(key: String): Boolean? = getProperty(key)?.toBoolean()
+    fun boolean(key: String, defaultValue: Boolean): Boolean = boolean(key) ?: defaultValue
+    fun double(key: String): Double? = getProperty(key)?.toDouble()
+    fun double(key: String, defaultValue: Double): Double = double(key) ?: defaultValue
+    fun int(key: String) = getProperty(key)?.toInt()
+    fun int(key: String, defaultValue: Int): Int = int(key) ?: defaultValue
     fun jsonObject(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
     fun jsonArray(key: String) = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
     inline fun <reified M : JsonModel> jsonModel(key: String) = jsonObject(key)?.toModel<M>()
+    inline fun <reified M : JsonModel> jsonModels(key: String) = jsonArray(key)?.toModel<M>()
 
     fun save() {
         val path = configurable.configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
