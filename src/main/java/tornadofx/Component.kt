@@ -4,6 +4,7 @@ import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.collections.ObservableMap
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -67,13 +68,18 @@ class ConfigProperties(val configurable: Configurable) : Properties(), Closeable
         set(pair.first, value)
     }
 
-    fun int(key: String, defaultValue: Int? = null): Int? = getProperty(key)?.toInt() ?: defaultValue
-    fun double(key: String, defaultValue: Double? = null): Double? = getProperty(key)?.toDouble() ?: defaultValue
-    fun boolean(key: String, defaultValue: Boolean? = null): Boolean? = getProperty(key)?.toBoolean() ?: defaultValue
-    fun string(key: String, defaultValue: String? = null): String? = getProperty(key, defaultValue)
+    fun int(key: String): Int? = getProperty(key)?.toInt()
+    fun int(key: String, defaultValue: Int): Int = int(key) ?: defaultValue
+    fun double(key: String): Double? = getProperty(key)?.toDouble()
+    fun double(key: String, defaultValue: Double): Double = double(key) ?: defaultValue
+    fun boolean(key: String): Boolean? = getProperty(key)?.toBoolean()
+    fun boolean(key: String, defaultValue: Boolean): Boolean = boolean(key) ?: defaultValue
+    fun string(key: String): String? = getProperty(key)
+    fun string(key: String, defaultValue: String): String = getProperty(key, defaultValue)
     fun jsonObject(key: String): JsonObject? = getProperty(key)?.let { Json.createReader(StringReader(it)).readObject() }
     fun jsonArray(key: String): JsonArray? = getProperty(key)?.let { Json.createReader(StringReader(it)).readArray() }
     inline fun <reified M : JsonModel> jsonModel(key: String): M? = jsonObject(key)?.toModel()
+    inline fun <reified M : JsonModel> jsonModels(key: String): ObservableList<M>? = jsonArray(key)?.toModel()
 
     fun save() {
         val path = configurable.configPath.apply { if (!Files.exists(parent)) Files.createDirectories(parent) }
