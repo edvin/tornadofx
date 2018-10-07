@@ -38,7 +38,9 @@ fun TabPane.tab(uiComponent: KClass<out UIComponent>, op: Tab.() -> Unit = {}) =
 
 fun TabPane.tab(uiComponent: UIComponent, op: Tab.() -> Unit = {}): Tab {
     add(uiComponent.root)
-    return tabs.last().also(op)
+    val tab = tabs.last()
+    tab.graphic = uiComponent.icon
+    return tab.also(op)
 }
 
 fun <T : Node> Iterable<T>.contains(cmp: UIComponent) = any { it == cmp.root }
