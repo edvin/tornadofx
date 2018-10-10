@@ -24,10 +24,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 // TODO Simplify constructors
-open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class, vararg stylesheet: KClass<out Stylesheet>) : Application(),
-    Configurable {
-
+open class App(
+    open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class,
+    vararg stylesheet: KClass<out Stylesheet>,
     open var scope: Scope = FX.defaultScope
+) : Application(), Configurable {
+
     val workspace: Workspace get() = scope.workspace
 
     /**
@@ -57,21 +59,12 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         stylesheet.forEach { importStylesheet(it) }
     }
 
-    constructor() : this(NoPrimaryViewSpecified::class)
-
-    constructor(
-        primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class,
-        stylesheet: KClass<out Stylesheet>,
-        scope: Scope = FX.defaultScope
-    ) : this(primaryView, *arrayOf(stylesheet)) {
-        this.scope = scope
-    }
-
     constructor(
         icon: Image,
         primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class,
-        vararg stylesheet: KClass<out Stylesheet>
-    ) : this(primaryView, *stylesheet) {
+        vararg stylesheet: KClass<out Stylesheet>,
+        scope: Scope = FX.defaultScope
+    ) : this(primaryView, *stylesheet, scope = scope) {
         addStageIcon(icon, scope)
     }
 
