@@ -2,7 +2,6 @@ package tornadofx
 
 import javafx.application.Platform
 import tornadofx.EventBus.RunOn.ApplicationThread
-import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
 import kotlin.concurrent.thread
@@ -48,12 +47,12 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
 class EventBus {
     enum class RunOn { ApplicationThread, BackgroundThread }
 
-    private val subscriptions = mutableMapOf<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
+    private val subscriptions = mutableMapOf<KClass<out FXEvent>, MutableSet<FXEventRegistration>>()
     private val eventScopes = mutableMapOf<EventContext.(FXEvent) -> Unit, Scope>()
 
 
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration: FXEventRegistration) {
-        subscriptions.getOrPut(event) { HashSet() }.add(registration)
+        subscriptions.getOrPut(event) { mutableSetOf() }.add(registration)
         eventScopes[registration.action] = scope
     }
 

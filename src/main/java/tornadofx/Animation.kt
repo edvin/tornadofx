@@ -29,21 +29,15 @@ operator fun KeyFrame.plusAssign(keyValue: KeyValue) {
 }
 
 
-fun sequentialTransition(play: Boolean = true, op: SequentialTransition.() -> Unit): SequentialTransition = SequentialTransition().apply {
-    op()
-    if (play) play()
-}
+fun sequentialTransition(play: Boolean = true, op: SequentialTransition.() -> Unit): SequentialTransition =
+    SequentialTransition().apply(op).also { if (play) it.play() }
 
-fun parallelTransition(play: Boolean = true, op: ParallelTransition.() -> Unit): ParallelTransition = ParallelTransition().apply {
-    op()
-    if (play) play()
-}
+fun parallelTransition(play: Boolean = true, op: ParallelTransition.() -> Unit): ParallelTransition =
+    ParallelTransition().apply(op).also { if (play) it.play() }
 
 
-fun timeline(play: Boolean = true, op: Timeline.() -> Unit): Timeline = Timeline().apply {
-    op()
-    if (play) play()
-}
+fun timeline(play: Boolean = true, op: Timeline.() -> Unit): Timeline =
+    Timeline().apply(op).also { if (play) it.play() }
 
 fun SequentialTransition.timeline(op: Timeline.() -> Unit): Timeline = timeline(false, op).also { children += it }
 fun ParallelTransition.timeline(op: Timeline.() -> Unit): Timeline = timeline(false, op).also { children += it }
@@ -460,10 +454,8 @@ fun Node.follow(
     if (play) play()
 }
 
-fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit = {}): PauseTransition = PauseTransition(time).apply {
-    op()
-    if (play) play()
-}
+fun pause(time: Duration, play: Boolean = true, op: PauseTransition.() -> Unit = {}): PauseTransition =
+    PauseTransition(time).apply(op).also { if (play) it.play() }
 
 fun Timeline.keyframe(duration: Duration, op: KeyFrameBuilder.() -> Unit): KeyFrame {
     val keyFrame = KeyFrameBuilder(duration).also(op).build()
@@ -472,7 +464,7 @@ fun Timeline.keyframe(duration: Duration, op: KeyFrameBuilder.() -> Unit): KeyFr
 
 class KeyFrameBuilder(val duration: Duration) {
 
-    var keyValues: MutableList<KeyValue> = ArrayList()
+    var keyValues: MutableList<KeyValue> = mutableListOf()
     var name: String? = null
     private var _onFinished: (ActionEvent) -> Unit = {}
 
@@ -498,7 +490,9 @@ fun <T> WritableValue<T>.animate(endValue: T, duration: Duration, interpolator: 
     val timeline = Timeline()
 
     timeline.apply {
-        keyframe(duration) { keyvalue(writableValue, endValue, interpolator) }
+        keyframe(duration) {
+            keyvalue(writableValue, endValue, interpolator)
+        }
         op()
         play()
     }

@@ -26,7 +26,6 @@ import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
-import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
@@ -1054,13 +1053,13 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
 }
 
 class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S) : Observable {
-    val invalidationListeners: MutableList<InvalidationListener> = ArrayList()
+    val invalidationListeners: MutableList<InvalidationListener> = mutableListOf()
 
     // Dirty columns and initial value
     private var _dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?>? = null
     val dirtyColumns: ObservableMap<TableColumn<S, Any?>, Any?>
         get() {
-            if (_dirtyColumns == null) _dirtyColumns = FXCollections.observableHashMap<TableColumn<S, Any?>, Any?>()
+            if (_dirtyColumns == null) _dirtyColumns = FXCollections.observableHashMap()
             return _dirtyColumns!!
         }
 
@@ -1190,7 +1189,7 @@ class RowExpanderPane(val tableRow: TableRow<*>, val expanderColumn: ExpanderCol
 }
 
 class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) -> Unit) : TableColumn<S, Boolean>() {
-    private val expandedNodeCache = HashMap<S, Node>()
+    private val expandedNodeCache = mutableMapOf<S, Node>()
     private val expansionState = mutableMapOf<S, BooleanProperty>()
 
     init {

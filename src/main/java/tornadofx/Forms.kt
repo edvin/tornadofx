@@ -19,7 +19,6 @@ import javafx.scene.control.Label
 import javafx.scene.layout.*
 import javafx.scene.layout.Priority.SOMETIMES
 import javafx.stage.Stage
-import java.util.*
 import java.util.concurrent.Callable
 
 fun EventTarget.form(op: Form.() -> Unit = {}): Form = opcr(this, Form(), op)
@@ -77,7 +76,7 @@ open class Form : VBox() {
 
     internal fun labelContainerWidth(height: Double): Double = fieldsets.flatMap { it.fields }.map { it.labelContainer.prefWidth(-height) }.max() ?: 0.0
 
-    internal val fieldsets = HashSet<Fieldset>()
+    internal val fieldsets = mutableSetOf<Fieldset>()
 
     override fun getUserAgentStylesheet(): String = Form::class.java.getResource("form.css").toExternalForm()
 }
@@ -94,7 +93,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("inputGrowProperty"), DeprecationLevel.WARNING)
     fun inputGrowProperty(): ObjectProperty<Priority> = inputGrowProperty
 
-    var labelPositionProperty: ObjectProperty<Orientation> = SimpleObjectProperty(labelPosition)
+    val labelPositionProperty: ObjectProperty<Orientation> = SimpleObjectProperty(labelPosition)
     var labelPosition: Orientation by labelPositionProperty
     @Deprecated("Please use the new more concise syntax.", ReplaceWith("labelPositionProperty"), DeprecationLevel.WARNING)
     fun labelPositionProperty(): ObjectProperty<Orientation> = labelPositionProperty
@@ -201,7 +200,7 @@ open class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTA
 
     val form: Form get() = findParent() ?: kotlin.error("FieldSet should be a child of Form node")
 
-    internal val fields = HashSet<Field>()
+    internal val fields = mutableSetOf<Field>()
 
     companion object {
         private val HORIZONTAL_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("horizontal")

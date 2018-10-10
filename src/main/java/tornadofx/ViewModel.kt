@@ -19,8 +19,6 @@ import tornadofx.FX.Companion.runAndWait
 import java.time.LocalDate
 import java.util.*
 import java.util.concurrent.Callable
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty1
@@ -231,10 +229,10 @@ inline fun <reified T> validator(
 
 
 open class ViewModel : Component(), ScopedInstance {
-    val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap<Property<*>, () -> Property<*>?>()
-    val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap<Property<*>, Property<*>>()
-    val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap<Property<*>, ChangeListener<Any>>()
-    val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList<ObservableValue<*>>()
+    val propertyMap: ObservableMap<Property<*>, () -> Property<*>?> = FXCollections.observableHashMap()
+    val propertyCache: ObservableMap<Property<*>, Property<*>> = FXCollections.observableHashMap()
+    val externalChangeListeners: ObservableMap<Property<*>, ChangeListener<Any>> = FXCollections.observableHashMap()
+    val dirtyProperties: ObservableList<ObservableValue<*>> = FXCollections.observableArrayList()
 
     val dirtyListener: ChangeListener<Any> = ChangeListener { property, _, newValue ->
         if (property in ignoreDirtyStateProperties) return@ChangeListener
@@ -482,9 +480,9 @@ open class ViewModel : Component(), ScopedInstance {
                 is ListProperty<*> -> facade.value = FXCollections.observableArrayList()
                 is SetProperty<*> -> facade.value = FXCollections.observableSet()
                 is MapProperty<*, *> -> facade.value = FXCollections.observableHashMap()
-                is MutableList<*> -> facade.value = ArrayList<Any>()
-                is MutableSet<*> -> facade.value = HashSet<Any>()
-                is MutableMap<*, *> -> facade.value = HashMap<Any, Any>()
+                is MutableList<*> -> facade.value = mutableListOf<Any>()
+                is MutableSet<*> -> facade.value = mutableSetOf<Any>()
+                is MutableMap<*, *> -> facade.value = mutableMapOf<Any, Any>()
             }
         }
     }

@@ -94,7 +94,7 @@ open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListVi
      */
     constructor(scope: Scope = FX.defaultScope, properties: Map<Any, Any>? = null) : this(scope, null, properties)
 
-    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
+    private val smartProperties: ObservableMap<Any, Any> = listView?.properties ?: properties.orEmpty().toMap().observable()
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
     private val cellFormat: (ListCell<T>.(T) -> Unit)? get() = smartProperties["tornadofx.cellFormat"] as (ListCell<T>.(T) -> Unit)?
     private val cellCache: ListCellCache<T>? get() = smartProperties["tornadofx.cellCache"] as ListCellCache<T>?

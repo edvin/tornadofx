@@ -255,7 +255,7 @@ class SetConversionListener<SourceType, TargetType>(
     val converter: (SourceType) -> TargetType
 ) : SetChangeListener<SourceType>, WeakListener {
     internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
-    internal val sourceToTarget = HashMap<SourceType, TargetType>()
+    internal val sourceToTarget = mutableMapOf<SourceType, TargetType>()
 
     override fun onChanged(change: SetChangeListener.Change<out SourceType>) {
         val list = targetRef.get()
@@ -298,7 +298,7 @@ class MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType>(
 ) : MapChangeListener<SourceTypeKey, SourceTypeValue>, WeakListener {
 
     internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
-    internal val sourceToTarget = HashMap<Map.Entry<SourceTypeKey, SourceTypeValue>, TargetType>()
+    internal val sourceToTarget = mutableMapOf<Map.Entry<SourceTypeKey, SourceTypeValue>, TargetType>()
 
     override fun onChanged(change: MapChangeListener.Change<out SourceTypeKey, out SourceTypeValue>) {
         val list = targetRef.get()
@@ -328,4 +328,4 @@ fun <T> ObservableList<T>.invalidate() {
     if (isNotEmpty()) this[0] = this[0]
 }
 
-fun <T> observableList(vararg entries: T): ObservableList<T> = FXCollections.observableArrayList<T>(entries.toList())
+fun <T> observableList(vararg entries: T): ObservableList<T> = FXCollections.observableArrayList(entries.toList())

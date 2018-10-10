@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 import kotlin.properties.ReadOnlyProperty
@@ -51,7 +50,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
 
     val resources: ResourceLookup by lazy { ResourceLookup(this) }
 
-    private val trayIcons = ArrayList<TrayIcon>()
+    private val trayIcons = mutableListOf<TrayIcon>()
 
     init {
         Stylesheet.importServiceLoadedStylesheets()

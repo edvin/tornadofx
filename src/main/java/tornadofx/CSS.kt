@@ -501,8 +501,10 @@ open class PropertyHolder {
             is Enum<*> -> value.toString().toLowerCase().replace("_", "-")
             is Font -> "${if (value.style == "Regular") "normal" else value.style} ${value.size}pt ${toCss(value.family)}"
             is Cursor -> {
-                if (value is ImageCursor) value.image.javaClass.getDeclaredField("url").also { it.isAccessible = true }.let { it.get(value.image).toString() }
-                else value.toString()
+                if (value is ImageCursor)
+                    value.image.javaClass.getDeclaredField("url").apply { isAccessible = true }.let { it.get(value.image).toString() }
+                else
+                    value.toString()
             }
             is URI -> "url(\"${value.toASCIIString()}\")"
             is BackgroundPosition -> "${value.horizontalSide} ${value.horizontalPosition.pos(value.isHorizontalAsPercentage)} " +
@@ -549,8 +551,8 @@ open class PropertyHolder {
         }
     }
 
-    val properties: MutableMap<String, Pair<Any, ((Any) -> String)?>> = linkedMapOf()
-    val unsafeProperties: MutableMap<String, Any> = linkedMapOf()
+    val properties: MutableMap<String, Pair<Any, ((Any) -> String)?>> = mutableMapOf()
+    val unsafeProperties: MutableMap<String, Any> = mutableMapOf()
     val mergedProperties: Map<String, Pair<Any, ((Any) -> String)?>> get() = properties + unsafeProperties.mapValues { it.value to null }
 
     // Root
@@ -1153,7 +1155,7 @@ open class Dimension<T : Enum<T>>(val value: Double, val units: T) {
     operator fun div(value: Number): Dimension<T> = Dimension(this.value / value.toDouble(), units)
     operator fun rem(value: Number): Dimension<T> = Dimension(this.value % value.toDouble(), units)
 
-    private fun safeMath(value: Dimension<T>, op: (Double, Double) -> Double): Dimension<T> {
+    private inline fun safeMath(value: Dimension<T>, crossinline op: (Double, Double) -> Double): Dimension<T> {
         require(units == value.units) { "Cannot combine $this and $value: The units do not match" }
         return Dimension(op(this.value, value.value), units)
     }

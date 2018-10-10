@@ -32,12 +32,11 @@ import javax.json.Json
 import javax.json.JsonArray
 import javax.json.JsonObject
 import javax.json.JsonValue
-import kotlin.collections.HashMap
 
 open class Rest : Controller() {
     companion object {
         var engineProvider: (Rest) -> Engine = ::HttpURLEngine
-        val ongoingRequests: ObservableList<Request> = FXCollections.observableArrayList<Request>()
+        val ongoingRequests: ObservableList<Request> = FXCollections.observableArrayList()
         val atomicseq: AtomicLong = AtomicLong()
 
         fun useApacheHttpClient() {
@@ -308,7 +307,7 @@ class HttpURLRequest(
     override val uri: URI,
     override val entity: Any?
 ) : Rest.Request {
-    override var properties: MutableMap<Any, Any> = HashMap()
+    override var properties: MutableMap<Any, Any> = mutableMapOf()
     lateinit var connection: HttpURLConnection
     val headers: MutableMap<String, String> = mutableMapOf()
 
@@ -468,7 +467,7 @@ class HttpClientRequest(
     override val uri: URI,
     override val entity: Any?
 ) : Rest.Request {
-    override var properties: MutableMap<Any, Any> = HashMap()
+    override var properties: MutableMap<Any, Any> = mutableMapOf()
     lateinit var request: HttpRequestBase
 
     init {

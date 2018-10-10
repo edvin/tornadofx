@@ -120,10 +120,10 @@ class FX {
             applications[scope] = application
         }
 
-        val stylesheets: ObservableList<String> = FXCollections.observableArrayList<String>()
+        val stylesheets: ObservableList<String> = FXCollections.observableArrayList()
 
-        internal val components = mutableMapOf<Scope, HashMap<KClass<out ScopedInstance>, ScopedInstance>>()
-        fun getComponents(scope: Scope = FX.defaultScope): MutableMap<KClass<out ScopedInstance>, ScopedInstance> = components.getOrPut(scope) { HashMap() }
+        internal val components = mutableMapOf<Scope, MutableMap<KClass<out ScopedInstance>, ScopedInstance>>()
+        fun getComponents(scope: Scope = FX.defaultScope): MutableMap<KClass<out ScopedInstance>, ScopedInstance> = components.getOrPut(scope) { mutableMapOf() }
 
         val lock: Any = Any()
 

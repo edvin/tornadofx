@@ -47,7 +47,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     val navigationModeProperty: ObjectProperty<NavigationMode> = SimpleObjectProperty(navigationMode)
     var navigationMode: NavigationMode by navigationModeProperty
 
-    val viewStack: ObservableList<UIComponent> = FXCollections.observableArrayList<UIComponent>()
+    val viewStack: ObservableList<UIComponent> = FXCollections.observableArrayList()
 
     val maxViewStackDepthProperty: IntegerProperty = SimpleIntegerProperty(DefaultViewStackDepth)
     var maxViewStackDepth: Int by maxViewStackDepthProperty

@@ -57,23 +57,25 @@ fun terminateAsyncExecutors(timeoutMillis: Long) {
 
 private fun awaitTermination(pool: ExecutorService, timeout: Long) {
     // Disable new tasks from being submitted
-    synchronized(pool) { pool.shutdown() }
+    synchronized(pool) { shutdown() }
     try {
         // Wait a while for existing tasks to terminate
         if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS)) {
             // Cancel currently executing tasks
-            synchronized(pool) { pool.shutdownNow() }
+            synchronized(pool) { shutdownNow() }
             // Wait a while for tasks to respond to being cancelled
             if (!pool.awaitTermination(timeout, TimeUnit.MILLISECONDS))
                 log.log(Level.SEVERE, "Executor did not terminate")
         }
     } catch (ie: InterruptedException) {
         // (Re-)Cancel if current thread also interrupted
-        synchronized(pool) { pool.shutdownNow() }
+        synchronized(pool) { shutdownNow() }
         // Preserve interrupt status
         Thread.currentThread().interrupt()
     }
 }
+
+private inline fun synchronized(lock: ExecutorService, block: ExecutorService.() -> Unit) = kotlin.synchronized(lock) { lock.block() }
 
 
 fun <T> task(taskStatus: TaskStatus? = null, func: FXTask<*>.() -> T): Task<T> = task(daemon = false, taskStatus = taskStatus, func = func)

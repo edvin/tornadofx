@@ -97,7 +97,7 @@ abstract class Component : Configurable {
     // FIXME Should be read-only?
     val paramsProperty: ObjectProperty<Map<String, Any?>> = SimpleObjectProperty(FX.inheritParamHolder.get() ?: mapOf())
     val params: Map<String, Any?> get() = paramsProperty.value
-    val subscribedEvents: MutableMap<KClass<out FXEvent>, MutableList<FXEventRegistration>> = HashMap()
+    val subscribedEvents: MutableMap<KClass<out FXEvent>, MutableList<FXEventRegistration>> = mutableMapOf()
 
     /**
      * Path to component specific configuration settings. Defaults to javaClass.properties inside
@@ -294,7 +294,7 @@ abstract class Component : Configurable {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
-        subscribedEvents.getOrPut(T::class) { ArrayList() }.add(registration)
+        subscribedEvents.getOrPut(T::class) { mutableListOf() }.add(registration)
         val fireNow = (this as? UIComponent)?.isDocked ?: true
         if (fireNow) FX.eventbus.subscribe<T>(scope, registration)
         return registration
@@ -556,7 +556,7 @@ abstract class UIComponent(viewTitle: String? = null, icon: Node? = null) : Comp
 
     var onDockListeners: MutableList<(UIComponent) -> Unit>? = null
     var onUndockListeners: MutableList<(UIComponent) -> Unit>? = null
-    val accelerators: MutableMap<KeyCombination, () -> Unit> = HashMap()
+    val accelerators: MutableMap<KeyCombination, () -> Unit> = mutableMapOf()
 
     fun init() {
         if (isInitialized) return

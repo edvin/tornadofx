@@ -236,7 +236,7 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
     val selectedItem: T? get() = this.selectionModel.selectedItem
 
     fun onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
-        val isSelected = { event: InputEvent ->
+        val isSelected: (InputEvent) -> Boolean = {
             !selectionModel.isEmpty
         }
 

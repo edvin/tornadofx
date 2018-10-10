@@ -186,7 +186,7 @@ open class AutoCompleteComboBoxSkin<T>(
         comboBox.items.filter { current -> comboBox.converter.toString(current).contains(it, true) }
     }
 
-    private val listView: ListView<T> = ListView(comboBox.items)
+    protected val listView: ListView<T> = ListView(comboBox.items)
     private var skipValueUpdate = false
     private var comboBoxItems: ObservableList<T> = if (comboBox.items == null) FXCollections.emptyObservableList<T>() else comboBox.items
 
@@ -322,7 +322,7 @@ open class AutoCompleteComboBoxSkin<T>(
     }
 
     private fun updateButtonCell() {
-        (if (comboBox.buttonCell != null) comboBox.buttonCell else getDefaultCellFactory().call(listView))?.apply {
+        (comboBox.buttonCell ?: getDefaultCellFactory().call(listView))?.apply {
             isMouseTransparent = true
             updateListView(listView)
             updateDisplayArea()

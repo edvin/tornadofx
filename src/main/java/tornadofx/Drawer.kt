@@ -40,7 +40,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     val buttonArea: ToolBar = ToolBar().addClass(DrawerStyles.buttonArea)
     val contentArea: ExpandedDrawerContentArea = ExpandedDrawerContentArea()
 
-    val items: ObservableList<DrawerItem> = FXCollections.observableArrayList<DrawerItem>()
+    val items: ObservableList<DrawerItem> = FXCollections.observableArrayList()
 
     val multiselectProperty: BooleanProperty = SimpleBooleanProperty(multiselect)
     var multiselect: Boolean by multiselectProperty

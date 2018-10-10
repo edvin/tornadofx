@@ -39,7 +39,6 @@ import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
 import java.util.function.UnaryOperator
 import kotlin.reflect.KClass
 import kotlin.reflect.full.safeCast
@@ -140,7 +139,7 @@ fun Stage.reloadViewsOnFocus() {
 
 
 fun Scene.findUIComponents(): List<UIComponent> {
-    val list = ArrayList<UIComponent>()
+    val list = mutableListOf<UIComponent>()
     root.findUIComponents(list)
     return list
 }
@@ -985,7 +984,7 @@ fun Node.replaceWith(
     transition: ViewTransition? = null,
     sizeToScene: Boolean,
     onTransit: () -> Unit = {}
-): Boolean = replaceWith(replacement, transition, sizeToScene, false)
+): Boolean = replaceWith(replacement, transition, sizeToScene, false, onTransit)
 
 fun Node.hide() {
     isVisible = false
