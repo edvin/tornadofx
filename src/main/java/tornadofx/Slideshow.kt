@@ -16,7 +16,7 @@ import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.reflect.KClass
 
-class Slideshow(val scope: Scope = DefaultScope, defaultTimeout: Duration? = null) : BorderPane() {
+class Slideshow(val scope: Scope = FX.defaultScope, defaultTimeout: Duration? = null) : BorderPane() {
     val slides: ObservableList<Slide> = FXCollections.observableArrayList<Slide>()
 
     var defaultTimeoutProperty = SimpleObjectProperty<Duration>(defaultTimeout)

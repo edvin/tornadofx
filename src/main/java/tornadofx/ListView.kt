@@ -92,11 +92,11 @@ abstract class ListCellFragment<T> : ItemFragment<T>() {
 }
 
 @Suppress("UNCHECKED_CAST")
-open class SmartListCell<T>(val scope: Scope = DefaultScope, listView: ListView<T>?, properties: Map<Any,Any>? = null) : ListCell<T>() {
+open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListView<T>?, properties: Map<Any,Any>? = null) : ListCell<T>() {
     /**
      * A convenience constructor allowing to omit `listView` completely, if needed.
      */
-    constructor(scope: Scope = DefaultScope, properties : Map<Any,Any>? = null) : this(scope, null, properties)
+    constructor(scope: Scope = FX.defaultScope, properties : Map<Any,Any>? = null) : this(scope, null, properties)
 
     private val smartProperties: ObservableMap<Any,Any> = listView?.properties ?: HashMap(properties.orEmpty()).observable()
     private val editSupport: (ListCell<T>.(EditEventType, T?) -> Unit)? get() = smartProperties["tornadofx.editSupport"] as (ListCell<T>.(EditEventType, T?) -> Unit)?
@@ -183,20 +183,20 @@ fun <T> ListView<T>.bindSelected(property: Property<T>) {
 
 fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(model.itemProperty)
 
-fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(scope: Scope = DefaultScope, fragment: KClass<F>) {
+fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartListCell(scope, it) }
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T> ListView<T>.cellFormat(scope: Scope = DefaultScope, formatter: (ListCell<T>.(T) -> Unit)) {
+fun <T> ListView<T>.cellFormat(scope: Scope = FX.defaultScope, formatter: (ListCell<T>.(T) -> Unit)) {
     properties["tornadofx.cellFormat"] = formatter
     if (properties["tornadofx.cellFormatCapable"] != true)
         cellFactory = Callback { SmartListCell(scope, it) }
 }
 
-fun <T> ListView<T>.onEdit(scope: Scope = DefaultScope, eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
+fun <T> ListView<T>.onEdit(scope: Scope = FX.defaultScope, eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
     isEditable = true
     properties["tornadofx.editSupport"] = eventListener
     // Install a edit capable cellFactory it none is present. The default cellFormat factory will do.
@@ -210,7 +210,7 @@ fun <T> ListView<T>.onEdit(scope: Scope = DefaultScope, eventListener: ListCell<
  * compatible cellFactory is found. The cellFactories installed via #cellFormat already knows
  * how to retrieve cached values.
  */
-fun <T> ListView<T>.cellCache(scope: Scope = DefaultScope, cachedGraphicProvider: (T) -> Node) {
+fun <T> ListView<T>.cellCache(scope: Scope = FX.defaultScope, cachedGraphicProvider: (T) -> Node) {
     properties["tornadofx.cellCache"] = ListCellCache(cachedGraphicProvider)
     // Install a cache capable cellFactory it none is present. The default cellFormat factory will do.
     if (properties["tornadofx.cellCacheCapable"] != true) {

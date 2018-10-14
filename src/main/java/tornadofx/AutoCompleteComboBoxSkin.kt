@@ -300,7 +300,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
             }
         }
         listView.properties["tornadofx.cellFormat"] = cellFormat
-        listView.cellFactory = Callback { SmartListCell(DefaultScope, listView) }
+        listView.cellFactory = Callback { SmartListCell(FX.defaultScope, listView) }
     }
 
     private fun resetFilter() {
