@@ -7,6 +7,8 @@ import javafx.event.EventHandler
 import javafx.geometry.Point2D
 import javafx.geometry.Point3D
 import javafx.scene.Node
+import javafx.scene.canvas.Canvas
+import javafx.scene.image.Image
 import javafx.scene.layout.Background
 import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.Pane
@@ -560,6 +562,10 @@ abstract class ViewTransition {
         if (children.remove(node)) children.add(node)
     }
 
+    protected fun Image.toCanvas() = Canvas(width, height).also {
+        it.graphicsContext2D.drawImage(this, 0.0, 0.0)
+    }
+
     /**
      * Create a [StackPane] in which the transition will take place. You should generally put both the current and the
      * replacement nodes in the stack, but it isn't technically required.
@@ -923,5 +929,84 @@ abstract class ViewTransition {
         override fun stack(current: Node, replacement: Node) = super.stack(replacement, current)
 
         override fun reversed() = Explode(duration, scale).also { it.setup = setup }
+    }
+
+    /**
+     * A [ReversibleViewTransition] where a node is wiped away in a given direction revealing another node.
+     *
+     * The reverse is an Wipe in the opposite direction
+     *
+     * @param duration How long the transition will take
+     * @param direction The direction the node is wiped away
+     */
+    class Wipe(val duration: Duration, val direction: Direction = Direction.LEFT) : ReversibleViewTransition<Wipe>() {
+        override fun stack(current: Node, replacement: Node) =
+            StackPane(replacement, current.snapshot(null, null).toCanvas())
+
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+            val canvas = stack.children[1] as Canvas
+            val gc = canvas.graphicsContext2D
+            return object : Transition() {
+                var x = 0.0
+                var y = 0.0
+                var width = canvas.width
+                var height = canvas.height
+
+                init {
+                    cycleDuration = duration
+                }
+
+                override fun interpolate(frac: Double) {
+                    when (direction) {
+                        ViewTransition.Direction.UP, ViewTransition.Direction.DOWN -> {
+                            height = frac * canvas.height
+                            if (direction == ViewTransition.Direction.UP) y = canvas.height - height
+                        }
+                        ViewTransition.Direction.LEFT, ViewTransition.Direction.RIGHT -> {
+                            width = frac * canvas.width
+                            if (direction == ViewTransition.Direction.LEFT) x = canvas.width - width
+                        }
+                    }
+                    gc.clearRect(x, y, width, height)
+                }
+            }
+        }
+
+        override fun reversed() = Wipe(duration, direction.reversed()).also { it.setup = setup }
+    }
+
+    /**
+     * A [ViewTransition] where a node is dissolved revealing another node.
+     *
+     * @param duration How long the transition will take
+     * @param hChunks The number of horizontal chunks the current node will be broken into
+     * @param vChunks The number of vertical chunks the current node will be broken into
+     */
+    class Dissolve(val duration: Duration, val hChunks: Int = 50, val vChunks: Int = 50) : ViewTransition() {
+        override fun stack(current: Node, replacement: Node) =
+            StackPane(replacement, current.snapshot(null, null).toCanvas())
+
+        override fun create(current: Node, replacement: Node, stack: StackPane): Animation {
+            val canvas = stack.children[1] as Canvas
+            val width = canvas.width / hChunks
+            val height = canvas.height / vChunks
+            val gc = canvas.graphicsContext2D
+            val originalSize = hChunks * vChunks
+            val indices = MutableList(originalSize) { it }
+            indices.shuffle()
+            return object : Transition() {
+                init {
+                    cycleDuration = duration
+                }
+
+                override fun interpolate(frac: Double) {
+                    if (indices.isEmpty()) return
+                    repeat((frac * originalSize).toInt() - originalSize + indices.lastIndex) {
+                        val index = indices.removeAt(indices.lastIndex)
+                        gc.clearRect(index % hChunks * width, index / hChunks * height, width, height)
+                    }
+                }
+            }
+        }
     }
 }

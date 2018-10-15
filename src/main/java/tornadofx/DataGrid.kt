@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
 
 fun <T> EventTarget.datagrid(
         items: List<T>? = null,
-        scope: Scope = DefaultScope,
+        scope: Scope = FX.defaultScope,
         op: DataGrid<T>.() -> Unit = {}
 ) = DataGrid<T>().attachTo(this, op){
     it.scope = scope
@@ -276,7 +276,7 @@ open class DataGridCell<T>(val dataGrid: DataGrid<T>) : IndexedCell<T>() {
             val formatter = dataGrid.cellFormat
             if (fresh) {
                 val cellFragmentType = dataGrid.properties["tornadofx.cellFragment"] as KClass<DataGridCellFragment<T>>?
-                cellFragment = if (cellFragmentType != null) find(cellFragmentType, dataGrid.scope ?: DefaultScope) else null
+                cellFragment = if (cellFragmentType != null) find(cellFragmentType, dataGrid.scope ?: FX.defaultScope) else null
                 fresh = false
             }
             cellFragment?.apply {
@@ -370,6 +370,8 @@ open class DataGridRow<T>(val dataGrid: DataGrid<T>, val dataGridSkin: DataGridS
 }
 
 class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>, BehaviorBase<DataGridRow<T>>>(control, BehaviorBase(control, emptyList())) {
+    private var lastUpdatedCells = -1..-1
+
     init {
         // Remove default label from CellSkinBase
         children.clear()
@@ -404,6 +406,8 @@ class DataGridRowSkin<T>(control: DataGridRow<T>) : CellSkinBase<DataGridRow<T>,
             val startCellIndex = rowIndex * maxCellsInRow
             val endCellIndex = startCellIndex + maxCellsInRow - 1
             var cacheIndex = 0
+                
+            lastUpdatedCells = (startCellIndex..endCellIndex).also { if (it == lastUpdatedCells) return }
 
             var cellIndex = startCellIndex
             while (cellIndex <= endCellIndex) {

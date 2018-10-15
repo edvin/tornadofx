@@ -8,14 +8,18 @@
 
 ### Changes
 
-- Kotlin 1.2.71
-- UIComponents docked in a Workspace will have that workspace set into it's Scope to avoid confusion (https://github.com/edvin/tornadofx/issues/806)
+- `App.scope` is overridable
+- `DefaultScope` deprecated, use `FX.defaultScope` instead
+- The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
+- Kotlin 1.2.70
 
 ### Additions
 
 - TableView.onEditStart() and TableColumn.cancel() functions which can be used to intercept editing events
 - resources.media() to load a Media instance from resources
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
+- Wipe and Dissolve view transitions
+- `tab` builder assigns `UIComponent.icon` as Tab graphic
 
 ## [1.7.17]
 

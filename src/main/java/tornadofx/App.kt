@@ -54,7 +54,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         FX.eventbus.fire(event)
     }
 
-    constructor(primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class, stylesheet: KClass<out Stylesheet>, scope: Scope = DefaultScope) : this(primaryView, *arrayOf(stylesheet)) {
+    constructor(primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class, stylesheet: KClass<out Stylesheet>, scope: Scope = FX.defaultScope) : this(primaryView, *arrayOf(stylesheet)) {
         this.scope = scope
     }
 
@@ -153,7 +153,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T> inject(scope: Scope = DefaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<App, T> {
+    inline fun <reified T> inject(scope: Scope = FX.defaultScope): ReadOnlyProperty<App, T> where T : Component, T : ScopedInstance = object : ReadOnlyProperty<App, T> {
         override fun getValue(thisRef: App, property: KProperty<*>) = find<T>(scope)
     }
 
