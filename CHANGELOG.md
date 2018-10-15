@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792)
+- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792). The set function that takes Pair still accepts null as the value, but will remove the key if the value is null.
 
 ### Changes
 

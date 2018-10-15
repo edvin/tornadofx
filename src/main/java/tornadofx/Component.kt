@@ -62,11 +62,15 @@ interface Configurable {
 }
 
 class ConfigProperties(val configurable: Configurable) : Properties(), Closeable {
-    fun set(pair: Pair<String, Any>) {
-        val value = pair.second.let {
-            (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
+    fun set(pair: Pair<String, Any?>) {
+        if (pair.second == null) {
+            remove(pair.first)
+        } else {
+            val value = pair.second.let {
+                (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
+            }
+            set(pair.first, value)
         }
-        set(pair.first, value)
     }
 
     fun string(key: String): String? = getProperty(key)
