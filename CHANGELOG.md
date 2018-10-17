@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792)
+- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792). The set function that takes Pair still accepts null as the value, but will remove the key if the value is null.
 
 ### Changes
 
@@ -29,6 +29,7 @@
 - resources.media() to load a Media instance from resources
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
 - Wipe and Dissolve view transitions
+- `tab` builder assigns `UIComponent.icon` as Tab graphic
 - Added `toggleClass` variant with `Iterable<Styleable>` as receiver and `ObservableValue<Boolean>` as predicate.
 - Added `TreeTableView<T>.onUserDelete()` function.
 - Added missing BigInteger getters from a JsonObject.
