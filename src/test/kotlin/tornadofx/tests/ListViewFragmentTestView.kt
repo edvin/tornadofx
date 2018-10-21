@@ -7,11 +7,11 @@ import tornadofx.*
 
 class ListViewTestApp : App(ListViewFragmentTestView::class)
 
-class Item(value: String) {
+class ListViewItem(value: String) {
     val valueProperty = SimpleStringProperty(value)
 }
 
-class MyItemViewModel : ItemViewModel<Item>() {
+class MyItemViewModel : ItemViewModel<ListViewItem>() {
     val value = bind { item?.valueProperty }
 }
 
