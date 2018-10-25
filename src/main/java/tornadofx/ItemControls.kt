@@ -535,7 +535,7 @@ fun <T> TableView<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
+fun <T> TableView<out T>.bindSelected(model: ItemViewModel<in T>) {
     selectionModel.selectedItemProperty().onChange {
         model.item = it
     }
