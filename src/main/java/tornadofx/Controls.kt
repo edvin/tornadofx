@@ -445,7 +445,7 @@ inline fun <reified T> EventTarget.label(
     } else {
         textProperty().bind(observable.stringBinding { converter.toString(it) })
     }
-    if (graphic != null) graphicProperty().bind(graphicProperty)
+    if (graphicProperty != null) graphicProperty().bind(graphicProperty)
     op(this)
 }
 
