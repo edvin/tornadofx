@@ -379,7 +379,9 @@ fun EventTarget.radiobutton(
 // ================================================================
 // ToggleGroup
 
-fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}): ToggleGroup = ToggleGroup().also { properties[TOGGLE_GROUP_PROPERTY] = it }.also(op)
+fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}): ToggleGroup = ToggleGroup().also {
+    properties[TOGGLE_GROUP_PROPERTY] = it
+}.also(op)
 
 /**
  * Bind the selectedValueProperty of this toggle group to the given property. Passing in a writable value
