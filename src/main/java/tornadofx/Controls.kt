@@ -38,7 +38,7 @@ internal val EventTarget.properties: ObservableMap<Any, Any>
         is MenuItem -> properties
         is Toggle -> properties
         is ToggleGroup -> properties
-        is TableColumnBase<*, *> -> this.properties // Explicit this is required due to weird SmartCast
+        is TableColumnBase<*, *> -> this.properties // Explicit `this` is required due to weird SmartCast
         else -> throw IllegalArgumentException("Don't know how to extract properties object from $this")
     }
 
@@ -69,12 +69,16 @@ fun children(addTo: MutableList<Node>, op: Pane.() -> Unit) {
 fun EventTarget.text(
     value: String? = null,
     op: Text.() -> Unit = {}
-): Text = Text().attachTo(this, op) { if (value != null) it.text = value }
+): Text = Text().attachTo(this, op) {
+    if (value != null) it.text = value
+}
 
 fun EventTarget.text(
     observable: ObservableValue<String>,
     op: Text.() -> Unit = {}
-): Text = Text().attachTo(this, op) { it.bind(observable) }
+): Text = Text().attachTo(this, op) {
+    it.bind(observable)
+}
 
 fun EventTarget.textflow(op: TextFlow.() -> Unit = {}): TextFlow = TextFlow().attachTo(this, op)
 
@@ -85,18 +89,24 @@ fun EventTarget.textflow(op: TextFlow.() -> Unit = {}): TextFlow = TextFlow().at
 fun EventTarget.textfield(
     value: String? = null,
     op: TextField.() -> Unit = {}
-): TextField = TextField().attachTo(this, op) { if (value != null) it.text = value }
+): TextField = TextField().attachTo(this, op) {
+    if (value != null) it.text = value
+}
 
 fun EventTarget.textfield(
     observable: ObservableValue<String>,
     op: TextField.() -> Unit = {}
-): TextField = TextField().attachTo(this, op) { it.bind(observable) }
+): TextField = TextField().attachTo(this, op) {
+    it.bind(observable)
+}
 
 @JvmName("textfieldNumber")
 fun EventTarget.textfield(
     observable: ObservableValue<Number>,
     op: TextField.() -> Unit = {}
-): TextField = TextField().attachTo(this, op) { it.bind(observable) }
+): TextField = TextField().attachTo(this, op) {
+    it.bind(observable)
+}
 
 fun <T> EventTarget.textfield(
     property: Property<T>,
@@ -114,12 +124,16 @@ fun <T> EventTarget.textfield(
 fun EventTarget.passwordfield(
     value: String? = null,
     op: PasswordField.() -> Unit = {}
-): PasswordField = PasswordField().attachTo(this, op) { if (value != null) it.text = value }
+): PasswordField = PasswordField().attachTo(this, op) {
+    if (value != null) it.text = value
+}
 
 fun EventTarget.passwordfield(
     observable: ObservableValue<String>,
     op: PasswordField.() -> Unit = {}
-): PasswordField = PasswordField().attachTo(this, op) { it.bind(observable) }
+): PasswordField = PasswordField().attachTo(this, op) {
+    it.bind(observable)
+}
 
 
 // ================================================================
@@ -128,12 +142,16 @@ fun EventTarget.passwordfield(
 fun EventTarget.datepicker(
     value: LocalDate? = null,
     op: DatePicker.() -> Unit = {}
-): DatePicker = DatePicker().attachTo(this, op) { if (value != null) it.value = value }
+): DatePicker = DatePicker().attachTo(this, op) {
+    if (value != null) it.value = value
+}
 
 fun EventTarget.datepicker(
     observable: ObservableValue<LocalDate>,
     op: DatePicker.() -> Unit = {}
-): DatePicker = DatePicker().attachTo(this, op) { it.bind(observable) }
+): DatePicker = DatePicker().attachTo(this, op) {
+    it.bind(observable)
+}
 
 
 // ================================================================
@@ -142,12 +160,16 @@ fun EventTarget.datepicker(
 fun EventTarget.textarea(
     value: String? = null,
     op: TextArea.() -> Unit = {}
-): TextArea = TextArea().attachTo(this, op) { if (value != null) it.text = value }
+): TextArea = TextArea().attachTo(this, op) {
+    if (value != null) it.text = value
+}
 
 fun EventTarget.textarea(
     observable: ObservableValue<String>,
     op: TextArea.() -> Unit = {}
-): TextArea = TextArea().attachTo(this, op) { it.bind(observable) }
+): TextArea = TextArea().attachTo(this, op) {
+    it.bind(observable)
+}
 
 fun <T> EventTarget.textarea(
     property: Property<T>,
@@ -162,7 +184,9 @@ fun <T> EventTarget.textarea(
 fun EventTarget.buttonbar(
     buttonOrder: String? = null,
     op: ButtonBar.() -> Unit
-): ButtonBar = ButtonBar().attachTo(this, op) { if (buttonOrder != null) it.buttonOrder = buttonOrder }
+): ButtonBar = ButtonBar().attachTo(this, op) {
+    if (buttonOrder != null) it.buttonOrder = buttonOrder
+}
 
 
 // ================================================================
@@ -171,12 +195,16 @@ fun EventTarget.buttonbar(
 fun EventTarget.progressindicator(
     value: Double? = null,
     op: ProgressIndicator.() -> Unit = {}
-): ProgressIndicator = ProgressIndicator().attachTo(this, op) { if (value != null) it.progress = value }
+): ProgressIndicator = ProgressIndicator().attachTo(this, op) {
+    if (value != null) it.progress = value
+}
 
 fun EventTarget.progressindicator(
     observable: ObservableValue<Number>,
     op: ProgressIndicator.() -> Unit = {}
-): ProgressIndicator = ProgressIndicator().attachTo(this, op) { it.bind(observable) }
+): ProgressIndicator = ProgressIndicator().attachTo(this, op) {
+    it.bind(observable)
+}
 
 
 // ================================================================
@@ -185,12 +213,16 @@ fun EventTarget.progressindicator(
 fun EventTarget.progressbar(
     value: Double? = null,
     op: ProgressBar.() -> Unit = {}
-): ProgressBar = ProgressBar().attachTo(this, op) { if (value != null) it.progress = value }
+): ProgressBar = ProgressBar().attachTo(this, op) {
+    if (value != null) it.progress = value
+}
 
 fun EventTarget.progressbar(
     observable: ObservableValue<Number>,
     op: ProgressBar.() -> Unit = {}
-): ProgressBar = ProgressBar().attachTo(this, op) { it.bind(observable) }
+): ProgressBar = ProgressBar().attachTo(this, op) {
+    it.bind(observable)
+}
 
 
 // ================================================================
@@ -228,7 +260,9 @@ fun EventTarget.checkbox(
     text: String? = null,
     observable: ObservableValue<Boolean>? = null,
     op: CheckBox.() -> Unit = {}
-): CheckBox = CheckBox(text).attachTo(this, op) { if (observable != null) it.bind(observable) }
+): CheckBox = CheckBox(text).attachTo(this, op) {
+    if (observable != null) it.bind(observable)
+}
 
 
 // ================================================================
@@ -429,7 +463,9 @@ fun EventTarget.label(
     text: String? = "",
     graphic: Node? = null,
     op: Label.() -> Unit = {}
-): Label = Label(text).attachTo(this, op) { if (graphic != null) it.graphic = graphic }
+): Label = Label(text).attachTo(this, op) {
+    if (graphic != null) it.graphic = graphic
+}
 
 inline fun <reified T> EventTarget.label(
     observable: ObservableValue<T>,
@@ -485,7 +521,9 @@ fun EventTarget.hyperlink(
 fun EventTarget.htmleditor(
     html: String? = null,
     op: HTMLEditor.() -> Unit = {}
-): HTMLEditor = HTMLEditor().attachTo(this, op) { if (html != null) it.htmlText = html }
+): HTMLEditor = HTMLEditor().attachTo(this, op) {
+    if (html != null) it.htmlText = html
+}
 
 
 // ================================================================
@@ -517,7 +555,9 @@ fun EventTarget.imageview(
     url: String? = null,
     lazyload: Boolean = true,
     op: ImageView.() -> Unit = {}
-): ImageView = ImageView().attachTo(this, op) { if (url != null) it.image = Image(url, lazyload) }
+): ImageView = ImageView().attachTo(this, op) {
+    if (url != null) it.image = Image(url, lazyload)
+}
 
 fun EventTarget.imageview(
     observableUrl: ObservableValue<String>,
@@ -535,7 +575,9 @@ fun EventTarget.imageview(
 fun EventTarget.imageview(
     observableImage: ObservableValue<Image?>,
     op: ImageView.() -> Unit = {}
-): ImageView = ImageView().attachTo(this, op) { it.imageProperty().bind(observableImage) }
+): ImageView = ImageView().attachTo(this, op) {
+    it.imageProperty().bind(observableImage)
+}
 
 
 // ================================================================
@@ -565,7 +607,7 @@ fun TextInputControl.stripNonInteger(): Unit =
     textProperty().mutateOnChange { it?.replace(Regex("[^0-9]"), "") }
 
 @Deprecated("Use the variant with chars instead")
-fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")){
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) {
     stripNonNumeric(*allowedChars.joinToString("").toCharArray())
 }
 
