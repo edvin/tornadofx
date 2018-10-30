@@ -565,7 +565,9 @@ fun TextInputControl.stripNonInteger(): Unit =
     textProperty().mutateOnChange { it?.replace(Regex("[^0-9]"), "") }
 
 @Deprecated("Use the variant with chars instead")
-fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")): Unit = stripNonNumeric(*allowedChars.joinToString("").toCharArray())
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")){
+    stripNonNumeric(*allowedChars.joinToString("").toCharArray())
+}
 
 /**
  * Remove any non numeric values from a Text Input Control.
