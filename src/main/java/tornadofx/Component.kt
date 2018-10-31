@@ -1009,7 +1009,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
-        set(value) = titleProperty.set(value)
+        set(value) {
+            if (titleProperty.isBound)
+                titleProperty.unbind()
+            titleProperty.set(value)
+        }
 
     open val headingProperty: StringProperty = SimpleStringProperty().apply {
         bind(titleProperty)
@@ -1151,7 +1155,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     private fun undockFromParent(replacement: UIComponent) {
         (replacement.root.parent as? Pane)?.children?.remove(replacement.root)
     }
-
 }
 
 @Suppress("UNCHECKED_CAST")
