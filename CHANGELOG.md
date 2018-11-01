@@ -21,6 +21,7 @@
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
 - Wipe and Dissolve view transitions
 - `tab` builder assigns `UIComponent.icon` as Tab graphic
+- `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
 
 ## [1.7.17]
 

@@ -535,6 +535,12 @@ fun <T> TableView<T>.bindSelected(property: Property<T>) {
     }
 }
 
+fun <T> ComboBox<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it
+    }
+}
+
 fun <T> TableView<out T>.bindSelected(model: ItemViewModel<in T>) {
     selectionModel.selectedItemProperty().onChange {
         model.item = it
