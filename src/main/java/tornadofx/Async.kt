@@ -182,9 +182,7 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
-        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
-    }
+    check(Toolkit.getToolkit().canStartNestedEventLoop()) { "awaitUntil is not allowed during animation or layout processing" }
 
     val changeListener = object : ChangeListener<T> {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
@@ -447,11 +445,8 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
 }
 
 infix fun <T> Task<T>.finally(func: () -> Unit) {
-    if (this is FXTask<*>) {
-        finally(func)
-    } else {
-        throw IllegalArgumentException("finally() called on non-FXTask subclass")
-    }
+    require(this is FXTask<*>) { "finally() called on non-FXTask subclass" }
+    finally(func)
 }
 
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {

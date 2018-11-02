@@ -279,10 +279,7 @@ class LazyTreeItem<T : Any>(
         })
     }
 
-    fun hasChildren(): Boolean {
-        val result = invokeAndSetChildFactorySynchronously()
-        return result == null || result.isEmpty()
-    }
+    fun hasChildren(): Boolean = invokeAndSetChildFactorySynchronously().isNullOrEmpty()
 
     private fun invokeAndSetChildFactorySynchronously(): List<T>? {
         if (!childFactoryInvoked) {

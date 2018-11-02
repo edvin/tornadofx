@@ -38,7 +38,7 @@ inline fun <reified T:UIComponent> BundleContext.registerView(discriminator: Any
  * add the provided view to this UI element if the acceptor returns true.
  */
 fun EventTarget.addViewsWhen(acceptor: (ViewProvider) -> Boolean) {
-    if (!FX.osgiAvailable) throw IllegalArgumentException("You can only subscribe to ViewProviders when you're in an OSGi context")
+    require(FX.osgiAvailable) { "You can only subscribe to ViewProviders when you're in an OSGi context" }
     val context = FrameworkUtil.getBundle(acceptor.javaClass).bundleContext
     val receiver = object : ViewReceiver {
         override fun viewProvided(provider: ViewProvider) {
