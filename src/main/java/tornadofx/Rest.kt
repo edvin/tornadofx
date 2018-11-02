@@ -166,7 +166,7 @@ open class Rest : Controller() {
             try {
                 val content = text()
 
-                if (content.isNullOrBlank())
+                if (content.isNullOrEmpty())
                     return Json.createArrayBuilder().build()
 
                 return when (val json = Json.createReader(StringReader(content)).use { it.read() }) {
@@ -185,7 +185,7 @@ open class Rest : Controller() {
             try {
                 val content = text()
 
-                if (content.isNullOrBlank())
+                if (content.isNullOrEmpty())
                     return Json.createObjectBuilder().build()
 
                 return when (val json = Json.createReader(StringReader(content)).use { it.read() }) {
