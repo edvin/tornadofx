@@ -35,8 +35,10 @@ import javafx.stage.Window
 import javafx.util.Duration
 import java.io.Closeable
 import java.io.InputStream
+import java.io.InputStreamReader
 import java.io.StringReader
 import java.net.URL
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
@@ -54,10 +56,12 @@ interface ScopedInstance
 interface Configurable {
     val config: ConfigProperties
     val configPath: Path
+    val configCharset: Charset
 
     fun loadConfig() = ConfigProperties(this).apply {
-        if (Files.exists(configPath))
-            Files.newInputStream(configPath).use { load(it) }
+        if (Files.exists(configPath)) {
+            Files.newInputStream(configPath).use { load(InputStreamReader(it, configCharset)) }
+        }
     }
 }
 
@@ -109,6 +113,7 @@ abstract class Component : Configurable {
      */
     override val configPath: Path get() = app.configBasePath.resolve("${javaClass.name}.properties")
     override val config: ConfigProperties by lazy { loadConfig() }
+    override val configCharset: Charset get() = Charsets.UTF_8
 
     val clipboard: Clipboard by lazy { Clipboard.getSystemClipboard() }
     val hostServices: HostServices by lazy { FX.application.hostServices }
