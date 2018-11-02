@@ -12,6 +12,7 @@ import java.awt.event.*
 import java.awt.event.MouseEvent.BUTTON1
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -44,6 +45,8 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
      * in the folder provided by #configBasePath
      */
     override val configPath: Path get() = configBasePath.resolve("app.properties")
+
+    override val configCharset: Charset get() = Charsets.UTF_8
 
     private val trayIcons = ArrayList<TrayIcon>()
     val resources: ResourceLookup by lazy {
