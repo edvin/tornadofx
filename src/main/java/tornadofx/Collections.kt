@@ -263,7 +263,7 @@ class ListConversionListener<SourceType, TargetType>(targetList: MutableList<Tar
 
     override fun wasGarbageCollected() = targetRef.get() == null
 
-    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+    override fun hashCode() = targetRef.get().hashCode()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -307,7 +307,7 @@ class MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType>(
 
     override fun wasGarbageCollected() = targetRef.get() == null
 
-    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+    override fun hashCode() = targetRef.get().hashCode()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -352,7 +352,7 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
 
     override fun wasGarbageCollected() = targetRef.get() == null
 
-    override fun hashCode() = targetRef.get()?.hashCode() ?: 0
+    override fun hashCode() = targetRef.get().hashCode()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

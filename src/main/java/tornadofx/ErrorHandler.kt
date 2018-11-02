@@ -65,7 +65,7 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
         Alert(ERROR).apply {
             title = error.message ?: "An error occured"
             isResizable = true
-            headerText = if (error.stackTrace?.isEmpty() != false) "Error" else "Error in " + error.stackTrace[0].toString()
+            headerText = if (error.stackTrace.isNullOrEmpty()) "Error" else "Error in " + error.stackTrace[0].toString()
             dialogPane.content = VBox().apply {
                 add(cause)
                 if (error is RestException) {

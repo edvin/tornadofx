@@ -166,12 +166,10 @@ open class Rest : Controller() {
             try {
                 val content = text()
 
-                if (content == null || content.isEmpty())
+                if (content.isNullOrBlank())
                     return Json.createArrayBuilder().build()
 
-                val json = Json.createReader(StringReader(content)).use { it.read() }
-
-                return when (json) {
+                return when (val json = Json.createReader(StringReader(content)).use { it.read() }) {
                     is JsonArray -> json
                     is JsonObject -> Json.createArrayBuilder().add(json).build()
                     else -> throw IllegalArgumentException("Unknown json result value")
@@ -187,12 +185,10 @@ open class Rest : Controller() {
             try {
                 val content = text()
 
-                if (content == null || content.isEmpty())
+                if (content.isNullOrBlank())
                     return Json.createObjectBuilder().build()
 
-                val json = Json.createReader(StringReader(content)).use { it.read() }
-
-                return when (json) {
+                return when (val json = Json.createReader(StringReader(content)).use { it.read() }) {
                     is JsonArray -> {
                         if (json.isEmpty())
                             return Json.createObjectBuilder().build()

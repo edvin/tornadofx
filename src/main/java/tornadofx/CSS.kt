@@ -8,7 +8,10 @@ import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.control.*
+import javafx.scene.control.ContentDisplay
+import javafx.scene.control.OverrunStyle
+import javafx.scene.control.ScrollPane
+import javafx.scene.control.Tab
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
@@ -1112,7 +1115,7 @@ fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
         method.name == "setStyle" && method.returnType == Void.TYPE && method.parameterCount == 1 && method.parameters[0].type == String::class.java
     }
 
-    setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    requireNotNull(setStyleMethod) { "Don't know how to set style for Styleable subclass ${this@style.javaClass}" }
 
     val block = InlineCss().apply(op)
 
