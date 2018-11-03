@@ -958,21 +958,21 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
                 onBeforeShow()
 
-                showingProperty().onChange {
-                    if (it) {
-                        if (owner != null) {
-                            x = owner.x + (owner.width / 2) - (scene.width / 2)
-                            y = owner.y + (owner.height / 2) - (scene.height / 2)
-                        }
-                        callOnDock()
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                            configureReloading()
-                        }
-                        aboutToBeShown = false
-                    } else {
-                        modalStage = null
-                        callOnUndock()
+                setOnShown {
+                    if (owner != null) {
+                        x = owner.x + (owner.width / 2) - (scene.width / 2)
+                        y = owner.y + (owner.height / 2) - (scene.height / 2)
                     }
+                    callOnDock()
+                    if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                        configureReloading()
+                    }
+                    aboutToBeShown = false
+                }
+
+                setOnHidden {
+                    modalStage = null
+                    callOnUndock()
                 }
 
                 if (block) showAndWait() else show()
