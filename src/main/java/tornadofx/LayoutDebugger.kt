@@ -52,7 +52,7 @@ class LayoutDebugger : Fragment() {
                         nodeTree = this
                     }
                     this += propertyContainer.apply {
-                        padding = Insets(10.0)
+                        paddingAll = 10
                     }
                 }
             }
