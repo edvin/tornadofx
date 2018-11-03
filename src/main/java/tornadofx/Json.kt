@@ -237,7 +237,7 @@ class JsonBuilder {
     }
 
     fun add(key: String, value: JsonArray?) = apply {
-        if (value != null && value.isNotEmpty())
+        if (!value.isNullOrEmpty())
             delegate.add(key, value)
     }
 
@@ -292,8 +292,7 @@ interface JsonModelAuto : JsonModel {
 
     override fun updateModel(json: JsonObject) {
         jsonProperties.forEach {
-            val pr = it.get(this)
-            when (pr) {
+            when (val pr = it.get(this)) {
                 is BooleanProperty -> pr.value = json.bool(it.name)
                 is LongProperty -> pr.value = json.long(it.name)
                 is IntegerProperty -> pr.value = json.int(it.name)
@@ -351,8 +350,7 @@ interface JsonModelAuto : JsonModel {
     override fun toJSON(json: JsonBuilder) {
         with(json) {
             jsonProperties.forEach {
-                val pr = it.get(this@JsonModelAuto)
-                when (pr) {
+                when (val pr = it.get(this@JsonModelAuto)) {
                     is BooleanProperty -> add(it.name, pr.value)
                     is LongProperty -> add(it.name, pr.value)
                     is IntegerProperty -> add(it.name, pr.value)

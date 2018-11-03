@@ -40,7 +40,7 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
 
     override fun hashCode(): Int {
         var result = eventType.hashCode()
-        result = 31 * result + (owner?.hashCode() ?: 0)
+        result = 31 * result + owner.hashCode()
         result = 31 * result + action.hashCode()
         return result
     }

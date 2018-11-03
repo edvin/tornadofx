@@ -4,7 +4,7 @@ import javafx.collections.ObservableList
 import javafx.scene.layout.Background.EMPTY
 import tornadofx.*
 import java.time.LocalDate
-import java.util.*
+import kotlin.random.Random
 
 class ExpandableTableTest : View("Smart Resize Demo") {
     class Room(val id: Int, val number: String, val type: String, val bed: String, val occupancy: ObservableList<Occupancy>)
@@ -66,5 +66,5 @@ class ExpandableTableTest : View("Smart Resize Demo") {
 
 
 private fun makeOccupancy(count: Int) = (0..count).map {
-    ExpandableTableTest.Occupancy(Random().nextInt(100), LocalDate.now().minusDays(it.toLong()), Random().nextInt(100000))
+    ExpandableTableTest.Occupancy(Random.nextInt(100), LocalDate.now().minusDays(it.toLong()), Random.nextInt(100000))
 }.observable()

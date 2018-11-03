@@ -944,9 +944,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     if (this == scene?.root) {
         val scene = scene!!
 
-        if (replacement !is Parent) {
-            throw IllegalArgumentException("Replacement scene root must be a Parent")
-        }
+        require(replacement is Parent) { "Replacement scene root must be a Parent" }
 
         // Update scene property to support Live Views
         replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
