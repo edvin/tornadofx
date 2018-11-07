@@ -5,6 +5,7 @@
 ### Fixed
 
 - `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792). The set function that takes Pair still accepts null as the value, but will remove the key if the value is null.
+- the `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup (https://github.com/edvin/tornadofx/issues/837)
 
 ### Changes
 
@@ -769,7 +770,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - App MainView parameter can now be a `Fragment` as well as `View`
 - ListView `cellCache` provider to create a cached graphic node per item
 - Kotlin 1.0.4
-- The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
+- The `di()` delegate no longer calls out to the `DIContainer` for eve ryaccess, effectively caching the lookup
 - The `fxid()` delegate can now inject any type, not just `EventTarget` subclasses
 - Added non-null `onChange` overrides for primitive `ObservableValue`s
 - Fixed bug with `Node.fade` reversed animations (was also affecting `ViewTransitions`)

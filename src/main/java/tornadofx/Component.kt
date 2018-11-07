@@ -219,13 +219,16 @@ abstract class Component : Configurable {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
             val dicontainer = FX.dicontainer ?: throw AssertionError(
                     "Injector is not configured, so bean of type ${T::class} cannot be resolved")
-            return dicontainer.let {
-                if (name != null) {
-                    it.getInstance<T>(name)
-                } else {
-                    it.getInstance()
+            if (injected == null) {
+                injected = dicontainer.let {
+                    if (name != null) {
+                        it.getInstance<T>(name)
+                    } else {
+                        it.getInstance()
+                    }
                 }
-            }.also { injected = it }
+            }
+            return injected!!
         }
     }
 
