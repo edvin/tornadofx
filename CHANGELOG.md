@@ -770,7 +770,7 @@ behavior is more as one would expect and hopefully the change won't cause any tr
 - App MainView parameter can now be a `Fragment` as well as `View`
 - ListView `cellCache` provider to create a cached graphic node per item
 - Kotlin 1.0.4
-- The `di()` delegate no longer calls out to the `DIContainer` for eve ryaccess, effectively caching the lookup
+- The `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup
 - The `fxid()` delegate can now inject any type, not just `EventTarget` subclasses
 - Added non-null `onChange` overrides for primitive `ObservableValue`s
 - Fixed bug with `Node.fade` reversed animations (was also affecting `ViewTransitions`)
