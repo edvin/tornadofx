@@ -172,7 +172,7 @@ private val runLaterTimer: Timer by lazy { Timer(true) }
  * You can cancel the task before the time is up to abort the execution.
  */
 fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
-    val task = FXTimerTask(op, timer)
+    val task = FXTimerTask(op, runLaterTimer)
     runLaterTimer.schedule(task, delay.toMillis().toLong())
     return task
 }
