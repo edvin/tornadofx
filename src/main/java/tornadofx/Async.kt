@@ -158,7 +158,7 @@ infix fun <T> Task<T>.cancel(func: () -> Unit) = apply {
  */
 fun runLater(op: () -> Unit) = Platform.runLater(op)
 
-private val timer: Timer by lazy { Timer(true) }
+private val runLaterTimer: Timer by lazy { Timer(true) }
 
 /**
  * Run the specified Runnable on the JavaFX Application Thread after a
@@ -173,7 +173,7 @@ private val timer: Timer by lazy { Timer(true) }
  */
 fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
     val task = FXTimerTask(op, timer)
-    timer.schedule(task, delay.toMillis().toLong())
+    runLaterTimer.schedule(task, delay.toMillis().toLong())
     return task
 }
 
