@@ -41,6 +41,11 @@
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-fontawesome</artifactId>
+            <version>${de.jensd.fontawesomefx.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
@@ -65,10 +70,30 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.jensd</groupId>
-            <artifactId>fontawesomefx</artifactId>
-            <version>${de.jensd.fontawesomefx.version}</version>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.3</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
         </dependency>
     </dependencies>
 
@@ -169,8 +194,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -211,20 +236,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven.javadoc.version}</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>javadoc</goal>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>${maven.bundle.version}</version>
@@ -261,7 +272,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>${maven.surefire.version}</version>
             </plugin>
 
         </plugins>
@@ -276,28 +287,29 @@
     </pluginRepositories>
 
     <properties>
+        <javafx.version>11</javafx.version>
         <kotlin.version>1.2.71</kotlin.version>
-        <dokka.version>0.9.9</dokka.version>
+        <dokka.version>0.9.17</dokka.version>
 
         <org.glassfish.javax.json.version>1.1.2</org.glassfish.javax.json.version>
         <org.apache.httpcomponents.httpclient.version>4.5.3</org.apache.httpcomponents.httpclient.version>
-        <org.apache.felix.framework.version>5.6.4</org.apache.felix.framework.version>
+        <org.apache.felix.framework.version>6.0.1</org.apache.felix.framework.version>
         <junit.version>4.12</junit.version>
-        <org.testfx.testfx-core.version>4.0.4-alpha</org.testfx.testfx-core.version>
-        <org.testfx.testfx-junit.version>4.0.4-alpha</org.testfx.testfx-junit.version>
-        <de.jensd.fontawesomefx.version>8.9</de.jensd.fontawesomefx.version>
+        <org.testfx.testfx-core.version>4.0.14-alpha</org.testfx.testfx-core.version>
+        <org.testfx.testfx-junit.version>4.0.14-alpha</org.testfx.testfx-junit.version>
+        <de.jensd.fontawesomefx.version>4.7.0-9.1.2</de.jensd.fontawesomefx.version>
 
         <maven.release.version>2.1</maven.release.version>
-        <maven.compiler.version>3.1</maven.compiler.version>
-        <maven.source.version>2.4</maven.source.version>
+        <maven.compiler.version>3.7.0</maven.compiler.version>
+        <maven.source.version>3.0.1</maven.source.version>
         <maven.jar.version>3.0.2</maven.jar.version>
-        <maven.javadoc.version>2.10.3</maven.javadoc.version>
-        <maven.bundle.version>3.2.0</maven.bundle.version>
+        <maven.javadoc.version>3.0.1</maven.javadoc.version>
+        <maven.bundle.version>3.5.1</maven.bundle.version>
         <maven.gpg.version>1.4</maven.gpg.version>
+        <maven.surefire.version>2.21.0</maven.surefire.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>10</maven.compiler.source>
+        <maven.compiler.target>10</maven.compiler.target>
     </properties>
-
 </project>

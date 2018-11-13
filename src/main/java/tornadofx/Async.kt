@@ -1,7 +1,5 @@
 package tornadofx
 
-import com.sun.glass.ui.Application
-import com.sun.javafx.tk.Toolkit
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
@@ -112,7 +110,7 @@ infix fun <T> Task<T>.success(func: (T) -> Unit) = apply {
         }
     }
 
-    if (Application.isEventThread())
+    if (Platform.isFxApplicationThread())
         attachSuccessHandler()
     else
         runLater { attachSuccessHandler() }
@@ -129,7 +127,7 @@ infix fun <T> Task<T>.fail(func: (Throwable) -> Unit) = apply {
         }
     }
 
-    if (Application.isEventThread())
+    if (Platform.isFxApplicationThread())
         attachFailHandler()
     else
         runLater { attachFailHandler() }
@@ -146,7 +144,7 @@ infix fun <T> Task<T>.cancel(func: () -> Unit) = apply {
         }
     }
 
-    if (Application.isEventThread())
+    if (Platform.isFxApplicationThread())
         attachCancelHandler()
     else
         runLater { attachCancelHandler() }
@@ -182,7 +180,7 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    if (!Toolkit.getToolkit().canStartNestedEventLoop()) {
+    if (Platform.isNestedLoopRunning()) {
         throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
     }
 
@@ -190,7 +188,7 @@ fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
             if (condition(value)) {
                 runLater {
-                    Toolkit.getToolkit().exitNestedEventLoop(this@awaitUntil, null)
+                    Platform.exitNestedEventLoop(this@awaitUntil, null)
                     removeListener(this)
                 }
             }
@@ -199,7 +197,7 @@ fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
 
     changeListener.changed(this, value, value)
     addListener(changeListener)
-    Toolkit.getToolkit().enterNestedEventLoop(this)
+    Platform.enterNestedEventLoop(this)
 }
 
 /**

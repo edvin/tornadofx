@@ -2,7 +2,6 @@
 
 package tornadofx
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallerImpl.FACTORY
 import javafx.beans.DefaultProperty
 import javafx.beans.property.*
 import javafx.collections.ObservableList
