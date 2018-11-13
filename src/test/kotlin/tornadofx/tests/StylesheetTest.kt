@@ -618,10 +618,14 @@ class StylesheetTest {
         }
     }
 
-    private fun stylesheet(op: Stylesheet.() -> Unit) = Stylesheet().apply(op)
-    private infix fun Stylesheet.shouldEqual(op: () -> String) = Assert.assertEquals(op().strip(), render().strip())
-    private infix fun Color.shouldEqual(other: Color) = Assert.assertEquals(other.toString(), toString())
-    private fun String.strip() = replace(Regex("\\s+"), " ").trim()
+    private fun stylesheet(op: Stylesheet.() -> Unit) =
+            Stylesheet().apply(op)
+    private infix fun Stylesheet.shouldEqual(op: () -> String) =
+            Assert.assertEquals(op().normalizeWhitespace(), render().normalizeWhitespace())
+    private infix fun Color.shouldEqual(other: Color) =
+            Assert.assertEquals(other.toString(), toString())
+    private fun String.normalizeWhitespace() =
+            replace(Regex("\\s+"), " ").trim()
 
     /**
      * This is just a compile test to make sure box and c are not moved
