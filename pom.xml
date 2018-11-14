@@ -96,13 +96,19 @@
         <dependency>
             <groupId>org.openjfx</groupId>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 004e21b6 (Added module-info.java, updated to Java 11 and updated some other lib versions)
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
+<<<<<<< HEAD
 =======
 >>>>>>> 41d00901 (Remove profile and add JavaFX dependencies as compiled scoped.)
+=======
+>>>>>>> 004e21b6 (Added module-info.java, updated to Java 11 and updated some other lib versions)
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
