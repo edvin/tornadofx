@@ -328,7 +328,7 @@ fun EventTarget.label(text: String = "", graphic: Node? = null, op: Label.() -> 
 
 inline fun <reified T> EventTarget.label(
         observable: ObservableValue<T>,
-        graphicProperty: ObjectProperty<Node>? = null,
+        graphicProperty: ObservableValue<Node>? = null,
         converter: StringConverter<in T>? = null,
         noinline op: Label.() -> Unit = {}
 ) = label().apply {
