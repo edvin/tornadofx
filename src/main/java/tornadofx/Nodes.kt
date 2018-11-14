@@ -356,7 +356,7 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
             }
             afterResize.invoke()
         } catch (ex: Throwable) {
-            ex.printStackTrace()
+//            ex.printStackTrace()
             // Silent for now, it is usually run multiple times
 //            log.warning("Unable to resize columns to content: ${columns.joinToString{ it.text }}")
         }
