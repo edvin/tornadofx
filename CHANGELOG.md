@@ -13,7 +13,7 @@
 - `App.scope` is overridable
 - `DefaultScope` deprecated, use `FX.defaultScope` instead
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
-- Kotlin 1.3.0
+- Kotlin 1.3.10
 - bindSelected for ViewModel gets `out` modifier (https://github.com/edvin/tornadofx/issues/823)
 
 ### Additions
