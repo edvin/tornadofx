@@ -15,6 +15,11 @@
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
 - Kotlin 1.3.10
 - bindSelected for ViewModel gets `out` modifier (https://github.com/edvin/tornadofx/issues/823)
+- Added support for more classes in `EventTarget.properties`.
+- Extracted (some) property keys to top level constants.
+    - Every hardcoded `"tornadofx.someName"` is now `const val SOME_NAME_PROPERTY = "tornadofx.someName"`
+- Generalized (some) `Property<T>` to `ObservableValue<T>`.
+- `TextInputControl.stripNonNumeric()` now accepts Chars instead of Strings.
 
 ### Additions
 
@@ -24,6 +29,8 @@
 - Wipe and Dissolve view transitions
 - `tab` builder assigns `UIComponent.icon` as Tab graphic
 - `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
+- Added some function variations with `ObservableValue<T>` instead of `T`. 
+    - For an existing `fun build(s: String)` a new variant `fun build(s: ObservableValue<String>)` is added.
 
 ## [1.7.17]
 
