@@ -440,6 +440,12 @@ inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationT
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
+fun TextInputControl.requiredWhen(condition: Boolean, trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
+        = validator(trigger) { if (condition && it.isNullOrBlank()) error(message) else null }
+
+fun TextInputControl.requiredWhen(condition: ObservableValue<Boolean>, trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
+        = validator(trigger) { if (condition.value && it.isNullOrBlank()) error(message) else null }
+
 inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it == null) error(message) else null }
 
