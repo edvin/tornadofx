@@ -36,6 +36,15 @@ fun EventTarget.colorpicker(
     if (color != null) it.value = color
 }
 
+fun EventTarget.colorpicker(
+        colorProperty: ObjectProperty<Color>,
+        mode: ColorPickerMode = ColorPickerMode.Button,
+        op: ColorPicker.() -> Unit = {}
+) = ColorPicker().apply { bind(colorProperty) }.attachTo(this, op) {
+    if (mode == ColorPickerMode.MenuButton) it.addClass(ColorPicker.STYLE_CLASS_BUTTON)
+    else if (mode == ColorPickerMode.SplitMenuButton) it.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
+}
+
 fun EventTarget.textflow(op: TextFlow.() -> Unit = {}) = TextFlow().attachTo(this, op)
 
 fun EventTarget.text(op: Text.() -> Unit = {}) = Text().attachTo(this, op)

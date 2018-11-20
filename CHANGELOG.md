@@ -24,6 +24,7 @@
 - Wipe and Dissolve view transitions
 - `tab` builder assigns `UIComponent.icon` as Tab graphic
 - `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
+- `colorpicker` builder with property binding constructor
 
 ## [1.7.17]
 

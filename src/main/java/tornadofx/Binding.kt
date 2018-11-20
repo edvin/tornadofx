@@ -15,6 +15,7 @@ import javafx.beans.value.WritableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.scene.control.*
+import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.util.StringConverter
 import javafx.util.converter.*
@@ -36,6 +37,9 @@ private fun <T> Property<T>.internalBind(property: ObservableValue<T>, readonly:
 
 
 fun <T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
+        valueProperty().internalBind(property, readonly)
+
+fun ColorPicker.bind(property: ObservableValue<Color>, readonly: Boolean = false) =
         valueProperty().internalBind(property, readonly)
 
 fun DatePicker.bind(property: ObservableValue<LocalDate>, readonly: Boolean = false) =
