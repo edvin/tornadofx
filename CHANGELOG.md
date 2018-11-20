@@ -25,6 +25,7 @@
 - `tab` builder assigns `UIComponent.icon` as Tab graphic
 - `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
 - TextInputControl.requiredWhen()
+- `colorpicker` builder with property binding support
 
 ## [1.7.17]
 
