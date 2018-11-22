@@ -108,12 +108,18 @@ open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListVi
     init {
         if (listView != null) {
             properties?.let { listView.properties?.putAll(it) }
-            listView.properties["tornadofx.cellFormatCapable"] = true
-            listView.properties["tornadofx.cellCacheCapable"] = true
-            listView.properties["tornadofx.editCapable"] = true
+            setCapabilities(listView)
         }
         indexProperty().onChange {
             if (it == -1) clearCellFragment()
+        }
+    }
+
+    companion object {
+        internal fun setCapabilities(listView: ListView<*>) {
+            listView.properties["tornadofx.cellFormatCapable"] = true
+            listView.properties["tornadofx.cellCacheCapable"] = true
+            listView.properties["tornadofx.editCapable"] = true
         }
     }
 
@@ -185,15 +191,19 @@ fun <T> ListView<T>.bindSelected(model: ItemViewModel<T>) = this.bindSelected(mo
 
 fun <T, F : ListCellFragment<T>> ListView<T>.cellFragment(scope: Scope = FX.defaultScope, fragment: KClass<F>) {
     properties["tornadofx.cellFragment"] = fragment
-    if (properties["tornadofx.cellFormatCapable"] != true)
+    if (properties["tornadofx.cellFormatCapable"] != true) {
+        SmartListCell.setCapabilities(this)
         cellFactory = Callback { SmartListCell(scope, it) }
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
 fun <T> ListView<T>.cellFormat(scope: Scope = FX.defaultScope, formatter: (ListCell<T>.(T) -> Unit)) {
     properties["tornadofx.cellFormat"] = formatter
-    if (properties["tornadofx.cellFormatCapable"] != true)
+    if (properties["tornadofx.cellFormatCapable"] != true) {
+        SmartListCell.setCapabilities(this)
         cellFactory = Callback { SmartListCell(scope, it) }
+    }
 }
 
 fun <T> ListView<T>.onEdit(scope: Scope = FX.defaultScope, eventListener: ListCell<T>.(EditEventType, T?) -> Unit) {
