@@ -26,6 +26,7 @@
 - `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
 - TextInputControl.requiredWhen()
 - `colorpicker` builder with property binding support
+- `movable` parameter for `openInternalWindow()` (https://github.com/edvin/tornadofx/issues/863)
 
 ## [1.7.17]
 
