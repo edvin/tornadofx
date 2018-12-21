@@ -453,6 +453,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         deletableWhen { uiComponent.deletable }
         whenDeleted { uiComponent.onDelete() }
 
+        creatableWhen { uiComponent.creatable }
+        whenCreated { uiComponent.onCreate() }
+
         refreshableWhen { uiComponent.refreshable }
         whenRefreshed { uiComponent.onRefresh() }
     }
@@ -1128,7 +1131,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             labelPosition: Orientation = Orientation.HORIZONTAL,
             builder: StageAwareFieldset.() -> Unit
     ): Stage? {
-        val fragment = builderFragment(title, scope, { form() })
+        val fragment = builderFragment(title, scope) { form() }
         val fieldset = StageAwareFieldset(title, labelPosition)
         fragment.root.add(fieldset)
         fieldset.stage = fragment.openWindow(modality = modality, stageStyle = stageStyle, owner = owner)!!
