@@ -467,6 +467,9 @@ inline fun <reified T> ChoiceBox<T>.validator(trigger: ValidationTrigger = Valid
 inline fun <reified T> Spinner<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueFactory.valueProperty(), trigger, validator)
 
+inline fun <reified T> Spinner<T>.required(trigger: ValidationTrigger = tornadofx.ValidationTrigger.OnChange(), message: String? = tornadofx.viewModelBundle["required"])
+        = validator(trigger) { if (it == null) error(message) else null }
+
 /**
  * Add a validator to a TextInputControl that is already bound to a model property.
  */
