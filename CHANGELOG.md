@@ -7,6 +7,7 @@
 - `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792). The set function that takes Pair still accepts null as the value, but will remove the key if the value is null.
 - the `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup (https://github.com/edvin/tornadofx/issues/837)
 - More efficient timer for delayed `runLater` calls (https://github.com/edvin/tornadofx/pull/836)
+- `runAsyncWithProgress` cannot target an UI element with no parent, will no throw Exception with warning (https://github.com/edvin/tornadofx/issues/873)
 
 ### Changes
 
