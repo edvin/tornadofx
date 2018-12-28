@@ -172,11 +172,22 @@ class FX {
         fun messagesProperty() = _messages
 
         /**
+         * Provides the name of the Resource Bundle for a given Component Class.
+         * A `null` value may be passed to represent the global bundle.
+         *
+         * This provider is called when the bundle of a new component is obtained
+         * and every time the [locale] is changed.
+         *
+         * **Default:** for a given class its name is returned or `"Messages"` if `null` is passed
+         */
+        var messagesNameProvider: (Class<out Component>?) -> String = { it?.name ?: "Messages" }
+
+        /**
          * Load global resource bundle for the current locale. Triggered when the locale changes.
          */
         private fun loadMessages() {
             try {
-                messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl)
+                messages = ResourceBundle.getBundle(messagesNameProvider(null), locale, FXResourceBundleControl)
             } catch (ex: Exception) {
                 log.fine("No global Messages found in locale $locale, using empty bundle")
                 messages = EmptyResourceBundle

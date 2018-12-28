@@ -8,6 +8,8 @@
 
 ### Additions
 
+- `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)
+
 ## [1.7.18]
 
 ### Fixed
