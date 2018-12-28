@@ -1,6 +1,14 @@
 # Change Log
 
-## [1.7.18-SNAPSHOT]
+## [1.7.19-SNAPSHOT]
+
+### Fixed
+
+### Changes
+
+### Additions
+
+## [1.7.18]
 
 ### Fixed
 
