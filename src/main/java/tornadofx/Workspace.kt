@@ -12,6 +12,8 @@ import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.TabPane
 import javafx.scene.control.ToolBar
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
