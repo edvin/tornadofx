@@ -211,7 +211,7 @@ open class Rest : Controller() {
     }
 }
 
-class HttpURLEngine(val rest: Rest) : Rest.Engine() {
+open class HttpURLEngine(val rest: Rest) : Rest.Engine() {
     override fun reset() {
         requestInterceptor = null
     }
@@ -368,7 +368,7 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
     override val headers get() = request.connection.headerFields
 }
 
-class HttpClientEngine(val rest: Rest) : Rest.Engine() {
+open class HttpClientEngine(val rest: Rest) : Rest.Engine() {
     lateinit var client: CloseableHttpClient
     lateinit var context: HttpClientContext
 
