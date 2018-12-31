@@ -114,13 +114,13 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun registerWorkspaceAccelerators() {
-        accelerators[KeyCombination.valueOf("Ctrl+S")] = {
+        accelerators[KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN)] = {
             if (!saveButton.isDisable) onSave()
         }
-        accelerators[KeyCombination.valueOf("Ctrl+N")] = {
-            if (!createButton.isDisable) onSave()
+        accelerators[KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN)] = {
+            if (!createButton.isDisable) onCreate()
         }
-        accelerators[KeyCombination.valueOf("Ctrl+R")] = {
+        accelerators[KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN)] = {
             if (!refreshButton.isDisable) onRefresh()
         }
         accelerators[KeyCombination.valueOf("F5")] = {
