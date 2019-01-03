@@ -1,3 +1,6 @@
+import tornadofx.ChildInterceptor;
+import tornadofx.Stylesheet;
+
 module tornadofx {
     requires transitive javafx.controls;
     requires javafx.fxml;
@@ -19,4 +22,7 @@ module tornadofx {
     opens tornadofx to javafx.fxml;
 
     exports tornadofx;
+
+    uses ChildInterceptor;
+    uses Stylesheet;
 }
