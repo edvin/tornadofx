@@ -4,10 +4,7 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.property.ListProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.*
 import javafx.event.EventTarget
 import javafx.scene.Group
