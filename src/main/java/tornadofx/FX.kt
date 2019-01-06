@@ -4,10 +4,7 @@ package tornadofx
 
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.property.ListProperty
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.collections.*
 import javafx.event.EventTarget
 import javafx.scene.Group
@@ -171,6 +168,10 @@ class FX {
         var messages: ResourceBundle get() = _messages.get(); set(value) = _messages.set(value)
         fun messagesProperty() = _messages
 
+        private val _messagesNameProvider: ObjectProperty<(Class<out Component>?) -> String> =
+            object : SimpleObjectProperty<(Class<out Component>?) -> String>({ it?.name ?: "Messages" }) {
+                override fun invalidated() = loadMessages()
+            }
         /**
          * Provides the name of the Resource Bundle for a given Component Class.
          * A `null` value may be passed to represent the global bundle.
@@ -180,18 +181,18 @@ class FX {
          *
          * **Default:** for a given class its name is returned or `"Messages"` if `null` is passed
          */
-        var messagesNameProvider: (Class<out Component>?) -> String = { it?.name ?: "Messages" }
+        var messagesNameProvider: (Class<out Component>?) -> String by _messagesNameProvider
+
+        fun messagesNameProviderProperty(): ObjectProperty<(Class<out Component>?) -> String> = _messagesNameProvider
 
         /**
          * Load global resource bundle for the current locale. Triggered when the locale changes.
          */
         private fun loadMessages() {
-            try {
-                messages = ResourceBundle.getBundle(messagesNameProvider(null), locale, FXResourceBundleControl)
-            } catch (ex: Exception) {
-                log.fine("No global Messages found in locale $locale, using empty bundle")
-                messages = EmptyResourceBundle
-            }
+            val globalName = messagesNameProvider(null)
+            messages = runCatching { ResourceBundle.getBundle(globalName, locale, FXResourceBundleControl) }
+                .onFailure { log.fine("No global '$globalName' found in locale $locale, using empty bundle") }
+                .getOrDefault(EmptyResourceBundle)
         }
 
         fun installErrorHandler() {
