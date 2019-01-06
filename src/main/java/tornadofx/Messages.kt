@@ -62,7 +62,7 @@ fun ResourceBundle.format(key: String, vararg fields: Any) =
 
 class FXPropertyResourceBundle(input: InputStreamReader): PropertyResourceBundle(input) {
     fun inheritFromGlobal() {
-        parent = FX.messages
+        parent = FX.messages.takeUnless(::equals)
     }
 
     /**
