@@ -1060,9 +1060,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     @JvmOverloads
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
-        val componentType = this@UIComponent.javaClass
-        val targetLocation = location ?: componentType.simpleName+".fxml"
-        val fxml = requireNotNull(componentType.getResource(targetLocation)) { "FXML not found for $componentType in $targetLocation" }
+        val fxml = FX.fxmlLocator(this, location)
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
