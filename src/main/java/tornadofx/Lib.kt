@@ -207,10 +207,6 @@ class SortedFilteredList<T>(
     }
 }
 
-fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
-fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
-fun <K, V> Map<K, V>.observable(): ObservableMap<K, V> = FXCollections.observableMap(this)
-
 fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {
     val content = ClipboardContent()
     op(content)

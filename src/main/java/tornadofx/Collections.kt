@@ -10,6 +10,159 @@ import java.lang.ref.WeakReference
 import java.util.*
 
 /**
+ * Returns an empty new [ObservableIntegerArray].
+ */
+fun observableIntArrayOf(): ObservableIntegerArray = FXCollections.observableIntegerArray()
+
+/**
+ * Returns a new [ObservableIntegerArray] with the given elements.
+ */
+fun observableIntArrayOf(vararg elements: Int): ObservableIntegerArray = FXCollections.observableIntegerArray(*elements)
+
+/**
+ * Returns an empty new [ObservableFloatArray].
+ */
+fun observableFloatArrayOf(): ObservableFloatArray = FXCollections.observableFloatArray()
+
+/**
+ * Returns a new [ObservableFloatArray] with the given elements.
+ */
+fun observableFloatArrayOf(vararg elements: Float): ObservableFloatArray = FXCollections.observableFloatArray(*elements)
+
+
+/**
+ * Returns an empty new [ObservableList].
+ */
+fun <T> observableListOf(): ObservableList<T> = FXCollections.observableArrayList()
+
+/**
+ * Returns a new [ObservableList] with the given elements.
+ */
+fun <T> observableListOf(vararg elements: T): ObservableList<T> = FXCollections.observableList(elements.toList())
+
+/**
+ * Returns an empty new [ObservableSet]
+ */
+fun <T> observableSetOf(): ObservableSet<T> = FXCollections.observableSet()
+
+/**
+ * Returns a new [ObservableSet] with the given elements.
+ */
+fun <T> observableSetOf(vararg elements: T): ObservableSet<T> = FXCollections.observableSet(elements.toSet())
+
+/**
+ * Returns an empty new [ObservableMap]
+ */
+fun <K, V> observableMapOf(): ObservableMap<K, V> = FXCollections.observableHashMap()
+
+/**
+ * Returns a new [ObservableMap] with the specified contents, given as a list of pairs
+ * where the first component is the key and the second is the value.
+ */
+fun <K, V> observableMapOf(vararg pairs: Pair<K, V>): ObservableMap<K, V> = FXCollections.observableMap(pairs.toMap())
+
+
+/**
+ * Returns a new [ObservableIntegerArray] with the elements elements from the original array.
+ */
+fun IntArray.observable(): ObservableIntegerArray = FXCollections.observableIntegerArray(*this)
+
+/**
+ * Returns a new [ObservableFloatArray] with the elements elements from the original array.
+ */
+fun FloatArray.observable(): ObservableFloatArray = FXCollections.observableFloatArray(*this)
+
+
+/**
+ * Returns a new [ObservableList] that is backed by the original list.
+ */
+fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
+
+/**
+ * Returns a new [ObservableSet] that is backed by the original set.
+ */
+fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
+
+/**
+ * Returns a new [ObservableMap] that is backed by the original map.
+ */
+fun <K, V> Map<K, V>.observable(): ObservableMap<K, V> = FXCollections.observableMap(this)
+
+
+/**
+ * Returns an unmodifiable [ObservableList] that wraps the original list.
+ */
+fun <T> ObservableList<T>.unmodifiable(): ObservableList<T> = FXCollections.unmodifiableObservableList(this)
+
+/**
+ * Returns an unmodifiable [ObservableSet] that wraps the original set.
+ */
+fun <T> ObservableSet<T>.unmodifiable(): ObservableSet<T> = FXCollections.unmodifiableObservableSet(this)
+
+/**
+ * Returns an unmodifiable [ObservableMap] that wraps the original map.
+ */
+fun <K, V> ObservableMap<K, V>.unmodifiable(): ObservableMap<K, V> = FXCollections.unmodifiableObservableMap(this)
+
+
+/**
+ * Fills the provided list with obj.
+ * Fires only one change notification on the list.
+ */
+fun <T> ObservableList<T>.fill(value: T): Unit = FXCollections.fill(this, value)
+
+/**
+ * Reverse the order in the list.
+ * Fires only **one** change notification on the list.
+ */
+fun <T> ObservableList<T>.reverse(): Unit = FXCollections.reverse(this)
+
+/**
+ * Shuffles all elements in the observable list.
+ * Fires only **one** change notification on the list.
+ */
+fun <T> ObservableList<T>.shuffle(): Unit = FXCollections.shuffle(this)
+
+/**
+ * Shuffles all elements in the observable list.
+ * Fires only **one** change notification on the list.
+ */
+fun <T> ObservableList<T>.shuffle(random: Random): Unit = FXCollections.shuffle(this, random)
+
+/**
+ * Sorts the elements in the observable list according to their natural sort order.
+ * Fires only **one** change notification on the list.
+ */
+fun <T : Comparable<T>> ObservableList<T>.sort() {
+    if (size > 1) FXCollections.sort(this)
+}
+
+/**
+ * Sorts the elements in the observable list according to the order specified with [comparator].
+ * Fires only **one** change notification on the list.
+ */
+fun <T> ObservableList<T>.sortWith(comparator: Comparator<in T>) {
+    if (size > 1) FXCollections.sort(this, comparator)
+}
+
+/**
+ * Sorts the elements in the observable list according to natural sort order of the value returned by specified [selector] function.
+ * Fires only **one** change notification on the list.
+ */
+inline fun <T, R : Comparable<R>> ObservableList<T>.sortBy(crossinline selector: (T) -> R?) {
+    if (size > 1) sortWith(compareBy(selector))
+}
+
+/**
+ * Sorts the elements in the observable list descending according to natural sort order of the value returned by specified [selector] function.
+ * Fires only **one** change notification on the list.
+ */
+inline fun <T, R : Comparable<R>> ObservableList<T>.sortByDescending(crossinline selector: (T) -> R?) {
+    if (size > 1) sortWith(compareByDescending(selector))
+}
+
+
+/**
  * Moves the given **T** item to the specified index
  */
 fun <T> MutableList<T>.move(item: T, newIndex: Int) {
@@ -373,5 +526,5 @@ fun <T> ObservableList<T>.invalidate() {
     if (isNotEmpty()) this[0] = this[0]
 }
 
-
+@Deprecated("Use `observableListOf` instead.", ReplaceWith("observableListOf(entries)"))
 fun <T> observableList(vararg entries: T) : ObservableList<T> = FXCollections.observableArrayList<T>(entries.toList())
