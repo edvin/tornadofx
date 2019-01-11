@@ -38,7 +38,7 @@ class PersonListFragment : ListCellFragment<Person>() {
 }
 
 class ListViewFragmentTestView : View("ListCellFragment Test") {
-    val items = listOf(Person("John", 42), Person("Jane", 24), Person("Tommy", 11)).observable()
+    val items = observableListOf(Person("John", 42), Person("Jane", 24), Person("Tommy", 11))
 
     override val root = listview(items) {
         cellFragment(PersonListFragment::class)

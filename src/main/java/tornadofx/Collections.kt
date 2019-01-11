@@ -109,14 +109,14 @@ fun <T> List<T>.asObservable(): ObservableList<T> = FXCollections.observableList
 /**
  * Returns a new [ObservableSet] that is backed by the original set.
  *
- * **Note:** If the original set is read-only, attempting to modify the new returned set will result in an [UnsupportedOperationException]
+ * **Note:** If the original set is read-only, attempting to modify the returned set will result in an [UnsupportedOperationException]
  */
 fun <T> Set<T>.asObservable(): ObservableSet<T> = FXCollections.observableSet(this)
 
 /**
  * Returns a new [ObservableMap] that is backed by the original map.
  *
- * **Note:** If the original map is read-only, attempting to modify the new returned map will result in an [UnsupportedOperationException]
+ * **Note:** If the original map is read-only, attempting to modify the returned map will result in an [UnsupportedOperationException]
  */
 fun <K, V> Map<K, V>.asObservable(): ObservableMap<K, V> = FXCollections.observableMap(this)
 

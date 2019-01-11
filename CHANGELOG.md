@@ -6,11 +6,13 @@
 
 ### Changes
  - Opened up HttpClientEngine and HttpURLEngine for easier subclassing/configuration of the Rest engine
+ - Deprecated `observableList()` in favour of `observableListOf()`, and `[List, Set, Map].observable()` in favour of `[List, Set, Map].asObservable()` to be consistent with the Kotlin standard library.
  
 ### Additions
 
 - `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)
 - `FX.fxmlLocator` function to provide custom FXML locations globally
+- Added top level functions for creating (`observableListOf()`, etc) and converting (`List<T>.asObservable()`, etc) observable lists, sets and maps; and extension functions to work with them too (`ObservableList<T>.shuffle()`, etc).
 
 ## [1.7.18]
 

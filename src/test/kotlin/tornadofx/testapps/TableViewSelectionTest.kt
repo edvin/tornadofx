@@ -8,10 +8,10 @@ import tornadofx.tests.JavaPerson
 class TableViewSelectionTestApp : App(TableViewSelectionTest::class)
 
 class TableViewSelectionTest : View("Table Selection Test") {
-    val people = listOf(
+    val people = observableListOf(
             JavaPerson("Mary Hanes", "IT Administration", "mary.hanes@contoso.com", "mary2.hanes@contoso.com"),
             JavaPerson("Erin James", "Human Resources", "erin.james@contoso.com", "erin2.james@contoso.com")
-    ).observable()
+    )
 
     override val root = tabpane {
         prefWidth = 800.0

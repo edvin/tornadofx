@@ -237,7 +237,7 @@ open class AutoCompleteComboBoxSkin<T>(val comboBox: ComboBox<T>, autoCompleteFi
 
     override fun handleFilterChange(text : String) {
         val list = autoCompleteFilter_.invoke(text)
-        listView.items = (list as? ObservableList<T>) ?: list.observable()
+        listView.items = (list as? ObservableList<T>) ?: list.asObservable()
         listView.requestLayout()
 
         if (list.isEmpty()) {
