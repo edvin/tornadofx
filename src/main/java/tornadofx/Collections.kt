@@ -139,7 +139,7 @@ fun <K, V> ObservableMap<K, V>.asUnmodifiable(): ObservableMap<K, V> = FXCollect
 
 /**
  * Fills the observable list with the provided [value].
- * Fires only one change notification on the list.
+ * Fires only **one** change notification on the list.
  */
 fun <T> ObservableList<T>.fill(value: T): Unit = FXCollections.fill(this, value)
 
