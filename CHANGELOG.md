@@ -5,6 +5,8 @@
 ### Fixed
 
 - radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
+- fitToWidth/fitToHeight binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
+
 
 ### Changes
  - Opened up HttpClientEngine and HttpURLEngine for easier subclassing/configuration of the Rest engine
