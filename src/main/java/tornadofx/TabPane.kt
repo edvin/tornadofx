@@ -108,7 +108,7 @@ val TabPane.creatable: BooleanExpression
             newTab?.contentProperty()?.addListener(contentChangeListener)
         }
 
-        return savable
+        return creatable
     }
 
 val TabPane.deletable: BooleanExpression
