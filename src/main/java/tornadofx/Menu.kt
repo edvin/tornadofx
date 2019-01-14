@@ -228,7 +228,7 @@ fun Menu.radiomenuitem(
 )  = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
-    properties["tornadofx.toggleGroupValue"] = value ?: text
+    it.properties["tornadofx.toggleGroupValue"] = value ?: name
     graphic?.apply { it.graphic = graphic }
     op(it)
     this += it
@@ -254,7 +254,7 @@ fun MenuButton.radiomenuitem(
 ) = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
-    properties["tornadofx.toggleGroupValue"] = value ?: text
+    it.properties["tornadofx.toggleGroupValue"] = value ?: name
     graphic?.apply { it.graphic = graphic }
     op(it)
     items += it

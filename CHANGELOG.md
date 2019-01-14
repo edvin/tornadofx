@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
+
 ### Changes
  - Opened up HttpClientEngine and HttpURLEngine for easier subclassing/configuration of the Rest engine
  
