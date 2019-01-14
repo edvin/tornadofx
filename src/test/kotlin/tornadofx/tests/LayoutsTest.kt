@@ -70,7 +70,7 @@ class RegionTest {
             }
 
             assertFalse(root.properties.containsKey(GridPaneRowIdKey))
-            assertEquals(root.children, emptyList<Node>().observable())
+            assertEquals(root.children, observableListOf<Node>())
         }
     }
 
@@ -108,7 +108,7 @@ class RegionTest {
             assertEquals(GridPane.getColumnIndex(text3), 2)
             assertEquals(GridPane.getRowIndex(vbox), 2)
             assertEquals(GridPane.getColumnIndex(vbox), 0)
-            assertEquals(root.children, listOf(label, text1, text2, text3, vbox).observable())
+            assertEquals(root.children, observableListOf(label, text1, text2, text3, vbox))
         }
     }
 
@@ -122,7 +122,7 @@ class RegionTest {
             root.removeRow(label)
 
             assertFalse(root.properties.containsKey(GridPaneRowIdKey))
-            assertEquals(root.children, emptyList<Node>().observable())
+            assertEquals(root.children, observableListOf<Node>())
         }
     }
 
@@ -141,7 +141,7 @@ class RegionTest {
             assertFalse(root.properties.containsKey(GridPaneRowIdKey))
             assertNull(GridPane.getRowIndex(label))
             assertNull(GridPane.getColumnIndex(label))
-            assertEquals(root.children, emptyList<Node>().observable())
+            assertEquals(root.children, observableListOf<Node>())
         }
     }
 
@@ -181,7 +181,7 @@ class RegionTest {
             assertNull(GridPane.getColumnIndex(text3))
             assertEquals(GridPane.getRowIndex(vbox), 1)
             assertEquals(GridPane.getColumnIndex(vbox), 0)
-            assertEquals(root.children, listOf<Node>(label, vbox).observable())
+            assertEquals(root.children, observableListOf<Node>(label, vbox))
         }
     }
 
@@ -221,7 +221,7 @@ class RegionTest {
             assertNull(GridPane.getColumnIndex(text3))
             assertNull(GridPane.getRowIndex(vbox))
             assertNull(GridPane.getColumnIndex(vbox))
-            assertEquals(root.children, emptyList<Node>().observable())
+            assertEquals(root.children, observableListOf<Node>())
         }
     }
 }

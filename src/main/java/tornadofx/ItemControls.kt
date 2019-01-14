@@ -149,7 +149,7 @@ fun <T> EventTarget.spinner(
 }
 
 fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: ComboBox<T>.() -> Unit = {}) = ComboBox<T>().attachTo(this, op) {
-    if (values != null) it.items = values as? ObservableList<T> ?: values.observable()
+    if (values != null) it.items = values as? ObservableList<T> ?: values.asObservable()
     if (property != null) it.bind(property)
 }
 
@@ -162,7 +162,7 @@ fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, f
 }
 
 fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: ChoiceBox<T>.() -> Unit = {}) = ChoiceBox<T>().attachTo(this, op) {
-    if (values != null) it.items = (values as? ObservableList<T>) ?: values.observable()
+    if (values != null) it.items = (values as? ObservableList<T>) ?: values.asObservable()
     if (property != null) it.bind(property)
 }
 

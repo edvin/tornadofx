@@ -260,7 +260,7 @@ class LayoutDebugger : Fragment() {
             if (node.parent is HBox) {
                 field("HBox Grow") {
                     combobox<Priority> {
-                        items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                        items = observableListOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER)
                         value = HBox.getHgrow(node) ?: Priority.NEVER
                         valueProperty().onChange {
                             HBox.setHgrow(node, it)
@@ -279,7 +279,7 @@ class LayoutDebugger : Fragment() {
             if (node.parent is VBox) {
                 field("VBox Grow") {
                     combobox<Priority> {
-                        items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                        items = observableListOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER)
                         value = VBox.getVgrow(node) ?: Priority.NEVER
                         valueProperty().onChange {
                             VBox.setVgrow(node, it)
@@ -395,8 +395,8 @@ class LayoutDebugger : Fragment() {
     fun Fieldset.alignmentCombo(property: Property<Pos>) {
         field("Alignment") {
             combobox<Pos> {
-                items = listOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
-                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT).observable()
+                items = observableListOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
+                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT)
                 valueProperty().shadowBindTo(property)
             }
         }
