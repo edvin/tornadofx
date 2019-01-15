@@ -444,12 +444,18 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
+            private val defaultStyle = style
+            // technically defined as TreeTableCell.DEFAULT_STYLE_CLASS = "tree-table-cell", but this is private
+            private val defaultStyleClass = listOf(*styleClass.toTypedArray())
+
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
                     text = null
                     graphic = null
+                    style = defaultStyle
+                    styleClass.setAll(defaultStyleClass)
                 } else {
                     formatter(this, item)
                 }
