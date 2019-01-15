@@ -441,15 +441,40 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
     }
 }
 
-fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
-    cellFactory = Callback { column: TreeTableColumn<S, T> ->
-        object : TreeTableCell<S, T>() {
+fun <S, T> TableColumn<S, T>.cellFormat(formatter: (TableCell<S, T>.(T) -> Unit)) {
+    cellFactory = Callback { column: TableColumn<S, T> ->
+        object : TableCell<S, T>() {
+            private val defaultStyle = style
+
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
                     text = null
                     graphic = null
+                    style = defaultStyle
+                } else {
+                    formatter(this, item)
+                }
+            }
+        }
+    }
+}
+
+fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
+    cellFactory = Callback { column: TreeTableColumn<S, T> ->
+        object : TreeTableCell<S, T>() {
+            private val defaultStyle = style
+            private val defaultStyleClass = listOf(*styleClass.toTypedArray())
+
+            override fun updateItem(item: T, empty: Boolean) {
+                super.updateItem(item, empty)
+
+                if (item == null || empty) {
+                    text = null
+                    graphic = null
+                    style = defaultStyle
+                    styleClass.s
                 } else {
                     formatter(this, item)
                 }
