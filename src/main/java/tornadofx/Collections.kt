@@ -144,7 +144,17 @@ fun <T> MutableList<T>.moveToBottomWhere(predicate: (T) -> Boolean) {
  * Swaps the position of two items at two respective indices
  */
 fun <T> MutableList<T>.swap(indexOne: Int, indexTwo: Int) {
-    Collections.swap(this, indexOne, indexTwo)
+    if (this is ObservableList<*>) {
+        if (indexOne == indexTwo) return
+        val min = Math.min(indexOne, indexTwo)
+        val max = Math.max(indexOne, indexTwo)
+        val o2 = removeAt(max)
+        val o1 = removeAt(min)
+        add(min, o2)
+        add(max, o1)
+    } else {
+        Collections.swap(this, indexOne, indexTwo)
+    }
 }
 
 /**
