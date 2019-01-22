@@ -2,6 +2,7 @@
 
 package tornadofx
 
+import javafx.beans.Observable
 import javafx.beans.WeakListener
 import javafx.collections.*
 import tornadofx.FX.IgnoreParentBuilder.No
@@ -39,6 +40,16 @@ fun <T> observableListOf(): ObservableList<T> = FXCollections.observableArrayLis
  * Returns a new [ObservableList] with the given [elements].
  */
 fun <T> observableListOf(vararg elements: T): ObservableList<T> = FXCollections.observableArrayList(*elements)
+
+/**
+ * Returns a new [ObservableList] containing all elements from the given [collection].
+ */
+fun <T> observableListOf(collection: Collection<T>): ObservableList<T> = FXCollections.observableArrayList(collection)
+
+/**
+ * Returns an empty new [ObservableList] with the given [extractor]. This list reports element updates.
+ */
+fun <T> observableListOf(extractor: (T)->Array<Observable>): ObservableList<T> = FXCollections.observableArrayList(extractor)
 
 /**
  * Returns an empty new [ObservableSet]
