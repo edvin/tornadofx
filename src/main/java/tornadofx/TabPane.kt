@@ -72,7 +72,7 @@ val TabPane.savable: BooleanExpression
         val savable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
+            savable.cleanBind(contentUiComponent<UIComponent>()?.effectiveSavable ?: SimpleBooleanProperty(Workspace.defaultSavable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
@@ -94,7 +94,7 @@ val TabPane.creatable: BooleanExpression
         val creatable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            creatable.cleanBind(contentUiComponent<UIComponent>()?.creatable ?: SimpleBooleanProperty(Workspace.defaultCreatable))
+            creatable.cleanBind(contentUiComponent<UIComponent>()?.effectiveCreatable ?: SimpleBooleanProperty(Workspace.defaultCreatable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
@@ -116,7 +116,7 @@ val TabPane.deletable: BooleanExpression
         val deletable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
+            deletable.cleanBind(contentUiComponent<UIComponent>()?.effectiveDeletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
@@ -139,7 +139,7 @@ val TabPane.refreshable: BooleanExpression
         val refreshable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
+            refreshable.cleanBind(contentUiComponent<UIComponent>()?.effectiveRefreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }

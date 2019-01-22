@@ -326,25 +326,25 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     override fun onSave() {
         dockedComponentProperty.value
-                ?.takeIf { it.savable.value }
+                ?.takeIf { it.effectiveSavable.value }
                 ?.onSave()
     }
 
     override fun onDelete() {
         dockedComponentProperty.value
-                ?.takeIf { it.deletable.value }
+                ?.takeIf { it.effectiveDeletable.value }
                 ?.onDelete()
     }
 
     override fun onCreate() {
         dockedComponentProperty.value
-                ?.takeIf { it.creatable.value }
+                ?.takeIf { it.effectiveCreatable.value }
                 ?.onCreate()
     }
 
     override fun onRefresh() {
         dockedComponentProperty.value
-                ?.takeIf { it.refreshable.value }
+                ?.takeIf { it.effectiveRefreshable.value }
                 ?.onRefresh()
     }
 
@@ -370,10 +370,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     private fun setAsCurrentlyDocked(child: UIComponent) {
         titleProperty.bind(child.titleProperty)
-        refreshButton.disableProperty().cleanBind(!child.refreshable)
-        saveButton.disableProperty().cleanBind(!child.savable)
-        createButton.disableProperty().cleanBind(!child.creatable)
-        deleteButton.disableProperty().cleanBind(!child.deletable)
+        rebindWorkspaceButtons(child)
 
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty) {
@@ -387,6 +384,13 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
         if (currentWindow?.isShowing != true && currentWindow?.aboutToBeShown != true)
             FX.log.warning("UIComponent $child docked in invisible workspace $workspace")
+    }
+
+    fun rebindWorkspaceButtons(child: UIComponent) {
+        refreshButton.disableProperty().cleanBind(!child.effectiveRefreshable)
+        saveButton.disableProperty().cleanBind(!child.effectiveSavable)
+        createButton.disableProperty().cleanBind(!child.effectiveCreatable)
+        deleteButton.disableProperty().cleanBind(!child.effectiveDeletable)
     }
 
     private fun clearDynamicComponents() {
