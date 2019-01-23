@@ -684,12 +684,12 @@ fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T
  * value by anding together an observable boolean representing each element in the observable list.
  * Whenever the list changes, the binding is updated as well
  */
-fun <T : Any> booleanListBinding(list: ObservableList<T>, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
+fun <T : Any> booleanListBinding(list: ObservableList<T>, defaultValue: Boolean = false, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
     val facade = SimpleBooleanProperty()
     fun rebind() {
         if (list.isEmpty()) {
             facade.unbind()
-            facade.value = false
+            facade.value = defaultValue
         } else {
             facade.cleanBind(list.map(itemToBooleanExpr).reduce { a, b -> a.and(b) })
         }
