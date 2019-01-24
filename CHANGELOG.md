@@ -14,6 +14,7 @@
  - Opened up HttpClientEngine and HttpURLEngine for easier subclassing/configuration of the Rest engine
  - Deprecated `observableList()` in favour of `observableListOf()`, and `[List, Set, Map].observable()` in favour of `[List, Set, Map].asObservable()` to be consistent with the Kotlin standard library.
  - Subdelegation of workspace button states (https://github.com/edvin/tornadofx/issues/894)
+ - Kotlin 1.3.20
  
 ### Additions
 
