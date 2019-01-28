@@ -10,14 +10,17 @@ import javafx.scene.input.KeyCombination
 
 //Menu-related operator functions
 operator fun <T : MenuItem> Menu.plusAssign(menuItem: T) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.items += menuItem
 }
 
 operator fun MenuBar.plusAssign(menu: Menu) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.menus += menu
 }
 
 operator fun <T : MenuItem> ContextMenu.plusAssign(menuItem: T) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.items += menuItem
 }
 

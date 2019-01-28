@@ -7,7 +7,7 @@
 - SmartResize takes invisible columns into account (https://github.com/edvin/tornadofx/issues/889)
 - radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
 - fitToWidth/fitToHeight binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
-
+- menu/item builders now observes FX.ignoreParentBuilder
 
 ### Changes
 
