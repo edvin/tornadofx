@@ -21,6 +21,7 @@
 - `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)
 - `FX.fxmlLocator` function to provide custom FXML locations globally
 - Added top level functions for creating (`observableListOf()`, etc) and converting (`List<T>.asObservable()`, etc) observable lists, sets and maps; and extension functions to work with them too (`ObservableList<T>.shuffle()`, etc).
+- Submenu support for MenuButton (https://stackoverflow.com/questions/54393983/how-to-make-a-submenu-within-a-menubutton-in-javafx)
 
 ## [1.7.18]
 

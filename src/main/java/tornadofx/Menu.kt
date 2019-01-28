@@ -109,9 +109,20 @@ fun Menu.menu(
     this += it
 }
 
+fun MenuButton.menu(
+        name: String? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: Menu.() -> Unit = {}
+) = Menu(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    op(it)
+    items.add(it)
+}
+
 //Menu extensions
 fun Menu.menu(name: String? = null, keyCombination: String, graphic: Node? = null, op: Menu.() -> Unit = {}) =
     menu(name, KeyCombination.valueOf(keyCombination), graphic, op)
+
+fun MenuButton.menu(name: String? = null, keyCombination: String, graphic: Node? = null, op: Menu.() -> Unit = {}) =
+        menu(name, KeyCombination.valueOf(keyCombination), graphic, op)
 
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
