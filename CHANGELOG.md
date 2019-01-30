@@ -22,6 +22,7 @@
 - `FX.fxmlLocator` function to provide custom FXML locations globally
 - Added top level functions for creating (`observableListOf()`, etc) and converting (`List<T>.asObservable()`, etc) observable lists, sets and maps; and extension functions to work with them too (`ObservableList<T>.shuffle()`, etc).
 - Submenu support for MenuButton (https://stackoverflow.com/questions/54393983/how-to-make-a-submenu-within-a-menubutton-in-javafx)
+- Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
 
 ## [1.7.18]
 
