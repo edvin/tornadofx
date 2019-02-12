@@ -195,7 +195,7 @@ fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: TableView<T>
 
 fun <T> EventTarget.tableview(items: ReadOnlyListProperty<T>, op: TableView<T>.() -> Unit = {}) = tableview(items as ObservableValue<ObservableList<T>>, op)
 
-fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
+fun <T> EventTarget.tableview(items: ObservableValue<out ObservableList<T>>, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
     fun rebinder() {
         (it.items as? SortedFilteredList<T>)?.bindTo(it)
     }
