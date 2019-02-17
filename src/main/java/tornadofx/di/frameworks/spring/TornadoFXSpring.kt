@@ -1,17 +1,12 @@
 package tornadofx.di.frameworks.spring
 
-import com.google.inject.AbstractModule
-import com.google.inject.Guice
 import tornadofx.*
 import kotlin.reflect.KClass
 
-/**
- * If I end up overriding the class, will the other constructors need to be overridden as well?
- */
-
 class TornadoFXSpring (override val primaryView: KClass<out UIComponent> = NoPrimaryViewSpecified::class,
-                     vararg stylesheet: KClass<out Stylesheet>,
-                     private val classContext: ClassXmlApplicationContext) : App() {
+                     vararg stylesheet: KClass<out Stylesheet>) : App() {
+
+    private val spring: SpringController by inject()
 
     init {
         Stylesheet.importServiceLoadedStylesheets()
@@ -19,10 +14,10 @@ class TornadoFXSpring (override val primaryView: KClass<out UIComponent> = NoPri
 
         FX.dicontainer = object : DIContainer {
             override fun <T : Any> getInstance(type: KClass<T>): T =
-                    classContext.getBean(type.java)
+                    spring.appContext.getBean(type.java)
 
-            // override fun <T : Any> getInstance(type: KClass<T>, name: String): T =
-            //     guice.getInstance(name, type.java)
+            override fun <T : Any> getInstance(type: KClass<T>, name: String): T =
+                    spring.appContext.getBean(name, type.java)
         }
     }
 }
