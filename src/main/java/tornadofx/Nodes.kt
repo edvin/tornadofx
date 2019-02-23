@@ -498,6 +498,20 @@ fun Node.onDoubleClick(action: () -> Unit) {
     }
 }
 
+fun Node.onLeftClick(clickCount: Int = 1, action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == clickCount && it.isPrimaryButtonDown)
+            action()
+    }
+}
+
+fun Node.onRightClick(clickCount: Int = 1, action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == clickCount && it.isPrimaryButtonDown)
+            action()
+    }
+}
+
 /**
  * Execute action when the enter key is pressed or the mouse is clicked
 

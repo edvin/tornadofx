@@ -6,7 +6,7 @@
 
 - SmartResize takes invisible columns into account (https://github.com/edvin/tornadofx/issues/889)
 - radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
-- fitToWidth/fitToHeight binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
+- fitToWidth/fitToHeigh binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
 - menu/item builders now observes FX.ignoreParentBuilder
 
 ### Changes
@@ -23,6 +23,7 @@
 - Added top level functions for creating (`observableListOf()`, etc) and converting (`List<T>.asObservable()`, etc) observable lists, sets and maps; and extension functions to work with them too (`ObservableList<T>.shuffle()`, etc).
 - Submenu support for MenuButton (https://stackoverflow.com/questions/54393983/how-to-make-a-submenu-within-a-menubutton-in-javafx)
 - Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
+- onLeftClick() and onRightClick()
 
 ## [1.7.18]
 
