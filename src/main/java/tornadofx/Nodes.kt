@@ -507,7 +507,7 @@ fun Node.onLeftClick(clickCount: Int = 1, action: () -> Unit) {
 
 fun Node.onRightClick(clickCount: Int = 1, action: () -> Unit) {
     setOnMouseClicked {
-        if (it.clickCount == clickCount && it.isPrimaryButtonDown)
+        if (it.clickCount == clickCount && it.isSecondaryButtonDown)
             action()
     }
 }
