@@ -221,7 +221,7 @@ fun Clipboard.putString(value: String) = setContent { putString(value) }
 fun Clipboard.putFiles(files: MutableList<File>) = setContent { putFiles(files) }
 fun Clipboard.put(dataFormat: DataFormat, value: Any) = setContent { put(dataFormat, value) }
 
-inline fun <T> ChangeListener(crossinline listener: (observable: ObservableValue<out T>?, oldValue: T, newValue: T) -> Unit): ChangeListener<T> =
+inline fun <T> ChangeListener(crossinline listener: (observable: ObservableValue<out T>?, oldValue: T?, newValue: T?) -> Unit): ChangeListener<T> =
         javafx.beans.value.ChangeListener<T> { observable, oldValue, newValue -> listener(observable, oldValue, newValue) }
 
 /**

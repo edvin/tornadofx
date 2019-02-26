@@ -11,6 +11,7 @@
 - `App.scope` is overridable
 - `DefaultScope` deprecated, use `FX.defaultScope` instead
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
+- ChangeListener values are now nullable
 - Kotlin 1.2.70
 
 ### Additions
