@@ -8,6 +8,7 @@
 - radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
 - fitToWidth/fitToHeigh binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
 - menu/item builders now observes FX.ignoreParentBuilder
+- Renamed labelProperty to textProperty in AbstractField
 
 ### Changes
 
