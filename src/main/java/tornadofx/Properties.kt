@@ -756,3 +756,19 @@ fun <S, V, X : V> MutableMap<S, V>.toProperty(key: S, propertyGenerator: (X?) ->
     property.onChange { this[key] = it as X }
     return property
 }
+
+/**
+ * Convenience SimpleXXXProperty function builders
+ */
+
+fun booleanProperty(value: Boolean = false) = SimpleBooleanProperty(value)
+fun doubleProperty(value: Double = 0.0) = SimpleDoubleProperty(value)
+fun floatProperty(value: Float = 0F) = SimpleFloatProperty(value)
+fun intProperty(value: Int = 0) = SimpleIntegerProperty(value)
+fun <V> listProperty(value: ObservableList<V>? = null) = SimpleListProperty(value)
+fun <V> listProperty(vararg values: V) = SimpleListProperty(values.toMutableList().asObservable())
+fun longProperty(value: Long) = SimpleLongProperty(value)
+fun <K, V> mapProperty(value: ObservableMap<K, V>? = null) = SimpleMapProperty(value)
+fun <T> objectProperty(value: T? = null) = SimpleObjectProperty(value)
+fun <V> setProperty(value: ObservableSet<V>? = null) = SimpleSetProperty(value)
+fun stringProperty(value: String? = null) = SimpleStringProperty(value)

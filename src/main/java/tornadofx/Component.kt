@@ -521,10 +521,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             if (modalStage != null || root.parent != null) return@addListener
             if (newParent == null && oldParent != null && isDocked) callOnUndock()
             if (newParent != null && newParent != oldParent && !isDocked) {
-                // Call undock when window closes
+                // Calls dock or undock when window opens or closes
                 newParent.windowProperty().onChangeOnce {
                     it?.showingProperty()?.onChange {
                         if (!it && isDocked) callOnUndock()
+                        if (it && !isDocked) callOnDock()
                     }
                 }
                 callOnDock()

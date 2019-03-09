@@ -25,6 +25,7 @@
 - Submenu support for MenuButton (https://stackoverflow.com/questions/54393983/how-to-make-a-submenu-within-a-menubutton-in-javafx)
 - Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
 - onLeftClick() and onRightClick()
+- Convenience function builders for SimpleXXXProperty classes (https://github.com/edvin/tornadofx/pull/935)
 
 ## [1.7.18]
 

@@ -94,8 +94,12 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 view.onBeforeShow()
                 onBeforeShow(view)
                 view.muteDocking = false
-                if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage()) show()
-                view.callOnDock()
+                // No need to call view.callOnDock() if show() is called since it
+                // will be called by the stage's showingProperty listener
+                if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage())
+                    show()
+                else
+                    view.callOnDock()
                 stage.aboutToBeShown = false
             }
             FX.initialized.value = true
