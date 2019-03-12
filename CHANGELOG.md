@@ -16,7 +16,8 @@
  - Deprecated `observableList()` in favour of `observableListOf()`, and `[List, Set, Map].observable()` in favour of `[List, Set, Map].asObservable()` to be consistent with the Kotlin standard library.
  - Subdelegation of workspace button states (https://github.com/edvin/tornadofx/issues/894)
  - Kotlin 1.3.20
- 
+ - Moved all css helper extension functions from Node/Tab/Menu etc to Styleable (https://github.com/edvin/tornadofx/issues/944)
+  
 ### Additions
 
 - `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)

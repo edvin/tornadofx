@@ -15,6 +15,7 @@ import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
+import javafx.css.Styleable
 import javafx.event.EventTarget
 import javafx.geometry.*
 import javafx.scene.Node
@@ -45,100 +46,6 @@ import java.util.*
 import java.util.function.UnaryOperator
 import kotlin.reflect.KClass
 import kotlin.reflect.full.safeCast
-
-fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contains(className)
-fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
-fun <S, T> TableColumnBase<S, T>.addClass(className: String): TableColumnBase<S, T> = apply { styleClass.add(className) }
-fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
-    cssClass.forEach { styleClass.add(it.name) }
-}
-
-fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
-    cssClass.forEach { if (removeAll) styleClass.removeAll(it.name) else styleClass.remove(it.name) }
-}
-
-fun <S, T> TableColumnBase<S, T>.removeClass(className: String, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
-fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
-
-fun Node.hasClass(className: String) = styleClass.contains(className)
-fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
-
-fun <T : Node> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
-fun Iterable<Node>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
-
-fun <T : Node> T.addPseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStateChanged(pseudoClass, true)
-}
-
-fun <T : Node> T.removePseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStateChanged(pseudoClass, false)
-}
-
-fun <T : Node> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <T : Node> T.toggleClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
-
-fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasPseudoClass(className)) addPseudoClass(className)
-    } else {
-        removePseudoClass(className)
-    }
-}
-
-fun <T : Tab> T.addPseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    if (!pseudoClassStates.contains(pseudoClass))
-        pseudoClassStates.add(pseudoClass)
-}
-
-fun <T : Tab> T.removePseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStates.remove(pseudoClass)
-}
-
-fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasPseudoClass(className)) addPseudoClass(className)
-    } else {
-        removePseudoClass(className)
-    }
-}
-
-fun Tab.hasClass(className: String) = styleClass.contains(className)
-fun Tab.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
-fun <T : Tab> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
-fun <T : Tab> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
 
 fun EventTarget.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
