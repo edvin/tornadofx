@@ -1262,11 +1262,13 @@ fun <T : Styleable> T.hasPseudoClass(className: String) = pseudoClassStates.cont
 fun <T : Styleable> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
 fun Iterable<Styleable>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 
-fun <T : Styleable> T.addPseudoClass(className: String) =
+fun <T : Styleable> T.addPseudoClass(className: String) = apply {
     (this as? Node)?.pseudoClassStateChanged(PseudoClass.getPseudoClass(className), true)
+}
 
-fun <T : Styleable> T.removePseudoClass(className: String) =
+fun <T : Styleable> T.removePseudoClass(className: String) = apply {
     (this as? Node)?.pseudoClassStateChanged(PseudoClass.getPseudoClass(className), false)
+}
 
 fun <T : Styleable> T.removeClass(className: String, removeAll: Boolean = true) = apply {
     if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
