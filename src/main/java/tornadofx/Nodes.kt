@@ -754,6 +754,21 @@ class AnchorPaneConstraint(
     }
 }
 
+inline fun <T : Node> T.splitpaneConstraints(op: SplitPaneConstraint.() -> Unit): T {
+    val c = SplitPaneConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class SplitPaneConstraint(
+        var isResizableWithParent: Boolean? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        isResizableWithParent?.let { SplitPane.setResizableWithParent(node, it) }
+        return node
+    }
+}
+
 abstract class MarginableConstraints {
     abstract var margin: Insets?
     var marginTop: Double
