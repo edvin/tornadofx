@@ -487,7 +487,7 @@ inline fun <T : Node> T.attachTo(parent: EventTarget, op: T.() -> Unit = {}): T 
  * Attaches the node to the pane and invokes the node operation.
  * Because the framework sometimes needs to setup the node, another lambda can be provided
  */
-internal inline fun <T : Node> T.attachTo(
+inline fun <T : Node> T.attachTo(
         parent: EventTarget,
         after: T.() -> Unit,
         before: (T) -> Unit
