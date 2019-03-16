@@ -98,4 +98,15 @@ class ControlsTest {
         Assert.assertEquals(24.0, slider.min, 10e-5)
         Assert.assertEquals(42.0, slider.max, 10e-5)
     }
+
+    @Test
+    fun testSplitMenuButton() {
+        val view = TestView()
+        val button = view.splitmenubutton("Text") {
+            item("Item Name")
+        }
+
+        Assert.assertEquals(button.text, "Text")
+        Assert.assertEquals(button.items.first().text, "Item Name")
+    }
 }

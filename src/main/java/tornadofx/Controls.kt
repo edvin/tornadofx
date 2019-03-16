@@ -204,6 +204,11 @@ fun EventTarget.menubutton(text: String = "", graphic: Node? = null, op: MenuBut
     if (graphic != null) it.graphic = graphic
 }
 
+fun EventTarget.splitmenubutton(text: String? = null, graphic: Node? = null, op: SplitMenuButton.() -> Unit = {}) = SplitMenuButton().attachTo(this, op) {
+    if (text != null) it.text = text
+    if (graphic != null) it.graphic = graphic
+}
+
 fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}) = Button().attachTo(this, op) {
     it.textProperty().bind(text)
     if (graphic != null) it.graphic = graphic

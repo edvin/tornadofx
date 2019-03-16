@@ -27,6 +27,7 @@
 - Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
 - onLeftClick() and onRightClick()
 - Convenience function builders for SimpleXXXProperty classes (https://github.com/edvin/tornadofx/pull/935)
+- Added `splitmenubutton` builder 
 
 ## [1.7.18]
 
