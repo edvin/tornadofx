@@ -387,14 +387,12 @@ class MaskPane : BorderPane() {
  * Adds some superpowers to good old [CountDownLatch], like exposed [lockedProperty] or ability to release latch
  * immediately.
  *
+ * By default, initializes a latch with a count of `1`, which means that the first invocation of [countDown] will
+ * allow all waiting threads to proceed.
+ *
  * All documentation of superclass applies here. Default behavior has not been altered.
  */
-class Latch(count: Int) : CountDownLatch(count) {
-    /**
-     * Initializes latch with count of `1`, which means that the first invocation of [countDown] will allow all
-     * waiting threads to proceed.
-     */
-    constructor() : this(1)
+class Latch(count: Int = 1) : CountDownLatch(count) {
 
     private val lockedProperty by lazy { ReadOnlyBooleanWrapper(locked) }
 
