@@ -8,6 +8,7 @@
 - radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
 - fitToWidth/fitToHeigh binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
 - menu/item builders now observes FX.ignoreParentBuilder
+- Renamed labelProperty to textProperty in AbstractField
 
 ### Changes
 
@@ -15,7 +16,8 @@
  - Deprecated `observableList()` in favour of `observableListOf()`, and `[List, Set, Map].observable()` in favour of `[List, Set, Map].asObservable()` to be consistent with the Kotlin standard library.
  - Subdelegation of workspace button states (https://github.com/edvin/tornadofx/issues/894)
  - Kotlin 1.3.20
- 
+ - Moved all css helper extension functions from Node/Tab/Menu etc to Styleable (https://github.com/edvin/tornadofx/issues/944)
+  
 ### Additions
 
 - `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)
@@ -25,6 +27,7 @@
 - Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
 - onLeftClick() and onRightClick()
 - Convenience function builders for SimpleXXXProperty classes (https://github.com/edvin/tornadofx/pull/935)
+- Added `splitmenubutton` builder 
 - `togglegroup()` builder accepts property parameter (https://github.com/edvin/tornadofx/issues/956)
 
 ## [1.7.18]
