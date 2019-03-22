@@ -242,7 +242,7 @@ fun ButtonBar.button(text: ObservableValue<String>, type: ButtonBar.ButtonData? 
     op(it)
 }
 
-fun <T> Node.togglegroup(property: ObservableValue<T>? = null, op: ToggleGroup.() -> Unit = {}) = ToggleGroup().also {tg ->
+fun Node.togglegroup(property: ObservableValue<Any>? = null, op: ToggleGroup.() -> Unit = {}) = ToggleGroup().also {tg ->
     properties["tornadofx.togglegroup"] = tg
     property?.let { tg.bind(it) }
     op(tg)
