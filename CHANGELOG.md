@@ -9,6 +9,7 @@
 - fitToWidth/fitToHeigh binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
 - menu/item builders now observes FX.ignoreParentBuilder
 - Renamed labelProperty to textProperty in AbstractField
+- Wizard next button was enabled even when current page was not complete (https://github.com/edvin/tornadofx/issues/960)
 
 ### Changes
 
