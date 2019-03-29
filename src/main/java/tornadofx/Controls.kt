@@ -107,6 +107,11 @@ fun EventTarget.textfield(property: ObservableValue<Number>, op: TextField.() ->
     op(this)
 }
 
+@JvmName("textfieldInt")
+fun EventTarget.textfield(property: ObservableValue<Int>, op: TextField.() -> Unit = {}) = textfield().apply {
+    bind(property)
+    op(this)
+}
 fun EventTarget.passwordfield(value: String? = null, op: PasswordField.() -> Unit = {}) = PasswordField().attachTo(this, op) {
     if (value != null) it.text = value
 }
