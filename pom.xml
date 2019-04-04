@@ -282,6 +282,9 @@
                 <configuration>
                     <argLine>
                         --add-exports javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                        --add-exports tornadofx/tornadofx.tests=kotlin.reflect
+                        --add-opens tornadofx.tests=javafx.base
+                        --add-reads jdk.httpserver=tornadofx
                     </argLine>
                 </configuration>
             </plugin>
