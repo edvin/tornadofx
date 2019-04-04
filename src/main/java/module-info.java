@@ -19,7 +19,7 @@ module tornadofx {
     requires transitive java.prefs;
     requires transitive java.logging;
 
-    opens tornadofx to javafx.fxml, javafx.base;
+    opens tornadofx to javafx.fxml;
 
     exports tornadofx;
 
