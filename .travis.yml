@@ -1,13 +1,8 @@
 # use java support.
 language: java
 jdk:
-  - oraclejdk8
-
-# install the newest java.
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+  - openjdk11
+  - openjdk12
 
 # run in container.
 sudo: false

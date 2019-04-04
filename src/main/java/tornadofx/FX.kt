@@ -656,14 +656,15 @@ fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
 }
 
 @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-private fun Parent.getChildrenReflectively(): MutableList<Node>? {
-    val getter = this.javaClass.findMethodByName("getChildren")
-    if (getter != null && java.util.List::class.java.isAssignableFrom(getter.returnType)) {
-        getter.isAccessible = true
-        return getter.invoke(this) as MutableList<Node>
+private fun Parent.getChildrenReflectively(): MutableList<Node>? = this.javaClass.findMethodByName("getChildren")
+    ?.takeIf { java.util.List::class.java.isAssignableFrom(it.returnType) }
+    ?.let { getter ->
+        if (getter.canAccess(this) || getter.trySetAccessible()) {
+            getter.invoke(this) as MutableList<Node>
+        } else {
+            null
+        }
     }
-    return null
-}
 
 var Window.aboutToBeShown: Boolean
     get() = properties["tornadofx.aboutToBeShown"] == true
