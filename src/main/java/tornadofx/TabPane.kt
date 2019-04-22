@@ -22,6 +22,13 @@ fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab
     return tab
 }
 
+fun <T : Node> TabPane.tab(index: Int, text: String, content: T, op: T.() -> Unit = {}): Tab {
+    val tab = Tab(text, content)
+    tabs.add(index, tab)
+    op(content)
+    return tab
+}
+
 @Deprecated("Use the tab builder that extracts the closeable state from UIComponent.closeable instead", ReplaceWith("add(uiComponent)"))
 fun TabPane.tab(uiComponent: UIComponent, closable: Boolean = true, op: Tab.() -> Unit = {}): Tab {
     val tab = Tab()
