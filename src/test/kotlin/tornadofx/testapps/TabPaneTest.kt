@@ -12,6 +12,8 @@ class TabPaneTest : View("TabPane Test") {
         // This is not the typical use case for using index, but instead when tab is added programmatically,
         // ex.: duplicate the current tab
         tab(1, "Tab Three", TabThree().root)
+        // Here we verify that the original implementation works correctly, i.e. adds the tab to the end of the list
+        tab("Tab Four", TabFour().root)
     }
 }
 
@@ -30,6 +32,11 @@ class TabTwo : View("Tab Two") {
 }
 
 class TabThree : View("Tab Three") {
+    override val root = textfield(titleProperty)
+    override val closeable = SimpleBooleanProperty(false)
+}
+
+class TabFour : View("Tab Four") {
     override val root = textfield(titleProperty)
     override val closeable = SimpleBooleanProperty(false)
 }

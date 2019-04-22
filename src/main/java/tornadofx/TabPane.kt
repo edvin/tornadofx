@@ -16,10 +16,7 @@ import kotlin.reflect.KClass
 fun EventTarget.tabpane(op: TabPane.() -> Unit = {}) =  TabPane().attachTo(this, op)
 
 fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab {
-    val tab = Tab(text, content)
-    tabs.add(tab)
-    op(content)
-    return tab
+    return tab(tabs.size, text, content, op)
 }
 
 fun <T : Node> TabPane.tab(index: Int, text: String, content: T, op: T.() -> Unit = {}): Tab {
