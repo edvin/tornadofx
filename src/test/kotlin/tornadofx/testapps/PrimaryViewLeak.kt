@@ -16,6 +16,10 @@ class PrimaryViewLeakView : View() {
     val dockCounterProperty = SimpleIntegerProperty()
     var dockCounter by dockCounterProperty
 
+    init {
+        println("PrimaryLeakView.init()")
+    }
+
     override val root = form {
         fieldset("Primary View Leak Test") {
             field("Instance ID") {
@@ -34,6 +38,6 @@ class PrimaryViewLeakView : View() {
     override fun onDock() {
         super.onDock()
         dockCounter++
-        println("docked = $dockCounter")
+        println("PrimaryLeakView.dockCounter: $dockCounter")
     }
 }
