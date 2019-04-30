@@ -16,6 +16,8 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.css.PseudoClass
 import javafx.css.Styleable
+import javafx.event.Event
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.geometry.*
 import javafx.scene.Node
@@ -136,13 +138,26 @@ fun Stage.reloadStylesheetsOnFocus() {
 }
 
 fun Stage.hookGlobalShortcuts() {
-    addEventFilter(KeyEvent.KEY_PRESSED) {
-        if (FX.layoutDebuggerShortcut?.match(it) ?: false)
-            LayoutDebugger.debug(scene)
-        else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find<OSGIConsole>().openModal(modality = Modality.NONE)
-    }
+    addEventFilter(KeyEvent.KEY_PRESSED, stageGlobalShortcuts)
 }
+
+fun Stage.unhookGlobalShortcuts() {
+    removeEventFilter(KeyEvent.KEY_PRESSED, stageGlobalShortcuts)
+}
+
+val Stage.stageGlobalShortcuts: EventHandler<KeyEvent>
+        get() {
+            val key = "tornadofx.stageGlobalShortcuts"
+            if (properties[key] == null) {
+                properties[key] = EventHandler<KeyEvent> {
+                    if (FX.layoutDebuggerShortcut?.match(it) ?: false)
+                        LayoutDebugger.debug(scene)
+                    else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
+                        find<OSGIConsole>().openModal(modality = Modality.NONE)
+                }
+            }
+            return properties[key] as EventHandler<KeyEvent>
+        }
 
 fun Stage.reloadViewsOnFocus() {
     if (properties["tornadofx.reloadViewsListener"] == null) {
