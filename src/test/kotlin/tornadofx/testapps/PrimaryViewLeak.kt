@@ -2,7 +2,6 @@ package tornadofx.testapps
 
 import javafx.beans.property.SimpleIntegerProperty
 import tornadofx.*
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 class PrimaryViewLeakApp : App(PrimaryViewLeakView::class)

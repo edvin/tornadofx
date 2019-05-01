@@ -7,7 +7,6 @@ import tornadofx.testapps.PrimaryViewLeakApp
 import tornadofx.testapps.PrimaryViewLeakView
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNotSame
 
 class PrimaryViewLeakTest {
 
@@ -45,7 +44,7 @@ class PrimaryViewLeakTest {
             assertEquals(
                     expected = 1,
                     actual = it.dockCounter,
-                    message = "It should dock only once"
+                    message = "It should dock exactly once"
             )
         }
     }
