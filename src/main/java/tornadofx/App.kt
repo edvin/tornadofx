@@ -7,6 +7,7 @@ import javafx.scene.image.Image
 import javafx.stage.Stage
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
+import tornadofx.FX.Companion.primaryStage
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.MouseEvent.BUTTON1
@@ -133,6 +134,11 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     override fun stop() {
+        val primaryViewType = determinePrimaryView()
+        val view = find(primaryViewType, scope)
+        primaryStage.unhookGlobalShortcuts()
+        view.unInit()
+        view.removeFromParent()
         scope.deregister()
         shutdownThreadPools()
         inheritParamHolder.remove()

@@ -10,6 +10,7 @@
 - menu/item builders now observes FX.ignoreParentBuilder
 - Renamed labelProperty to textProperty in AbstractField
 - Wizard next button was enabled even when current page was not complete (https://github.com/edvin/tornadofx/issues/960)
+- App primary view would continue to receive onDock/onUndock after its app instance was stopped and out of scope (https://github.com/edvin/tornadofx/issues/973)
 
 ### Changes
 

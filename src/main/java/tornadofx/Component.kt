@@ -5,6 +5,8 @@ package tornadofx
 import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
+import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -501,37 +503,77 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.closeable"] = SimpleBooleanProperty(false)
     }
 
+    private val rootParentChangeListener: ChangeListener<Parent>
+        get() {
+            val key = "tornadofx.rootParentChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Parent> { _, oldParent, newParent ->
+                    if (modalStage != null) return@ChangeListener
+                    if (newParent == null && oldParent != null && isDocked) callOnUndock()
+                    if (newParent != null && newParent != oldParent && !isDocked) {
+                        callOnDock()
+                        // Call `onTabSelected` if/when we are connected to a Tab and it's selected
+                        // Note that this only works for builder constructed tabpanes
+                        owningTab?.let {
+                            it.selectedProperty()?.onChange { if (it) onTabSelected() }
+                            if (it.isSelected) onTabSelected()
+                        }
+                    }
+                }
+            }
+            return properties[key] as ChangeListener<Parent>
+        }
+
+    private val rootSceneChangeListener: ChangeListener<Scene>
+        get() {
+            val key = "tornadofx.rootSceneChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Scene> { _, oldParent, newParent ->
+                    if (modalStage != null || root.parent != null) return@ChangeListener
+                    if (newParent == null && oldParent != null && isDocked) callOnUndock()
+                    if (newParent != null && newParent != oldParent && !isDocked) {
+                        // Calls dock or undock when window opens or closes
+                        newParent.windowProperty().onChangeOnce {
+                            it?.showingProperty()?.addListener(rootSceneWindowShowingPropertyChangeListener)
+                        }
+                        callOnDock()
+                    }
+                }
+            }
+            return properties[key] as ChangeListener<Scene>
+        }
+
+    private val rootSceneWindowShowingPropertyChangeListener: ChangeListener<Boolean>
+        get() {
+            val key = "tornadofx.rootSceneWindowShowingPropertyChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Boolean> { property, oldValue, newValue ->
+                    if (!isInitialized) {
+                        property.removeListener(rootSceneWindowShowingPropertyChangeListener)
+                        return@ChangeListener
+                    }
+                    if (!newValue && isDocked) callOnUndock()
+                    if (newValue && !isDocked) callOnDock()
+                }
+            }
+            return properties[key] as ChangeListener<Boolean>
+        }
+
     fun init() {
         if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
-        root.parentProperty().addListener({ _, oldParent, newParent ->
-            if (modalStage != null) return@addListener
-            if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) {
-                callOnDock()
-                // Call `onTabSelected` if/when we are connected to a Tab and it's selected
-                // Note that this only works for builder constructed tabpanes
-                owningTab?.let {
-                    it.selectedProperty()?.onChange { if (it) onTabSelected() }
-                    if (it.isSelected) onTabSelected()
-                }
-            }
-        })
-        root.sceneProperty().addListener({ _, oldParent, newParent ->
-            if (modalStage != null || root.parent != null) return@addListener
-            if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) {
-                // Calls dock or undock when window opens or closes
-                newParent.windowProperty().onChangeOnce {
-                    it?.showingProperty()?.onChange {
-                        if (!it && isDocked) callOnUndock()
-                        if (it && !isDocked) callOnDock()
-                    }
-                }
-                callOnDock()
-            }
-        })
+        root.parentProperty().addListener(rootParentChangeListener)
+        root.sceneProperty().addListener(rootSceneChangeListener)
         isInitialized = true
+    }
+
+    fun unInit() {
+        if (!isInitialized) return
+        root.properties.remove(UI_COMPONENT_PROPERTY)
+        root.parentProperty().removeListener(rootParentChangeListener)
+        root.sceneProperty().removeListener(rootSceneChangeListener)
+        root.scene.window.showingProperty().removeListener(rootSceneWindowShowingPropertyChangeListener)
+        isInitialized = false
     }
 
     val currentStage: Stage?
