@@ -31,6 +31,7 @@
 - Convenience function builders for SimpleXXXProperty classes (https://github.com/edvin/tornadofx/pull/935)
 - Added `splitmenubutton` builder 
 - `togglegroup()` builder accepts property parameter (https://github.com/edvin/tornadofx/issues/956)
+- Added extensions and operators for vector math
 
 ## [1.7.18]
 
