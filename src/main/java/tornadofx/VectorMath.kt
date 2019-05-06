@@ -35,7 +35,7 @@ fun Point3D(value: Double): Point3D = Point3D(value, value, value)
 fun Point3D(point: Point2D, z: Double): Point3D = Point3D(point.x, point.y, z)
 fun Point3D(x: Double, point: Point2D): Point3D = Point3D(x, point.x, point.y)
 
-fun Vector3D(value: Double): Point3D = Vector3D(value, value, value)
+fun Vector3D(value: Double): Vector3D = Vector3D(value, value, value)
 fun Vector3D(point: Point2D, z: Double): Vector3D = Vector3D(point.x, point.y, z)
 fun Vector3D(x: Double, point: Point2D): Vector3D = Vector3D(x, point.x, point.y)
 
