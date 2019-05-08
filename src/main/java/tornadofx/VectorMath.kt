@@ -28,6 +28,11 @@ infix fun Point2D.angle(other: Point2D): Double = this.angle(other)
 infix fun Point2D.distance(other: Point2D): Double = this.distance(other)
 infix fun Point2D.midPoint(other: Point2D): Point2D = this.midpoint(other)
 
+/**
+ * Returns the squared length of the vector/point.
+ */
+fun Point2D.magnitude2(): Double = this.x * this.x + this.y * this.y
+
 
 typealias Vector3D = Point3D
 
@@ -58,6 +63,12 @@ infix fun Point3D.cross(other: Point3D): Point3D = this.crossProduct(other)
 infix fun Point3D.angle(other: Point3D): Double = this.angle(other)
 infix fun Point3D.distance(other: Point3D): Double = this.distance(other)
 infix fun Point3D.midPoint(other: Point3D): Point3D = this.midpoint(other)
+
+/**
+ * Returns the squared length of the vector/point.
+ */
+fun Point3D.magnitude2(): Double = this.x * this.x + this.y * this.y + this.z * this.z
+
 
 // All them swizzles... :P
 
