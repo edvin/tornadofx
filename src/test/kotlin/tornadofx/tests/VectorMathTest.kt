@@ -113,6 +113,12 @@ class VectorMathTest {
 		assertEquals(Point2D(0.5, 0.5), result)
 	}
 
+	@Test
+	fun `Point2D squared magnitude`() {
+		val p1 = Point2D(5.0, 5.0)
+		val result = p1.magnitude2()
+		assertEquals(50.0, result)
+	}
 
 	@Test
 	fun `Point3D + Point3D`() {
@@ -217,5 +223,12 @@ class VectorMathTest {
 		val p2 = Point3D(0.0, 1.0, 0.5)
 		val result = p1 midPoint  p2
 		assertEquals(Point3D(0.5, 0.5, 0.5), result)
+	}
+	
+	@Test
+	fun `Point3D squared magnitude`() {
+		val p1 = Point3D(5.0, 5.0, 5.0)
+		val result = p1.magnitude2()
+		assertEquals(75.0, result)
 	}
 }
