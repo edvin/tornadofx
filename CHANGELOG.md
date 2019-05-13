@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.7.20-SNAPSHOT]
+
+### Fixed
+
+### Changes
+
+- `openInternalWindow()` was made public (https://github.com/edvin/tornadofx/issues/989)
+
+### Additions
+
 ## [1.7.19]
 
 ### Fixed

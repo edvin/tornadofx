@@ -254,7 +254,7 @@ class FX {
             setPrimaryStage(scope, primaryStage)
             setApplication(scope, application)
 
-            // If custom scope is activated for application itself, change FX.defaultScope to be the supplised scope
+            // If custom scope is activated for application itself, change FX.defaultScope to be the supplied scope
             if (applications[FX.defaultScope] == null) {
                 FX.defaultScope = scope
             }

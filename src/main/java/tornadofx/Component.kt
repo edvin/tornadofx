@@ -896,7 +896,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     operator fun <T : UIComponent> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected inline fun <reified T : UIComponent> openInternalWindow(
+    inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
@@ -908,7 +908,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             params: Map<*, Any?>? = null
     ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params)
 
-    protected inline fun <reified T : UIComponent> openInternalWindow(
+    inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
@@ -922,7 +922,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openInternalWindow<T>(scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params.toMap())
     }
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: KClass<out UIComponent>,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
@@ -935,7 +935,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             params: Map<*, Any?>? = null
     ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, movable, overlayPaint).open(find(view, scope, params), owner)
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: KClass<out UIComponent>,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
@@ -950,7 +950,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params.toMap())
     }
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: UIComponent,
             icon: Node? = null,
             modal: Boolean = true,
@@ -961,7 +961,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             overlayPaint: Paint = c("#000", 0.4)
     ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, movable, overlayPaint).open(view, owner)
 
-    protected fun openInternalBuilderWindow(
+    fun openInternalBuilderWindow(
             title: String,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
