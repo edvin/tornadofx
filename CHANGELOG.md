@@ -11,6 +11,7 @@
 ### Additions
 
 - `subscene` builder
+- The `fxml()` delegate now accepts an InputStream, for loading FXML from DB or `resources.stream("/my/classpath/to.fxml")` (https://github.com/edvin/tornadofx-guide/issues/107) 
 
 ## [1.7.19]
 

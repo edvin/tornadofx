@@ -1125,6 +1125,35 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         return fxmlLoader.load()
     }
 
+    /**
+     * Load an FXML file from the specified InputStream. If the FXML file specifies a controller (handy for content completion in FXML editors)
+     * set the `hasControllerAttribute` parameter to true. This ensures that the `fx:controller` attribute is ignored
+     * by the loader so that this UIComponent can still be the controller for the FXML file.
+     *
+     * Important: If you specify `hasControllerAttribute = true` when infact no `fx:controller` attribute is present,
+     * no controller will be set at all. Make sure to only specify this parameter if you actually have the `fx:controller`
+     * attribute in your FXML.
+     */
+    fun <T : Node> fxml(content: InputStream, hasControllerAttribute: Boolean = false, root: Any? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+        val value: T = loadFXML(content, hasControllerAttribute, root)
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
+    }
+
+    @JvmOverloads
+    fun <T : Node> loadFXML(content: InputStream, hasControllerAttribute: Boolean = false, root: Any? = null): T {
+        fxmlLoader = FXMLLoader().apply {
+            resources = this@UIComponent.messages
+            if (root != null) setRoot(root)
+            if (hasControllerAttribute) {
+                setControllerFactory { this@UIComponent }
+            } else {
+                setController(this@UIComponent)
+            }
+        }
+
+        return fxmlLoader.load(content)
+    }
+
     fun <T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
         override fun getValue(thisRef: UIComponent, property: KProperty<*>): T {
             val key = propName ?: property.name
