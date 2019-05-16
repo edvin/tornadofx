@@ -10,6 +10,8 @@
 
 ### Additions
 
+- `subscene` builder
+
 ## [1.7.19]
 
 ### Fixed

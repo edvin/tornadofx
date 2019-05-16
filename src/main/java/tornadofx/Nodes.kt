@@ -14,15 +14,10 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.css.PseudoClass
-import javafx.css.Styleable
-import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.geometry.*
-import javafx.scene.Node
-import javafx.scene.Parent
-import javafx.scene.Scene
+import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.input.InputEvent
@@ -1309,3 +1304,6 @@ class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Bool
 }
 
 val Node.indexInParent: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1
+
+fun EventTarget.subscene(width: Number, height: Number, depthBuffer: Boolean = false, antiAlias: SceneAntialiasing = SceneAntialiasing.DISABLED, op: SubScene.() -> Unit = {}) =
+        SubScene(StackPane(), width.toDouble(), height.toDouble(), depthBuffer, antiAlias).attachTo(this, op)

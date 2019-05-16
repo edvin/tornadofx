@@ -7,10 +7,7 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.collections.*
 import javafx.event.EventTarget
-import javafx.scene.Group
-import javafx.scene.Node
-import javafx.scene.Parent
-import javafx.scene.Scene
+import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
@@ -540,6 +537,9 @@ fun EventTarget.addChildIfPossible(node: Node, index: Int? = null) {
                 if (pages.size == 1)
                     currentPage = uicmp
             }
+        }
+        is SubScene -> {
+            root = node as Parent
         }
         is Drawer -> {
             val uicmp = node.uiComponent<UIComponent>()
