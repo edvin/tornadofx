@@ -1305,5 +1305,18 @@ class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Bool
 
 val Node.indexInParent: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1
 
-fun EventTarget.subscene(width: Number, height: Number, depthBuffer: Boolean = false, antiAlias: SceneAntialiasing = SceneAntialiasing.DISABLED, op: SubScene.() -> Unit = {}) =
-        SubScene(StackPane(), width.toDouble(), height.toDouble(), depthBuffer, antiAlias).attachTo(this, op)
+/**
+ * Create a subscene and attach it to the current container as a child. The root node of the SubScene will be whatever is built inside the `op` builder parameter.
+ * If no height or width is given, the size property will be bound to it's parent size.
+ */
+fun EventTarget.subscene(depthBuffer: Boolean = false, antiAlias: SceneAntialiasing = SceneAntialiasing.DISABLED, width: Number? = null, height: Number? = null, op: SubScene.() -> Unit = {}) =
+        SubScene(StackPane(), width?.toDouble() ?: 0.0, height?.toDouble() ?: 0.0, depthBuffer, antiAlias).apply {
+            val builderParent = this@subscene as? Region
+            if (builderParent != null) {
+                if (width == null)
+                    widthProperty().bind(builderParent.widthProperty())
+
+                if (height == null)
+                    heightProperty().bind(builderParent.heightProperty())
+            }
+        }.attachTo(this, op)
