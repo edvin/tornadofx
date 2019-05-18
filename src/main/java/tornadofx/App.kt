@@ -255,7 +255,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
  * was passed on the command line.
  *
  * If no primary view is shown, the developer must use either the start() hook or some
- * other means of determinining that the application has started. This would be good
+ * other means of determining that the application has started. This would be good
  * for applications where the default view depends upon some state, or where the app
  * simply starts with a tray icon.
  *
