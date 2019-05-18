@@ -3,6 +3,7 @@ package tornadofx.tests
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
+import tornadofx.testapps.NoPrimaryViewDockingApp
 import tornadofx.testapps.ViewDockingApp
 import tornadofx.testapps.PrimaryDockingView
 import tornadofx.testapps.SecondaryDockingView
@@ -122,5 +123,27 @@ class ViewDockingTests {
                     message = "It should dock exactly once"
             )
         }
+    }
+
+    @Test
+    fun itShouldNotUninitNoPrimaryViewSpecifiedComponent() {
+        // proof of fix for https://github.com/edvin/tornadofx/issues/991
+        FxToolkit.registerPrimaryStage()
+        val app = FxToolkit.setupApplication { NoPrimaryViewDockingApp() }
+        val primaryDockingView = find<PrimaryDockingView>()
+
+        FxToolkit.cleanupStages()
+        FxToolkit.cleanupApplication(app)
+
+        assertEquals(
+                expected = 1,
+                actual = primaryDockingView.dockCounter,
+                message = "It should dock exactly once"
+        )
+        assertEquals(
+                expected = 1,
+                actual = primaryDockingView.undockCounter,
+                message = "It should undock exactly once"
+        )
     }
 }

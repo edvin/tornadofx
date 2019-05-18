@@ -1,6 +1,8 @@
 package tornadofx.testapps
 
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.scene.Scene
+import javafx.stage.Stage
 import tornadofx.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -65,4 +67,13 @@ class SecondaryDockingView : PrimaryDockingView() {
 
     override val tag: String
         get() = "SecondaryDockingView"
+}
+
+class NoPrimaryViewDockingApp : App() {
+
+    override fun start(stage: Stage) {
+        super.start(stage)
+        stage.scene = Scene(find<PrimaryDockingView>().root)
+        stage.show()
+    }
 }

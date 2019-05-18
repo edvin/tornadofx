@@ -559,7 +559,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             return properties[key] as ChangeListener<Boolean>
         }
 
-    fun init() {
+    internal fun init() {
         if (isInitialized) return
         root.properties[UI_COMPONENT_PROPERTY] = this
         root.parentProperty().addListener(rootParentChangeListener)
@@ -567,12 +567,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         isInitialized = true
     }
 
-    fun unInit() {
+    internal fun unInit() {
         if (!isInitialized) return
         root.properties.remove(UI_COMPONENT_PROPERTY)
         root.parentProperty().removeListener(rootParentChangeListener)
         root.sceneProperty().removeListener(rootSceneChangeListener)
-        root.scene.window.showingProperty().removeListener(rootSceneWindowShowingPropertyChangeListener)
+        root.scene?.window?.showingProperty()?.removeListener(rootSceneWindowShowingPropertyChangeListener)
         isInitialized = false
     }
 

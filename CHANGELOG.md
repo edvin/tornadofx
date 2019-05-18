@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- [#991](https://github.com/edvin/tornadofx/issues/991): App with NoPrimaryViewSpecified throws Exception in Application stop method
+
 ### Changes
 
 - `openInternalWindow()` was made public (https://github.com/edvin/tornadofx/issues/989)
