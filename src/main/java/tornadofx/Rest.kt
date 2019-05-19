@@ -6,6 +6,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.scene.control.ProgressBar.INDETERMINATE_PROGRESS
 import javafx.scene.control.Tooltip
+import org.apache.http.HttpEntity
 import org.apache.http.HttpHost
 import org.apache.http.auth.AuthScope
 import org.apache.http.auth.UsernamePasswordCredentials
@@ -448,6 +449,7 @@ class HttpClientRequest(val engine: HttpClientEngine, val client: CloseableHttpC
                 is JsonModel -> r.entity = StringEntity(entity.toJSON().toString(), UTF_8)
                 is JsonValue -> r.entity = StringEntity(entity.toString(), UTF_8)
                 is InputStream -> r.entity = InputStreamEntity(entity)
+                is HttpEntity -> r.entity = entity
                 else -> throw IllegalArgumentException("Don't know how to handle entity of type ${entity.javaClass}")
             }
         }

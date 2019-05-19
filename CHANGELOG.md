@@ -14,7 +14,8 @@
 
 - `subscene` builder
 - The `fxml()` delegate now accepts an InputStream, for loading FXML from DB or `resources.stream("/my/classpath/to.fxml")` (https://github.com/edvin/tornadofx-guide/issues/107) 
-
+- Generic HttpEntity support in HttpClientRequest (https://github.com/edvin/tornadofx/issues/996)
+ 
 ## [1.7.19]
 
 ### Fixed
