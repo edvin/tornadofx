@@ -1,6 +1,5 @@
 package tornadofx
 
-import com.frauscher.systems.goapp.styles.Styles
 import javafx.animation.TranslateTransition
 import javafx.geometry.Pos
 import javafx.scene.layout.Region
@@ -23,7 +22,6 @@ abstract class SlideIn constructor(private val milliseconds: Double? = 50.0, pri
         isCache = false
         maxHeight = Region.USE_PREF_SIZE
         stackpaneConstraints { alignment = position }
-        setId(Styles.spuMenu)
         if (size != null && size >= 11.0) {
             minWidth = size
             prefWidth = size
