@@ -9,6 +9,8 @@
 ### Changes
 
 - `openInternalWindow()` was made public (https://github.com/edvin/tornadofx/issues/989)
+- `Scope.deregister()` clears EventBus subscriptions associated with a particular scope
+- `App.stop()` clears all EventBus subscriptions
 
 ### Additions
 

@@ -63,6 +63,7 @@ open class Scope() {
         FX.primaryStages.remove(this)
         FX.applications.remove(this)
         FX.components.remove(this)
+        FX.eventbus.unsubscribeAll(this)
     }
 
     // Fix the component types to this scope
