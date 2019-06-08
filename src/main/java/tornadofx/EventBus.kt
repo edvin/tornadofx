@@ -122,4 +122,18 @@ class EventBus {
         }
     }
 
+    internal fun clear() {
+        subscriptions.clear()
+        eventScopes.clear()
+    }
+
+    internal fun unsubscribeAll(scope: Scope) {
+        val scopedContexts: Map<EventContext.(FXEvent) -> Unit, Scope> = eventScopes.filter { it.value == scope }
+        val registrations = mutableListOf<FXEventRegistration>()
+        subscriptions.forEach { (_, subscriptionRegistrations) ->
+            registrations += subscriptionRegistrations.filter { scopedContexts.containsKey(it.action) }
+        }
+        registrations.forEach { it.unsubscribe() }
+    }
+
 }

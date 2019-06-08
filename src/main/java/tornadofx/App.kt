@@ -5,6 +5,7 @@ import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import tornadofx.FX.Companion.eventbus
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.primaryStage
@@ -139,6 +140,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         primaryStage.unhookGlobalShortcuts()
         view.unInit()
         view.removeFromParent()
+        eventbus.clear()
         scope.deregister()
         shutdownThreadPools()
         inheritParamHolder.remove()
