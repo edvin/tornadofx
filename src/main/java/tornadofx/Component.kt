@@ -1260,10 +1260,14 @@ fun <U : UIComponent> U.whenDocked(listener: (U) -> Unit) {
 @Suppress("UNCHECKED_CAST")
 fun <U : UIComponent> U.whenDockedOnce(listener: (U) -> Unit) {
     if (onDockListeners == null) onDockListeners = mutableListOf()
-    onDockListeners!!.add {
-        onDockListeners!!.remove(listener)
-        listener(this)
+    var wrapped: (U) -> Unit = {}
+    wrapped = {
+        runLater {
+            onDockListeners!!.remove(wrapped)
+        }
+        listener(it)
     }
+    whenDocked(wrapped)
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -1275,10 +1279,14 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
 @Suppress("UNCHECKED_CAST")
 fun <U : UIComponent> U.whenUndockedOnce(listener: (U) -> Unit) {
     if (onUndockListeners == null) onUndockListeners = mutableListOf()
-    onUndockListeners!!.add {
-        onUndockListeners!!.remove(listener)
-        listener(this)
+    var wrapped: (U) -> Unit = {}
+    wrapped = {
+        runLater {
+            onUndockListeners!!.remove(wrapped)
+        }
+        listener(it)
     }
+    whenUndocked(wrapped)
 }
 
 abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
