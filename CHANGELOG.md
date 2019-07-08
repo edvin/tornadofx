@@ -5,6 +5,7 @@
 ### Fixed
 
 - [#991](https://github.com/edvin/tornadofx/issues/991): App with NoPrimaryViewSpecified throws Exception in Application stop method
+- [#1026](https://github.com/edvin/tornadofx/issues/1026) whenDockedOnce/whenUndockedOnce did not deregister correctly
 
 ### Changes
 
