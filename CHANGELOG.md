@@ -18,7 +18,8 @@
 - `subscene` builder
 - The `fxml()` delegate now accepts an InputStream, for loading FXML from DB or `resources.stream("/my/classpath/to.fxml")` (https://github.com/edvin/tornadofx-guide/issues/107) 
 - Generic HttpEntity support in HttpClientRequest (https://github.com/edvin/tornadofx/issues/996)
- 
+- JsonConfig.AddEmptyStrings controls if empty strings are added to Json objects or treated as null
+
 ## [1.7.19]
 
 ### Fixed

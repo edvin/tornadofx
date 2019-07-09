@@ -3,6 +3,7 @@ package tornadofx
 import javafx.beans.property.*
 import javafx.beans.value.ObservableValue
 import tornadofx.FX.Companion.log
+import tornadofx.JsonConfig.AddEmptyStrings
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.StringWriter
@@ -101,6 +102,7 @@ interface JsonModel {
 
 object JsonConfig {
     var DefaultDateTimeMillis = false
+    var AddEmptyStrings = false
 }
 
 /**
@@ -203,7 +205,7 @@ class JsonBuilder {
     }
 
     fun add(key: String, value: String?) = apply {
-        if (value != null && value.isNotBlank())
+        if (value != null && (AddEmptyStrings || value.isNotBlank()))
             delegate.add(key, value)
     }
 
