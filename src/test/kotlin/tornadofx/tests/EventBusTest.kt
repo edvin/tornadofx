@@ -24,14 +24,16 @@ class EventBusTest {
         }
     }
 
-    val iterations: Int = 10
+    val iterations: Int = 100
     val count = AtomicInteger(0)
     val view = object : View() {
 
         init {
             for (i in 1..iterations) {
                 subscribe<FXEvent>(times = i) {
+                    callOnUndock()
                     print(" ${count.getAndIncrement()} ")
+                    callOnDock()
                 }
             }
         }
@@ -43,8 +45,9 @@ class EventBusTest {
     fun testUnsubscribe() {
         Platform.runLater {
             view.callOnDock()
-            repeat(iterations) {
+            repeat(iterations / 2) {
                 view.fire(FXEvent())
+                view.fire(FXEvent(EventBus.RunOn.BackgroundThread))
             }
             latch.countDown()
         }

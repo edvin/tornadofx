@@ -4,9 +4,10 @@ package tornadofx
 
 import javafx.application.Platform
 import tornadofx.EventBus.RunOn.ApplicationThread
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.logging.Level
+import kotlin.collections.HashSet
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 
@@ -22,19 +23,36 @@ class EventContext {
     }
 }
 
-class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Component?, val maxCount: Long? = null, val action: EventContext.(FXEvent) -> Unit) {
-    internal var valid = true
-    val count = AtomicLong()
+interface EventRegistration {
+    val eventType: KClass<out FXEvent>
+    val owner: Component?
+    val action: EventContext.(FXEvent) -> Unit
+    fun unsubscribe()
+}
+
+class FXEventRegistration(override val eventType: KClass<out FXEvent>,
+                          override val owner: Component?,
+                          private val maxCount: Long? = null,
+                          private val anAction: EventContext.(FXEvent) -> Unit) : EventRegistration {
+
+    private val invocationCount = AtomicLong()
+
+    override val action: EventContext.(FXEvent) -> Unit = {
+        if (maxCount == null || invocationCount.getAndIncrement() < maxCount) {
+            anAction.invoke(this, it)
+        } else {
+            this@FXEventRegistration.unsubscribe()
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other?.javaClass != javaClass) return false
-
-        other as FXEventRegistration
-
+        if (other !is FXEventRegistration) return false
         if (eventType != other.eventType) return false
         if (owner != other.owner) return false
+        if (maxCount != other.maxCount) return false
         if (action != other.action) return false
+        if (invocationCount.get() != other.invocationCount.get()) return false
 
         return true
     }
@@ -46,20 +64,26 @@ class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Compone
         return result
     }
 
-    fun unsubscribe() {
+    override fun unsubscribe() {
         FX.eventbus.unsubscribe(this)
     }
 }
 
+data class InvalidatableEventRegistration(val registration: EventRegistration, @Volatile var valid: Boolean = true) : EventRegistration by registration
+
 class EventBus {
     enum class RunOn { ApplicationThread, BackgroundThread }
 
-    private val subscriptions = mutableMapOf<KClass<out FXEvent>, HashSet<FXEventRegistration>>()
-    private val eventScopes = mutableMapOf<EventContext.(FXEvent) -> Unit, Scope>()
+    private val subscriptions = ConcurrentHashMap<KClass<out FXEvent>, Set<InvalidatableEventRegistration>>()
+    private val eventScopes = ConcurrentHashMap<EventContext.(FXEvent) -> Unit, Scope>()
 
     inline fun <reified T : FXEvent> subscribe(scope: Scope, registration: FXEventRegistration) = subscribe(T::class, scope, registration)
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration: FXEventRegistration) {
-        subscriptions.getOrPut(event, { HashSet() }).add(registration)
+        subscriptions.compute(event) { _, set ->
+            val newSet = if (set != null) HashSet(set) else HashSet()
+            newSet.add(InvalidatableEventRegistration(registration))
+            newSet
+        }
         eventScopes[registration.action] = scope
     }
 
@@ -83,34 +107,27 @@ class EventBus {
         eventScopes.remove(action)
     }
 
-    fun unsubscribe(registration: FXEventRegistration) {
+    fun unsubscribe(registration: EventRegistration) {
         unsubscribe(registration.eventType, registration.action)
-        registration.owner?.subscribedEvents?.get(registration.eventType)?.remove(registration)
+        registration.owner?.subscribedEvents?.computeIfPresent(registration.eventType) {_, list -> list.filter { it != registration }}
     }
 
     private fun cleanupInvalidRegistrations(eventKlass: KClass<FXEvent>) {
-        subscriptions[eventKlass]?.removeAll { !it.valid }
+        subscriptions.computeIfPresent(eventKlass) { _, set -> set.filter { it.valid }.toSet() }
     }
 
     fun fire(event: FXEvent) {
         fun fireEvents() {
             val eventKlass = event.javaClass.kotlin
             subscriptions[eventKlass]?.forEach {
-                if (it.valid) {
-                    if (event.scope == null || event.scope == eventScopes[it.action]) {
-                        val count = it.count.andIncrement
-                        if (it.maxCount == null || count < it.maxCount) {
-                            val context = EventContext()
-                            try {
-                                it.action.invoke(context, event)
-                            } catch (subscriberFailure: Exception) {
-                                log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
-                            }
-                            if (context.unsubscribe) unsubscribe(it)
-                        } else {
-                            unsubscribe(it)
-                        }
+                if (it.valid && (event.scope == null || event.scope == eventScopes[it.action])) {
+                    val context = EventContext()
+                    try {
+                        it.action.invoke(context, event)
+                    } catch (subscriberFailure: Exception) {
+                        log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
                     }
+                    if (context.unsubscribe) unsubscribe(it)
                 }
             }
             cleanupInvalidRegistrations(eventKlass)
@@ -142,7 +159,7 @@ class EventBus {
 
     internal fun unsubscribeAll(scope: Scope) {
         val scopedContexts: Map<EventContext.(FXEvent) -> Unit, Scope> = eventScopes.filter { it.value == scope }
-        val registrations = mutableListOf<FXEventRegistration>()
+        val registrations = mutableListOf<EventRegistration>()
         subscriptions.forEach { (_, subscriptionRegistrations) ->
             registrations += subscriptionRegistrations.filter { scopedContexts.containsKey(it.action) }
         }
