@@ -23,6 +23,7 @@ class EventContext {
 }
 
 class FXEventRegistration(val eventType: KClass<out FXEvent>, val owner: Component?, val maxCount: Long? = null, val action: EventContext.(FXEvent) -> Unit) {
+    internal var valid = true
     val count = AtomicLong()
 
     override fun equals(other: Any?): Boolean {
@@ -74,7 +75,11 @@ class EventBus {
     fun <T : FXEvent> unsubscribe(event: Class<T>, action: EventContext.(T) -> Unit) = unsubscribe(event.kotlin, action)
 
     fun <T : FXEvent> unsubscribe(event: KClass<T>, action: EventContext.(T) -> Unit) {
-        subscriptions[event]?.removeAll { it.action == action }
+        subscriptions[event]?.forEach {
+            if (it.action == action) {
+                it.valid = false
+            }
+        }
         eventScopes.remove(action)
     }
 
@@ -83,24 +88,32 @@ class EventBus {
         registration.owner?.subscribedEvents?.get(registration.eventType)?.remove(registration)
     }
 
+    private fun cleanupInvalidRegistrations(eventKlass: KClass<FXEvent>) {
+        subscriptions[eventKlass]?.removeAll { !it.valid }
+    }
+
     fun fire(event: FXEvent) {
         fun fireEvents() {
-            subscriptions[event.javaClass.kotlin]?.forEach {
-                if (event.scope == null || event.scope == eventScopes[it.action]) {
-                    val count = it.count.andIncrement
-                    if (it.maxCount == null || count < it.maxCount) {
-                        val context = EventContext()
-                        try {
-                            it.action.invoke(context, event)
-                        } catch (subscriberFailure: Exception) {
-                            log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
+            val eventKlass = event.javaClass.kotlin
+            subscriptions[eventKlass]?.forEach {
+                if (it.valid) {
+                    if (event.scope == null || event.scope == eventScopes[it.action]) {
+                        val count = it.count.andIncrement
+                        if (it.maxCount == null || count < it.maxCount) {
+                            val context = EventContext()
+                            try {
+                                it.action.invoke(context, event)
+                            } catch (subscriberFailure: Exception) {
+                                log.log(Level.WARNING, "Event $event was delivered to subscriber from ${it.owner}, but invocation resulted in exception", subscriberFailure)
+                            }
+                            if (context.unsubscribe) unsubscribe(it)
+                        } else {
+                            unsubscribe(it)
                         }
-                        if (context.unsubscribe) unsubscribe(it)
-                    } else {
-                        unsubscribe(it)
                     }
                 }
             }
+            cleanupInvalidRegistrations(eventKlass)
         }
 
         if (Platform.isFxApplicationThread()) {
