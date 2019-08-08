@@ -80,7 +80,7 @@ class EventBus {
     inline fun <reified T : FXEvent> subscribe(scope: Scope, registration: FXEventRegistration) = subscribe(T::class, scope, registration)
     fun <T : FXEvent> subscribe(event: KClass<T>, scope: Scope, registration: FXEventRegistration) {
         subscriptions.compute(event) { _, set ->
-            val newSet = if (set != null) HashSet(set) else HashSet()
+            val newSet = if (set != null) HashSet(set.filter { it.valid }) else HashSet()
             newSet.add(InvalidatableEventRegistration(registration))
             newSet
         }
