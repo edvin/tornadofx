@@ -6,7 +6,6 @@ import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -44,6 +43,7 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import java.util.prefs.Preferences
 import javax.json.Json
@@ -107,7 +107,7 @@ abstract class Component : Configurable {
     val workspace: Workspace get() = scope.workspace
     val paramsProperty = SimpleObjectProperty<Map<String, Any?>>(FX.inheritParamHolder.get() ?: mapOf())
     val params: Map<String, Any?> get() = paramsProperty.value
-    val subscribedEvents = HashMap<KClass<out FXEvent>, ArrayList<FXEventRegistration>>()
+    val subscribedEvents = ConcurrentHashMap<KClass<out FXEvent>, List<FXEventRegistration>>()
 
     /**
      * Path to component specific configuration settings. Defaults to javaClass.properties inside
@@ -300,9 +300,13 @@ abstract class Component : Configurable {
     fun <T> runAsync(daemon: Boolean = false, status: TaskStatus? = find(scope), func: FXTask<*>.() -> T) = task(daemon, status, func)
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): FXEventRegistration {
+    inline fun <reified T : FXEvent> subscribe(times: Number? = null, noinline action: EventContext.(T) -> Unit): EventRegistration {
         val registration = FXEventRegistration(T::class, this, times?.toLong(), action as EventContext.(FXEvent) -> Unit)
-        subscribedEvents.getOrPut(T::class) { ArrayList() }.add(registration)
+        subscribedEvents.compute(T::class) { _, list ->
+            val newList = if (list != null) ArrayList(list) else ArrayList()
+            newList.add(registration)
+            newList
+        }
         val fireNow = (this as? UIComponent)?.isDocked ?: true
         if (fireNow) FX.eventbus.subscribe<T>(scope, registration)
         return registration
@@ -310,7 +314,7 @@ abstract class Component : Configurable {
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : FXEvent> unsubscribe(noinline action: EventContext.(T) -> Unit) {
-        subscribedEvents[T::class]?.removeAll { it.action == action }
+        subscribedEvents.computeIfPresent(T::class) { _, list -> list.filter { it.action == action } }
         FX.eventbus.unsubscribe(action)
     }
 
@@ -702,16 +706,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     private fun attachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        subscribedEvents.forEach { (event, registrations) ->
+            registrations.forEach {
                 FX.eventbus.subscribe(event, scope, it)
             }
         }
     }
 
     private fun detachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        subscribedEvents.forEach { (event, registrations) ->
+            registrations.forEach {
                 FX.eventbus.unsubscribe(event, it.action)
             }
         }
