@@ -697,10 +697,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     internal fun callOnDock() {
         if (!isInitialized) init()
+        if (!isDocked) {
+            attachLocalEventBusListeners()
+            enableAccelerators()
+        }
         if (muteDocking) return
-        if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
-        enableAccelerators()
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
