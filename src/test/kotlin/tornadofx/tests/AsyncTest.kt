@@ -10,6 +10,8 @@ import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -89,13 +91,78 @@ class AsyncTest {
     }
 
     @Test
-    fun runAsync() {
-        tornadofx.runAsync(daemon = true) {
+    fun `daemon flag is respected`() {
+        runAsync(daemon = true) {
             assertTrue { Thread.currentThread().isDaemon }
         }
-        tornadofx.runAsync {
+        runAsync {
             assertFalse { Thread.currentThread().isDaemon }
         }
     }
 
+    @Test
+    fun `finally infix method works for tasks`() {
+        val taskLatch = Latch()
+        val successLatch = Latch()
+        val failLatch = Latch()
+        val finallyLatch = Latch()
+        val task = runAsync {
+            taskLatch.await()
+        } success {
+            successLatch.countDown()
+        } fail {
+            failLatch.countDown()
+        } finally {
+            finallyLatch.countDown()
+        }
+
+        taskLatch.countDown()
+        //wait until the threadPool thread has time to process
+        task.get(1, TimeUnit.SECONDS)
+        //wait until UI thread has time to process handlers
+        successLatch.await(1, TimeUnit.SECONDS)
+        finallyLatch.await(1, TimeUnit.SECONDS)
+
+
+        assert(!successLatch.locked) {"Success not called"}
+        assert(failLatch.locked) {"Fail called but the task succeeded"}
+        assert(!finallyLatch.locked) {"Finally not called"}
+    }
+
+    @Test
+    fun `finally method works for FXTask`() {
+        val taskLatch = Latch()
+        val successLatch = Latch()
+        val failLatch = Latch()
+        val finallyLatch = Latch()
+
+        val task = FXTask {
+            taskLatch.await()
+        }
+
+        thread(isDaemon = true) { task.run() }
+
+        task success {
+            successLatch.countDown()
+        } fail {
+            failLatch.countDown()
+        }
+        //set the finally on the task, instead of infix
+        task.finally {
+            finallyLatch.countDown()
+        }
+
+        taskLatch.countDown()
+        //wait until the threadPool thread has time to process
+        task.get(1, TimeUnit.SECONDS)
+        //wait until UI thread has time to process handlers
+        successLatch.await(1, TimeUnit.SECONDS)
+        finallyLatch.await(1, TimeUnit.SECONDS)
+
+
+        assert(!successLatch.locked) {"Success not called"}
+        assert(failLatch.locked) {"Fail called but the task succeeded"}
+        assert(!finallyLatch.locked) {"Finally not called"}
+
+    }
 }

@@ -8,6 +8,9 @@ import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.concurrent.Task
 import javafx.concurrent.Worker
+import javafx.concurrent.WorkerStateEvent
+import javafx.concurrent.WorkerStateEvent.*
+import javafx.event.EventHandler
 import javafx.scene.Node
 import javafx.scene.control.Labeled
 import javafx.scene.control.ProgressIndicator
@@ -443,16 +446,35 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
     }
 }
 
-infix fun <T> Task<T>.finally(func: () -> Unit) {
-    require(this is FXTask<*>) { "finally() called on non-FXTask subclass" }
-    finally(func)
+infix fun <T> Task<T>.finally(func: () -> Unit) = apply {
+    finallyInternal(func)
+}
+
+/**
+ * Register a new event handler for all final task states that delegates to the passed function.
+ */
+private fun <T> Task<T>.finallyInternal(func: () -> Unit) = apply {
+    fun attachEventHandler() {
+        if (state == WORKER_STATE_SUCCEEDED || state == WORKER_STATE_FAILED || state == WORKER_STATE_CANCELLED) {
+            func()
+        } else {
+            val eventHandler: EventHandler<WorkerStateEvent> = EventHandler { func() }
+            addEventHandler(WORKER_STATE_SUCCEEDED, eventHandler)
+            addEventHandler(WORKER_STATE_FAILED, eventHandler)
+            addEventHandler(WORKER_STATE_CANCELLED, eventHandler)
+        }
+    }
+    if (Application.isEventThread()) {
+        attachEventHandler()
+    } else {
+        runLater { attachEventHandler() }
+    }
 }
 
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {
     private var internalCompleted = ReadOnlyBooleanWrapper(false)
     val completedProperty: ReadOnlyBooleanProperty get() = internalCompleted.readOnlyProperty
     val completed: Boolean get() = completedProperty.value
-    private var finallyListener: (() -> Unit)? = null
 
     override fun call() = func(this)
 
@@ -461,22 +483,19 @@ class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : T
     }
 
     fun finally(func: () -> Unit) {
-        this.finallyListener = func
+        finallyInternal(func)
     }
 
     override fun succeeded() {
         internalCompleted.value = true
-        finallyListener?.invoke()
     }
 
     override fun failed() {
         internalCompleted.value = true
-        finallyListener?.invoke()
     }
 
     override fun cancelled() {
         internalCompleted.value = true
-        finallyListener?.invoke()
     }
 
     public override fun updateProgress(workDone: Long, max: Long) {
