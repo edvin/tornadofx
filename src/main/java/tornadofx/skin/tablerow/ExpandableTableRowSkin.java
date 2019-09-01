@@ -45,10 +45,7 @@ public final class ExpandableTableRowSkin<S> extends TableRowSkin<S> {
 
     protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
         tableRowPrefHeight = super.computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
-        if (getExpanded() && getContent() != null) {
-            tableRowPrefHeight += getContent().prefHeight(width);
-        }
-        return tableRowPrefHeight;
+        return (getExpanded() && getContent() != null) ? tableRowPrefHeight + getContent().prefHeight(width) : tableRowPrefHeight;
     }
 
     protected void layoutChildren(double x, double y, double w, double h) {
