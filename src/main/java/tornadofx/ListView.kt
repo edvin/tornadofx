@@ -147,6 +147,7 @@ open class SmartListCell<T>(val scope: Scope = FX.defaultScope, listView: ListVi
             text = null
             graphic = null
             style = null
+            styleClass.clear()
             clearCellFragment()
         } else {
             FX.ignoreParentBuilder = Once
