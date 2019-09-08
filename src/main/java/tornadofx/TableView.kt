@@ -72,12 +72,7 @@ open class SmartTableCell<S, T>(val scope: Scope = FX.defaultScope, val owningCo
         super.updateItem(item, empty)
 
         if (item == null || empty) {
-            textProperty().unbind()
-            graphicProperty().unbind()
-            text = null
-            graphic = null
-            style = null
-            styleClass.clear()
+            cleanUp()
             clearCellFragment()
         } else {
             FX.ignoreParentBuilder = FX.IgnoreParentBuilder.Once
@@ -100,6 +95,15 @@ open class SmartTableCell<S, T>(val scope: Scope = FX.defaultScope, val owningCo
             }
             cellFormat?.invoke(this, item)
         }
+    }
+
+    private fun cleanUp() {
+        textProperty().unbind()
+        graphicProperty().unbind()
+        text = null
+        graphic = null
+        style = null
+        styleClass.clear()
     }
 
     private fun clearCellFragment() {
