@@ -671,7 +671,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     /**
-     * Create callback which is triggered when the Creaste button in the Workspace
+     * Create callback which is triggered when the Create button in the Workspace
      * is clicked.
      */
     open fun onCreate() {

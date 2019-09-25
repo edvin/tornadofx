@@ -93,7 +93,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.17'
+implementation 'no.tornado:tornadofx:1.7.17'
 ```
 
 ### Snapshots are published to Sonatype
