@@ -51,7 +51,7 @@ class StylesheetTest {
     val base by cssproperty<Paint>("-fx-base")
     val multiProp by cssproperty<MultiValue<Paint>>()
 
-    val lumpyElement by csselement()
+    val lumpyElement by csselement("LumpyElement")
     val lumpyId by cssid()
     val lumpyClass by cssclass()
     val lumpyPseudoClass by csspseudoclass()
@@ -251,7 +251,7 @@ class StylesheetTest {
             }
         } shouldEqual {
             """
-            lumpy-element, #lumpy-id, .lumpy-class, :lumpy-pseudo-class {
+            LumpyElement, #lumpy-id, .lumpy-class, :lumpy-pseudo-class {
                 multi-prop: rgba(255, 0, 0, 1);
             }
             """
