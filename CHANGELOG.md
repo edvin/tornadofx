@@ -12,6 +12,8 @@
 - `DefaultScope` deprecated, use `FX.defaultScope` instead
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
 - Kotlin 1.2.70
+- `ViewTransition`s now include a flag for simple clipping
+    - `replaceWtih` now clips by default (can be overridden with `clip = false`)
 
 ### Additions
 
