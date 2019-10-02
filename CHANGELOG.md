@@ -12,6 +12,7 @@
 - `DefaultScope` deprecated, use `FX.defaultScope` instead
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
 - Kotlin 1.2.70
+- `csselement` delegate now requires an explicit name
 
 ### Additions
 
