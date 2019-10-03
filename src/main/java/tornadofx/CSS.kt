@@ -1044,12 +1044,14 @@ class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Select
             = CssRuleSet(rootRule, *subRule, CssSubRule(ruleSet.rootRule, relation), *ruleSet.subRule)
 }
 
-class CssRule(val prefix: String, name: String, snakeCase: Boolean = true) : Selectable, Scoped, Rendered {
+class CssRule(val prefix: String, val name: String) : Selectable, Scoped, Rendered {
     companion object {
-        fun elem(value: String, snakeCase: Boolean = true) = CssRule("", value.cssValidate(), snakeCase)
-        fun id(value: String, snakeCase: Boolean = true) = CssRule("#", value.cssValidate(), snakeCase)
-        fun c(value: String, snakeCase: Boolean = true) = CssRule(".", value.cssValidate(), snakeCase)
-        fun pc(value: String, snakeCase: Boolean = true) = CssRule(":", value.cssValidate(), snakeCase)
+        fun elem(value: String) = CssRule("", value.cssValidate())
+        fun id(value: String, snakeCase: Boolean = true) = CssRule("#", value.cssValidate(snakeCase))
+        fun c(value: String, snakeCase: Boolean = true) = CssRule(".", value.cssValidate(snakeCase))
+        fun pc(value: String, snakeCase: Boolean = true) = CssRule(":", value.cssValidate(snakeCase))
+
+        private fun String.cssValidate(snakeCase: Boolean) = (if (snakeCase) camelToSnake() else this).cssValidate()
 
         private val name = "\\*|-?[_a-zA-Z][_a-zA-Z0-9-]*"  // According to http://stackoverflow.com/a/449000/2094298
         private val prefix = "[.#:]?"
@@ -1061,8 +1063,6 @@ class CssRule(val prefix: String, name: String, snakeCase: Boolean = true) : Sel
         val splitter = Regex("\\s*,\\s*")
         val upperCaseRegex = Regex("([A-Z])")
     }
-
-    val name = if (snakeCase) name.camelToSnake() else name
 
     override fun render() = "$prefix$name"
     override fun toRuleSet() = CssRuleSet(this)
@@ -1136,14 +1136,15 @@ fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
 
 // Delegates
 
-fun csselement(value: String? = null, snakeCase: Boolean = value == null) = CssElementDelegate(value, snakeCase)
+fun csselement(value: String) = CssElementDelegate(value)
 fun cssid(value: String? = null, snakeCase: Boolean = value == null) = CssIdDelegate(value, snakeCase)
 fun cssclass(value: String? = null, snakeCase: Boolean = value == null) = CssClassDelegate(value, snakeCase)
 fun csspseudoclass(value: String? = null, snakeCase: Boolean = value == null) = CssPseudoClassDelegate(value, snakeCase)
-inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) = CssPropertyDelegate(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
+inline fun <reified T : Any> cssproperty(value: String? = null, noinline renderer: ((T) -> String)? = null) =
+    CssPropertyDelegate(value, MultiValue::class.java.isAssignableFrom(T::class.java), renderer)
 
-class CssElementDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
-    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name ?: property.name, snakeCase)
+class CssElementDelegate(val name: String) : ReadOnlyProperty<Any, CssRule> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) = CssRule.elem(name)
 }
 
 class CssIdDelegate(val name: String?, val snakeCase: Boolean = name == null) : ReadOnlyProperty<Any, CssRule> {
@@ -1243,7 +1244,7 @@ internal fun String.cssValidate() = if (matches(CssRule.nameRegex)) this else th
 internal fun String.toSelector() = CssSelector(*split(CssRule.splitter).map(String::toRuleSet).toTypedArray())
 internal fun String.toRuleSet() = if (matches(CssRule.ruleSetRegex)) {
     val rules = CssRule.subRuleRegex.findAll(this)
-            .mapEach { CssSubRule(CssRule(groupValues[2], groupValues[3], false), CssSubRule.Relation.of(groupValues[1])) }
+            .mapEach { CssSubRule(CssRule(groupValues[2], groupValues[3]), CssSubRule.Relation.of(groupValues[1])) }
             .toList()
     CssRuleSet(rules[0].rule, *rules.drop(1).toTypedArray())
 } else throw IllegalArgumentException("Invalid CSS Rule Set: $this")
