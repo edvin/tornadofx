@@ -116,10 +116,6 @@ class EventBus {
         subscriptions.computeIfPresent(eventKlass) { _, set -> set.filter { it.valid }.toSet() }
     }
 
-    private fun cleanupInvalidRegistrations(eventKlass: KClass<FXEvent>) {
-        subscriptions.computeIfPresent(eventKlass) { _, set -> set.filter { it.valid }.toSet() }
-    }
-
     fun fire(event: FXEvent) {
         fun fireEvents() {
             val eventKlass = event.javaClass.kotlin
