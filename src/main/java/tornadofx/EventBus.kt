@@ -109,7 +109,7 @@ class EventBus {
 
     fun unsubscribe(registration: EventRegistration) {
         unsubscribe(registration.eventType, registration.action)
-        registration.owner?.subscribedEvents?.get(registration.eventType)?.remove(registration)
+        registration.owner?.subscribedEvents?.computeIfPresent(registration.eventType) {_, list -> list.filter { it != registration }}
     }
 
     private fun cleanupInvalidRegistrations(eventKlass: KClass<FXEvent>) {
