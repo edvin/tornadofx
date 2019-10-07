@@ -61,17 +61,22 @@ interface Configurable {
     val configCharset: Charset
 
     fun loadConfig() = ConfigProperties(this).apply {
-        if (Files.exists(configPath))
-            Files.newInputStream(configPath).use { load(it) }
+        if (Files.exists(configPath)) {
+            Files.newInputStream(configPath).use { load(InputStreamReader(it, configCharset)) }
+        }
     }
 }
 
 class ConfigProperties(val configurable: Configurable) : Properties(), Closeable {
-    fun set(pair: Pair<String, Any>) {
-        val value = pair.second.let {
-            (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
+    fun set(pair: Pair<String, Any?>) {
+        if (pair.second == null) {
+            remove(pair.first)
+        } else {
+            val value = pair.second.let {
+                (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
+            }
+            set(pair.first, value)
         }
-        set(pair.first, value)
     }
 
     fun string(key: String): String? = getProperty(key)
@@ -150,7 +155,7 @@ abstract class Component : Configurable {
         override fun get(): ResourceBundle? {
             if (super.get() == null) {
                 try {
-                    val bundle = ResourceBundle.getBundle(this@Component.javaClass.name, FX.locale, this@Component.javaClass.classLoader, FXResourceBundleControl)
+                    val bundle = ResourceBundle.getBundle(FX.messagesNameProvider(this@Component.javaClass), FX.locale, this@Component.javaClass.classLoader, FXResourceBundleControl)
                     (bundle as? FXPropertyResourceBundle)?.inheritFromGlobal()
                     set(bundle)
                 } catch (ex: Exception) {
@@ -216,13 +221,16 @@ abstract class Component : Configurable {
         override fun getValue(thisRef: Component, property: KProperty<*>): T {
             val dicontainer = FX.dicontainer ?: throw AssertionError(
                     "Injector is not configured, so bean of type ${T::class} cannot be resolved")
-            return dicontainer.let {
-                if (name != null) {
-                    it.getInstance<T>(name)
-                } else {
-                    it.getInstance()
+            if (injected == null) {
+                injected = dicontainer.let {
+                    if (name != null) {
+                        it.getInstance<T>(name)
+                    } else {
+                        it.getInstance()
+                    }
                 }
-            }.also { injected = it }
+            }
+            return injected!!
         }
     }
 
@@ -418,22 +426,29 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         whenRefreshed { onRefresh() }
     }
 
+    // If the UIComponent property is set, prefer this to the property. This makes it possible to do subdelegation
+    // using forwardWorkspaceActions inside other components like TabPane(https://github.com/edvin/tornadofx/issues/894)
+    internal val effectiveSavable: BooleanExpression get() = booleanBinding(savable, properties) { (properties["tornadofx.savable"] as? BooleanExpression)?.value ?: this.value }
+    internal val effectiveRefreshable: BooleanExpression get() = booleanBinding(refreshable, properties) { (properties["tornadofx.refreshable"] as? BooleanExpression)?.value ?: this.value }
+    internal val effectiveCreatable: BooleanExpression get() = booleanBinding(creatable, properties) { (properties["tornadofx.creatable"] as? BooleanExpression)?.value ?: this.value }
+    internal val effectiveDeletable: BooleanExpression get() = booleanBinding(deletable, properties) { (properties["tornadofx.deletable"] as? BooleanExpression)?.value ?: this.value }
+
     /**
      * Forward the Workspace button states and actions to the TabPane, which
      * in turn will forward these states and actions to whatever View is represented
      * by the currently active Tab.
      */
     fun StackPane.connectWorkspaceActions() {
-        savableWhen { savable }
+        savableWhen { effectiveSavable }
         whenSaved { onSave() }
 
-        creatableWhen { creatable }
+        creatableWhen { effectiveCreatable }
         whenCreated { onCreate() }
 
-        deletableWhen { deletable }
+        deletableWhen { effectiveDeletable }
         whenDeleted { onDelete() }
 
-        refreshableWhen { refreshable }
+        refreshableWhen { effectiveRefreshable }
         whenRefreshed { onRefresh() }
     }
 
@@ -445,13 +460,16 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
      * Workspace states and actions, hence voiding this call.
      */
     fun forwardWorkspaceActions(uiComponent: UIComponent) {
-        savableWhen { uiComponent.savable }
+        savableWhen { uiComponent.effectiveSavable }
         whenSaved { uiComponent.onSave() }
 
-        deletableWhen { uiComponent.deletable }
+        deletableWhen { uiComponent.effectiveDeletable }
         whenDeleted { uiComponent.onDelete() }
 
-        refreshableWhen { uiComponent.refreshable }
+        creatableWhen { uiComponent.effectiveCreatable }
+        whenCreated { uiComponent.onCreate() }
+
+        refreshableWhen { uiComponent.effectiveRefreshable }
         whenRefreshed { uiComponent.onRefresh() }
     }
 
@@ -489,36 +507,77 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         properties["tornadofx.closeable"] = SimpleBooleanProperty(false)
     }
 
-    fun init() {
-        if (isInitialized) return
-        root.properties[UI_COMPONENT_PROPERTY] = this
-        root.parentProperty().addListener({ _, oldParent, newParent ->
-            if (modalStage != null) return@addListener
-            if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) {
-                callOnDock()
-                // Call `onTabSelected` if/when we are connected to a Tab and it's selected
-                // Note that this only works for builder constructed tabpanes
-                owningTab?.let {
-                    it.selectedProperty()?.onChange { if (it) onTabSelected() }
-                    if (it.isSelected) onTabSelected()
-                }
-            }
-        })
-        root.sceneProperty().addListener({ _, oldParent, newParent ->
-            if (modalStage != null || root.parent != null) return@addListener
-            if (newParent == null && oldParent != null && isDocked) callOnUndock()
-            if (newParent != null && newParent != oldParent && !isDocked) {
-                // Call undock when window closes
-                newParent.windowProperty().onChangeOnce {
-                    it?.showingProperty()?.onChange {
-                        if (!it && isDocked) callOnUndock()
+    private val rootParentChangeListener: ChangeListener<Parent>
+        get() {
+            val key = "tornadofx.rootParentChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Parent> { _, oldParent, newParent ->
+                    if (modalStage != null) return@ChangeListener
+                    if (newParent == null && oldParent != null && isDocked) callOnUndock()
+                    if (newParent != null && newParent != oldParent && !isDocked) {
+                        callOnDock()
+                        // Call `onTabSelected` if/when we are connected to a Tab and it's selected
+                        // Note that this only works for builder constructed tabpanes
+                        owningTab?.let {
+                            it.selectedProperty()?.onChange { if (it) onTabSelected() }
+                            if (it.isSelected) onTabSelected()
+                        }
                     }
                 }
-                callOnDock()
             }
-        })
+            return properties[key] as ChangeListener<Parent>
+        }
+
+    private val rootSceneChangeListener: ChangeListener<Scene>
+        get() {
+            val key = "tornadofx.rootSceneChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Scene> { _, oldParent, newParent ->
+                    if (modalStage != null || root.parent != null) return@ChangeListener
+                    if (newParent == null && oldParent != null && isDocked) callOnUndock()
+                    if (newParent != null && newParent != oldParent && !isDocked) {
+                        // Calls dock or undock when window opens or closes
+                        newParent.windowProperty().onChangeOnce {
+                            it?.showingProperty()?.addListener(rootSceneWindowShowingPropertyChangeListener)
+                        }
+                        callOnDock()
+                    }
+                }
+            }
+            return properties[key] as ChangeListener<Scene>
+        }
+
+    private val rootSceneWindowShowingPropertyChangeListener: ChangeListener<Boolean>
+        get() {
+            val key = "tornadofx.rootSceneWindowShowingPropertyChangeListener"
+            if (properties[key] == null) {
+                properties[key] = ChangeListener<Boolean> { property, oldValue, newValue ->
+                    if (!isInitialized) {
+                        property.removeListener(rootSceneWindowShowingPropertyChangeListener)
+                        return@ChangeListener
+                    }
+                    if (!newValue && isDocked) callOnUndock()
+                    if (newValue && !isDocked) callOnDock()
+                }
+            }
+            return properties[key] as ChangeListener<Boolean>
+        }
+
+    internal fun init() {
+        if (isInitialized) return
+        root.properties[UI_COMPONENT_PROPERTY] = this
+        root.parentProperty().addListener(rootParentChangeListener)
+        root.sceneProperty().addListener(rootSceneChangeListener)
         isInitialized = true
+    }
+
+    internal fun unInit() {
+        if (!isInitialized) return
+        root.properties.remove(UI_COMPONENT_PROPERTY)
+        root.parentProperty().removeListener(rootParentChangeListener)
+        root.sceneProperty().removeListener(rootSceneChangeListener)
+        root.scene?.window?.showingProperty()?.removeListener(rootSceneWindowShowingPropertyChangeListener)
+        isInitialized = false
     }
 
     val currentStage: Stage?
@@ -612,7 +671,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     }
 
     /**
-     * Create callback which is triggered when the Creaste button in the Workspace
+     * Create callback which is triggered when the Create button in the Workspace
      * is clicked.
      */
     open fun onCreate() {
@@ -638,25 +697,27 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     internal fun callOnDock() {
         if (!isInitialized) init()
+        if (!isDocked) {
+            attachLocalEventBusListeners()
+            enableAccelerators()
+        }
         if (muteDocking) return
-        if (!isDocked) attachLocalEventBusListeners()
         (isDockedProperty as SimpleBooleanProperty).value = true
-        enableAccelerators()
         onDock()
         onDockListeners?.forEach { it.invoke(this) }
     }
 
     private fun attachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        subscribedEvents.forEach { (event, registrations) ->
+            registrations.forEach {
                 FX.eventbus.subscribe(event, scope, it)
             }
         }
     }
 
     private fun detachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        subscribedEvents.forEach { (event, registrations) ->
+            registrations.forEach {
                 FX.eventbus.unsubscribe(event, it.action)
             }
         }
@@ -841,31 +902,33 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     operator fun <T : UIComponent> EventTarget.plusAssign(type: KClass<T>) = plusAssign(find(type, scope).root)
 
-    protected inline fun <reified T : UIComponent> openInternalWindow(
+    inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             params: Map<*, Any?>? = null
-    ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params)
+    ) = openInternalWindow(T::class, scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params)
 
-    protected inline fun <reified T : UIComponent> openInternalWindow(
+    inline fun <reified T : UIComponent> openInternalWindow(
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
             modal: Boolean = true,
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             vararg params: Pair<*, Any?>
     ) {
-        openInternalWindow<T>(scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())
+        openInternalWindow<T>(scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params.toMap())
     }
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: KClass<out UIComponent>,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
@@ -873,11 +936,12 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             params: Map<*, Any?>? = null
-    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(find(view, scope, params), owner)
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, movable, overlayPaint).open(find(view, scope, params), owner)
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: KClass<out UIComponent>,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
@@ -885,23 +949,25 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             vararg params: Pair<*, Any?>
     ) {
-        openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, overlayPaint, params.toMap())
+        openInternalWindow(view, scope, icon, modal, owner, escapeClosesWindow, closeButton, movable, overlayPaint, params.toMap())
     }
 
-    protected fun openInternalWindow(
+    fun openInternalWindow(
             view: UIComponent,
             icon: Node? = null,
             modal: Boolean = true,
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4)
-    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(view, owner)
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, movable, overlayPaint).open(view, owner)
 
-    protected fun openInternalBuilderWindow(
+    fun openInternalBuilderWindow(
             title: String,
             scope: Scope = this@UIComponent.scope,
             icon: Node? = null,
@@ -909,9 +975,10 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             owner: Node = root,
             escapeClosesWindow: Boolean = true,
             closeButton: Boolean = true,
+            movable: Boolean = true,
             overlayPaint: Paint = c("#000", 0.4),
             rootBuilder: UIComponent.() -> Parent
-    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
+    ) = InternalWindow(icon, modal, escapeClosesWindow, closeButton, movable, overlayPaint).open(BuilderFragment(scope, title, rootBuilder), owner)
 
     @JvmOverloads
     fun openWindow(
@@ -959,21 +1026,21 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
                 onBeforeShow()
 
-                showingProperty().onChange {
-                    if (it) {
-                        if (owner != null) {
-                            x = owner.x + (owner.width / 2) - (scene.width / 2)
-                            y = owner.y + (owner.height / 2) - (scene.height / 2)
-                        }
-                        callOnDock()
-                        if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
-                            configureReloading()
-                        }
-                        aboutToBeShown = false
-                    } else {
-                        modalStage = null
-                        callOnUndock()
+                setOnShown {
+                    if (owner != null) {
+                        x = owner.x + (owner.width / 2) - (scene.width / 2)
+                        y = owner.y + (owner.height / 2) - (scene.height / 2)
                     }
+                    callOnDock()
+                    if (FX.reloadStylesheetsOnFocus || FX.reloadViewsOnFocus) {
+                        configureReloading()
+                    }
+                    aboutToBeShown = false
+                }
+
+                setOnHidden {
+                    modalStage = null
+                    callOnUndock()
                 }
 
                 if (block) showAndWait() else show()
@@ -1015,7 +1082,11 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     open val titleProperty: StringProperty = SimpleStringProperty(viewTitle)
     var title: String
         get() = titleProperty.get() ?: ""
-        set(value) = titleProperty.set(value)
+        set(value) {
+            if (titleProperty.isBound)
+                titleProperty.unbind()
+            titleProperty.set(value)
+        }
 
     open val headingProperty: StringProperty = SimpleStringProperty().apply {
         bind(titleProperty)
@@ -1045,9 +1116,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
 
     @JvmOverloads
     fun <T : Node> loadFXML(location: String? = null, hasControllerAttribute: Boolean = false, root: Any? = null): T {
-        val componentType = this@UIComponent.javaClass
-        val targetLocation = location ?: componentType.simpleName+".fxml"
-        val fxml = requireNotNull(componentType.getResource(targetLocation)) { "FXML not found for $componentType in $targetLocation" }
+        val fxml = FX.fxmlLocator(this, location)
 
         fxmlLoader = FXMLLoader(fxml).apply {
             resources = this@UIComponent.messages
@@ -1060,6 +1129,35 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         }
 
         return fxmlLoader.load()
+    }
+
+    /**
+     * Load an FXML file from the specified InputStream. If the FXML file specifies a controller (handy for content completion in FXML editors)
+     * set the `hasControllerAttribute` parameter to true. This ensures that the `fx:controller` attribute is ignored
+     * by the loader so that this UIComponent can still be the controller for the FXML file.
+     *
+     * Important: If you specify `hasControllerAttribute = true` when infact no `fx:controller` attribute is present,
+     * no controller will be set at all. Make sure to only specify this parameter if you actually have the `fx:controller`
+     * attribute in your FXML.
+     */
+    fun <T : Node> fxml(content: InputStream, hasControllerAttribute: Boolean = false, root: Any? = null): ReadOnlyProperty<UIComponent, T> = object : ReadOnlyProperty<UIComponent, T> {
+        val value: T = loadFXML(content, hasControllerAttribute, root)
+        override fun getValue(thisRef: UIComponent, property: KProperty<*>) = value
+    }
+
+    @JvmOverloads
+    fun <T : Node> loadFXML(content: InputStream, hasControllerAttribute: Boolean = false, root: Any? = null): T {
+        fxmlLoader = FXMLLoader().apply {
+            resources = this@UIComponent.messages
+            if (root != null) setRoot(root)
+            if (hasControllerAttribute) {
+                setControllerFactory { this@UIComponent }
+            } else {
+                setController(this@UIComponent)
+            }
+        }
+
+        return fxmlLoader.load(content)
     }
 
     fun <T : Any> fxid(propName: String? = null) = object : ReadOnlyProperty<UIComponent, T> {
@@ -1116,7 +1214,7 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             labelPosition: Orientation = Orientation.HORIZONTAL,
             builder: StageAwareFieldset.() -> Unit
     ): Stage? {
-        val fragment = builderFragment(title, scope, { form() })
+        val fragment = builderFragment(title, scope) { form() }
         val fieldset = StageAwareFieldset(title, labelPosition)
         fragment.root.add(fieldset)
         fieldset.stage = fragment.openWindow(modality = modality, stageStyle = stageStyle, owner = owner)!!
@@ -1157,7 +1255,6 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
     private fun undockFromParent(replacement: UIComponent) {
         (replacement.root.parent as? Pane)?.children?.remove(replacement.root)
     }
-
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -1169,10 +1266,14 @@ fun <U : UIComponent> U.whenDocked(listener: (U) -> Unit) {
 @Suppress("UNCHECKED_CAST")
 fun <U : UIComponent> U.whenDockedOnce(listener: (U) -> Unit) {
     if (onDockListeners == null) onDockListeners = mutableListOf()
-    onDockListeners!!.add {
-        onDockListeners!!.remove(listener)
-        listener(this)
+    var wrapped: (U) -> Unit = {}
+    wrapped = {
+        runLater {
+            onDockListeners!!.remove(wrapped)
+        }
+        listener(it)
     }
+    whenDocked(wrapped)
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -1184,10 +1285,14 @@ fun <U : UIComponent> U.whenUndocked(listener: (U) -> Unit) {
 @Suppress("UNCHECKED_CAST")
 fun <U : UIComponent> U.whenUndockedOnce(listener: (U) -> Unit) {
     if (onUndockListeners == null) onUndockListeners = mutableListOf()
-    onUndockListeners!!.add {
-        onUndockListeners!!.remove(listener)
-        listener(this)
+    var wrapped: (U) -> Unit = {}
+    wrapped = {
+        runLater {
+            onUndockListeners!!.remove(wrapped)
+        }
+        listener(it)
     }
+    whenUndocked(wrapped)
 }
 
 abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)

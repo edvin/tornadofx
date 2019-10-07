@@ -135,6 +135,12 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     override fun stop() {
+        val primaryViewType = determinePrimaryView()
+        val view = find(primaryViewType, scope)
+        primaryStage.unhookGlobalShortcuts()
+        view.unInit()
+        view.removeFromParent()
+        eventbus.clear()
         scope.deregister()
         shutdownThreadPools()
         inheritParamHolder.remove()

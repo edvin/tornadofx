@@ -16,7 +16,7 @@ import tornadofx.InternalWindow.Styles.Companion.crossPath
 import java.awt.Toolkit
 import java.net.URL
 
-class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
+class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, movable: Boolean = true, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private lateinit var view: UIComponent
@@ -76,7 +76,9 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
                 }
             }
         }
-        moveWindowOnDrag()
+
+        if (movable)
+            moveWindowOnDrag()
 
         window.center = stackpane {
             addClass(Styles.floatingWindowContent)
