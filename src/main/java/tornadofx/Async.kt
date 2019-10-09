@@ -181,7 +181,7 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    check(Toolkit.getToolkit().canStartNestedEventLoop()) { "awaitUntil is not allowed during animation or layout processing" }
+    check(!Platform.isNestedLoopRunning()) { "awaitUntil is not allowed during animation or layout processing" }
 
     val changeListener = object : ChangeListener<T> {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
