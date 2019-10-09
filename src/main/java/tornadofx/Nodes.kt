@@ -13,12 +13,10 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections.observableArrayList
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.css.PseudoClass
+import javafx.event.EventHandler
 import javafx.event.EventTarget
 import javafx.geometry.*
-import javafx.scene.Node
-import javafx.scene.Parent
-import javafx.scene.Scene
+import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.control.skin.TableColumnHeader
@@ -45,100 +43,6 @@ import java.util.*
 import java.util.function.UnaryOperator
 import kotlin.reflect.KClass
 import kotlin.reflect.full.safeCast
-
-fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contains(className)
-fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
-fun <S, T> TableColumnBase<S, T>.addClass(className: String): TableColumnBase<S, T> = apply { styleClass.add(className) }
-fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
-    cssClass.forEach { styleClass.add(it.name) }
-}
-
-fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
-    cssClass.forEach { if (removeAll) styleClass.removeAll(it.name) else styleClass.remove(it.name) }
-}
-
-fun <S, T> TableColumnBase<S, T>.removeClass(className: String, removeAll: Boolean = true): TableColumnBase<S, T> = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <S, T> TableColumnBase<S, T>.toggleClass(cssClass: CssRule, predicate: Boolean): TableColumnBase<S, T> = apply { toggleClass(cssClass.name, predicate) }
-fun <S, T> TableColumnBase<S, T>.toggleClass(className: String, predicate: Boolean): TableColumnBase<S, T> = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
-
-fun Node.hasClass(className: String) = styleClass.contains(className)
-fun Node.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
-
-fun <T : Node> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
-fun Iterable<Node>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
-
-fun <T : Node> T.addPseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStateChanged(pseudoClass, true)
-}
-
-fun <T : Node> T.removePseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStateChanged(pseudoClass, false)
-}
-
-fun <T : Node> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <T : Node> T.toggleClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
-
-fun <T : Node> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasPseudoClass(className)) addPseudoClass(className)
-    } else {
-        removePseudoClass(className)
-    }
-}
-
-fun <T : Tab> T.addPseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    if (!pseudoClassStates.contains(pseudoClass))
-        pseudoClassStates.add(pseudoClass)
-}
-
-fun <T : Tab> T.removePseudoClass(className: String) = apply {
-    val pseudoClass = PseudoClass.getPseudoClass(className)
-    pseudoClassStates.remove(pseudoClass)
-}
-
-fun <T : Tab> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasPseudoClass(className)) addPseudoClass(className)
-    } else {
-        removePseudoClass(className)
-    }
-}
-
-fun Tab.hasClass(className: String) = styleClass.contains(className)
-fun Tab.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
-fun <T : Tab> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
-fun <T : Tab> T.removeClass(className: String, removeAll: Boolean = true) = apply {
-    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
-}
-
-fun <T : Tab> T.toggleClass(className: String, predicate: Boolean) = apply {
-    if (predicate) {
-        if (!hasClass(className)) addClass(className)
-    } else {
-        removeClass(className)
-    }
-}
 
 fun EventTarget.getToggleGroup(): ToggleGroup? = properties["tornadofx.togglegroup"] as ToggleGroup?
 
@@ -229,13 +133,26 @@ fun Stage.reloadStylesheetsOnFocus() {
 }
 
 fun Stage.hookGlobalShortcuts() {
-    addEventFilter(KeyEvent.KEY_PRESSED) {
-        if (FX.layoutDebuggerShortcut?.match(it) ?: false)
-            LayoutDebugger.debug(scene)
-        else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
-            find<OSGIConsole>().openModal(modality = Modality.NONE)
-    }
+    addEventFilter(KeyEvent.KEY_PRESSED, stageGlobalShortcuts)
 }
+
+fun Stage.unhookGlobalShortcuts() {
+    removeEventFilter(KeyEvent.KEY_PRESSED, stageGlobalShortcuts)
+}
+
+val Stage.stageGlobalShortcuts: EventHandler<KeyEvent>
+        get() {
+            val key = "tornadofx.stageGlobalShortcuts"
+            if (properties[key] == null) {
+                properties[key] = EventHandler<KeyEvent> {
+                    if (FX.layoutDebuggerShortcut?.match(it) ?: false)
+                        LayoutDebugger.debug(scene)
+                    else if (FX.osgiDebuggerShortcut?.match(it) ?: false && FX.osgiAvailable)
+                        find<OSGIConsole>().openModal(modality = Modality.NONE)
+                }
+            }
+            return properties[key] as EventHandler<KeyEvent>
+        }
 
 fun Stage.reloadViewsOnFocus() {
     if (properties["tornadofx.reloadViewsListener"] == null) {
@@ -444,12 +361,18 @@ fun <S, T> TableColumn<S, T>.cellDecorator(decorator: TableCell<S, T>.(T) -> Uni
 fun <S, T> TreeTableColumn<S, T>.cellFormat(formatter: (TreeTableCell<S, T>.(T) -> Unit)) {
     cellFactory = Callback { column: TreeTableColumn<S, T> ->
         object : TreeTableCell<S, T>() {
+            private val defaultStyle = style
+            // technically defined as TreeTableCell.DEFAULT_STYLE_CLASS = "tree-table-cell", but this is private
+            private val defaultStyleClass = listOf(*styleClass.toTypedArray())
+
             override fun updateItem(item: T, empty: Boolean) {
                 super.updateItem(item, empty)
 
                 if (item == null || empty) {
                     text = null
                     graphic = null
+                    style = defaultStyle
+                    styleClass.setAll(defaultStyleClass)
                 } else {
                     formatter(this, item)
                 }
@@ -488,6 +411,20 @@ fun <T> TableView<T>.onUserSelect(clickCount: Int = 2, action: (T) -> Unit) {
 fun Node.onDoubleClick(action: () -> Unit) {
     setOnMouseClicked {
         if (it.clickCount == 2)
+            action()
+    }
+}
+
+fun Node.onLeftClick(clickCount: Int = 1, action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == clickCount && it.isPrimaryButtonDown)
+            action()
+    }
+}
+
+fun Node.onRightClick(clickCount: Int = 1, action: () -> Unit) {
+    setOnMouseClicked {
+        if (it.clickCount == clickCount && it.isSecondaryButtonDown)
             action()
     }
 }
@@ -734,6 +671,21 @@ class AnchorPaneConstraint(
     }
 }
 
+inline fun <T : Node> T.splitpaneConstraints(op: SplitPaneConstraint.() -> Unit): T {
+    val c = SplitPaneConstraint()
+    c.op()
+    return c.applyToNode(this)
+}
+
+class SplitPaneConstraint(
+        var isResizableWithParent: Boolean? = null
+) {
+    fun <T : Node> applyToNode(node: T): T {
+        isResizableWithParent?.let { SplitPane.setResizableWithParent(node, it) }
+        return node
+    }
+}
+
 abstract class MarginableConstraints {
     abstract var margin: Insets?
     var marginTop: Double
@@ -944,9 +896,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
     if (this == scene?.root) {
         val scene = scene!!
 
-        if (replacement !is Parent) {
-            throw IllegalArgumentException("Replacement scene root must be a Parent")
-        }
+        require(replacement is Parent) { "Replacement scene root must be a Parent" }
 
         // Update scene property to support Live Views
         replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
@@ -1354,3 +1304,19 @@ class CustomTextFilter(private val discriminator: (TextFormatter.Change) -> Bool
 }
 
 val Node.indexInParent: Int get() = parent?.childrenUnmodifiable?.indexOf(this) ?: -1
+
+/**
+ * Create a subscene and attach it to the current container as a child. The root node of the SubScene will be whatever is built inside the `op` builder parameter.
+ * If no height or width is given, the size property will be bound to it's parent size.
+ */
+fun EventTarget.subscene(depthBuffer: Boolean = false, antiAlias: SceneAntialiasing = SceneAntialiasing.DISABLED, width: Number? = null, height: Number? = null, op: SubScene.() -> Unit = {}) =
+        SubScene(StackPane(), width?.toDouble() ?: 0.0, height?.toDouble() ?: 0.0, depthBuffer, antiAlias).apply {
+            val builderParent = this@subscene as? Region
+            if (builderParent != null) {
+                if (width == null)
+                    widthProperty().bind(builderParent.widthProperty())
+
+                if (height == null)
+                    heightProperty().bind(builderParent.heightProperty())
+            }
+        }.attachTo(this, op)

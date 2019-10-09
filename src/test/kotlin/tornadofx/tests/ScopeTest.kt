@@ -1,6 +1,8 @@
 package tornadofx.tests
 
 import javafx.stage.Stage
+import org.junit.AfterClass
+import org.junit.BeforeClass
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
@@ -10,7 +12,23 @@ import kotlin.test.assertTrue
 
 
 class ScopeTest {
-    val primaryStage: Stage = FxToolkit.registerPrimaryStage()
+
+    companion object {
+
+        lateinit var primaryStage: Stage
+
+        @BeforeClass
+        @JvmStatic
+        fun beforeClass() {
+            primaryStage = FxToolkit.registerPrimaryStage()
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun afterClass() {
+            FxToolkit.cleanupStages()
+        }
+    }
 
     class PersonModel() : ItemViewModel<Person>()
 

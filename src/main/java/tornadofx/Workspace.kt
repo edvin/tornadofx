@@ -12,6 +12,8 @@ import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.TabPane
 import javafx.scene.control.ToolBar
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
@@ -114,13 +116,13 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun registerWorkspaceAccelerators() {
-        accelerators[KeyCombination.valueOf("Ctrl+S")] = {
+        accelerators[KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN)] = {
             if (!saveButton.isDisable) onSave()
         }
-        accelerators[KeyCombination.valueOf("Ctrl+N")] = {
-            if (!createButton.isDisable) onSave()
+        accelerators[KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN)] = {
+            if (!createButton.isDisable) onCreate()
         }
-        accelerators[KeyCombination.valueOf("Ctrl+R")] = {
+        accelerators[KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN)] = {
             if (!refreshButton.isDisable) onRefresh()
         }
         accelerators[KeyCombination.valueOf("F5")] = {
@@ -324,25 +326,25 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
     override fun onSave() {
         dockedComponentProperty.value
-                ?.takeIf { it.savable.value }
+                ?.takeIf { it.effectiveSavable.value }
                 ?.onSave()
     }
 
     override fun onDelete() {
         dockedComponentProperty.value
-                ?.takeIf { it.deletable.value }
+                ?.takeIf { it.effectiveDeletable.value }
                 ?.onDelete()
     }
 
     override fun onCreate() {
         dockedComponentProperty.value
-                ?.takeIf { it.creatable.value }
+                ?.takeIf { it.effectiveCreatable.value }
                 ?.onCreate()
     }
 
     override fun onRefresh() {
         dockedComponentProperty.value
-                ?.takeIf { it.refreshable.value }
+                ?.takeIf { it.effectiveRefreshable.value }
                 ?.onRefresh()
     }
 
@@ -372,10 +374,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
             child.scope.workspace(workspace)
 
         titleProperty.bind(child.titleProperty)
-        refreshButton.disableProperty().cleanBind(!child.refreshable)
-        saveButton.disableProperty().cleanBind(!child.savable)
-        createButton.disableProperty().cleanBind(!child.creatable)
-        deleteButton.disableProperty().cleanBind(!child.deletable)
+        rebindWorkspaceButtons(child)
 
         headingContainer.children.clear()
         headingContainer.label(child.headingProperty) {
@@ -389,6 +388,13 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
 
         if (currentWindow?.isShowing != true && currentWindow?.aboutToBeShown != true)
             FX.log.warning("UIComponent $child docked in invisible workspace $workspace")
+    }
+
+    fun rebindWorkspaceButtons(child: UIComponent) {
+        refreshButton.disableProperty().cleanBind(!child.effectiveRefreshable)
+        saveButton.disableProperty().cleanBind(!child.effectiveSavable)
+        createButton.disableProperty().cleanBind(!child.effectiveCreatable)
+        deleteButton.disableProperty().cleanBind(!child.effectiveDeletable)
     }
 
     private fun clearDynamicComponents() {

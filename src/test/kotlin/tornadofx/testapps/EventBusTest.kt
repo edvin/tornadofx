@@ -20,7 +20,7 @@ data class MyEvent(val text: String) : FXEvent()
 
 class EventBusTestView : View("Data Event Table") {
     val labelText = SimpleStringProperty("")
-    val regProperty = SimpleObjectProperty<FXEventRegistration>()
+    val regProperty = SimpleObjectProperty<EventRegistration>()
     var reg by regProperty
 
 

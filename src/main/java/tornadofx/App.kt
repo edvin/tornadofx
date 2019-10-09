@@ -5,13 +5,16 @@ import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import tornadofx.FX.Companion.eventbus
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
+import tornadofx.FX.Companion.primaryStage
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.MouseEvent.BUTTON1
 import java.awt.image.BufferedImage
 import java.io.InputStream
+import java.nio.charset.Charset
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -44,6 +47,8 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
      * in the folder provided by #configBasePath
      */
     override val configPath: Path get() = configBasePath.resolve("app.properties")
+
+    override val configCharset: Charset get() = Charsets.UTF_8
 
     private val trayIcons = ArrayList<TrayIcon>()
     val resources: ResourceLookup by lazy {
@@ -91,8 +96,12 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
                 view.onBeforeShow()
                 onBeforeShow(view)
                 view.muteDocking = false
-                if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage()) show()
-                view.callOnDock()
+                // No need to call view.callOnDock() if show() is called since it
+                // will be called by the stage's showingProperty listener
+                if (view !is NoPrimaryViewSpecified && shouldShowPrimaryStage())
+                    show()
+                else
+                    view.callOnDock()
                 stage.aboutToBeShown = false
             }
             FX.initialized.value = true
@@ -126,6 +135,12 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
     }
 
     override fun stop() {
+        val primaryViewType = determinePrimaryView()
+        val view = find(primaryViewType, scope)
+        primaryStage.unhookGlobalShortcuts()
+        view.unInit()
+        view.removeFromParent()
+        eventbus.clear()
         scope.deregister()
         shutdownThreadPools()
         inheritParamHolder.remove()
@@ -242,7 +257,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
  * was passed on the command line.
  *
  * If no primary view is shown, the developer must use either the start() hook or some
- * other means of determinining that the application has started. This would be good
+ * other means of determining that the application has started. This would be good
  * for applications where the default view depends upon some state, or where the app
  * simply starts with a tray icon.
  *

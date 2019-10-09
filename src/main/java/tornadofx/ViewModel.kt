@@ -439,6 +439,12 @@ inline fun <reified T> Property<T>.addValidator(node: Node, trigger: ValidationT
 fun TextInputControl.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it.isNullOrBlank()) error(message) else null }
 
+fun TextInputControl.requiredWhen(condition: Boolean, trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
+        = validator(trigger) { if (condition && it.isNullOrBlank()) error(message) else null }
+
+fun TextInputControl.requiredWhen(condition: ObservableValue<Boolean>, trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
+        = validator(trigger) { if (condition.value && it.isNullOrBlank()) error(message) else null }
+
 inline fun <reified T> ComboBoxBase<T>.required(trigger: ValidationTrigger = ValidationTrigger.OnChange(), message: String? = viewModelBundle["required"])
         = validator(trigger) { if (it == null) error(message) else null }
 
@@ -459,6 +465,9 @@ inline fun <reified T> ChoiceBox<T>.validator(trigger: ValidationTrigger = Valid
  */
 inline fun <reified T> Spinner<T>.validator(trigger: ValidationTrigger = ValidationTrigger.OnChange(), noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = validator(this, valueFactory.valueProperty(), trigger, validator)
+
+inline fun <reified T> Spinner<T>.required(trigger: ValidationTrigger = tornadofx.ValidationTrigger.OnChange(), message: String? = tornadofx.viewModelBundle["required"])
+        = validator(trigger) { if (it == null) error(message) else null }
 
 /**
  * Add a validator to a TextInputControl that is already bound to a model property.

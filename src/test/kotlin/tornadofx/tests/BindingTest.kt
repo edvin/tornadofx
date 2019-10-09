@@ -40,7 +40,7 @@ class BindingTest {
     @Test
     fun observableMapBinding() {
         val map = FXCollections.observableHashMap<String, Int>()
-        val list = observableList<Char>()
+        val list = observableListOf<Char>()
         map["0123456"] = 3
         list.bind(map){k,v-> k[v]}
         Assert.assertEquals(list, listOf('3'))
