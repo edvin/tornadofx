@@ -49,18 +49,18 @@ class ValidationContext {
             noinline validator: ValidationContext.(T?) -> ValidationMessage?) = addValidator(Validator(node, property, trigger, validator))
 
     fun <T> addValidator(validator: Validator<T>, decorateErrors: Boolean = true): Validator<T> {
-        when (validator.trigger) {
+        when (val trigger = validator.trigger) {
             is ValidationTrigger.OnChange -> {
                 var delayActive = false
 
                 validator.property.onChange {
-                    if (validator.trigger.delay == 0L) {
+                    if (trigger.delay == 0L) {
                         validator.validate(decorateErrors)
                     } else {
                         if (!delayActive) {
                             delayActive = true
                             thread {
-                                Thread.sleep(validator.trigger.delay)
+                                Thread.sleep(trigger.delay)
                                 FX.runAndWait {
                                     validator.validate(decorateErrors)
                                 }

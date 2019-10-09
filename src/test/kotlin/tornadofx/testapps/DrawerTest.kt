@@ -111,7 +111,7 @@ Process finished with exit code 0
                         }
                     }
                     fold("A Table") {
-                        tableview(listOf("One", "Two", "Three").observable()) {
+                        tableview(observableListOf("One", "Two", "Three")) {
                             column<String, String>("Value") { SimpleStringProperty(it.value) }
                         }
                     }

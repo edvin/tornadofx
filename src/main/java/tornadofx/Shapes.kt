@@ -28,8 +28,12 @@ fun Path.hlineTo(x: Number) = apply { elements.add(HLineTo(x.toDouble())) }
 
 fun Path.vlineTo(y: Number) = apply { elements.add(VLineTo(y.toDouble())) }
 
-fun Path.quadqurveTo(controlX: Number = 0.0, controlY: Number = 0.0, x: Number = 0.0, y: Number = 0.0, op: QuadCurveTo.() -> Unit = {}) = apply {
+fun Path.quadcurveTo(controlX: Number = 0.0, controlY: Number = 0.0, x: Number = 0.0, y: Number = 0.0, op: QuadCurveTo.() -> Unit = {}) = apply {
     elements.add(QuadCurveTo(controlX.toDouble(), controlY.toDouble(), x.toDouble(), y.toDouble()).also(op))
+}
+
+fun Path.cubiccurveTo(controlX1: Number = 0.0, controlY1: Number = 0.0, controlX2: Number = 0.0, controlY2: Number = 0.0, x: Number = 0.0, y: Number = 0.0, op: CubicCurveTo.() -> Unit = {}) = apply {
+    elements.add(CubicCurveTo(controlX1.toDouble(), controlY1.toDouble(), controlX2.toDouble(), controlY2.toDouble(), x.toDouble(), y.toDouble()).also(op))
 }
 
 fun Path.lineTo(x: Number = 0.0, y: Number = 0.0) = apply {

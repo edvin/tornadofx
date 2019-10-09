@@ -207,8 +207,13 @@ class SortedFilteredList<T>(
     }
 }
 
+@Deprecated("Use `asObservable()` instead.", ReplaceWith("this.asObservable()", "tornadofx.asObservable"))
 fun <T> List<T>.observable(): ObservableList<T> = FXCollections.observableList(this)
+
+@Deprecated("Use `asObservable()` instead.", ReplaceWith("this.asObservable()", "tornadofx.asObservable"))
 fun <T> Set<T>.observable(): ObservableSet<T> = FXCollections.observableSet(this)
+
+@Deprecated("Use `asObservable()` instead.", ReplaceWith("this.asObservable()", "tornadofx.asObservable"))
 fun <K, V> Map<K, V>.observable(): ObservableMap<K, V> = FXCollections.observableMap(this)
 
 fun Clipboard.setContent(op: ClipboardContent.() -> Unit) {

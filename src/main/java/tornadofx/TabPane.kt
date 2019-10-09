@@ -16,8 +16,12 @@ import kotlin.reflect.KClass
 fun EventTarget.tabpane(op: TabPane.() -> Unit = {}) =  TabPane().attachTo(this, op)
 
 fun <T : Node> TabPane.tab(text: String, content: T, op: T.() -> Unit = {}): Tab {
+    return tab(tabs.size, text, content, op)
+}
+
+fun <T : Node> TabPane.tab(index: Int, text: String, content: T, op: T.() -> Unit = {}): Tab {
     val tab = Tab(text, content)
-    tabs.add(tab)
+    tabs.add(index, tab)
     op(content)
     return tab
 }
@@ -57,9 +61,10 @@ fun Tab.closeableWhen(predicate: ObservableValue<Boolean>) {
 }
 
 fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
+    val localTabPane = tabPane
     fun updateState() {
-        if (predicate.value.not()) tabPane.tabs.remove(this)
-        else if (this !in tabPane.tabs) tabPane.tabs.add(this)
+        if (predicate.value.not()) localTabPane.tabs.remove(this)
+        else if (this !in tabPane.tabs) localTabPane.tabs.add(this)
     }
     updateState()
     predicate.onChange { updateState() }
@@ -72,7 +77,7 @@ val TabPane.savable: BooleanExpression
         val savable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            savable.cleanBind(contentUiComponent<UIComponent>()?.savable ?: SimpleBooleanProperty(Workspace.defaultSavable))
+            savable.cleanBind(contentUiComponent<UIComponent>()?.effectiveSavable ?: SimpleBooleanProperty(Workspace.defaultSavable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
@@ -94,7 +99,7 @@ val TabPane.creatable: BooleanExpression
         val creatable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            creatable.cleanBind(contentUiComponent<UIComponent>()?.creatable ?: SimpleBooleanProperty(Workspace.defaultCreatable))
+            creatable.cleanBind(contentUiComponent<UIComponent>()?.effectiveCreatable ?: SimpleBooleanProperty(Workspace.defaultCreatable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }
@@ -108,7 +113,7 @@ val TabPane.creatable: BooleanExpression
             newTab?.contentProperty()?.addListener(contentChangeListener)
         }
 
-        return savable
+        return creatable
     }
 
 val TabPane.deletable: BooleanExpression
@@ -116,7 +121,7 @@ val TabPane.deletable: BooleanExpression
         val deletable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            deletable.cleanBind(contentUiComponent<UIComponent>()?.deletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
+            deletable.cleanBind(contentUiComponent<UIComponent>()?.effectiveDeletable ?: SimpleBooleanProperty(Workspace.defaultDeletable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { observable, oldValue, newValue -> updateState() }
@@ -139,7 +144,7 @@ val TabPane.refreshable: BooleanExpression
         val refreshable = SimpleBooleanProperty(true)
 
         fun updateState() {
-            refreshable.cleanBind(contentUiComponent<UIComponent>()?.refreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
+            refreshable.cleanBind(contentUiComponent<UIComponent>()?.effectiveRefreshable ?: SimpleBooleanProperty(Workspace.defaultRefreshable))
         }
 
         val contentChangeListener = ChangeListener<Node?> { _, _, _ -> updateState() }

@@ -36,6 +36,15 @@ fun EventTarget.colorpicker(
     if (color != null) it.value = color
 }
 
+fun EventTarget.colorpicker(
+        colorProperty: ObjectProperty<Color>,
+        mode: ColorPickerMode = ColorPickerMode.Button,
+        op: ColorPicker.() -> Unit = {}
+) = ColorPicker().apply { bind(colorProperty) }.attachTo(this, op) {
+    if (mode == ColorPickerMode.MenuButton) it.addClass(ColorPicker.STYLE_CLASS_BUTTON)
+    else if (mode == ColorPickerMode.SplitMenuButton) it.addClass(ColorPicker.STYLE_CLASS_SPLIT_BUTTON)
+}
+
 fun EventTarget.textflow(op: TextFlow.() -> Unit = {}) = TextFlow().attachTo(this, op)
 
 fun EventTarget.text(op: Text.() -> Unit = {}) = Text().attachTo(this, op)
@@ -98,6 +107,11 @@ fun EventTarget.textfield(property: ObservableValue<Number>, op: TextField.() ->
     op(this)
 }
 
+@JvmName("textfieldInt")
+fun EventTarget.textfield(property: ObservableValue<Int>, op: TextField.() -> Unit = {}) = textfield().apply {
+    bind(property)
+    op(this)
+}
 fun EventTarget.passwordfield(value: String? = null, op: PasswordField.() -> Unit = {}) = PasswordField().attachTo(this, op) {
     if (value != null) it.text = value
 }
@@ -195,6 +209,11 @@ fun EventTarget.menubutton(text: String = "", graphic: Node? = null, op: MenuBut
     if (graphic != null) it.graphic = graphic
 }
 
+fun EventTarget.splitmenubutton(text: String? = null, graphic: Node? = null, op: SplitMenuButton.() -> Unit = {}) = SplitMenuButton().attachTo(this, op) {
+    if (text != null) it.text = text
+    if (graphic != null) it.graphic = graphic
+}
+
 fun EventTarget.button(text: ObservableValue<String>, graphic: Node? = null, op: Button.() -> Unit = {}) = Button().attachTo(this, op) {
     it.textProperty().bind(text)
     if (graphic != null) it.graphic = graphic
@@ -228,9 +247,10 @@ fun ButtonBar.button(text: ObservableValue<String>, type: ButtonBar.ButtonData? 
     op(it)
 }
 
-fun Node.togglegroup(op: ToggleGroup.() -> Unit = {}) = ToggleGroup().also {
-    properties["tornadofx.togglegroup"] = it
-    op(it)
+fun Node.togglegroup(property: ObservableValue<Any>? = null, op: ToggleGroup.() -> Unit = {}) = ToggleGroup().also {tg ->
+    properties["tornadofx.togglegroup"] = tg
+    property?.let { tg.bind(it) }
+    op(tg)
 }
 
 /**
@@ -328,7 +348,7 @@ fun EventTarget.label(text: String = "", graphic: Node? = null, op: Label.() -> 
 
 inline fun <reified T> EventTarget.label(
         observable: ObservableValue<T>,
-        graphicProperty: ObjectProperty<Node>? = null,
+        graphicProperty: ObservableValue<Node>? = null,
         converter: StringConverter<in T>? = null,
         noinline op: Label.() -> Unit = {}
 ) = label().apply {

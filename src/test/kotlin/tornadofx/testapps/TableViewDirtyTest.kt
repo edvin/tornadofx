@@ -21,6 +21,7 @@ class TableViewDirtyTest : View("Dirty Tables") {
             tableview(customers) {
                 table = this
                 prefHeight = 200.0
+
                 column("First Name", Customer::firstNameProperty) {
                     makeEditable()
                     cellDecorator {

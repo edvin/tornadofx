@@ -33,6 +33,7 @@ class StylesheetErrorTest {
 		@AfterClass
 		fun after() {
 			FxToolkit.cleanupApplication(app)
+			FX.stylesheets.clear()
 		}
 	}
 

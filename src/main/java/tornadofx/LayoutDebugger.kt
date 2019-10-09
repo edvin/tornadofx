@@ -52,7 +52,7 @@ class LayoutDebugger : Fragment() {
                         nodeTree = this
                     }
                     this += propertyContainer.apply {
-                        padding = Insets(10.0)
+                        paddingAll = 10
                     }
                 }
             }
@@ -260,7 +260,7 @@ class LayoutDebugger : Fragment() {
             if (node.parent is HBox) {
                 field("HBox Grow") {
                     combobox<Priority> {
-                        items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                        items = observableListOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER)
                         value = HBox.getHgrow(node) ?: Priority.NEVER
                         valueProperty().onChange {
                             HBox.setHgrow(node, it)
@@ -279,7 +279,7 @@ class LayoutDebugger : Fragment() {
             if (node.parent is VBox) {
                 field("VBox Grow") {
                     combobox<Priority> {
-                        items = listOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER).observable()
+                        items = observableListOf(Priority.SOMETIMES, Priority.ALWAYS, Priority.NEVER)
                         value = VBox.getVgrow(node) ?: Priority.NEVER
                         valueProperty().onChange {
                             VBox.setVgrow(node, it)
@@ -310,7 +310,7 @@ class LayoutDebugger : Fragment() {
 
             if (node is Region) {
                 // Background/fills is immutable, so a new background object must be created with the augmented fill
-                if (node.background?.fills?.isNotEmpty() ?: false) {
+                if (!node.background?.fills.isNullOrEmpty()) {
                     field("Background fill") {
                         vbox(3.0) {
                             node.background.fills.forEachIndexed { i, backgroundFill ->
@@ -395,8 +395,8 @@ class LayoutDebugger : Fragment() {
     fun Fieldset.alignmentCombo(property: Property<Pos>) {
         field("Alignment") {
             combobox<Pos> {
-                items = listOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
-                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT).observable()
+                items = observableListOf(Pos.TOP_LEFT, Pos.TOP_CENTER, Pos.TOP_RIGHT, Pos.CENTER_LEFT, Pos.CENTER, Pos.CENTER_RIGHT, Pos.BOTTOM_LEFT,
+                        Pos.BOTTOM_CENTER, Pos.BOTTOM_RIGHT, Pos.BASELINE_LEFT, Pos.BASELINE_CENTER, Pos.BASELINE_RIGHT)
                 valueProperty().shadowBindTo(property)
             }
         }
@@ -406,7 +406,7 @@ class LayoutDebugger : Fragment() {
         override fun toString(v: Insets?) = if (v == null) "" else "${v.top.s()} ${v.right.s()} ${v.bottom.s()} ${v.left.s()}"
         override fun fromString(s: String?): Insets {
             try {
-                if (s == null || s.isEmpty()) return Insets.EMPTY
+                if (s.isNullOrBlank()) return Insets.EMPTY
                 val parts = s.split(" ")
                 if (parts.size == 1) return Insets(s.toDouble())
                 if (parts.size == 2) return Insets(parts[0].toDouble(), parts[1].toDouble(), parts[0].toDouble(), parts[1].toDouble())

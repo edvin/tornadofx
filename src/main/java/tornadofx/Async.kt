@@ -156,6 +156,8 @@ infix fun <T> Task<T>.cancel(func: () -> Unit) = apply {
  */
 fun runLater(op: () -> Unit) = Platform.runLater(op)
 
+private val runLaterTimer: Timer by lazy { Timer(true) }
+
 /**
  * Run the specified Runnable on the JavaFX Application Thread after a
  * specified delay.
@@ -168,9 +170,8 @@ fun runLater(op: () -> Unit) = Platform.runLater(op)
  * You can cancel the task before the time is up to abort the execution.
  */
 fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
-    val timer = Timer(true)
-    val task = FXTimerTask(op, timer)
-    timer.schedule(task, delay.toMillis().toLong())
+    val task = FXTimerTask(op, runLaterTimer)
+    runLaterTimer.schedule(task, delay.toMillis().toLong())
     return task
 }
 
@@ -180,9 +181,7 @@ fun runLater(delay: Duration, op: () -> Unit): FXTimerTask {
  * This method does not block the UI thread even though it halts further execution until the condition is met.
  */
 fun <T> ObservableValue<T>.awaitUntil(condition: (T) -> Boolean) {
-    if (Platform.isNestedLoopRunning()) {
-        throw IllegalStateException("awaitUntil is not allowed during animation or layout processing")
-    }
+    check(Toolkit.getToolkit().canStartNestedEventLoop()) { "awaitUntil is not allowed during animation or layout processing" }
 
     val changeListener = object : ChangeListener<T> {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
@@ -256,7 +255,7 @@ fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op
         val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
         (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
         // Unwrap ToolBar parent, it has an extra HBox or VBox inside it, we need to target the items list
-        val p = (parent?.parent as? ToolBar) ?: parent
+        val p = (parent?.parent as? ToolBar) ?: parent ?: throw IllegalArgumentException("runAsyncWithProgress cannot target an UI element with no parent!")
         val children = requireNotNull(p.getChildList()) {
             "Node of type ${this::class.qualifiedName} has no accessible child list, and cannot contain the progress node"
         }
@@ -388,14 +387,12 @@ class MaskPane : BorderPane() {
  * Adds some superpowers to good old [CountDownLatch], like exposed [lockedProperty] or ability to release latch
  * immediately.
  *
+ * By default, initializes a latch with a count of `1`, which means that the first invocation of [countDown] will
+ * allow all waiting threads to proceed.
+ *
  * All documentation of superclass applies here. Default behavior has not been altered.
  */
-class Latch(count: Int) : CountDownLatch(count) {
-    /**
-     * Initializes latch with count of `1`, which means that the first invocation of [countDown] will allow all
-     * waiting threads to proceed.
-     */
-    constructor() : this(1)
+class Latch(count: Int = 1) : CountDownLatch(count) {
 
     private val lockedProperty by lazy { ReadOnlyBooleanWrapper(locked) }
 
@@ -447,11 +444,8 @@ class FXTimerTask(val op: () -> Unit, val timer: Timer) : TimerTask() {
 }
 
 infix fun <T> Task<T>.finally(func: () -> Unit) {
-    if (this is FXTask<*>) {
-        finally(func)
-    } else {
-        throw IllegalArgumentException("finally() called on non-FXTask subclass")
-    }
+    require(this is FXTask<*>) { "finally() called on non-FXTask subclass" }
+    finally(func)
 }
 
 class FXTask<T>(val status: TaskStatus? = null, val func: FXTask<*>.() -> T) : Task<T>() {

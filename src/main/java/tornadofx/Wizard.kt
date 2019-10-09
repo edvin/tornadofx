@@ -165,7 +165,7 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
                 button(type = ButtonBar.ButtonData.NEXT_FORWARD) {
                     textProperty().bind(nextButtonTextProperty)
                     runLater {
-                        enableWhen(canGoNext.and(hasNext))
+                        enableWhen(canGoNext.and(hasNext).and(currentPageComplete))
                     }
                     action { next() }
                 }
