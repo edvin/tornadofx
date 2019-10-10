@@ -90,7 +90,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                 combobox(selectedItemObject2, itemsGlobalObject) {
                     converter = LocaleStringConverter()
                     makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                        itemsGlobalObject.asObservable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
                 label(selectedItemObject2)
@@ -106,7 +106,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                         text = "Locale: " + converter.toString(it)
                     }
                     makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                        itemsGlobalObject.asObservable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
                 label(selectedItemObject3)
@@ -157,7 +157,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                     value = tmpValue
                     converter = LocaleStringConverter()
                     makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                        itemsGlobalObject.asObservable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
                 label(selectedItemObject2E)
@@ -175,7 +175,7 @@ class AutoCompleteComboBoxExtensionTest : View("AutoComplete comboBox extension 
                         text = "Locale: " + converter.toString(it)
                     }
                     makeAutocompletable {
-                        itemsGlobalObject.observable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
+                        itemsGlobalObject.asObservable().filtered { current -> current.displayCountry.contains(it, true) || current.isO3Country.contains(it, true) || current.country.contains(it, true) }
                     }
                 }
                 label(selectedItemObject3E)

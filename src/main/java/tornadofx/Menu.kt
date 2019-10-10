@@ -10,14 +10,17 @@ import javafx.scene.input.KeyCombination
 
 //Menu-related operator functions
 operator fun <T : MenuItem> Menu.plusAssign(menuItem: T) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.items += menuItem
 }
 
 operator fun MenuBar.plusAssign(menu: Menu) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.menus += menu
 }
 
 operator fun <T : MenuItem> ContextMenu.plusAssign(menuItem: T) {
+    if (FX.ignoreParentBuilder != FX.IgnoreParentBuilder.No) return
     this.items += menuItem
 }
 
@@ -109,9 +112,20 @@ fun Menu.menu(
     this += it
 }
 
+fun MenuButton.menu(
+        name: String? = null, keyCombination: KeyCombination? = null, graphic: Node? = null, op: Menu.() -> Unit = {}
+) = Menu(name, graphic).also {
+    keyCombination?.apply { it.accelerator = this }
+    op(it)
+    items.add(it)
+}
+
 //Menu extensions
 fun Menu.menu(name: String? = null, keyCombination: String, graphic: Node? = null, op: Menu.() -> Unit = {}) =
     menu(name, KeyCombination.valueOf(keyCombination), graphic, op)
+
+fun MenuButton.menu(name: String? = null, keyCombination: String, graphic: Node? = null, op: Menu.() -> Unit = {}) =
+        menu(name, KeyCombination.valueOf(keyCombination), graphic, op)
 
 /**
  * Create a MenuItem. The op block will be configured as the `setOnAction`. This will be deprecated in favor of the `item` call, where the
@@ -228,7 +242,7 @@ fun Menu.radiomenuitem(
 )  = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
-    properties["tornadofx.toggleGroupValue"] = value ?: text
+    it.properties["tornadofx.toggleGroupValue"] = value ?: name
     graphic?.apply { it.graphic = graphic }
     op(it)
     this += it
@@ -254,7 +268,7 @@ fun MenuButton.radiomenuitem(
 ) = RadioMenuItem(name, graphic).also {
     toggleGroup?.apply { it.toggleGroup = this }
     keyCombination?.apply { it.accelerator = this }
-    properties["tornadofx.toggleGroupValue"] = value ?: text
+    it.properties["tornadofx.toggleGroupValue"] = value ?: name
     graphic?.apply { it.graphic = graphic }
     op(it)
     items += it

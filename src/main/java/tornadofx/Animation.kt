@@ -470,7 +470,7 @@ val Number.minutes: Duration get() = Duration.minutes(this.toDouble())
 val Number.hours: Duration get() = Duration.hours(this.toDouble())
 
 operator fun Duration.plus(duration: Duration): Duration = this.add(duration)
-operator fun Duration.minus(duration: Duration): Duration = this.minus(duration)
+operator fun Duration.minus(duration: Duration): Duration = this.subtract(duration)
 
 /**
  * A class that, when used with [replaceWith] or [UIComponent.replaceWith], allows you to replace [View]s, [Fragment]s,

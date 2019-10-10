@@ -8,8 +8,15 @@ jdk:
 sudo: false
 
 # use linux as operating system.
-os:
-  - linux
+os: linux
+
+matrix:
+  fast_finish: true
+  include:
+    - jdk: oraclejdk8
+      if: branch = master OR tag =~ ^v1\.[0-9]+\.[0-9]+ # match v1.x.x
+    - jdk: openjdk11
+      if: branch = jdk10 OR tag =~ ^v2\.[0-9]+\.[0-9]+ # match v2.x.x
 
 # configure xvfb screen.
 before_install:
@@ -26,3 +33,11 @@ script:
 cache:
   directories:
   - $HOME/.m2
+
+deploy:
+  # Deploy snapshots & releases on every commit made to master
+  - provider: script
+    script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy"
+    skip_cleanup: true
+    on:
+      all_branches: true

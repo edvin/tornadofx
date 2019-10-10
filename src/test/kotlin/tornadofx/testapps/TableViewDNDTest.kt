@@ -12,7 +12,7 @@ import tornadofx.tests.PersonRef
 class DNDReorderTableViewApp : App(DNDReorderTableView::class)
 
 class DNDReorderTableView : View() {
-    val people = observableList(Person("Bob", 42), Person("Jane", 24), Person("John", 31))
+    val people = observableListOf(Person("Bob", 42), Person("Jane", 24), Person("John", 31))
 
     override val root = tableview(people) {
         column("Name", Person::nameProperty)

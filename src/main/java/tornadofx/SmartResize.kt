@@ -421,7 +421,7 @@ fun <TABLE : Any> resizeCall(
 private fun <COLUMN, TABLE : Any> resizeAllColumns(table: TornadoFXTable<COLUMN, TABLE>, contentWidth: Double) {
     fun <S, T : Any> List<TornadoFXColumn<S>>.adjustTo(table: TornadoFXTable<S, T>) = table.resizeColumnsToFitContent(this)
 
-    val groupedColumns = table.contentColumns.groupBy { it.resizeType::class }
+    val groupedColumns = table.contentColumns.filter { it.isVisible }.groupBy { it.resizeType::class }
 
     var remainingWidth = contentWidth -
             groupedColumns.resizeFixedColumns() -

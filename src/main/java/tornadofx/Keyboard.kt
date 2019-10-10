@@ -112,7 +112,7 @@ class KeyboardSkin(control: KeyboardLayout) : SkinBase<KeyboardLayout>(control) 
                 if (key !is SpacerKeyboardKey) key.resizeRelocate(currentX, currentY, key.prefWidth, key.prefHeight)
                 currentX += key.prefWidth
             }
-            if (!row.keys.isEmpty()) {
+            if (row.keys.isNotEmpty()) {
                 currentY += row.keys.map { it.prefHeight(-1.0) }.min() ?: 0.0
             }
         }

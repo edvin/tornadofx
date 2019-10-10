@@ -684,12 +684,12 @@ fun <T : Any> booleanBinding(receiver: T, vararg dependencies: Observable, op: T
  * value by anding together an observable boolean representing each element in the observable list.
  * Whenever the list changes, the binding is updated as well
  */
-fun <T : Any> booleanListBinding(list: ObservableList<T>, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
+fun <T : Any> booleanListBinding(list: ObservableList<T>, defaultValue: Boolean = false, itemToBooleanExpr: T.() -> BooleanExpression): BooleanExpression {
     val facade = SimpleBooleanProperty()
     fun rebind() {
         if (list.isEmpty()) {
             facade.unbind()
-            facade.value = false
+            facade.value = defaultValue
         } else {
             facade.cleanBind(list.map(itemToBooleanExpr).reduce { a, b -> a.and(b) })
         }
@@ -756,3 +756,19 @@ fun <S, V, X : V> MutableMap<S, V>.toProperty(key: S, propertyGenerator: (X?) ->
     property.onChange { this[key] = it as X }
     return property
 }
+
+/**
+ * Convenience SimpleXXXProperty function builders
+ */
+
+fun booleanProperty(value: Boolean = false): BooleanProperty = SimpleBooleanProperty(value)
+fun doubleProperty(value: Double = 0.0): DoubleProperty = SimpleDoubleProperty(value)
+fun floatProperty(value: Float = 0F): FloatProperty = SimpleFloatProperty(value)
+fun intProperty(value: Int = 0): IntegerProperty = SimpleIntegerProperty(value)
+fun <V> listProperty(value: ObservableList<V>? = null): ListProperty<V> = SimpleListProperty(value)
+fun <V> listProperty(vararg values: V): ListProperty<V> = SimpleListProperty(values.toMutableList().asObservable())
+fun longProperty(value: Long): LongProperty = SimpleLongProperty(value)
+fun <K, V> mapProperty(value: ObservableMap<K, V>? = null): MapProperty<K, V> = SimpleMapProperty(value)
+fun <T> objectProperty(value: T? = null): ObjectProperty<T> = SimpleObjectProperty(value)
+fun <V> setProperty(value: ObservableSet<V>? = null): SetProperty<V> = SimpleSetProperty(value)
+fun stringProperty(value: String? = null): StringProperty = SimpleStringProperty(value)

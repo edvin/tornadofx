@@ -14,6 +14,7 @@ interface TornadoFXColumn<COLUMN> {
     var maxWidth: Double
     var minWidth: Double
     val width: Double
+    val isVisible: Boolean
     val minWidthProperty: DoubleProperty
     val maxWidthProperty: DoubleProperty
     fun isLegalWidth(width: Double) = width in minWidthProperty.get() .. maxWidthProperty.get()
@@ -40,6 +41,9 @@ class TornadoFXTreeTableColumn(override val column: TreeTableColumn<*, *>) : Tor
         }
     override val width: Double
         get() = column.width
+
+    override val isVisible: Boolean
+        get() = column.isVisible
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -79,6 +83,9 @@ class TornadoFxNormalTableColumn(override val column: TableColumn<*, *>) : Torna
         get() = column.width
     override val minWidthProperty get() = column.minWidthProperty()
     override val maxWidthProperty get() = column.maxWidthProperty()
+
+    override val isVisible: Boolean
+        get() = column.isVisible
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

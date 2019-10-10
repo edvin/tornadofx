@@ -97,6 +97,7 @@ open class SmartTreeCell<T>(val scope: Scope = FX.defaultScope, treeView: TreeVi
         text = null
         graphic = null
         style = null
+        styleClass.clear()
     }
 
     private fun clearCellFragment() {
