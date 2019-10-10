@@ -888,7 +888,14 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: () -> Unit = {}): Boolean {
+fun Node.replaceWith(
+    replacement: Node,
+    transition: ViewTransition? = null,
+    sizeToScene: Boolean = false,
+    centerOnScreen: Boolean = false,
+    clip: Boolean = true,
+    onTransit: () -> Unit = {}
+): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
@@ -902,7 +909,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
         replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
 
         if (transition != null) {
-            transition.call(this, replacement) {
+            transition.call(this, replacement, clip) {
                 scene.root = it as Parent
                 if (sizeToScene) scene.window.sizeToScene()
                 if (centerOnScreen) scene.window.centerOnScreen()
@@ -945,7 +952,7 @@ fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, size
         }
 
         if (transition != null) {
-            transition.call(this, replacement, attach)
+            transition.call(this, replacement, clip, attach)
         } else {
             removeFromParent()
             replacement.removeFromParent()

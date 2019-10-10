@@ -13,6 +13,8 @@
 - `Scope.deregister()` clears EventBus subscriptions associated with a particular scope
 - `App.stop()` clears all EventBus subscriptions
 - `csselement` delegate now requires an explicit name
+- `ViewTransition` now includes a flag for simple clipping
+    - `replaceWtih` now clips by default (can be overridden with `clip = false`)
 
 ### Additions
 
