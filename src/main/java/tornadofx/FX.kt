@@ -153,6 +153,8 @@ class FX {
         var layoutDebuggerShortcut: KeyCodeCombination? = KeyCodeCombination(KeyCode.J, KeyCodeCombination.META_DOWN, KeyCodeCombination.ALT_DOWN)
         var osgiDebuggerShortcut: KeyCodeCombination? = KeyCodeCombination(KeyCode.O, KeyCodeCombination.META_DOWN, KeyCodeCombination.ALT_DOWN)
 
+        val osgiAvailable: Boolean get() = false
+        /* TODO: Uncomment when OSGi support is working again
         val osgiAvailable: Boolean by lazy {
             try {
                 Class.forName("org.osgi.framework.FrameworkUtil")
@@ -161,6 +163,7 @@ class FX {
                 false
             }
         }
+        */
 
         private val _locale: SimpleObjectProperty<Locale> = object : SimpleObjectProperty<Locale>() {
             override fun invalidated() = loadMessages()
