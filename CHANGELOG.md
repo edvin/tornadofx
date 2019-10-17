@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.0.0-SNAPSHOT]
+
+### Fixed
+
+### Changes
+
+- `csselement` delegate now requires an explicit name
+- `ViewTransition` now includes a flag for simple clipping
+    - `replaceWtih` now clips by default (can be overridden with `clip = false`)
+
 ## [1.7.20-SNAPSHOT]
 
 ### Fixed
@@ -12,9 +22,6 @@
 - `openInternalWindow()` was made public (https://github.com/edvin/tornadofx/issues/989)
 - `Scope.deregister()` clears EventBus subscriptions associated with a particular scope
 - `App.stop()` clears all EventBus subscriptions
-- `csselement` delegate now requires an explicit name
-- `ViewTransition` now includes a flag for simple clipping
-    - `replaceWtih` now clips by default (can be overridden with `clip = false`)
 
 ### Additions
 
