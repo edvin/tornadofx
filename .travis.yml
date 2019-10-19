@@ -16,10 +16,11 @@ matrix:
       if: branch = jdk10 OR tag =~ ^v2\.[0-9]+\.[0-9]+ # match v2.x.x
 
 # configure xvfb screen.
+services:
+  - xvfb
+
 before_install:
   - sudo apt-get install -y openjfx
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
 
 # skip install stage.
 install: true
