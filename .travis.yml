@@ -10,13 +10,14 @@ os: linux
 matrix:
   fast_finish: true
   include:
-    - jdk: oraclejdk8
+    - jdk: openjdk8
       if: branch = master OR tag =~ ^v1\.[0-9]+\.[0-9]+ # match v1.x.x
     - jdk: openjdk11
       if: branch = jdk10 OR tag =~ ^v2\.[0-9]+\.[0-9]+ # match v2.x.x
 
 # configure xvfb screen.
 before_install:
+  - sudo apt-get install -y openjfx
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
