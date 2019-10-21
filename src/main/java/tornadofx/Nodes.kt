@@ -19,6 +19,7 @@ import javafx.geometry.*
 import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
+import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
