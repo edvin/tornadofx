@@ -510,7 +510,7 @@ fun RadioButton.validator(trigger: ValidationTrigger = ValidationTrigger.OnChang
  */
 inline fun <reified T> validator(control: Control, property: Property<T>, trigger: ValidationTrigger, model: ViewModel? = null, noinline validator: ValidationContext.(T?) -> ValidationMessage?)
         = requireNotNull(model ?: property.viewModel){
-    "The validator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. " +
+    "The addValidator extension can only be used on inputs that are already bound bidirectionally to a property in a Viewmodel. " +
             "Use validator.addValidator() instead or make the property's bean field point to a ViewModel."
         }.addValidator(control, property, trigger, validator)
 
