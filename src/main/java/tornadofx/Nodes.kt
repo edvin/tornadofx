@@ -19,7 +19,6 @@ import javafx.geometry.*
 import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.control.cell.TextFieldTableCell
-import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -888,14 +887,7 @@ internal var Node.isTransitioning: Boolean
  * @param transition The [ViewTransition] used to animate the transition
  * @return Whether or not the transition will run
  */
-fun Node.replaceWith(
-    replacement: Node,
-    transition: ViewTransition? = null,
-    sizeToScene: Boolean = false,
-    centerOnScreen: Boolean = false,
-    clip: Boolean = true,
-    onTransit: () -> Unit = {}
-): Boolean {
+fun Node.replaceWith(replacement: Node, transition: ViewTransition? = null, sizeToScene: Boolean = false, centerOnScreen: Boolean = false, onTransit: () -> Unit = {}): Boolean {
     if (isTransitioning || replacement.isTransitioning) {
         return false
     }
@@ -909,7 +901,7 @@ fun Node.replaceWith(
         replacement.uiComponent<UIComponent>()?.properties?.put("tornadofx.scene", scene)
 
         if (transition != null) {
-            transition.call(this, replacement, clip) {
+            transition.call(this, replacement) {
                 scene.root = it as Parent
                 if (sizeToScene) scene.window.sizeToScene()
                 if (centerOnScreen) scene.window.centerOnScreen()
@@ -952,7 +944,7 @@ fun Node.replaceWith(
         }
 
         if (transition != null) {
-            transition.call(this, replacement, clip, attach)
+            transition.call(this, replacement, attach)
         } else {
             removeFromParent()
             replacement.removeFromParent()

@@ -15,7 +15,6 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
-import javafx.scene.shape.Rectangle
 import javafx.scene.shape.Shape
 import javafx.scene.transform.Rotate
 import javafx.util.Duration
@@ -521,7 +520,7 @@ abstract class ViewTransition {
         this.setup = setup
     }
 
-    internal fun call(current: Node, replacement: Node, clip: Boolean, attach: (Node) -> Unit) {
+    internal fun call(current: Node, replacement: Node, attach: (Node) -> Unit) {
         current.isTransitioning = true
         replacement.isTransitioning = true
         val currentUIComponent = current.properties[UI_COMPONENT_PROPERTY] as? UIComponent
@@ -530,12 +529,6 @@ abstract class ViewTransition {
         replacementUIComponent?.muteDocking = true
 
         val stack = stack(current, replacement)
-        if (clip) {
-            stack.clip = Rectangle().apply {
-                widthProperty().bind(stack.widthProperty())
-                heightProperty().bind(stack.heightProperty())
-            }
-        }
         stack.setup()
         attach(stack)
 
