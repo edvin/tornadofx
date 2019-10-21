@@ -7,11 +7,11 @@ import tornadofx.*
 
 class ListViewTestApp : App(ListViewFragmentTestView::class)
 
-class Item(value: String) {
+class ListViewItem(value: String) {
     val valueProperty = SimpleStringProperty(value)
 }
 
-class MyItemViewModel : ItemViewModel<Item>() {
+class MyItemViewModel : ItemViewModel<ListViewItem>() {
     val value = bind { item?.valueProperty }
 }
 
@@ -38,7 +38,7 @@ class PersonListFragment : ListCellFragment<Person>() {
 }
 
 class ListViewFragmentTestView : View("ListCellFragment Test") {
-    val items = listOf(Person("John", 42), Person("Jane", 24), Person("Tommy", 11)).observable()
+    val items = observableListOf(Person("John", 42), Person("Jane", 24), Person("Tommy", 11))
 
     override val root = listview(items) {
         cellFragment(PersonListFragment::class)

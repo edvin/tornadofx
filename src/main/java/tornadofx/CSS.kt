@@ -2,13 +2,16 @@ package tornadofx
 
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
+import javafx.css.PseudoClass
 import javafx.css.Styleable
 import javafx.geometry.*
 import javafx.scene.Cursor
 import javafx.scene.ImageCursor
 import javafx.scene.Node
 import javafx.scene.Parent
-import javafx.scene.control.*
+import javafx.scene.control.ContentDisplay
+import javafx.scene.control.OverrunStyle
+import javafx.scene.control.ScrollPane
 import javafx.scene.effect.BlendMode
 import javafx.scene.effect.DropShadow
 import javafx.scene.effect.Effect
@@ -1112,7 +1115,7 @@ fun Styleable.style(append: Boolean = false, op: InlineCss.() -> Unit) {
         method.name == "setStyle" && method.returnType == Void.TYPE && method.parameterCount == 1 && method.parameters[0].type == String::class.java
     }
 
-    setStyleMethod ?: throw IllegalArgumentException("Don't know how to set style for Styleable subclass ${this@style.javaClass}")
+    requireNotNull(setStyleMethod) { "Don't know how to set style for Styleable subclass ${this@style.javaClass}" }
 
     val block = InlineCss().apply(op)
 
@@ -1254,29 +1257,49 @@ fun loadFont(path: String, size: Number): Font? {
 }
 
 // Style Class
+fun <T : Styleable> T.hasClass(className: String) = styleClass.contains(className)
+fun <T : Styleable> T.hasPseudoClass(className: String) = pseudoClassStates.contains(PseudoClass.getPseudoClass(className))
 
-/**
- * Check if this Node has the given type safe css class. Pseudo classes are also supported.
- */
-fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+fun <T : Styleable> T.addClass(vararg className: String) = apply { styleClass.addAll(className) }
+fun Iterable<Styleable>.addClass(vararg cssClass: String) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 
-/**
- * Check if this Node has the given type safe css class. Pseudo classes are also supported.
- */
-fun Tab.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+fun <T : Styleable> T.addPseudoClass(className: String) = apply {
+    (this as? Node)?.pseudoClassStateChanged(PseudoClass.getPseudoClass(className), true)
+}
 
-/**
- * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
- */
-fun <T : Node> T.addClass(vararg cssClass: CssRule) = apply {
-    cssClass.withEach {
-        if (prefix == ":") addPseudoClass(name) else addClass(name)
+fun <T : Styleable> T.removePseudoClass(className: String) = apply {
+    (this as? Node)?.pseudoClassStateChanged(PseudoClass.getPseudoClass(className), false)
+}
+
+fun <T : Styleable> T.removeClass(className: String, removeAll: Boolean = true) = apply {
+    if (removeAll) styleClass.removeAll(className) else styleClass.remove(className)
+}
+
+fun <T : Styleable> T.toggleClass(className: String, predicate: Boolean) = apply {
+    if (predicate) {
+        if (!hasClass(className)) addClass(className)
+    } else {
+        removeClass(className)
     }
 }
+
+fun <T : Styleable> T.togglePseudoClass(className: String, predicate: Boolean) = apply {
+    if (predicate) {
+        if (!hasPseudoClass(className)) addPseudoClass(className)
+    } else {
+        removePseudoClass(className)
+    }
+}
+
 /**
- * Add one or more type safe css classes to this Tab. Pseudo classes are also supported.
+ * Check if this Node has the given type safe css class. Pseudo classes are also supported.
  */
-fun <T : Tab> T.addClass(vararg cssClass: CssRule) = apply {
+fun <T : Styleable> T.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClass(cssClass.name) else hasClass(cssClass.name)
+
+/**
+ * Add one or more type safe css classes to this Styleable. Pseudo classes are also supported.
+ */
+fun <T : Styleable> T.addClass(vararg cssClass: CssRule) = apply {
     cssClass.withEach {
         if (prefix == ":") addPseudoClass(name) else addClass(name)
     }
@@ -1285,16 +1308,7 @@ fun <T : Tab> T.addClass(vararg cssClass: CssRule) = apply {
 /**
  * Remove the given given type safe css class(es) from this Node. Pseudo classes are also supported.
  */
-fun <T : Node> T.removeClass(vararg cssClass: CssRule) = apply {
-    cssClass.withEach {
-        if (prefix == ":") removePseudoClass(name) else removeClass(name)
-    }
-}
-
-/**
- * Remove the given given type safe css class(es) from this Tab. Pseudo classes are also supported.
- */
-fun <T : Tab> T.removeClass(vararg cssClass: CssRule) = apply {
+fun <T : Styleable> T.removeClass(vararg cssClass: CssRule) = apply {
     cssClass.withEach {
         if (prefix == ":") removePseudoClass(name) else removeClass(name)
     }
@@ -1303,30 +1317,14 @@ fun <T : Tab> T.removeClass(vararg cssClass: CssRule) = apply {
 /**
  * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
  */
-fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
-
-/**
- * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
- */
-fun <T : Tab> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+fun <T : Styleable> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
 
 /**
  * Toggle the given type safe css class based on the given predicate observable value.
  * Whenever the observable value changes, the class is added or removed.
  * Pseudo classes are also supported.
  */
-fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
-    toggleClass(cssClass, observablePredicate.value ?: false)
-    observablePredicate.onChange {
-        toggleClass(cssClass, it ?: false)
-    }
-}
-/**
- * Toggle the given type safe css class based on the given predicate observable value.
- * Whenever the observable value changes, the class is added or removed.
- * Pseudo classes are also supported.
- */
-fun <T : Tab> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
+fun <T : Styleable> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableValue<Boolean>) {
     toggleClass(cssClass, observablePredicate.value ?: false)
     observablePredicate.onChange {
         toggleClass(cssClass, it ?: false)
@@ -1336,32 +1334,32 @@ fun <T : Tab> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableVa
 /**
  * Add the given type safe css classes to every Node in this Iterable. Pseudo classes are also supported.
  */
-fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
+fun <T : Styleable> Iterable<T>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
 
 /**
  * Remove the given type safe css classes from every node in this Iterable. Pseudo classes are also supported.
  */
-fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
+fun <T : Styleable> Iterable<T>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
 
 /**
  * Toggle the given type safe css class on every node in this iterable based on the given predicate. Pseudo classes are also supported.
  */
-fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = withEach { toggleClass(cssClass, predicate) }
+fun <T : Styleable> Iterable<T>.toggleClass(cssClass: CssRule, predicate: Boolean) = withEach { toggleClass(cssClass, predicate) }
 
 /**
  * Bind this observable type safe css rule to this Node. Pseudo classes are also supported.
  */
-fun Node.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
+fun <T : Styleable> T.bindClass(value: ObservableValue<CssRule>): ObservableStyleClass = ObservableStyleClass(this, value)
 
-class ObservableStyleClass(node: Node, val value: ObservableValue<CssRule>) {
+class ObservableStyleClass(styleable: Styleable, val value: ObservableValue<CssRule>) {
     val listener: ChangeListener<CssRule>
 
     init {
         fun checkAdd(newValue: CssRule?) {
-            if (newValue != null && !node.hasClass(newValue)) node.addClass(newValue)
+            if (newValue != null && !styleable.hasClass(newValue)) styleable.addClass(newValue)
         }
-        listener = ChangeListener { observableValue, oldValue, newValue ->
-            if (oldValue != null) node.removeClass(oldValue)
+        listener = ChangeListener { _, oldValue, newValue ->
+            if (oldValue != null) styleable.removeClass(oldValue)
             checkAdd(newValue)
         }
         checkAdd(value.value)

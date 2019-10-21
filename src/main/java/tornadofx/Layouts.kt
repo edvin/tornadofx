@@ -391,11 +391,11 @@ fun Region.fitToParentSize() {
 }
 
 fun Region.fitToHeight(region: Region) {
-    minHeightProperty().bind(region.heightProperty())
+    prefHeightProperty().bind(region.heightProperty())
 }
 
 fun Region.fitToWidth(region: Region) {
-    minWidthProperty().bind(region.widthProperty())
+    prefWidthProperty().bind(region.widthProperty())
 }
 
 fun Region.fitToSize(region: Region) {

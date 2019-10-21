@@ -148,7 +148,7 @@ fun <T> EventTarget.spinner(
 }
 
 fun <T> EventTarget.combobox(property: Property<T>? = null, values: List<T>? = null, op: ComboBox<T>.() -> Unit = {}) = ComboBox<T>().attachTo(this, op) {
-    if (values != null) it.items = values as? ObservableList<T> ?: values.observable()
+    if (values != null) it.items = values as? ObservableList<T> ?: values.asObservable()
     if (property != null) it.bind(property)
 }
 
@@ -161,7 +161,7 @@ fun <T> ComboBox<T>.cellFormat(scope: Scope, formatButtonCell: Boolean = true, f
 }
 
 fun <T> EventTarget.choicebox(property: Property<T>? = null, values: List<T>? = null, op: ChoiceBox<T>.() -> Unit = {}) = ChoiceBox<T>().attachTo(this, op) {
-    if (values != null) it.items = (values as? ObservableList<T>) ?: values.observable()
+    if (values != null) it.items = (values as? ObservableList<T>) ?: values.asObservable()
     if (property != null) it.bind(property)
 }
 
@@ -194,7 +194,7 @@ fun <T> EventTarget.tableview(items: ObservableList<T>? = null, op: TableView<T>
 
 fun <T> EventTarget.tableview(items: ReadOnlyListProperty<T>, op: TableView<T>.() -> Unit = {}) = tableview(items as ObservableValue<ObservableList<T>>, op)
 
-fun <T> EventTarget.tableview(items: ObservableValue<ObservableList<T>>, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
+fun <T> EventTarget.tableview(items: ObservableValue<out ObservableList<T>>, op: TableView<T>.() -> Unit = {}) = TableView<T>().attachTo(this, op) {
     fun rebinder() {
         (it.items as? SortedFilteredList<T>)?.bindTo(it)
     }
@@ -278,10 +278,7 @@ class LazyTreeItem<T : Any>(
         })
     }
 
-    fun hasChildren(): Boolean {
-        val result = invokeAndSetChildFactorySynchronously()
-        return result == null || result.isEmpty()
-    }
+    fun hasChildren(): Boolean = invokeAndSetChildFactorySynchronously().isNullOrEmpty()
 
     private fun invokeAndSetChildFactorySynchronously(): List<T>? {
         if (!childFactoryInvoked) {
@@ -534,7 +531,13 @@ fun <T> TableView<T>.bindSelected(property: Property<T>) {
     }
 }
 
-fun <T> TableView<T>.bindSelected(model: ItemViewModel<T>) {
+fun <T> ComboBox<T>.bindSelected(property: Property<T>) {
+    selectionModel.selectedItemProperty().onChange {
+        property.value = it
+    }
+}
+
+fun <T> TableView<out T>.bindSelected(model: ItemViewModel<in T>) {
     selectionModel.selectedItemProperty().onChange {
         model.item = it
     }

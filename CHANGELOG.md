@@ -1,18 +1,85 @@
 # Change Log
 
-## [1.7.18-SNAPSHOT]
+## [2.0.0-SNAPSHOT]
 
 ### Fixed
 
-- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792)
+### Changes
+
+- `csselement` delegate now requires an explicit name
+- `ViewTransition` now includes a flag for simple clipping
+    - `replaceWtih` now clips by default (can be overridden with `clip = false`)
+
+## [1.7.20-SNAPSHOT]
+
+### Fixed
+
+- [#991](https://github.com/edvin/tornadofx/issues/991): App with NoPrimaryViewSpecified throws Exception in Application stop method
+- [#1026](https://github.com/edvin/tornadofx/issues/1026) whenDockedOnce/whenUndockedOnce did not deregister correctly
+
+### Changes
+
+- `openInternalWindow()` was made public (https://github.com/edvin/tornadofx/issues/989)
+- `Scope.deregister()` clears EventBus subscriptions associated with a particular scope
+- `App.stop()` clears all EventBus subscriptions
+
+### Additions
+
+- `subscene` builder
+- The `fxml()` delegate now accepts an InputStream, for loading FXML from DB or `resources.stream("/my/classpath/to.fxml")` (https://github.com/edvin/tornadofx-guide/issues/107) 
+- Generic HttpEntity support in HttpClientRequest (https://github.com/edvin/tornadofx/issues/996)
+- JsonConfig.AddEmptyStrings controls if empty strings are added to Json objects or treated as null
+
+## [1.7.19]
+
+### Fixed
+
+- SmartResize takes invisible columns into account (https://github.com/edvin/tornadofx/issues/889)
+- radiomenuitem didn't store value parameter properly (https://github.com/edvin/tornadofx/issues/737)
+- fitToWidth/fitToHeigh binds prefWidth/prefHeight instead of minWidth/minHeight properties (https://github.com/edvin/tornadofx/issues/886)
+- menu/item builders now observes FX.ignoreParentBuilder
+- Renamed labelProperty to textProperty in AbstractField
+- Wizard next button was enabled even when current page was not complete (https://github.com/edvin/tornadofx/issues/960)
+- App primary view would continue to receive onDock/onUndock after its app instance was stopped and out of scope (https://github.com/edvin/tornadofx/issues/973)
+
+### Changes
+
+ - Opened up HttpClientEngine and HttpURLEngine for easier subclassing/configuration of the Rest engine
+ - Deprecated `observableList()` in favour of `observableListOf()`, and `[List, Set, Map].observable()` in favour of `[List, Set, Map].asObservable()` to be consistent with the Kotlin standard library.
+ - Subdelegation of workspace button states (https://github.com/edvin/tornadofx/issues/894)
+ - Kotlin 1.3.20
+ - Moved all css helper extension functions from Node/Tab/Menu etc to Styleable (https://github.com/edvin/tornadofx/issues/944)
+  
+### Additions
+
+- `FX.messagesNameProvider` property to dynamically compute the name of the resource bundle of a given component class. (https://github.com/edvin/tornadofx/issues/872)
+- `FX.fxmlLocator` function to provide custom FXML locations globally
+- Added top level functions for creating (`observableListOf()`, etc) and converting (`List<T>.asObservable()`, etc) observable lists, sets and maps; and extension functions to work with them too (`ObservableList<T>.shuffle()`, etc).
+- Submenu support for MenuButton (https://stackoverflow.com/questions/54393983/how-to-make-a-submenu-within-a-menubutton-in-javafx)
+- Added `cubiccurveTo` builder (https://github.com/edvin/tornadofx/issues/911)
+- onLeftClick() and onRightClick()
+- Convenience function builders for SimpleXXXProperty classes (https://github.com/edvin/tornadofx/pull/935)
+- Added `splitmenubutton` builder 
+- `togglegroup()` builder accepts property parameter (https://github.com/edvin/tornadofx/issues/956)
+- Added extensions and operators for vector math
+
+## [1.7.18]
+
+### Fixed
+
+- `config` no longer accepts null values, as the underlying `Properties` store won't allow them (https://github.com/edvin/tornadofx/issues/792). The set function that takes Pair still accepts null as the value, but will remove the key if the value is null.
+- the `di()` delegate no longer calls out to the `DIContainer` for every access, effectively caching the lookup (https://github.com/edvin/tornadofx/issues/837)
+- More efficient timer for delayed `runLater` calls (https://github.com/edvin/tornadofx/pull/836)
+- `runAsyncWithProgress` cannot target an UI element with no parent, will no throw Exception with warning (https://github.com/edvin/tornadofx/issues/873)
 
 ### Changes
 
 - `App.scope` is overridable
 - `DefaultScope` deprecated, use `FX.defaultScope` instead
 - The Workspace inside the `scope` of a UIComponents will assume the Workspace it is docked in (https://github.com/edvin/tornadofx/issues/806)
-- Kotlin 1.2.70
-- `csselement` delegate now requires an explicit name
+- Kotlin 1.3.11
+- bindSelected for ViewModel gets `out` modifier (https://github.com/edvin/tornadofx/issues/823)
+- Spinner.required() validator (https://github.com/edvin/tornadofx/issues/871)
 
 ### Additions
 
@@ -21,6 +88,10 @@
 - Media.play() shortcut which creates a MediaPlayer and plays the Media
 - Wipe and Dissolve view transitions
 - `tab` builder assigns `UIComponent.icon` as Tab graphic
+- `ComboBox.bindSelected()` (https://github.com/edvin/tornadofx/issues/829)
+- TextInputControl.requiredWhen()
+- `colorpicker` builder with property binding support
+- `movable` parameter for `openInternalWindow()` (https://github.com/edvin/tornadofx/issues/863)
 
 ## [1.7.17]
 

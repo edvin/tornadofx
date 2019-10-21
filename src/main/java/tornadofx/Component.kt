@@ -1247,8 +1247,9 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
             replacement: UIComponent,
             transition: ViewTransition? = null,
             sizeToScene: Boolean = false,
-            centerOnScreen: Boolean = false
-    ) = root.replaceWith(replacement.root, transition, sizeToScene, centerOnScreen) {
+            centerOnScreen: Boolean = false,
+            clip: Boolean = true
+    ) = root.replaceWith(replacement.root, transition, sizeToScene, centerOnScreen, clip) {
         if (root == root.scene?.root) (root.scene.window as? Stage)?.titleProperty()?.cleanBind(replacement.titleProperty)
     }
 

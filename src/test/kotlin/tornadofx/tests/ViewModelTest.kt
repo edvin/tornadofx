@@ -1,6 +1,5 @@
 package tornadofx.tests
 
-import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -12,7 +11,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.testfx.api.FxToolkit
 import tornadofx.*
-import kotlin.reflect.KMutableProperty1
 
 open class ViewModelTest {
     val primaryStage: Stage = FxToolkit.registerPrimaryStage()

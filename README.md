@@ -4,7 +4,7 @@
 JavaFX Framework for Kotlin (Java 10 Port in this branch)
 
 [![Travis CI](https://travis-ci.org/edvin/tornadofx.svg)](https://travis-ci.org/edvin/tornadofx)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/no.tornado/tornadofx/badge.svg?cachebust)](https://search.maven.org/#search|ga|1|no.tornado.tornadofx)
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 ## Features
@@ -86,7 +86,7 @@ mvn archetype:generate -DarchetypeGroupId=no.tornado \
 ### Gradle
 
 ```groovy
-compile 'no.tornado:tornadofx:1.7.17'
+implementation 'no.tornado:tornadofx:1.7.17'
 ```
 
 ### Snapshots are published to Sonatype

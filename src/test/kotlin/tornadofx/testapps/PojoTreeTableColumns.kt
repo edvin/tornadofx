@@ -8,7 +8,7 @@ class PojoTreeTableColumnsApp : App(PojoTreeTableColumns::class)
 
 class PojoTreeTableColumns : View("Pojo Tree Table Columns") {
 
-    val people = listOf(
+    val people = observableListOf(
             JavaPerson("Mary Hanes", "IT Administration", "mary.hanes@contoso.com", "mary2.hanes@contoso.com", listOf(
                     JavaPerson("Jacob Mays", "IT Help Desk", "jacob.mays@contoso.com", "jacob2.mays@contoso.com"),
                     JavaPerson("John Ramsy", "IT Help Desk", "john.ramsy@contoso.com", "john2.ramsy@contoso.com"))),
@@ -16,7 +16,7 @@ class PojoTreeTableColumns : View("Pojo Tree Table Columns") {
                     JavaPerson("Erlick Foyes", "Customer Service", "erlick.foyes@contoso.com", "erlick2.foyes@contoso.com"),
                     JavaPerson("Steve Folley", "Customer Service", "steve.folley@contoso.com", "erlick2.foyes@contoso.com"),
                     JavaPerson("Larry Cable", "Customer Service", "larry.cable@contoso.com", "larry2.cable@contoso.com")))
-    ).observable()
+    )
 
     // Create the root item that holds all top level employees
     val rootItem = TreeItem(JavaPerson().apply { name = "Employees by Manager"; employees = people })
