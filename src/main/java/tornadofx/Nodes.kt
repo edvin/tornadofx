@@ -471,10 +471,10 @@ fun <T> ComboBox<T>.asyncItems(func: FXTask<*>.() -> Collection<T>) =
         task(func = func).success { if (items == null) items = observableArrayList(it) else items.setAll(it) }
 
 fun <T> TableView<T>.onUserDelete(action: (T) -> Unit) {
-    addEventFilter(KeyEvent.KEY_PRESSED, { event ->
+    addEventFilter(KeyEvent.KEY_PRESSED) { event ->
         if (event.code == KeyCode.BACK_SPACE && selectedItem != null)
             action(selectedItem!!)
-    })
+    }
 }
 
 /**
