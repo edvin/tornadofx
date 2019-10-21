@@ -23,6 +23,8 @@ import javafx.scene.control.*
 import javafx.scene.control.cell.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
+import javafx.scene.paint.Color
+import javafx.scene.shape.Polygon
 import javafx.scene.text.Text
 import javafx.util.Callback
 import javafx.util.StringConverter
@@ -820,7 +822,7 @@ class ExpanderColumn<S>(private val expandedNodeCallback: RowExpanderPane.(S) ->
                     if (!getValue()) expandedNodeCache.remove(bean)
                 }
             }
-            expansionState.put(item, value)
+            expansionState[item] = value
         }
         return value
     }
