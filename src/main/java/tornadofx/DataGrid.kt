@@ -19,10 +19,7 @@ import javafx.scene.control.SelectionMode.MULTIPLE
 import javafx.scene.control.SelectionMode.SINGLE
 import javafx.scene.control.skin.CellSkinBase
 import javafx.scene.control.skin.VirtualContainerBase
-import javafx.scene.input.InputEvent
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.MouseEvent
+import javafx.scene.input.*
 import javafx.scene.layout.HBox
 import javafx.scene.layout.StackPane
 import java.util.*
