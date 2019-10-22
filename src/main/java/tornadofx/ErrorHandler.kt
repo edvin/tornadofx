@@ -128,7 +128,7 @@ class DefaultErrorHandler : Thread.UncaughtExceptionHandler {
 private fun stringFromError(e: Throwable): String {
     val out = ByteArrayOutputStream()
     val writer = PrintWriter(out)
-    e.printStackTrace(writer)
+    //e.printStackTrace(writer)
     writer.close()
     return out.toString()
 }

@@ -35,7 +35,6 @@ private fun <T> Property<T>.internalBind(property: ObservableValue<T>, readonly:
     if (readonly || (property !is Property<*>)) bind(property) else bindBidirectional(property as Property<T>)
 }
 
-
 fun <T> ComboBoxBase<T>.bind(property: ObservableValue<T>, readonly: Boolean = false) =
         valueProperty().internalBind(property, readonly)
 

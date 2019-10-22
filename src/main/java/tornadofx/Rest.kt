@@ -335,8 +335,8 @@ class HttpURLResponse(override val request: HttpURLRequest) : Rest.Response {
             with(request.connection) {
                 if (doInput) content().close()
             }
-        } catch (error: Throwable) {
-            error.printStackTrace()
+        } catch (_: Throwable) { // ignored
+//            ignored.printStackTrace()
         }
         Platform.runLater { Rest.ongoingRequests.remove(request) }
     }
