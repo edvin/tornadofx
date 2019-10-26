@@ -325,6 +325,11 @@ fun Node.runAsyncWithOverlay(latch: CountDownLatch, timeout: Duration? = null, o
     }
 }
 
+@JvmOverloads
+fun UIComponent.runAsyncWithOverlay(latch: CountDownLatch, timeout: Duration? = null, overlayNode: Node = MaskPane()): Task<Boolean> {
+    return root.runAsyncWithOverlay(latch, timeout, overlayNode)
+}
+
 /**
  * Runs given task in background thread, covering node with overlay (default one is [MaskPane]) until task is done.
  *
@@ -354,6 +359,11 @@ fun <T : Any> Node.runAsyncWithOverlay(overlayNode: Node = MaskPane(), op: () ->
             runLater { overlayContainer.replaceWith(this@runAsyncWithOverlay) }
         }
     }
+}
+
+@JvmOverloads
+fun <T : Any> UIComponent.runAsyncWithOverlay(overlayNode: Node = MaskPane(), op: () -> T): Task<T> {
+    return root.runAsyncWithOverlay(overlayNode, op)
 }
 
 /**
