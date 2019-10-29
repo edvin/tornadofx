@@ -248,25 +248,36 @@ fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
 
 fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit) = onChangeTimes(1, op)
 
-fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { o, oldValue, newValue -> op(newValue) } }
-fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { o, old, new -> op(new ?: false) } }
-fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0).toInt()) } }
-fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { o, old, new -> op((new ?: 0L).toLong()) } }
+fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { _, _, newValue -> op(newValue) } }
+fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { _, _, new -> op(new ?: false) } }
+fun ObservableIntegerValue.onChange(op: (Int) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0).toInt()) } }
+fun ObservableLongValue.onChange(op: (Long) -> Unit) = apply { addListener { _, _, new -> op((new ?: 0L).toLong()) } }
 fun ObservableFloatValue.onChange(op: (Float) -> Unit) = apply {
-    addListener { o, old, new ->
+    addListener { _, _, new ->
         op((new ?: 0f).toFloat())
     }
 }
 
 fun ObservableDoubleValue.onChange(op: (Double) -> Unit) = apply {
-    addListener { o, old, new ->
+    addListener { _, _, new ->
         op((new ?: 0.0).toDouble())
     }
 }
 
 fun <T> ObservableList<T>.onChange(op: (ListChangeListener.Change<out T>) -> Unit) = apply {
-    addListener(ListChangeListener { op(it) })
+    addListener(op) // Sch.Funtik. Old: addListener(ListChangeListener { op(it) }) - unnecessary lambda
 }
+
+fun <K, V> ObservableMap<K, V>.onChange(op: (MapChangeListener.Change<out K, out V>) -> Unit) = apply {
+    addListener(op) // addListener(MapChangeListener { op(it) })
+}
+
+/**
+ * JavaDoc: Note that put operation might remove an element if there was already a value associated with the same key.
+ * In this case wasAdded() and wasRemoved() will both return true.
+ */
+val <K, V> MapChangeListener.Change<out K, out V>.wasUpdated: Boolean
+    get() = wasAdded() && wasRemoved()
 
 /**
  * Create a proxy property backed by calculated data based on a specific property. The setter
