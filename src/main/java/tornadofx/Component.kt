@@ -1315,3 +1315,26 @@ class BuilderFragment(overrideScope: Scope, title: String, rootBuilder: Fragment
     override val scope = overrideScope
     override val root = rootBuilder(this)
 }
+
+enum class BorderPaneContainer {
+    TOP, RIGHT, BOTTOM, LEFT, CENTER;
+}
+
+fun BorderPane.getContainerForChild(child: Node): BorderPaneContainer? {
+    if (top == child) return BorderPaneContainer.TOP
+    if (right == child) return BorderPaneContainer.RIGHT
+    if (bottom == child) return BorderPaneContainer.BOTTOM
+    if (left == child) return BorderPaneContainer.LEFT
+    if (center == child) return BorderPaneContainer.CENTER
+    return null
+}
+
+fun BorderPane.placeChild(child: Node, container: BorderPaneContainer) {
+    when (container) {
+        BorderPaneContainer.TOP -> top = child
+        BorderPaneContainer.RIGHT -> right = child
+        BorderPaneContainer.BOTTOM -> bottom = child
+        BorderPaneContainer.LEFT -> left = child
+        BorderPaneContainer.CENTER -> center = child
+    }
+}

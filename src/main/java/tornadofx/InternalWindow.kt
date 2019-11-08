@@ -21,6 +21,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
     private lateinit var coverNode: Node
     private lateinit var view: UIComponent
     private var titleProperty = SimpleStringProperty()
+    private var ownerPlacementInBorderPane: BorderPaneContainer? = null
     var overlay: Canvas? = null
     private var indexInCoverParent: Int? = null
     private var coverParent: Parent? = null
@@ -151,10 +152,15 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
 
         val coverParent = this.coverParent
         if (coverParent != null) {
-            val childList = coverParent.getChildList() ?: kotlin.error("Can't reach children of owner parent")
-            indexInCoverParent = childList.indexOf(owner).also { index ->
-                owner.removeFromParent()
-                childList.add(index, this)
+            ownerPlacementInBorderPane = (coverParent as? BorderPane)?.getContainerForChild(owner)
+            if (ownerPlacementInBorderPane != null) {
+                (coverParent as BorderPane).placeChild(this, ownerPlacementInBorderPane!!)
+            } else {
+                val childList = coverParent.getChildList() ?: kotlin.error("Can't reach children of owner parent")
+                indexInCoverParent = childList.indexOf(owner).also { index ->
+                    owner.removeFromParent()
+                    childList.add(index, this)
+                }
             }
         } else {
             owner.scene.root = this
@@ -174,11 +180,13 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
         coverNode.removeFromParent()
         removeFromParent()
         val indexInCoverParent = this.indexInCoverParent
-        if (indexInCoverParent != null) {
-            val childList = coverParent!!.getChildList() ?: kotlin.error("Can't reach children of owner parent")
-            childList.add(indexInCoverParent, coverNode)
-        } else {
-            scene?.root = coverNode as Parent?
+        when {
+            ownerPlacementInBorderPane != null -> (coverParent as BorderPane).placeChild(coverNode, ownerPlacementInBorderPane!!)
+            indexInCoverParent != null -> {
+                val childList = coverParent!!.getChildList() ?: kotlin.error("Can't reach children of owner parent")
+                childList.add(indexInCoverParent, coverNode)
+            }
+            else -> scene?.root = coverNode as Parent?
         }
         coverNode.uiComponent<UIComponent>()?.muteDocking = false
 
