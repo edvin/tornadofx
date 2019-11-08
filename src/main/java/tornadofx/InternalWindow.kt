@@ -9,6 +9,7 @@ import javafx.scene.effect.DropShadow
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
@@ -16,7 +17,7 @@ import tornadofx.InternalWindow.Styles.Companion.crossPath
 import java.awt.Toolkit
 import java.net.URL
 
-class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, movable: Boolean = true, overlayPaint : Paint = c("#000", 0.4)) : StackPane() {
+class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, closeButton: Boolean, movable: Boolean = true, overlayPaint: Paint = c("#000", 0.4)) : StackPane() {
     private lateinit var window: BorderPane
     private lateinit var coverNode: Node
     private lateinit var view: UIComponent
@@ -84,6 +85,7 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
         window.center = stackpane {
             addClass(Styles.floatingWindowContent)
         }
+
     }
 
     class Styles : Stylesheet() {
@@ -212,7 +214,11 @@ class InternalWindow(icon: Node?, modal: Boolean, escapeClosesWindow: Boolean, c
             val windowHeight = Math.min(prefHeight, lb.height)
 
             window.resizeRelocate(Math.max(0.0, x), Math.max(0.0, y), windowWidth, windowHeight)
+
         }
+
+        // Resize the node we're covering
+        coverNode.resize((coverNode.parent as? Region)?.width ?: 0.0, (coverNode.parent as? Region)?.height ?: 0.0)
     }
 
     private fun moveWindowOnDrag() {
