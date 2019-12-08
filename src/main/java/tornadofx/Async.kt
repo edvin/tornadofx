@@ -238,7 +238,7 @@ fun Node.runAsyncWithProgress(latch: CountDownLatch, timeout: Duration? = null, 
  * The default progress node is a ProgressIndicator that fills the same
  * client area as the parent. You can swap the progress node for any Node you like.
  */
-fun <T : Any> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
+fun <T> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -> T): Task<T> {
     if (this is Labeled) {
         val oldGraphic = graphic
         (progress as? Region)?.setPrefSize(16.0, 16.0)
