@@ -36,7 +36,7 @@ cache:
 deploy:
   # Deploy snapshots & releases on every commit made to master
   - provider: script
-    script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy"
+    script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy -Dmaven.test.skip=true -Dgpg.skip=true"
     skip_cleanup: true
     on:
       all_branches: true
