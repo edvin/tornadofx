@@ -7,6 +7,7 @@
 - [#991](https://github.com/edvin/tornadofx/issues/991): App with NoPrimaryViewSpecified throws Exception in Application stop method
 - [#1026](https://github.com/edvin/tornadofx/issues/1026) whenDockedOnce/whenUndockedOnce did not deregister correctly
 - [#1115](https://github.com/edvin/tornadofx/issues/1115) Make InternalWindow aware of BorderPane parent (https://github.com/edvin/tornadofx/issues/1115)
+- [#1134](https://github.com/edvin/tornadofx/issues/1134) Allow negative numbers in stripNonNumeric
 
 ### Changes
 
