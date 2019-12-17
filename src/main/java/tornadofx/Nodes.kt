@@ -23,6 +23,7 @@ import javafx.scene.control.skin.TableColumnHeader
 import javafx.scene.input.InputEvent
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.MouseButton
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
@@ -417,14 +418,14 @@ fun Node.onDoubleClick(action: () -> Unit) {
 
 fun Node.onLeftClick(clickCount: Int = 1, action: () -> Unit) {
     setOnMouseClicked {
-        if (it.clickCount == clickCount && it.isPrimaryButtonDown)
+        if (it.clickCount == clickCount && it.button === MouseButton.PRIMARY)
             action()
     }
 }
 
 fun Node.onRightClick(clickCount: Int = 1, action: () -> Unit) {
     setOnMouseClicked {
-        if (it.clickCount == clickCount && it.isSecondaryButtonDown)
+        if (it.clickCount == clickCount && it.button === MouseButton.SECONDARY)
             action()
     }
 }

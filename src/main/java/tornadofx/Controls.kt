@@ -319,6 +319,17 @@ fun EventTarget.togglebutton(
     if (it.toggleGroup?.selectedToggle == null && selectFirst) it.isSelected = true
 }
 
+fun EventTarget.togglebutton(
+        group: ToggleGroup? = getToggleGroup(),
+        selectFirst: Boolean = true,
+        value: Any? = null,
+        op: ToggleButton.() -> Unit = {}
+) = ToggleButton().attachTo(this, op) {
+    it.properties["tornadofx.toggleGroupValue"] = value
+    if (group != null) it.toggleGroup = group
+    if (it.toggleGroup?.selectedToggle == null && selectFirst) it.isSelected = true
+}
+
 fun ToggleButton.whenSelected(op: () -> Unit) {
     selectedProperty().onChange { if (it) op() }
 }
@@ -414,12 +425,12 @@ fun TextInputControl.stripWhitespace() = textProperty().mutateOnChange { it?.rep
 /**
  * Remove any non integer values from a Text Input Control.
  */
-fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.replace(Regex("[^0-9]"), "") }
+fun TextInputControl.stripNonInteger() = textProperty().mutateOnChange { it?.replace(Regex("[^0-9-]"), "") }
 
 /**
  * Remove any non integer values from a Text Input Control.
  */
-fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",")) =
+fun TextInputControl.stripNonNumeric(vararg allowedChars: String = arrayOf(".", ",", "-")) =
         textProperty().mutateOnChange { it?.replace(Regex("[^0-9${allowedChars.joinToString("")}]"), "") }
 
 fun ChoiceBox<*>.action(op: () -> Unit) = setOnAction { op() }
