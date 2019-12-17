@@ -94,7 +94,7 @@ class NewViewTransitionController : Controller() {
     private val fades = listOf(
             "Black" to Color.BLACK,
             "White" to Color.WHITE,
-            "Green" to NewViewTransitionStyles.nukeGreen,
+            "Orange" to Color.ORANGE,
             "Fade" to LinearGradient(0.0, 0.0, 0.0, 1.0, true, CycleMethod.NO_CYCLE, Stop(0.0, Color.BLACK), Stop(1.0, Color.WHITE)),
             "Crazy" to RadialGradient(0.0, 0.0, 150.0, 100.0, 75.0, false, CycleMethod.REPEAT,
                     Stop(0.0, NewViewTransitionStyles.nukeRed), Stop(0.33, NewViewTransitionStyles.nukeRed),
@@ -146,9 +146,9 @@ class NewViewTransitionStyles : Stylesheet() {
         val lightLabel by cssclass()
         val greenLabel by cssclass()
 
-        val nukeRed = c(.75, .5, .5)
+        val nukeRed = c(0.75, 0.5, 0.5)
         val nukeGreen = c(0.5, 0.75, 0.5)
-        val nukeBlue = c(.5, .5, .75)
+        val nukeBlue = c(0.5, 0.5, 0.75)
 
         val boxMix = mixin {
             bg force nuke
