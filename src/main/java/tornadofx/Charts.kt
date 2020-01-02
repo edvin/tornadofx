@@ -1,5 +1,6 @@
 package tornadofx
 
+import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.scene.chart.*
@@ -33,38 +34,38 @@ fun PieChart.data(value: Map<String, Double>) = value.forEach { data(it.key, it.
 /**
  * Create a LineChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: LineChart<X, Y>.() -> Unit = {}) =
-        LineChart<X, Y>(x, y).attachTo(this, op) { it.title = title }
+fun <X, Y> EventTarget.linechart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: LineChart<X, Y>.() -> Unit = {}) =
+        LineChart<X, Y>(x, y, data).attachTo(this, op) { it.title = title }
 
 /**
  * Create an AreaChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: AreaChart<X, Y>.() -> Unit = {}) =
-        AreaChart<X,Y>(x, y).attachTo(this, op){ it.title = title }
+fun <X, Y> EventTarget.areachart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: AreaChart<X, Y>.() -> Unit = {}) =
+        AreaChart<X,Y>(x, y, data).attachTo(this, op){ it.title = title }
 
 /**
  * Create a BubbleChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: BubbleChart<X, Y>.() -> Unit = {}) =
-        BubbleChart<X, Y>(x, y).attachTo(this,op){ it.title = title }
+fun <X, Y> EventTarget.bubblechart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: BubbleChart<X, Y>.() -> Unit = {}) =
+        BubbleChart<X, Y>(x, y, data).attachTo(this,op){ it.title = title }
 
 /**
  * Create a ScatterChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: ScatterChart<X, Y>.() -> Unit = {}) =
-        ScatterChart(x, y).attachTo(this,op){ it.title = title }
+fun <X, Y> EventTarget.scatterchart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: ScatterChart<X, Y>.() -> Unit = {}) =
+        ScatterChart(x, y, data).attachTo(this,op){ it.title = title }
 
 /**
  * Create a BarChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: BarChart<X, Y>.() -> Unit = {}) =
-        BarChart<X, Y>(x, y).attachTo(this, op){ it.title = title }
+fun <X, Y> EventTarget.barchart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: BarChart<X, Y>.() -> Unit = {}) =
+        BarChart<X, Y>(x, y, data).attachTo(this, op){ it.title = title }
 
 /**
  * Create a BarChart with optional title, axis and add to the parent pane. The optional op will be performed on the new instance.
  */
-fun <X, Y> EventTarget.stackedbarchart(title: String? = null, x: Axis<X>, y: Axis<Y>, op: StackedBarChart<X, Y>.() -> Unit = {}) =
-        StackedBarChart<X, Y>(x, y).attachTo(this, op) { it.title = title }
+fun <X, Y> EventTarget.stackedbarchart(title: String? = null, x: Axis<X>, y: Axis<Y>, data: ObservableList<XYChart.Series<X, Y>> = FXCollections.observableArrayList(), op: StackedBarChart<X, Y>.() -> Unit = {}) =
+        StackedBarChart<X, Y>(x, y, data).attachTo(this, op) { it.title = title }
 
 /**
  * Add a new XYChart.Series with the given name to the given Chart. Optionally specify a list data for the new series or
