@@ -575,6 +575,10 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
     }
 }
 
+operator fun <K, V> MapChangeListener.Change<K, V>.component1(): K = key;
+operator fun <K, V> MapChangeListener.Change<K, V>.component2(): V? = valueAdded;
+operator fun <K, V> MapChangeListener.Change<K, V>.component3(): V? = valueRemoved;
+
 fun <T> ObservableList<T>.invalidate() {
     if (isNotEmpty()) this[0] = this[0]
 }
