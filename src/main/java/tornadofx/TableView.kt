@@ -103,7 +103,8 @@ open class SmartTableCell<S, T>(val scope: Scope = FX.defaultScope, val owningCo
         text = null
         graphic = null
         style = null
-        styleClass.clear()
+        // Can't clear styleClass as this would mess with arrow icons for branches. We might improve this by keeping "cell", "indexed-cell" and "tree-cell" and remove the rest
+//        styleClass.clear()
     }
 
     private fun clearCellFragment() {

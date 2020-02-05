@@ -6,7 +6,7 @@
 
     <groupId>no.tornado</groupId>
     <artifactId>tornadofx</artifactId>
-    <version>1.7.20-SNAPSHOT</version>
+    <version>1.7.21-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>TornadoFX</name>
     <description>Lightweight JavaFX Framework for Kotlin</description>
@@ -92,7 +92,7 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -276,7 +276,7 @@
     </pluginRepositories>
 
     <properties>
-        <kotlin.version>1.3.41</kotlin.version>
+        <kotlin.version>1.3.61</kotlin.version>
         <dokka.version>0.10.0</dokka.version>
 
         <org.glassfish.javax.json.version>1.1.2</org.glassfish.javax.json.version>

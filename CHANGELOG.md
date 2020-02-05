@@ -1,6 +1,16 @@
 # Change Log
 
-## [1.7.20-SNAPSHOT]
+## [1.7.21-SNAPSHOT]
+
+### Fixed
+
+- [#1157](https://github.com/edvin/tornadofx/issues/1157): cellFormat removes default style classes on cleanUp
+
+### Changes
+
+### Additions
+
+## [1.7.20]
 
 ### Fixed
 
