@@ -55,6 +55,10 @@ interface Injectable : ScopedInstance
 
 interface ScopedInstance
 
+interface AppStopListener{
+    fun onStop()
+}
+
 interface Configurable {
     val config: ConfigProperties
     val configPath: Path

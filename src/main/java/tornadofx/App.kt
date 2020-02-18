@@ -141,6 +141,7 @@ open class App(open val primaryView: KClass<out UIComponent> = NoPrimaryViewSpec
         view.unInit()
         view.removeFromParent()
         eventbus.clear()
+        FX.handleAppStopListener(scope)
         scope.deregister()
         shutdownThreadPools()
         inheritParamHolder.remove()

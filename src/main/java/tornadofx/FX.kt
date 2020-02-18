@@ -319,6 +319,15 @@ class FX {
             scene.stylesheets.addAll(stylesheets)
             stylesheets.addListener(MyListChangeListener(scene))
         }
+
+        fun handleAppStopListener(scope: Scope) {
+            components[scope]
+                    ?.values
+                    ?.filterIsInstance<AppStopListener>()
+                    ?.forEach {
+                        it.onStop()
+                    }
+        }
     }
 }
 
