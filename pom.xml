@@ -320,7 +320,7 @@
         <junit.version>4.12</junit.version>
         <org.testfx.testfx-core.version>4.0.15-alpha</org.testfx.testfx-core.version>
         <org.testfx.testfx-junit.version>4.0.15-alpha</org.testfx.testfx-junit.version>
-        <de.jensd.fontawesomefx.version>8.9</de.jensd.fontawesomefx.version>
+        <de.jensd.fontawesomefx.version>4.7.0-9.1.2</de.jensd.fontawesomefx.version>
 
         <maven.release.version>2.1</maven.release.version>
         <maven.compiler.version>3.8.0</maven.compiler.version>
