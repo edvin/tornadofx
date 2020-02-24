@@ -118,3 +118,6 @@ fun <X, Y, ChartType : XYChart<X, Y>> ChartType.multiseries(vararg names: String
     data.addAll(series)
     return multiSeries
 }
+
+operator fun <X, Y> XYChart.Data<X, Y>.component1(): X = xValue;
+operator fun <X, Y> XYChart.Data<X, Y>.component2(): Y = yValue;

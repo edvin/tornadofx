@@ -113,7 +113,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence().mapEach { button }.forEach {
                         configureRotation(it)
-                        buttonArea+= Group(it)
+                        buttonArea += Group(it)
                     }
                 }
                 if (change.wasRemoved()) {
@@ -272,7 +272,10 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         super.layoutChildren()
         if (floatingDrawers && contentArea.children.isNotEmpty()) {
             val buttonBounds = buttonArea.layoutBounds
-            contentArea.resizeRelocate(buttonBounds.maxX, buttonBounds.minY, contentArea.prefWidth(-1.0), buttonBounds.height)
+            when (dockingSide) {
+                Side.RIGHT -> contentArea.resizeRelocate(buttonBounds.minX - contentArea.prefWidth(-1.0), buttonBounds.minY, contentArea.prefWidth(-1.0), buttonBounds.height)
+                else -> contentArea.resizeRelocate(buttonBounds.maxX, buttonBounds.minY, contentArea.prefWidth(-1.0), buttonBounds.height)
+            }
         }
     }
 }
