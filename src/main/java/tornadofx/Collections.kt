@@ -425,8 +425,8 @@ fun <SourceTypeKey, SourceTypeValue, TargetType> MutableList<TargetType>.bind(
     val listener = MapConversionListener(this, ignoringParentConverter)
     if (this is ObservableList<*>) {
         sourceMap.forEach { source ->
-            val converted = ignoringParentConverter(source.key,source.value)
-            listener.sourceToTarget[source] = converted
+            val converted = ignoringParentConverter(source.key, source.value)
+            listener.sourceToTarget[source.key] = converted
         }
         (this as ObservableList<TargetType>).setAll(listener.sourceToTarget.values)
     } else {
@@ -494,19 +494,23 @@ class MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType>(
         targetList: MutableList<TargetType>,
         val converter: (SourceTypeKey, SourceTypeValue) -> TargetType
 ) : MapChangeListener<SourceTypeKey, SourceTypeValue>, WeakListener {
-
     internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
-    internal val sourceToTarget = HashMap<Map.Entry<SourceTypeKey, SourceTypeValue>, TargetType>()
+    internal val sourceToTarget = HashMap<SourceTypeKey, TargetType>()
+
     override fun onChanged(change: MapChangeListener.Change<out SourceTypeKey, out SourceTypeValue>) {
         val list = targetRef.get()
         if (list == null) {
             change.map.removeListener(this)
+            sourceToTarget.clear()
         } else {
             if (change.wasRemoved()) {
-                list.remove(converter(change.key, change.valueRemoved))
+                list.remove(sourceToTarget[change.key])
+                sourceToTarget.remove(change.key)
             }
             if (change.wasAdded()) {
-                list.add(converter(change.key, change.valueAdded))
+                val converted = converter(change.key, change.valueAdded)
+                sourceToTarget[change.key] = converted
+                list.add(converted)
             }
         }
     }
