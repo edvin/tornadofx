@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import java.util.prefs.Preferences
 import javax.json.Json
+import javax.json.JsonObject
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
