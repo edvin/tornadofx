@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import java.util.prefs.Preferences
 import javax.json.Json
+import javax.json.JsonObject
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.*
 
@@ -75,8 +76,29 @@ class ConfigProperties(val configurable: Configurable) : Properties(), Closeable
             val value = pair.second.let {
                 (it as? JsonModel)?.toJSON()?.toString() ?: it.toString()
             }
-            set(pair.first, value)
+            setProperty(pair.first, value)
         }
+    }
+
+    operator fun set(key: String, value: String) {
+        setProperty(key, value)
+    }
+
+    operator fun set(key: String, value: Boolean) {
+        setProperty(key, value.toString())
+    }
+
+    operator fun set(key: String, value: Double) {
+        setProperty(key, value.toString())
+    }
+
+    operator fun set(key: String, value: Int) {
+        setProperty(key, value.toString())
+    }
+
+    operator fun set(key: String, value: Any?) {
+        if (value == null) remove(key)
+        else setProperty(key, (value as? JsonModel)?.toJSON()?.toString() ?: value.toString())
     }
 
     fun string(key: String): String? = getProperty(key)
