@@ -64,7 +64,7 @@ fun Tab.visibleWhen(predicate: ObservableValue<Boolean>) {
     val localTabPane = tabPane
     fun updateState() {
         if (predicate.value.not()) localTabPane.tabs.remove(this)
-        else if (this !in tabPane.tabs) localTabPane.tabs.add(this)
+        else if (this !in localTabPane.tabs) localTabPane.tabs.add(this)
     }
     updateState()
     predicate.onChange { updateState() }
