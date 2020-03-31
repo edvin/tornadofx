@@ -211,6 +211,10 @@ fun MenuButton.item(
     items += it
 }
 
+fun MenuButton.separator(op: SeparatorMenuItem.() -> Unit = {}) {
+    items.add(SeparatorMenuItem().also(op))
+}
+
 /**
  * Create a MenuItem. The op block operates on the MenuItem where you can call `setOnAction` to provide the menu item action.
  */
