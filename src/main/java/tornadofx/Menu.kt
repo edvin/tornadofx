@@ -46,9 +46,10 @@ fun ContextMenu.menuitem(
 ): MenuItem = item(name, KeyCombination.valueOf(keyCombination), graphic).apply { action(onAction) }
 
 fun ContextMenu.checkmenuitem(
-        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}
 ) = CheckMenuItem(name, graphic).also {
     keyCombination?.apply { it.accelerator = this }
+    selected?.apply { it.selectedProperty().bindBidirectional(this) }
     graphic?.apply { it.graphic = graphic }
     op(it)
     this += it
@@ -279,10 +280,11 @@ fun MenuButton.radiomenuitem(
 }
 
 fun MenuButton.checkmenuitem(
-        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, op: CheckMenuItem.() -> Unit = {}
+        name: String, keyCombination: KeyCombination? = null, graphic: Node? = null, selected: Property<Boolean>? = null, op: CheckMenuItem.() -> Unit = {}
 ) = CheckMenuItem(name, graphic).also {
     keyCombination?.apply { it.accelerator = this }
     graphic?.apply { it.graphic = graphic }
+    selected?.apply { it.selectedProperty().bindBidirectional(this) }
     op(it)
     items += it
 }
