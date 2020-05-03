@@ -27,7 +27,8 @@ class JsonTest {
         lastName: String? = null,
         dob: LocalDate? = null,
         type: Int? = null,
-        global: Boolean? = null
+        global: Boolean? = null,
+        height: Float? = null
     ): JsonModelAuto {
 
         var firstName by property(firstName)
@@ -44,6 +45,9 @@ class JsonTest {
 
         var global by property(global)
         fun globalProperty() = getProperty(AutoPerson2::global)
+
+        var height by property(height)
+        fun heightProperty() = getProperty(AutoPerson2::height)
     }
 
 
@@ -97,8 +101,9 @@ class JsonTest {
             dob = LocalDate.of(1970, 6, 12)
             type = 42
             global = true
+            height = 2.0f
         }
-        val json = """{"dob":"1970-06-12","firstName":"John","global":true,"lastName":"Doe","type":42}"""
+        val json = """{"dob":"1970-06-12","firstName":"John","global":true,"height":2.0,"lastName":"Doe","type":42}"""
         Assert.assertEquals(json, p.toJSON().toString())
         val l = loadJsonModel<AutoPerson2>(json)
         Assert.assertEquals("John", l.firstName)
@@ -106,6 +111,7 @@ class JsonTest {
         Assert.assertEquals(LocalDate.of(1970, 6, 12), l.dob)
         Assert.assertEquals(42, l.type)
         Assert.assertEquals(true, l.global)
+        Assert.assertEquals(2.0f, l.height)
         Assert.assertEquals(json, l.toJSON().toString())
     }
 
