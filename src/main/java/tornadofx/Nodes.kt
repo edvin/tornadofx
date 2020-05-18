@@ -928,7 +928,8 @@ fun Node.replaceWith(
         val attach: (Node) -> Unit = if (parent is BorderPane) {
             when (this) {
                 parent.top -> {
-                    { parent.top = it }
+                    @Suppress("RedundantLambdaArrow") // bug compiler
+                    {  it: Node -> parent.top = it }
                 }
                 parent.right -> {
                     { parent.right = it }
