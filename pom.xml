@@ -310,7 +310,7 @@
     </pluginRepositories>
 
     <properties>
-        <javafx.version>13</javafx.version>
+        <javafx.version>11.0.2</javafx.version>
         <kotlin.version>1.3.72</kotlin.version>
         <dokka.version>0.10.0</dokka.version>
 
