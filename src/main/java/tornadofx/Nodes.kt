@@ -944,7 +944,7 @@ fun Node.replaceWith(
                     { parent.center = it }
                 }
                 else -> {
-                    { throw IllegalStateException("Child of BorderPane not found in BorderPane") }
+                    { it: Node -> throw IllegalStateException("Child of BorderPane not found in BorderPane") }
                 }
             }
         } else {
