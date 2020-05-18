@@ -601,9 +601,11 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
 }
 
 fun <T> ObservableList<T>.invalidate() {
+    // bug compiler: Error:(606, 31) Kotlin: Cannot access 'predicate': it is private in 'FilteredList'
+    @Suppress("UsePropertyAccessSyntax")
     if (isNotEmpty()) when (this) {
-        is FilteredList<T> -> predicate = predicate
-        is SortedList<T> -> comparator = comparator
+        is FilteredList<T> -> setPredicate(getPredicate())
+        is SortedList<T> -> setComparator(getComparator())
         // invalidate FilteredList ?
         is SortedFilteredList -> sortedItems.comparator = sortedItems.comparator
         else -> this[0] = this[0]
