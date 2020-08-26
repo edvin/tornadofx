@@ -325,7 +325,10 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence()
                             .filter { VBox.getVgrow(it) == null }
-                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
+                            .forEach {
+                                VBox.setVgrow(it, Priority.ALWAYS)
+                                HBox.setHgrow(it, Priority.ALWAYS)
+                            }
                 }
             }
         }
