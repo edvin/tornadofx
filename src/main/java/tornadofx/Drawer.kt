@@ -23,7 +23,7 @@ fun EventTarget.drawer(
         op: Drawer.() -> Unit
 ) = Drawer(side, multiselect, floatingContent).attachTo(this, op)
 
-class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
+class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean, horizontalItem: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
 
@@ -151,10 +151,14 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     }
 
     private fun configureRotation(button: ToggleButton) {
-        button.rotate = when (dockingSide) {
-            Side.LEFT -> -90.0
-            Side.RIGHT -> 90.0
-            else -> 0.0
+        button.rotate = if (this.horizontalItem) {
+            when (dockingSide) {
+                Side.LEFT -> -90.0
+                Side.RIGHT -> 90.0
+                else -> 0.0
+            }
+        } else {
+            0.0
         }
     }
 
