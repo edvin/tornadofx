@@ -23,7 +23,6 @@ import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
 import tornadofx.osgi.impl.getBundleId
 import java.lang.ref.WeakReference
-import java.lang.reflect.Method
 import java.net.MalformedURLException
 import java.net.URL
 import java.nio.file.Path
@@ -681,7 +680,7 @@ fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
 @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 private fun Parent.getChildrenReflectively(): MutableList<Node>? {
     return javaClass.findMethodByName("getChildren")
-        ?.takeIf { java.util.List::class.java.isAssignableFrom(it.returnType) && checkAccessMethod(it) }
+        ?.takeIf { java.util.List::class.java.isAssignableFrom(it.returnType) && canOrSetAccessMethod(it) }
         ?.invoke(this) as MutableList<Node>
 }
 

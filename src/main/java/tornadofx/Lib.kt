@@ -441,5 +441,11 @@ fun <T, R, C : MutableCollection<in R>> Array<T>.mapEachTo(destination: C, actio
 
 fun Media.play() = MediaPlayer(this).play()
 
-// Java 9+ ?
-internal fun Any.checkAccessMethod(method: Method): Boolean = method.canAccess(this) || method.trySetAccessible()
+
+/**
+ * Checks if a method is available for this, or tries to set access
+ *
+ * @return true if access for this this is or has been set
+ */
+// Java 9+
+internal fun Any.canOrSetAccessMethod(method: Method): Boolean = method.canAccess(this) || method.trySetAccessible()
