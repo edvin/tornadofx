@@ -5,6 +5,7 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
+import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
@@ -341,6 +342,7 @@ class DrawerStyles : Stylesheet() {
         val drawerItem by cssclass()
         val buttonArea by cssclass()
         val contentArea by cssclass()
+        val horizontalDrawerItem by cssclass()
     }
 
     init {
@@ -370,6 +372,10 @@ class DrawerStyles : Stylesheet() {
             content {
                 borderColor += box(Color.TRANSPARENT)
             }
+        }
+        horizontalDrawerItem {
+            minWidth = 200.px
+            alignment = Pos.CENTER_LEFT
         }
     }
 }
