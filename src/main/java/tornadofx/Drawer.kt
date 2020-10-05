@@ -24,7 +24,7 @@ fun EventTarget.drawer(
         op: Drawer.() -> Unit
 ) = Drawer(side, multiselect, floatingContent).attachTo(this, op)
 
-class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean, horizontalItem: Boolean) : BorderPane() {
+class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean, isHorizontal: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
 
