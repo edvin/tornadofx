@@ -15,6 +15,7 @@ import javafx.scene.input.DataFormat
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import java.io.File
+import java.lang.reflect.Method
 import java.util.function.Predicate
 
 /**
@@ -439,3 +440,12 @@ fun <T, R, C : MutableCollection<in R>> Sequence<T>.mapEachTo(destination: C, ac
 fun <T, R, C : MutableCollection<in R>> Array<T>.mapEachTo(destination: C, action: T.() -> R) = mapTo(destination, action)
 
 fun Media.play() = MediaPlayer(this).play()
+
+
+/**
+ * Checks if a method is available for this, or tries to set access
+ *
+ * @return true if access for this this is or has been set
+ */
+// Java 9+
+internal fun Any.canOrSetAccessMethod(method: Method): Boolean = method.canAccess(this) || method.trySetAccessible()

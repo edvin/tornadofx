@@ -5,6 +5,8 @@ package tornadofx
 import javafx.beans.Observable
 import javafx.beans.WeakListener
 import javafx.collections.*
+import javafx.collections.transformation.FilteredList
+import javafx.collections.transformation.SortedList
 import tornadofx.FX.IgnoreParentBuilder.No
 import tornadofx.FX.IgnoreParentBuilder.Once
 import java.lang.ref.WeakReference
@@ -49,7 +51,7 @@ fun <T> observableListOf(collection: Collection<T>): ObservableList<T> = FXColle
 /**
  * Returns an empty new [ObservableList] with the given [extractor]. This list reports element updates.
  */
-fun <T> observableListOf(extractor: (T)->Array<Observable>): ObservableList<T> = FXCollections.observableArrayList(extractor)
+fun <T> observableListOf(extractor: (T) -> Array<Observable>): ObservableList<T> = FXCollections.observableArrayList(extractor)
 
 /**
  * Returns an empty new [ObservableSet]
@@ -372,13 +374,32 @@ fun <SourceType, TargetType> MutableList<TargetType>.bind(sourceList: Observable
         }
     }
     val listener = ListConversionListener(this, ignoringParentConverter)
-    (this as?  ObservableList<TargetType>)?.setAll(sourceList.map(ignoringParentConverter)) ?: run {
+    (this as? ObservableList<TargetType>)?.setAll(sourceList.map(ignoringParentConverter)) ?: run {
         clear()
         addAll(sourceList.map(ignoringParentConverter))
     }
     sourceList.removeListener(listener)
     sourceList.addListener(listener)
+
+    when (sourceList) {
+        is FilteredList<SourceType> -> sourceList.source.addListener(invalidateList(sourceList))
+        is SortedList<SourceType> -> sourceList.source.addListener(invalidateList(sourceList))
+        is SortedFilteredList<SourceType> -> sourceList.sortedItems.source.addListener(invalidateList(sourceList))
+    }
+
     return listener
+}
+
+fun <T> invalidateList(sourceList: ObservableList<T>): ListChangeListener<T> = object : ListChangeListener<T>, WeakListener {
+    private val ref: WeakReference<ObservableList<T>> = WeakReference(sourceList)
+
+    override fun onChanged(change: ListChangeListener.Change<out T>) {
+        val list = ref.get()
+        if (list == null) change.list.removeListener(this)
+        else while (change.next()) list.invalidate()
+    }
+
+    override fun wasGarbageCollected() = ref.get() == null
 }
 
 /**
@@ -425,13 +446,13 @@ fun <SourceTypeKey, SourceTypeValue, TargetType> MutableList<TargetType>.bind(
     val listener = MapConversionListener(this, ignoringParentConverter)
     if (this is ObservableList<*>) {
         sourceMap.forEach { source ->
-            val converted = ignoringParentConverter(source.key,source.value)
-            listener.sourceToTarget[source] = converted
+            val converted = ignoringParentConverter(source.key, source.value)
+            listener.sourceToTarget[source.key] = converted
         }
         (this as ObservableList<TargetType>).setAll(listener.sourceToTarget.values)
     } else {
         clear()
-        addAll(sourceMap.map{ignoringParentConverter(it.key, it.value) })
+        addAll(sourceMap.map { ignoringParentConverter(it.key, it.value) })
     }
     sourceMap.removeListener(listener)
     sourceMap.addListener(listener)
@@ -494,19 +515,23 @@ class MapConversionListener<SourceTypeKey, SourceTypeValue, TargetType>(
         targetList: MutableList<TargetType>,
         val converter: (SourceTypeKey, SourceTypeValue) -> TargetType
 ) : MapChangeListener<SourceTypeKey, SourceTypeValue>, WeakListener {
-
     internal val targetRef: WeakReference<MutableList<TargetType>> = WeakReference(targetList)
-    internal val sourceToTarget = HashMap<Map.Entry<SourceTypeKey, SourceTypeValue>, TargetType>()
+    internal val sourceToTarget = HashMap<SourceTypeKey, TargetType>()
+
     override fun onChanged(change: MapChangeListener.Change<out SourceTypeKey, out SourceTypeValue>) {
         val list = targetRef.get()
         if (list == null) {
             change.map.removeListener(this)
+            sourceToTarget.clear()
         } else {
             if (change.wasRemoved()) {
-                list.remove(converter(change.key, change.valueRemoved))
+                list.remove(sourceToTarget[change.key])
+                sourceToTarget.remove(change.key)
             }
             if (change.wasAdded()) {
-                list.add(converter(change.key, change.valueAdded))
+                val converted = converter(change.key, change.valueAdded)
+                sourceToTarget[change.key] = converted
+                list.add(converted)
             }
         }
     }
@@ -576,8 +601,16 @@ class SetConversionListener<SourceType, TargetType>(targetList: MutableList<Targ
 }
 
 fun <T> ObservableList<T>.invalidate() {
-    if (isNotEmpty()) this[0] = this[0]
+    // bug compiler: Error:(606, 31) Kotlin: Cannot access 'predicate': it is private in 'FilteredList'
+    @Suppress("UsePropertyAccessSyntax")
+    if (isNotEmpty()) when (this) {
+        is FilteredList<T> -> setPredicate(getPredicate())
+        is SortedList<T> -> setComparator(getComparator())
+        // invalidate FilteredList ?
+        is SortedFilteredList -> sortedItems.comparator = sortedItems.comparator
+        else -> this[0] = this[0]
+    }
 }
 
 @Deprecated("Use `observableListOf()` instead.", ReplaceWith("observableListOf(entries)", "tornadofx.observableListOf"))
-fun <T> observableList(vararg entries: T) : ObservableList<T> = FXCollections.observableArrayList<T>(entries.toList())
+fun <T> observableList(vararg entries: T): ObservableList<T> = FXCollections.observableArrayList<T>(entries.toList())

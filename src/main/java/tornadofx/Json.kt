@@ -126,7 +126,7 @@ fun JsonObject.getDouble(vararg key: String): Double = double(*key)!!
 fun JsonObject.jsonNumber(vararg key: String): JsonNumber? = firstNonNull(*key) { getJsonNumber(it) }
 fun JsonObject.getJsonNumber(vararg key: String): JsonNumber = jsonNumber(*key)!!
 
-fun JsonObject.float(vararg key: String): Float? = firstNonNull(*key) { getFloat(it) }
+fun JsonObject.float(vararg key: String): Float? = firstNonNull(*key) { double(it) }?.toFloat()
 fun JsonObject.getFloat(vararg key: String): Float = float(*key)!!
 
 fun JsonObject.bigdecimal(vararg key: String): BigDecimal? = jsonNumber(*key)?.bigDecimalValue()

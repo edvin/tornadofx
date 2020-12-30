@@ -679,12 +679,9 @@ fun EventTarget.getChildList(): MutableList<Node>? = when (this) {
 
 @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 private fun Parent.getChildrenReflectively(): MutableList<Node>? {
-    val getter = this.javaClass.findMethodByName("getChildren")
-    if (getter != null && java.util.List::class.java.isAssignableFrom(getter.returnType)) {
-        getter.isAccessible = true
-        return getter.invoke(this) as MutableList<Node>
-    }
-    return null
+    return javaClass.findMethodByName("getChildren")
+        ?.takeIf { java.util.List::class.java.isAssignableFrom(it.returnType) && canOrSetAccessMethod(it) }
+        ?.invoke(this) as MutableList<Node>
 }
 
 var Window.aboutToBeShown: Boolean

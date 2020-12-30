@@ -9,6 +9,8 @@ import javafx.scene.control.skin.TableRowSkin;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import tornadofx.TableViewEditModel;
+import java.util.ArrayList;
+import java.util.List;
 
 // This needs to be a Java class because of a Kotlin Bug: 
 // https://youtrack.jetbrains.com/issue/KT-12255
@@ -23,8 +25,8 @@ public final class DirtyDecoratingTableRowSkin<T> extends TableRowSkin<T> {
         this.editModel = editModel;
     }
 
-    private Polygon getPolygon(TableCell cell) {
-        ObservableMap properties = cell.getProperties();
+    private Polygon getPolygon(TableCell<?, ?> cell) {
+        ObservableMap<Object, Object> properties = cell.getProperties();
         return (Polygon) properties.computeIfAbsent(KEY, x -> {
             Polygon polygon = new Polygon(0.0, 0.0, 0.0, 10.0, 10.0, 0.0);
             polygon.setFill(Color.BLUE);
@@ -34,10 +36,16 @@ public final class DirtyDecoratingTableRowSkin<T> extends TableRowSkin<T> {
 
     protected void layoutChildren(double x, double y, double w, double h) {
         super.layoutChildren(x, y, w, h);
-        final ObservableList<Node> children = getChildren();
+        final var children = getChildren();
+        final var sizeMaxRowElement = children.size();
+        List<Node> addedChild = null;
+        List<Node> removedChild = null;
 
-        children.forEach(child -> {
-            TableCell<T, ?> cell = (TableCell<T,?>) child;
+        for (int i = 0; i < children.size(); i++) {
+            Node child = children.get(i);
+            if (!(child instanceof TableCell)) continue;
+            @SuppressWarnings("unchecked")
+            TableCell<T, ?> cell = (TableCell<T, ?>) child;
             T item = null;
             if (cell.getIndex() > -1 && cell.getTableView().getItems().size() > cell.getIndex()) {
                 item = cell.getTableView().getItems().get(cell.getIndex());
@@ -46,13 +54,23 @@ public final class DirtyDecoratingTableRowSkin<T> extends TableRowSkin<T> {
             boolean isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.getTableColumn());
             if (isDirty) {
                 if (!children.contains(polygon)) {
-                    children.add(polygon);
+                    if (addedChild == null) addedChild = new ArrayList<>(sizeMaxRowElement);
+                    addedChild.add(polygon);
                 }
                 polygon.relocate(cell.getLayoutX(), y);
             } else {
-                children.remove(polygon);
+                if (removedChild == null) removedChild = new ArrayList<>(sizeMaxRowElement);
+                removedChild.add(polygon);
             }
-        });
+        }
+
+
+        if (addedChild != null) {
+            children.addAll(addedChild);
+        }
+        if (removedChild != null) {
+            children.removeAll(removedChild);
+        }
     }
 }
 

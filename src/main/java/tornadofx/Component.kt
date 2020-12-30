@@ -6,6 +6,7 @@ import javafx.application.HostServices
 import javafx.beans.binding.BooleanExpression
 import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.event.EventDispatchChain
@@ -1317,6 +1318,100 @@ fun <U : UIComponent> U.whenUndockedOnce(listener: (U) -> Unit) {
     }
     whenUndocked(wrapped)
 }
+
+/**
+ * This extension function will automatically bind to the managedProperty of the given node
+ * and will make sure that it is managed, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty
+ */
+fun <T : UIComponent> T.managedWhen(expr: () -> ObservableValue<Boolean>): T = managedWhen(expr())
+
+/**
+ * This extension function will automatically bind to the managedProperty of the given node
+ * and will make sure that it is managed, if the given [predicate] an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#managedProperty)
+ */
+fun <T : UIComponent> T.managedWhen(predicate: ObservableValue<Boolean>): T = apply {
+    root.managedWhen(predicate)
+}
+
+/**
+ * This extension function will automatically bind to the visibleProperty of the given node
+ * and will make sure that it is visible, if the given [predicate] an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
+ */
+fun <T : UIComponent> T.visibleWhen(predicate: ObservableValue<Boolean>): T = apply {
+    root.visibleWhen(predicate)
+}
+
+/**
+ * This extension function will automatically bind to the visibleProperty of the given node
+ * and will make sure that it is visible, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#visibleProperty
+ */
+fun <T : UIComponent> T.visibleWhen(expr: () -> ObservableValue<Boolean>): T = visibleWhen(expr())
+
+/**
+ * This extension function will make sure to hide the given node,
+ * if the given [expr] returning an observable boolean value equals true.
+ */
+fun <T : UIComponent> T.hiddenWhen(expr: () -> ObservableValue<Boolean>): T = hiddenWhen(expr())
+
+/**
+ * This extension function will make sure to hide the given node,
+ * if the given [predicate] an observable boolean value equals true.
+ */
+fun <T : UIComponent> T.hiddenWhen(predicate: ObservableValue<Boolean>) = apply {
+    root.hiddenWhen(predicate)
+}
+
+/**
+ * This extension function will automatically bind to the disableProperty of the given node
+ * and will disable it, if the given [expr] returning an observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disable
+ */
+fun <T : UIComponent> T.disableWhen(expr: () -> ObservableValue<Boolean>): T = disableWhen(expr())
+
+/**
+ * This extension function will automatically bind to the disableProperty of the given node
+ * and will disable it, if the given [predicate] observable boolean value equals true.
+ *
+ * @see https://docs.oracle.com/javase/8/javafx/api/javafx/scene/Node.html#disableProperty
+ */
+fun <T : UIComponent> T.disableWhen(predicate: ObservableValue<Boolean>) = apply {
+    root.disableWhen(predicate)
+}
+
+/**
+ * This extension function will make sure that the given UI component is enabled when ever,
+ * the given [expr] returning an observable boolean value equals true.
+ */
+fun <T : UIComponent> T.enableWhen(expr: () -> ObservableValue<Boolean>): T = enableWhen(expr())
+
+/**
+ * This extension function will make sure that the given UI component is enabled when ever,
+ * the given [predicate] observable boolean value equals true.
+ */
+fun <T : UIComponent> T.enableWhen(predicate: ObservableValue<Boolean>) = apply {
+    root.enableWhen(predicate)
+}
+
+/**
+ * This extension function will make sure that the given UI component will only be visible in the scene graph,
+ * if the given [expr] returning an observable boolean value equals true.
+ */
+fun <T : UIComponent> T.removeWhen(predicate: ObservableValue<Boolean>) = root.removeWhen(predicate)
+
+/**
+ * This extension function will make sure that the given UI component will only be visible in the scene graph,
+ * if the given [predicate] observable boolean value equals true.
+ */
+fun <T : UIComponent> T.removeWhen(expr: () -> ObservableValue<Boolean>): T = apply { root.removeWhen(expr()) }
 
 abstract class Fragment @JvmOverloads constructor(title: String? = null, icon: Node? = null) : UIComponent(title, icon)
 

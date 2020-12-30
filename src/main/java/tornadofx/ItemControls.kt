@@ -860,7 +860,7 @@ fun <T> TableView<T>.selectOnDrag() {
     var startColumn = columns.first()
 
     // Record start position and clear selection unless Control is down
-    addEventFilter(MouseEvent.MOUSE_PRESSED) {
+    addEventHandler(MouseEvent.MOUSE_PRESSED) {
         startRow = 0
 
         (it.pickResult.intersectedNode as? TableCell<*, *>)?.apply {
@@ -876,7 +876,7 @@ fun <T> TableView<T>.selectOnDrag() {
     }
 
     // Select items while dragging
-    addEventFilter(MouseEvent.MOUSE_DRAGGED) {
+    addEventHandler(MouseEvent.MOUSE_DRAGGED) {
         (it.pickResult.intersectedNode as? TableCell<*, *>)?.apply {
             if (items.size > index) {
                 if (selectionModel.isCellSelectionEnabled) {
@@ -936,12 +936,12 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
 
         // Add columns and track changes to columns
         tableView.columns.forEach(::addEventHandlerForColumn)
-        tableView.columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
+        tableView.columns.addListener { change: ListChangeListener.Change<out TableColumn<S, *>> ->
             while (change.next()) {
                 if (change.wasAdded())
                     change.addedSubList.forEach(::addEventHandlerForColumn)
             }
-        })
+        }
 
         // Remove dirty state for items removed from the TableView
         val listenForRemovals = ListChangeListener<S> {

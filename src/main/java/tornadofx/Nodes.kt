@@ -925,10 +925,11 @@ fun Node.replaceWith(
         return true
     } else if (parent is Pane) {
         val parent = parent as Pane
-        val attach = if (parent is BorderPane) {
+        val attach: (Node) -> Unit = if (parent is BorderPane) {
             when (this) {
                 parent.top -> {
-                    { it: Node -> parent.top = it }
+                    @Suppress("RedundantLambdaArrow") // bug compiler
+                    {  it: Node -> parent.top = it }
                 }
                 parent.right -> {
                     { parent.right = it }
@@ -943,7 +944,7 @@ fun Node.replaceWith(
                     { parent.center = it }
                 }
                 else -> {
-                    { throw IllegalStateException("Child of BorderPane not found in BorderPane") }
+                    { it: Node -> throw IllegalStateException("Child of BorderPane not found in BorderPane") }
                 }
             }
         } else {
