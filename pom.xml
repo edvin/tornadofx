@@ -11,9 +11,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>${org.glassfish.javax.json.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
             <version>${org.glassfish.javax.json.version}</version>
+            <classifier>module</classifier>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -314,7 +320,7 @@
         <kotlin.version>1.3.61</kotlin.version>
         <dokka.version>0.10.0</dokka.version>
 
-        <org.glassfish.javax.json.version>1.1.2</org.glassfish.javax.json.version>
+        <org.glassfish.javax.json.version>1.1.4</org.glassfish.javax.json.version>
         <org.apache.httpcomponents.httpclient.version>4.5.3</org.apache.httpcomponents.httpclient.version>
         <org.apache.felix.framework.version>6.0.1</org.apache.felix.framework.version>
         <junit.version>4.12</junit.version>
