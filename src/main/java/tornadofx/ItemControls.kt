@@ -408,8 +408,11 @@ fun <S, T> TreeTableView<S>.column(title: String, getter: KFunction<T>): TreeTab
     return this.column(title, propName)
 }
 
-fun <S, T> TableColumn<S, T?>.useComboBox(items: ObservableList<T>, afterCommit: (TableColumn.CellEditEvent<S, T?>) -> Unit = {}) = apply {
-    cellFactory = ComboBoxTableCell.forTableColumn(items)
+fun <S, T> TableColumn<S, T?>.useComboBox(
+        items: ObservableList<T>,
+        converter: StringConverter<T>? = null,
+        afterCommit: (TableColumn.CellEditEvent<S, T?>) -> Unit = {}) = apply {
+    cellFactory = if (converter == null) ComboBoxTableCell.forTableColumn(items) else ComboBoxTableCell.forTableColumn(converter, items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
@@ -440,8 +443,11 @@ inline fun <S, reified T> TableColumn<S, T?>.useTextField(
     }
 }
 
-fun <S, T> TableColumn<S, T?>.useChoiceBox(items: ObservableList<T>, afterCommit: (TableColumn.CellEditEvent<S, T?>) -> Unit = {}) = apply {
-    cellFactory = ChoiceBoxTableCell.forTableColumn(items)
+fun <S, T> TableColumn<S, T?>.useChoiceBox(
+    items: ObservableList<T>,
+    converter: StringConverter<T>? = null,
+    afterCommit: (TableColumn.CellEditEvent<S, T?>) -> Unit = {}) = apply {
+    cellFactory = if (converter == null) ChoiceBoxTableCell.forTableColumn(items) else  ChoiceBoxTableCell.forTableColumn(converter, items)
     setOnEditCommit {
         val property = it.tableColumn.getCellObservableValue(it.rowValue) as Property<T?>
         property.value = it.newValue
