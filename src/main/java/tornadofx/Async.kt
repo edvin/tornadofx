@@ -255,10 +255,8 @@ fun <T> Node.runAsyncWithProgress(progress: Node = ProgressIndicator(), op: () -
         val paddingVertical = (this as? Region)?.paddingVertical?.toDouble() ?: 0.0
         (progress as? Region)?.setPrefSize(boundsInParent.width - paddingHorizontal, boundsInParent.height - paddingVertical)
         // Unwrap ToolBar parent, it has an extra HBox or VBox inside it, we need to target the items list
-        val p = (parent?.parent as? ToolBar) ?: parent
-        val children = requireNotNull(p.getChildList()) {
-            "Node of type ${this::class.qualifiedName} has no accessible child list, and cannot contain the progress node"
-        }
+        val p = (parent?.parent as? ToolBar) ?: parent ?: throw IllegalArgumentException("runAsyncWithProgress cannot target an UI element with no parent!")
+        val children = requireNotNull(p.getChildList()) { "This node has no child list, and cannot contain the progress node" }
         val index = children.indexOf(this)
         children.add(index, progress)
         removeFromParent()
