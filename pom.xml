@@ -281,7 +281,7 @@
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
-                        <phase>install</phase>
+                        <phase>deploy</phase>
                         <goals>
                             <goal>sign</goal>
                         </goals>
@@ -303,10 +303,10 @@
             </plugin>
         </plugins>
     </build>
-<!--
-    -add-opens tornadofx.tests=javafx.base
-    -add-reads jdk.httpserver=tornadofx
--->
+    <!--
+        -add-opens tornadofx.tests=javafx.base
+        -add-reads jdk.httpserver=tornadofx
+    -->
     <pluginRepositories>
         <pluginRepository>
             <id>jcenter</id>
