@@ -233,7 +233,7 @@ inline fun <T> ChangeListener(crossinline listener: (observable: ObservableValue
  * Listen for changes to this observable. Optionally only listen x times.
  * The lambda receives the changed value when the change occurs, which may be null,
  */
-fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
+fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit): ChangeListener<T> {
     var counter = 0
     val listener = object : ChangeListener<T> {
         override fun changed(observable: ObservableValue<out T>?, oldValue: T, newValue: T) {
@@ -244,9 +244,10 @@ fun <T> ObservableValue<T>.onChangeTimes(times: Int, op: (T?) -> Unit) {
         }
     }
     addListener(listener)
+    return listener
 }
 
-fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit) = onChangeTimes(1, op)
+fun <T> ObservableValue<T>.onChangeOnce(op: (T?) -> Unit): ChangeListener<T> = onChangeTimes(1, op)
 
 fun <T> ObservableValue<T>.onChange(op: (T?) -> Unit) = apply { addListener { _, _, newValue -> op(newValue) } }
 fun ObservableBooleanValue.onChange(op: (Boolean) -> Unit) = apply { addListener { _, _, new -> op(new ?: false) } }
