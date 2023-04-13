@@ -282,7 +282,7 @@
         <org.glassfish.javax.json.version>1.1.2</org.glassfish.javax.json.version>
         <org.apache.httpcomponents.httpclient.version>4.5.13</org.apache.httpcomponents.httpclient.version>
         <org.apache.felix.framework.version>5.6.4</org.apache.felix.framework.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <org.testfx.testfx-core.version>4.0.4-alpha</org.testfx.testfx-core.version>
         <org.testfx.testfx-junit.version>4.0.4-alpha</org.testfx.testfx-junit.version>
         <de.jensd.fontawesomefx.version>8.9</de.jensd.fontawesomefx.version>
