@@ -5,6 +5,7 @@ import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.event.EventTarget
 import javafx.geometry.Orientation
+import javafx.geometry.Pos
 import javafx.geometry.Side
 import javafx.scene.Group
 import javafx.scene.Node
@@ -20,10 +21,11 @@ fun EventTarget.drawer(
         side: Side = Side.LEFT,
         multiselect: Boolean = false,
         floatingContent: Boolean = false,
+        isHorizontal: Boolean = false,
         op: Drawer.() -> Unit
-) = Drawer(side, multiselect, floatingContent).attachTo(this, op)
+) = Drawer(side, multiselect, floatingContent, isHorizontal).attachTo(this, op)
 
-class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : BorderPane() {
+class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean, isHorizontal: Boolean) : BorderPane() {
     val dockingSideProperty: ObjectProperty<Side> = SimpleObjectProperty(side)
     var dockingSide by dockingSideProperty
 
@@ -151,10 +153,14 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     }
 
     private fun configureRotation(button: ToggleButton) {
-        button.rotate = when (dockingSide) {
-            Side.LEFT -> -90.0
-            Side.RIGHT -> 90.0
-            else -> 0.0
+        button.rotate = if (this.horizontalItem) {
+            when (dockingSide) {
+                Side.LEFT -> -90.0
+                Side.RIGHT -> 90.0
+                else -> 0.0
+            }
+        } else {
+            0.0
         }
     }
 
@@ -321,7 +327,10 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
                 if (change.wasAdded()) {
                     change.addedSubList.asSequence()
                             .filter { VBox.getVgrow(it) == null }
-                            .forEach { VBox.setVgrow(it, Priority.ALWAYS) }
+                            .forEach {
+                                VBox.setVgrow(it, Priority.ALWAYS)
+                                HBox.setHgrow(it, Priority.ALWAYS)
+                            }
                 }
             }
         }
@@ -334,6 +343,7 @@ class DrawerStyles : Stylesheet() {
         val drawerItem by cssclass()
         val buttonArea by cssclass()
         val contentArea by cssclass()
+        val horizontalDrawerItem by cssclass()
     }
 
     init {
@@ -363,6 +373,10 @@ class DrawerStyles : Stylesheet() {
             content {
                 borderColor += box(Color.TRANSPARENT)
             }
+        }
+        horizontalDrawerItem {
+            minWidth = 200.px
+            alignment = Pos.CENTER_LEFT
         }
     }
 }
