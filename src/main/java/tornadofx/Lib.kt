@@ -38,9 +38,11 @@ class SortedFilteredList<T>(
         val items: ObservableList<T> = FXCollections.observableArrayList(),
         initialPredicate: (T) -> Boolean = { true },
         val filteredItems: FilteredList<T> = FilteredList(items, initialPredicate),
+        val comparatorProperty: ObservableValue<java.util.Comparator<T>>? = null,
         val sortedItems: SortedList<T> = SortedList(filteredItems)) : ObservableList<T> {
 
     init {
+        comparatorProperty?.let {  sortedItems.comparatorProperty().bind(it)}
         items.onChange { refilter() }
     }
 
