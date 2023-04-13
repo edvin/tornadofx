@@ -18,6 +18,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import javafx.stage.Window
+import tornadofx.FX.Companion.dicontainer
 import tornadofx.FX.Companion.inheritParamHolder
 import tornadofx.FX.Companion.inheritScopeHolder
 import tornadofx.FX.Companion.stylesheets
@@ -176,6 +177,7 @@ class FX {
                 object : SimpleObjectProperty<(Class<out Component>?) -> String>({ it?.name ?: "Messages" }) {
                     override fun invalidated() = loadMessages()
                 }
+
         /**
          * Provides the name of the Resource Bundle for a given Component Class.
          * A `null` value may be passed to represent the global bundle.
@@ -409,6 +411,7 @@ fun <T : Stylesheet> removeStylesheet(stylesheetType: KClass<T>) {
 
 
 fun <T : ScopedInstance> setInScope(value: T, scope: Scope = FX.defaultScope, kclass: KClass<T> = value.javaClass.kotlin) = FX.getComponents(scope).put(kclass, value)
+
 @Suppress("UNCHECKED_CAST")
 fun <T : ScopedInstance> Scope.set(vararg value: T) = value.associateByTo(FX.getComponents(this)) { it::class }
 
@@ -419,6 +422,7 @@ inline fun <reified T : Component> find(scope: Scope = FX.defaultScope, params: 
 inline fun <reified T : Component> find(scope: Scope = FX.defaultScope, vararg params: Pair<*, Any?>): T = find(scope, params.toMap())
 
 fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, vararg params: Pair<*, Any?>): T = find(type, scope, params.toMap())
+
 @Suppress("UNCHECKED_CAST")
 fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, params: Map<*, Any?>? = null): T {
     val useScope = FX.fixedScopes[type] ?: scope
@@ -431,7 +435,7 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, params
         if (!components.containsKey(type as KClass<out ScopedInstance>)) {
             synchronized(FX.lock) {
                 if (!components.containsKey(type)) {
-                    val cmp = type.java.newInstance()
+                    val cmp = dicontainer?.getInstance(type) ?: type.java.newInstance()
                     (cmp as? UIComponent)?.init()
                     // if cmp.scope overrode the scope, inject into that instead
                     if (cmp is Component && cmp.scope != useScope) {
@@ -442,11 +446,11 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, params
             }
         }
         val cmp = components[type] as T
-        cmp.paramsProperty?.value = stringKeyedMap
+        cmp.paramsProperty.value = stringKeyedMap
         return cmp
     }
 
-    val cmp = type.java.newInstance()
+    val cmp = dicontainer?.newInstance(type) ?: type.java.newInstance()
     cmp.paramsProperty.value = stringKeyedMap
     (cmp as? Fragment)?.init()
 
@@ -459,12 +463,15 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = FX.defaultScope, params
 
 interface DIContainer {
     fun <T : Any> getInstance(type: KClass<T>): T
+    fun <T : Any> newInstance(type: KClass<T>): T = type.java.newInstance()
+
     fun <T : Any> getInstance(type: KClass<T>, name: String): T {
         throw AssertionError("Injector is not configured, so bean of type $type with name $name can not be resolved")
     }
 }
 
 inline fun <reified T : Any> DIContainer.getInstance() = getInstance(T::class)
+inline fun <reified T : Any> DIContainer.newInstance() = newInstance(T::class)
 inline fun <reified T : Any> DIContainer.getInstance(name: String) = getInstance(T::class, name)
 
 /**
